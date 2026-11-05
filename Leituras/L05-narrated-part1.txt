@@ -1,0 +1,510 @@
+Advanced Econometrics, Classes 5 and 6. Introduction to causal inference. Narrated study notes, part 1 of 3.
+
+How to listen.
+
+This is a listening version of the finished study notes for Classes 5 and 6 of the course Econometria Avançada, in the professional master's in economics at Insper, taught by Hedibert Freitas Lopes. It carries the same content as the written notes, re-voiced for the ear. Every formula is spoken in words, the way you would dictate it to someone writing on a board, and then its meaning is said in plain language.
+
+The narration comes in three files. Part 1, this file, covers the map of the unit, then the language of causal inference: Simpson's paradox and causal graphs, and potential outcomes and identification. Then it covers what goes wrong in a regression: omitted variables and bad controls, and errors in variables. Part 2 covers the three designs: instrumental variables, difference in differences, and regression discontinuity. Part 3 holds the support material: the pitfalls, the spoken formula sheet, the implementation described as a sequence of steps, the reading route and exercises, a true or false self-test, a glossary, and the whole unit in five lines.
+
+A word on the three layers the notes use. The U layer is intuition: the three Simpson stories, the instrumental-variables graph, Huntington-Klein's open-office story, birthdays and funerals. The C layer is the course layer: the results of the slides, of Mostly Harmless Econometrics and of Wooldridge, with their numbering, together with the course site's own printouts. That is what is examinable. The G layer is graduate material: the inverse-Wishart variance of the long regression, the local average treatment effect theorem, fuzzy regression discontinuity as instrumental variables, and the slides' Bayesian versions of difference in differences, regression discontinuity and instrumental variables. These are named or proved, but they are not examinable. Each time a G item comes up, the narration says so out loud.
+
+A word on scope. The final exam has no coding. Expect the bias formulas, namely omitted-variable bias, attenuation, and ordinary least squares under endogeneity; the instrumental-variables ratio and the failure of simply adding the instrument to the regression; the identification arguments for difference in differences and regression discontinuity; d-separation on a small graph; and the reading of the site's Card, Card and Krueger, and minimum legal drinking age printouts. Matching and doubly robust estimators, causal discovery, fuzzy regression discontinuity, data-driven bandwidths, Bayesian nonparametric regression discontinuity, the slides' Bayesian difference in differences and regression discontinuity, and Bayesian instrumental variables are named only. Posterior simulation and priors belong to Classes 3 and 4. Panel fixed and random effects belong to syllabus topic 3 and are not on the site schedule, and hierarchical models belong to Class 7.
+
+The sources are cited by short names. The slides are Lopes's notes on causal inference, October 2024, 38 pages. MHE is Mostly Harmless Econometrics, by Angrist and Pischke, 2009. Wooldridge is the sixth edition of the introductory econometrics text. Greenberg is the first edition of the Bayesian econometrics text. The site pages are the omitted-variable page, the Card instrumental-variables example, the Card and Krueger difference-in-differences example, and the regression-discontinuity example on age and motor-vehicle accidents, each with its data file.
+
+
+Part zero. The map of Classes 5 and 6.
+
+This part covers the map note: the one claim of the unit, the reading order, the one result to hold, the numbers to memorize, the scope, the position in the course, and the errata found in the sources.
+
+The one claim. A causal effect is a contrast of potential outcomes, and data identify it only through an assumption the data cannot check.
+
+The graph decides what to condition on. Forks must be blocked; chains out of the treatment, and colliders, must not be. That is why the same Simpson table is read stratified when the third variable is gender, and pooled when it is blood pressure measured after treatment.
+
+Regression inherits every failure of that choice. Leaving out a confounder moves the coefficient by gamma times delta. A noisy regressor shrinks it by the factor sigma squared of x over sigma squared of x plus sigma squared of u. And a bad control reintroduces selection bias.
+
+When no set of observables will do, design supplies the variation. An instrument moves the treatment and nothing else: in Card's data, the instrumental-variables estimate is 0.1315 against an ordinary least squares estimate of 0.0747. A control group shares the same trend: in Card and Krueger, the difference in differences is plus 2.75 full-time-equivalent employees. Or a cutoff has a smooth counterfactual: at the minimum legal drinking age of 21, deaths rise by 4.53 per 100,000. Each design trades one untestable assumption for another.
+
+The reading order has three parts and three support notes.
+
+Part one, the language: graphs and potential outcomes. Note one, Simpson and causal graphs, slides pages 5 to 14. The drug wins in both strata, 93 against 87 and 73 against 69, and loses pooled, 78 against 83, because a pooled rate is a mix: a composition effect of minus 10.5 points beats a within effect of plus 5.9. Then chains, forks and colliders; Harrison's five paths and fifteen junctions; d-separation on the slides' two examples, checked exhaustively; the collider Z three that makes Z three alone a wrong adjustment set; and the slide's R code that does not propagate noise. Note two, potential outcomes and identification, slides pages 14 to 17, MHE chapter 2, pages 10 to 18, and section 3.2.1, pages 38 to 44. The naive comparison equals the average treatment effect on the treated plus selection bias; randomisation removes the bias; ignorability plus positivity give the adjustment formula; and inverse probability weighting is the same thing, proved line by line. In the drug table, the naive gap is minus 4.57, the average treatment effect is plus 5.37, and the effect on the treated is plus 4.80.
+
+Part two, what goes wrong in a regression. Note three, omitted variables and bad control, from the omitted-variable page and MHE sections 3.2.2 to 3.2.3, pages 44 to 50. The short coefficient equals the long coefficient plus gamma times delta. The site's simulation centres the short coefficient at 0.75 plus 1.2 rho, with exact standard deviations. The long regression is centred, but its variance explodes as rho tends to one. MHE Table 3.2.1 is read through omitted-variable bias, and bad control, equation 3.2.12, and proxy control, equation 3.2.15, are treated. Note four, errors in variables, from the error-in-variables page and Wooldridge section 9.4, pages 287 to 292, and section 15.4. The attenuation factor is sigma squared of x over sigma squared of x plus sigma squared of u. Error in y is harmless. Controls make attenuation worse, 0.39 against 0.64. And a second measurement used as an instrument restores beta.
+
+Part three, designs. Note five, instrumental variables, slides pages 17 to 20, MHE section 4.1, pages 84 to 96, Wooldridge sections 15.1 to 15.5, and Greenberg section 11.2. Beta one equals theta one over delta one, which equals the covariance of z and y over the covariance of z and x. Adding z to the outcome regression leaves the bias sigma x y over sigma squared of x. The Wald estimate in MHE Table 4.1.2 is 0.0891. In Card's data, ordinary least squares gives 0.0747 and instrumental variables gives 0.1315, with standard error 0.0550, a first stage of 0.320 and a first-stage F of 13.26. A weak first stage magnifies an exclusion violation as phi over delta one. Note six, difference in differences, slides pages 21 to 25, MHE section 5.2, pages 169 to 178, and Wooldridge section 13.2, pages 407 to 411. Common trends imply that the difference in differences equals delta; four cells equal four coefficients; the Card and Krueger estimate is 2.750 with standard error 1.731, the opposite sign of the textbook labour-demand story; and a differential trend moves it one for one. MHE's bracket order on page 170 is corrected. Note seven, regression discontinuity, slides pages 26 to 38, and MHE sections 6.1 to 6.2, pages 189 to 198. Continuity implies that the jump equals the effect at the cutoff. The motor-vehicle-accident jump is plus 4.534, or 3.411 residual standard deviations; the quadratic fit gives 4.663; local linear with bandwidth one gives 4.76. Internal causes and fake cutoffs show nothing on the full sample, but one window of the placebo outcome does.
+
+The support notes are the formula sheet, with the class goals mapped to notes, every numbered result and every number; the pitfalls note, with sixteen confusions, minimal counterexamples and an original twenty-five item true or false self-test; and the Python note, the reference implementation, which covers d-separation, inverse probability weighting, omitted-variable bias, attenuation, instrumental variables and two-stage least squares on the Card data checked against the linearmodels package, difference in differences and regression discontinuity, all asserted against the sources' numbers.
+
+The one result to hold. The expected value of Y given A equal to one, minus the expected value of Y given A equal to zero, which is what the data compare, equals the expected value of Y of one minus Y of zero given A equal to one, which is the average treatment effect on the treated, plus the expected value of Y of zero given A equal to one minus the expected value of Y of zero given A equal to zero, which is the selection bias.
+
+Every method in the unit is a way to make the last term vanish. Randomisation sets it to zero by design. Adjustment for confounders, in note two, zeroes it within cells of L. Omitted-variable bias, in note three, is its regression form. Instrumental variables compares groups defined by the instrument, whose untreated outcomes are equal by exclusion. Difference in differences assumes the difference in Y of zero is constant over time, and differences it out. Regression discontinuity assumes it vanishes at the cutoff.
+
+Now the numbers and cases to have memorized. Nine of them.
+
+First, the Simpson drug table: 93 against 87, 73 against 69, and pooled 78 against 83. The average treatment effect is plus 5.37 points. Pooled is not stratified; adjust for the fork.
+
+Second, the collider with unit coefficients: the correlation of X and Z given W is minus 0.5. Conditioning creates dependence.
+
+Third, the omitted-variable simulation: the expected short coefficient is 0.75 plus 1.2 rho, which is 1.89 at rho equal to 0.95. Short equals long plus gamma times rho.
+
+Fourth, attenuation: lambda equals 0.5 when sigma of u equals sigma of x. Half the slope.
+
+Fifth, the Wald estimate of MHE Table 4.1.2: minus 0.01349 over minus 0.1514 equals 0.0891. The reduced form over the first stage.
+
+Sixth, Card: ordinary least squares 0.0747, instrumental variables 0.1315 with standard error 0.0550, first stage 0.320, t statistic 3.64, F statistic 13.26. The instrumental-variables estimate is almost twice the least squares one, and its standard error is 15.7 times larger.
+
+Seventh, Card and Krueger: Pennsylvania minus 2.283, New Jersey plus 0.467, difference in differences 2.750 with standard error 1.731. No employment loss.
+
+Eighth, the minimum legal drinking age on the site data: the motor-vehicle-accident jump is 4.534, with standard error 0.768, or 3.411 residual standard deviations; for internal causes it is 0.392. The effect at 21.
+
+Ninth, the minimum legal drinking age on the slide, all deaths: rho hat is 7.7, which is about plus 100 deaths per day on a base of 150. That is the Mastering 'Metrics example.
+
+The scope, said once in full. Examinable, the C layer: the results of notes one to seven as derived there. Proved but above the line, the G layer: the exact sampling standard deviations of the omitted-variable simulation, and the statement of the local average treatment effect theorem. Named only: matching and doubly robust estimators; causal discovery; fuzzy regression discontinuity; data-driven bandwidths; Bayesian nonparametric regression discontinuity, the NBA draft example; the slides' Bayesian difference in differences and regression discontinuity; and Bayesian instrumental variables, Greenberg section 11.2 and the Lopes papers on slide page 20. Belonging to other classes: posterior simulation and priors, Classes 3 and 4; panel fixed and random effects, Wooldridge chapter 14 and MHE section 5.1, syllabus topic 3, not on the site schedule; and hierarchical models, Class 7.
+
+The position of Classes 5 and 6 in the course. From Class 1, the review: ordinary least squares as a covariance over a variance and as a projection. Every bias formula here is that ratio with a contaminated covariance. From Class 2, statistical learning: prediction against inference. A model can predict well with a confounded coefficient; the student coefficient in the default data that flips sign is a Simpson reversal; and the choice of polynomial order and cross-validation mirror the bandwidth choice in regression discontinuity. From Classes 3 and 4, Bayesian learning: the tools behind the slides' Bayesian difference in differences and regression discontinuity, and Greenberg's Bayesian instrumental-variables and treatment models. In Class 7, more econometric models: panel and hierarchical models generalise the state and period effects of difference in differences, and probit and Tobit handle limited outcomes. In Classes 8 and 9, time series: identification of a structural vector autoregression is the time-series version of the simultaneous-equations problem that instrumental variables began with, MHE page 84.
+
+The errata found in the sources. Eleven of them.
+
+One. Slides page 7, Example 3, says "if we don't segregate by gender". The variable is age.
+
+Two. Slides page 9: the collider picture labels both parents Y. It should be X into Z, out of Y, as Rule 3 beneath it says.
+
+Three. Slides page 10, the R code: noise is added after all nodes are computed, so it never propagates. Each node should be generated from its parents' noisy values, as the equations say.
+
+Four. Slides page 15: the heading reads "STUVA". It should be SUTVA.
+
+Five. The omitted-variable page: the numerator of the variance of y given x and z is written as one minus rho minus and so on. It should be one minus rho squared minus and so on. The two agree only at rho equal to zero.
+
+Six. Slides page 18 says that z into x into y is a fork. It is a chain, Rule 1.
+
+Seven. Wooldridge page 470 says the correlation of z and u must be less than one fifth of the correlation of z and u. It should be one fifth of the correlation of x and u.
+
+Eight. MHE page 170 writes the population difference in differences as the Pennsylvania change minus the New Jersey change, equal to beta. It should be the New Jersey change minus the Pennsylvania change.
+
+Nine. Slides page 24 says "NJ (0) and PA (1)". In fact treatment equal to one is New Jersey: the cell means match MHE Table 5.2.1.
+
+Ten. Slides page 24, the R plot: the vertical axis says employment growth. It is the employment level, full-time equivalents per store.
+
+Eleven. Slides page 33, the R code, computes the jump in standard deviations as delta over sigma one. It should be delta one over sigma one, which gives 0.380, not 4.394. The site page has it right.
+
+The bibliography actually used. The class materials everywhere, as the spine of each note. MHE chapter 2, section 3.2, section 4.1, section 4.4.1, section 5.2, and sections 6.1 to 6.2, in notes two, three, five, six and seven. Wooldridge sections 9.4, 13.2, and 15.1 to 15.5, in notes four, five and six. Greenberg sections 11.1 to 11.2, in notes two and five, for Bayesian treatment and instrumental-variables models, named.
+
+Recap of part zero. A causal effect is a contrast of potential outcomes. The naive comparison is the effect on the treated plus selection bias. The graph says what to condition on. Regression inherits every mistake in that choice. And each design, instruments, control groups and cutoffs, swaps one untestable assumption for another.
+
+
+Part one, section 1. Simpson's paradox, and the graph that decides which table to read.
+
+This section covers slides sections 2 to 7, pages 5 to 14: Simpson's paradox with Examples 1 to 3, after Pearl, Glymour and Jewell, chapter 1; the examples again with their causal graphs; chains, forks and colliders, Rules 1 to 3; Harrison's graph, its paths and junctions, and simulating from a graph; d-separation and its two examples; and the marketing-campaign example. No book on disk covers causal graphs: the slides are the source.
+
+The claim, before the derivations. The same four recovery rates favour the drug inside each stratum, 93 per cent against 87 per cent, and 73 per cent against 69 per cent, and oppose it in the pooled table, 78 per cent against 83 per cent. The reason is that a pooled rate is a weighted average of the stratum rates with group-specific weights. Arithmetic cannot say which table answers the causal question; the causal graph can. If the stratifying variable is a common cause, a fork, such as gender, read the stratified table. If it is a consequence of the treatment, a chain, such as blood pressure after treatment, read the pooled one. Three junctions and one blocking rule, d-separation, turn that judgement into a mechanical test of which variables to condition on, including the trap of conditioning on a collider.
+
+The notation. D, zero or one, is whether the drug was taken. R, zero or one, is whether the patient recovered. G is gender, with G equal to one for a woman. Pi is the share of women in a group. r sub d g is the probability that R equals one given D equal to d and G equal to g: the stratum recovery rate. r bar sub d is the pooled rate of the group with D equal to d. Pi sub d is the probability that G equals one given D equal to d: the share of women among those with D equal to d. Pi star is the probability that G equals one: the share among all 700 patients. In a causal graph, an arrow from A to B means A is a direct cause of B. A independent of B given S means A and B are independent given the set S. X, Z, W, U, T and Y are the generic nodes of the slides' examples, and a, b, s and t are the coefficients and noise standard deviations of the Gaussian illustrations.
+
+One point one. The intuition: three paradoxes from one book. Slides pages 5 to 7.
+
+The slides open with three examples quoted from Pearl, Glymour and Jewell, Causal Inference in Statistics, chapter 1. The paradox, in the slides' words: "a statistical association that holds for an entire population is reversed in every subpopulation", page 5.
+
+Examples 1 and 2, the drug table, page 6. There are 700 patients, and 350 chose the drug. Walk the table row by row. Men, or in the second story low blood pressure: with the drug, 81 of 87 recovered, which is 93 per cent; without the drug, 234 of 270, which is 87 per cent. Women, or high blood pressure: with the drug, 192 of 263, which is 73 per cent; without, 55 of 80, which is 69 per cent. Combined: with the drug, 273 of 350, which is 78 per cent; without, 289 of 350, which is 83 per cent.
+
+The drug wins in both rows and loses in the total. The slides then put the same numbers under two stories.
+
+The gender story, page 6. Estrogen lowers recovery whatever the treatment, and women are much more likely to take the drug. Gender causes both: an arrow from G to D and an arrow from G to R, plus the arrow from D to R.
+
+The blood-pressure story, page 7, with blood pressure measured after treatment. The drug works by lowering blood pressure, but it is also toxic. Blood pressure is caused by the drug: D into blood pressure into R, plus the direct arrow from D to R.
+
+The slide's sentence to remember, page 7: "Remarkably, though the numbers are the same in the gender and blood pressure examples, the correct result lies in the segregated data for the former and the aggregated data for the latter." Nothing in the table distinguishes the two cases; only the arrow between the third variable and the drug does.
+
+Example 3, page 7. Within each age group, more exercise goes with lower cholesterol. Pooled over ages the slope turns positive, because older people exercise more and have higher cholesterol regardless. Age is "a common cause of both treatment (exercise) and outcome (cholesterol)": exercise comes out of age, and cholesterol comes out of age. The slide says "if we don't segregate by gender" here; the variable is age.
+
+One point two. Course layer: why the reversal happens. A pooled rate is a mix.
+
+The pooled rate as a weighted average. By the law of total probability, for the group with D equal to d, equation 1: r bar sub d, the probability that R equals one given D equal to d, equals the sum over g of the probability that G equals g given D equal to d, times r sub d g. With two genders this is one minus pi sub d, times r sub d zero, plus pi sub d times r sub d one.
+
+Plug in the drug group. Pi one is 263 over 350, which is 0.75143. r one zero is 81 over 87, which is 0.93103. r one one is 192 over 263, which is 0.73004. So r bar one equals one minus 0.75143, times 0.93103, plus 0.75143 times 0.73004. That is 0.23143 plus 0.54857, which is 0.78000.
+
+Plug in the no-drug group. Pi zero is 80 over 350, which is 0.22857. r zero zero is 234 over 270, which is 0.86667. r zero one is 55 over 80, which is 0.68750. So r bar zero equals one minus 0.22857, times 0.86667, plus 0.22857 times 0.68750. That is 0.66857 plus 0.15714, which is 0.82571.
+
+Decompose the pooled gap. Add and subtract one minus pi zero times r one zero plus pi zero times r one one: the drug's rate at the no-drug group's gender mix. Equation 2: r bar one minus r bar zero equals two pieces. The first piece is one minus pi zero, times r one zero minus r zero zero, plus pi zero times r one one minus r zero one. That is drug against no drug at the same mix, pi zero. The second piece is pi one minus pi zero, times r one one minus r one zero. That is the composition term.
+
+The numbers in equation 2. The same-mix piece is 0.77143 times 0.93103 minus 0.86667, plus 0.22857 times 0.73004 minus 0.68750. That is 0.04965 plus 0.00972, which is 0.05938. The composition piece is 0.75143 minus 0.22857, times 0.73004 minus 0.93103. That is 0.52286 times minus 0.20099, which is minus 0.10509. So r bar one minus r bar zero equals 0.05938 plus minus 0.10509, which is minus 0.04571.
+
+The point. The pooled table compares a mostly female drug group with a mostly male control group. The composition term, minus 10.5 points, swamps the within-gender benefit, plus 5.9 points. Equation 2 is the categorical twin of the selection-bias decomposition of note two: the naive gap equals the effect plus the bias.
+
+Standardise instead. Evaluate equation 1 for both groups at the same mix, the population share pi star, which is 343 over 700, or 0.49. For the drug: 0.51 times 0.93103 plus 0.49 times 0.73004, which is 0.47483 plus 0.35772, which is 0.83255. For no drug: 0.51 times 0.86667 plus 0.49 times 0.68750, which is 0.44200 plus 0.33688, which is 0.77888. The difference is 0.05367.
+
+This is the adjustment formula of note two, equation 12 there. When gender is the only confounder, the drug raises recovery by 5.4 points on average.
+
+The figure for this section has two panels. On the left, the recovery rate is plotted against the share of women in a group, as one straight line for the drug and one for no drug, using the counts of slide page 6. The drug line lies above the no-drug line at every share. The observed groups sit at shares 0.75, the drug group at 78 per cent, and 0.23, the no-drug group at 83 per cent. At the common share 0.49 the standardised rates are 0.833 and 0.779. So the reversal comes only from reading the two lines at different points; at a common mix the drug wins.
+
+On the right is an illustrative linear model of Example 3. Three age groups have mean exercise of 2, 5 and 8 hours, intercepts 180, 201 and 222, and a within-group slope of minus 2. The pooled slope is the covariance of x and y over the variance of x. The variance of x is s squared plus the variance of the group means, which is 1 plus 6, which is 7. The covariance of x and y is minus 2 times 7, plus the covariance of the group means of exercise and cholesterol, which is minus 14 plus 42, which is 28. So the pooled slope is 28 over 7, which is plus 4, while every within-age slope is minus 2.
+
+One point three. Course layer: the three junctions. Slides pages 8 and 9.
+
+A causal graph, or DAG, a directed acyclic graph, draws each variable as a node and each direct cause as an arrow. Acyclic means no node causes itself through a loop. Every path between two nodes is a sequence of junctions of three nodes, and there are only three kinds.
+
+The chain: X into Y into Z. Unconditionally, X and Z are dependent; given the middle node, they are independent. That is Rule 1, page 8.
+
+The fork: Y comes out of X, and Z comes out of X. Unconditionally dependent; given the middle node, independent. That is Rule 2, page 8.
+
+The collider: X into Z, and Y into Z. Unconditionally independent; given the middle node, dependent, and also dependent given any descendant of Z. That is Rule 3, page 9.
+
+The rules as stated on the slides. Rule 1, chains: "X and Z are conditionally independent given Y, if there is only one unidirectional path between X and Z and Y is any set of variables that intercepts that path." Rule 2, forks: "If X is a common cause of Y and Z, and there is only one path between Y and Z, then Y and Z are independent conditional on X." Rule 3, colliders: "If Z is a collision between X and Y and there is only one path between X and Y, then X and Y are unconditionally independent but are conditionally dependent given Z and any descendants of Z." The collider picture on page 9 labels both parents Y; Rule 3 beneath it names them X and Y.
+
+Back to the paradox. Gender is the middle of a fork, D out of G and R out of G. Conditioning on it blocks the non-causal path, so the stratified table is the causal one. Post-treatment blood pressure is the middle of a chain, D into blood pressure into R. Conditioning on it blocks part of the causal effect itself, so the pooled table is the causal one. Age in Example 3 and firm size in the marketing example are forks.
+
+One point three point one. Course layer: Gaussian algebra for the collider, or why conditioning creates dependence.
+
+Take X and Z independent standard normals, and the collider W equal to a X plus b Z plus e, where e is normal with mean zero and variance s squared, independent of both.
+
+The moments, from the definition of W. Equation 3: the variance of W is a squared plus b squared plus s squared; the covariance of X and W is a; the covariance of Z and W is b; and the covariance of X and Z is zero.
+
+The partial covariance and variances. Normal conditioning says the covariance of A and B given W equals the covariance of A and B minus the covariance of A and W times the covariance of B and W, over the variance of W. Substitute equation 3. The covariance of X and Z given W is zero minus a times b over a squared plus b squared plus s squared. The variance of X given W is one minus a squared over a squared plus b squared plus s squared, which is b squared plus s squared over a squared plus b squared plus s squared. And the variance of Z given W is a squared plus s squared over the same denominator.
+
+The partial correlation. Divide; the common denominator cancels. Equation 4: the correlation of X and Z given W equals minus a b over the square root of a squared plus s squared, times b squared plus s squared.
+
+With a, b and s all equal to one, that is minus one over the square root of two times two, which is minus 0.5. A descendant U, equal to W plus v, with v normal with variance t squared, replaces s squared by s squared plus t squared in equation 4. With t equal to one, it is minus one over the square root of three times three, which is minus one third. The dependence is weaker but not zero, which is why Rule 3 says "and any descendants".
+
+The figure for this subsection. On the left, the partial correlation of X and Z given the collider W is plotted against the coefficient a, for noise standard deviations 0.5, 1 and 2. All curves are negative and grow in magnitude with a, against the flat zero of the unconditional correlation. The flat zero is the truth before conditioning. Every curve below it is a dependence the analyst manufactures by conditioning on W: the more both causes matter relative to the noise, the stronger it is. On the right, the partial correlation given a descendant U is plotted against the descendant's noise standard deviation t. It rises from minus 0.5 at t equal to zero towards zero. A noisy descendant still opens the path, fading only as it stops carrying information about W. A fork conditioned on its middle node, by contrast, gives exactly zero.
+
+One point four. Course layer: paths and junctions on a larger graph. Slides pages 9 and 10.
+
+Harrison's graph, slide page 9, has these arrows: Z one into X, Z one into Z three, Z two into Z three, Z two into Y, Z three into X, Z three into Y, and X into W into Y. "Paths always start at the treatment (X), always end at the outcome (Y) and are acyclic", page 9. There are five paths.
+
+Path one: X into W into Y. A chain at W. It is open with no conditioning: this is the causal path.
+
+Path two: X comes out of Z one, Z one into Z three, Z three into Y. A fork at Z one and a chain at Z three. Open: a back door.
+
+Path three: X comes out of Z one, Z one into Z three, Z three comes out of Z two, Z two into Y. A fork, a collider at Z three, and a fork. Not open: it is blocked by the collider.
+
+Path four: X comes out of Z three, Z three into Y. A fork at Z three. Open: a back door.
+
+Path five: X comes out of Z three, Z three comes out of Z two, Z two into Y. A chain at Z three and a fork at Z two. Open: a back door.
+
+The slide lists all 15 junctions of the graph: 7 chains, junctions 1 to 7; 3 forks, junctions 8 to 10; and 5 colliders, junctions 11 to 15. The counts are confirmed by brute force in the Python note, section 1.
+
+The adjustment puzzle this graph sets. To estimate the effect of X on Y you must block paths two, four and five without blocking path one or opening path three. Z three sits on paths two, four and five as a chain or fork node, where conditioning blocks, and it is also the collider of path three, where conditioning opens. So conditioning on Z three alone blocks three back doors and opens a fourth. The sets Z one and Z three, or Z two and Z three, block everything. In the slide's structural model, the population regression of Y on X gives 5.4381 with no controls, 6.0051 with Z three alone, and exactly 6, the causal 3 times 2, with Z one and Z three or with Z two and Z three. The bias with Z three alone is small here, but it is not zero, and in other graphs it is large.
+
+One point five. Course layer: simulating data from a graph. Slide page 10.
+
+The slide writes the graph as a linear structural model. Equation 5: Z one is normal with mean 4.75 and standard deviation 1.72, and Z two is normal with mean 3.29 and standard deviation 1.89. Equation 6: Z three equals 3 Z one minus 1.5 Z two plus its noise; X equals 2 Z one plus 2.5 Z three plus its noise; W equals 3 X plus its noise; and Y equals 2 W plus 2 Z two minus 3 Z three plus its noise.
+
+The total effect of X on Y. Substitute W into the Y equation: Y equals 2 times 3 X plus the noise of W, plus 2 Z two minus 3 Z three plus the noise of Y. That is 6 X plus 2 Z two minus 3 Z three plus twice the noise of W plus the noise of Y. So the causal effect is 6, and a regression recovers it only if the remaining terms, 2 Z two minus 3 Z three, are uncorrelated with X given the controls. That is exactly the back-door condition of section 1.4.
+
+A G-layer remark: a slip in the slide's R code. The code first computes every node without noise, z three as 3 z one minus 1.5 z two, x as 2 z one plus 2.5 z three, and so on, and only afterwards adds noise to each one. So the noise of Z three never reaches X, W or Y, and the data it prints do not follow equation 6. The Python note uses the equations as written, with each noise variance equal to the variance of its node's systematic part, which is the code's own rule for the noise.
+
+Causal discovery against validation, quoted from page 10: discovery generates a graph from data; validation tests a proposed graph; and "it is typically possible for more than one DAG to satisfy the causal validation tests". Named only.
+
+One point six. Course layer: d-separation. Slide page 11.
+
+The definition, slide page 11, verbatim in substance. A path p is blocked by a set of nodes Z if and only if one of two things holds. First, p contains a chain, A into B into C, or a fork, A out of B and C out of B, whose middle node B is in Z. Second, p contains a collider, A into B and C into B, such that B is not in Z and no descendant of B is in Z.
+
+"If Z blocks every path between X and Y, then X and Y are d-separated, conditional on Z, and thus are independent conditional on Z." Two consequences on the slide: d-connected means some path is open; and "if we are not conditioning on any variable, then only colliders can block a path".
+
+One point six point one. Worked example 1, slides pages 11 and 12. The graph has Z into W, X into W, X into Y, and W into U.
+
+The only path from Z to Y is Z into W, W out of X, X into Y: a collider at W, then a fork at X. Take the conditioning sets one at a time. With the empty set, the collider W blocks, the fork X is open, the path is blocked, and the slide's verdict is Z independent of Y. Given W, the collider is opened, the fork is open, the path is open: dependent. Given U, which descends from W, the collider is again opened, the fork is open, the path is open: dependent. Given W and X, the collider is opened but the fork at X blocks, so the path is blocked: Z independent of Y given W and X.
+
+One point six point two. Worked example 2, slide page 12. Add T into Z and T into Y.
+
+Now there are two paths. Path a: Z out of T, T into Y, a fork at T. Path b: Z into W, W out of X, X into Y, as above. Z independent of Y given S needs both paths blocked. Path a needs T in S. Path b needs W and U both outside S, or X in S.
+
+Take the sets one at a time. The empty set: path a open, path b blocked, so dependent. The slide's words: "Z not independent of Y, since path between Z and Y with no colliders". Given T: path a blocked, path b blocked, so Z is independent of Y given T. Given T and W: path a blocked, path b open because X is not in the set, so dependent. Given T, W and X: both blocked, so Z is independent of Y given T, W and X.
+
+The slide's two full lists follow from the two conditions. D-connected given W; given U; given W and U; given W and T; given U and T; given W, U and T; given W and X; given U and X; and given W, U and X. D-separated given T; given X and T; given W, X and T; given U, X and T; and given W, U, X and T. And those five separating sets are all the separating subsets of the set T, W, U, X, which was checked exhaustively in the Python note, section 1.
+
+The test is mechanical. List every path, mark each junction, apply the two blocking conditions. The only judgement is the graph itself, and that, as the slides say of ignorability, "cannot be assessed from the observed data", page 16.
+
+One point seven. Course layer: the marketing campaign. Slides pages 12 and 13.
+
+A seller of computer equipment offered discounts to some business customers. Larger firms were more likely to get them, and larger firms buy more. This is Kögel's example. The graph: the discount comes out of firm size, sales come out of firm size, and the discount goes into sales. Firm size is the middle of a fork on the back-door path, so "to isolate the causal effect, we need to control for or hold constant the confounding variables", page 13. Compare discounted and non-discounted firms of the same size, exactly as in the gender table. The naive comparison mixes the discount effect with the size effect, upwards.
+
+One point eight. G layer: what the slides do not ask. The back-door criterion in general, do-calculus and causal discovery algorithms are named in the slides' sources, Pearl and coauthors, Neal 2020, and The Mixtape, but not developed. Not examinable beyond the junction rules and d-separation above.
+
+Practice for this section. No book on disk has exercises on causal graphs. The slides' two d-separation examples, pages 11 and 12, and Harrison's path list, pages 9 and 10, are the drill. Redo worked example 2 for Z and U.
+
+Recap of section 1. A pooled rate is a weighted average of stratum rates with group-specific weights, so composition can reverse a within-stratum effect: minus 10.5 points of composition against plus 5.9 points of effect. The table cannot tell you which version is causal; the graph can. Block forks; do not condition on the middle of a chain out of the treatment; never condition on a collider or its descendant. D-separation turns that into a mechanical check.
+
+Checklist. You should be able to compute the pooled rates of the drug table as mixes, and decompose the gap into a same-mix term and a composition term. You should be able to standardise to a common mix and get plus 5.4 points. You should be able to state Rules 1 to 3. You should be able to derive the partial correlation given a collider, minus a b over the square root of a squared plus s squared times b squared plus s squared, and evaluate it at minus 0.5. You should be able to list Harrison's five paths, say which are open, and explain why Z three alone is the wrong adjustment set. And you should be able to run d-separation on the slides' two examples.
+
+Part one, section 2. Potential outcomes: what a causal effect is, and the four assumptions that let data estimate it.
+
+This section covers slides pages 14 to 17: section 7.2, the antihypertensive example from Daniels, Linero and Roy, 2024, section 1.1; section 8, potential outcomes, the average treatment effect, the effect on the treated, the quantile treatment effect, the causal relative risk and the conditional average treatment effect; section 8.1, SUTVA, consistency, randomisation, ignorability, positivity and identifiability; and section 8.2, the propensity score and the inverse-weighting proposition. It also covers MHE chapter 2, pages 10 to 18, with equation 2.1.1 on page 11, the selection-bias decomposition on page 11, random assignment on page 12, and the health-survey table on page 10; and MHE section 3.2.1, pages 38 to 43, the conditional independence assumption, equations 3.2.1 and 3.2.2 on page 40. The drug counts come from slide page 6.
+
+The claim, before the derivations. Each unit has two potential outcomes, Y of one and Y of zero, and we see one. Causal estimands are contrasts of their distributions: the average treatment effect, the average treatment effect on the treated, the conditional average treatment effect, the quantile treatment effect, and the causal risk ratio. A naive treated against untreated comparison equals the effect on the treated plus selection bias, MHE page 11. Randomisation kills the bias. Without it, four assumptions, SUTVA, consistency, ignorability given L, and positivity, identify the average treatment effect through the adjustment formula, or equivalently through inverse propensity weighting, whose identity is proved here line by line. On the slides' drug table, adjusting for gender turns a naive gap of minus 4.57 points into an average treatment effect of plus 5.37 points, and an effect on the treated of plus 4.80.
+
+From here on, ATE means the average treatment effect, ATT the average treatment effect on the treated, CATE the conditional average treatment effect, and QTE the quantile treatment effect.
+
+The notation. The slides use A for the treatment and Y of a for the potential outcome; MHE uses d sub i, and y one i and y zero i. They name the same objects. A sub i, zero or one, is the treatment received; Y sub i is the observed outcome, for i from one to N. Y sub i of a is the potential outcome of unit i under treatment a, and Y sub i of one minus Y sub i of zero is the individual causal effect. L, which MHE calls X sub i, is the set of observed pre-treatment covariates, the confounders. V is a set of covariates defining a subpopulation for the CATE. F sub a of y, the probability that Y of a is at most y, is the cumulative distribution function of the potential outcome, and F sub a inverse of p is its p-quantile, for p between zero and one. And e of l, the probability that A equals one given L equal to l, is the propensity score, strictly between zero and one under positivity.
+
+Two point one. The intuition: the question the slides start from. Page 14.
+
+Daniels, Linero and Roy, 2024, section 1.1, reproduced on slide page 14, compare two classes of antihypertensives. A equals one if a patient is prescribed an ACE inhibitor, and A equals zero if an angiotensin-receptor blocker. The outcome is systolic blood pressure. Prescription is not random: doctors choose by the patient's condition. The slides' motto, page 15: "Causal inference requires assumptions that cannot be checked from the data."
+
+Two point two. Course layer: potential outcomes and the estimands. Slide page 15.
+
+The observed outcome, MHE equation 2.1.1, page 11. Equation 1: Y sub i equals Y sub i of zero, plus Y sub i of one minus Y sub i of zero, times A sub i. That is Y sub i of one when A sub i is one, and Y sub i of zero when A sub i is zero.
+
+The estimands, with the slides' definitions and readings. Five of them.
+
+First, the ATE, equation 2: the expected value of Y of one minus the expected value of Y of zero. The slide reads it as "how much higher would the average SBP be in the population if everyone had been treated with ACEIs compared to if everyone had been treated with ARBs?"
+
+Second, the ATT, equation 3: the expected value of Y of one given A equal to one, minus the expected value of Y of zero given A equal to one. It is the contrast within the treated, and Y of zero for them is "the counterfactual outcome".
+
+Third, the QTE, equation 4: F one inverse of p minus F zero inverse of p. The slide says it is "particularly useful when the outcome of interest is skewed, or when the treatment only has a large effect for a small subset".
+
+Fourth, the causal relative risk, equation 5, for a binary Y: the expected value of Y of one over the expected value of Y of zero. The slide reads it as "how many times more likely would high blood pressure be if everyone was treated with ACEIs rather than ARBs?"
+
+Fifth, the CATE, equation 6: the expected value of Y of one minus Y of zero given V equal to v. It is the ATE in the subpopulation where V equals v.
+
+Note that the QTE in equation 4 is a difference of quantiles, not the quantile of the individual differences Y of one minus Y of zero. The joint distribution of Y of zero and Y of one is never observed, but each margin can be.
+
+The fundamental problem. Y sub i of one and Y sub i of zero are never both observed, so no estimand above is a function of the data until assumptions link it to the observed outcome, treatment and covariates. Slide page 16: "To link observed data (no potential outcomes!) to potential outcomes, we need causal assumptions."
+
+Two point three. Course layer: the naive comparison is the ATT plus selection bias. MHE page 11.
+
+Start from the observed difference and use equation 1: within A equal to one, Y equals Y of one; within A equal to zero, Y equals Y of zero. So the expected value of Y given A equal to one, minus the expected value of Y given A equal to zero, equals the expected value of Y of one given A equal to one, minus the expected value of Y of zero given A equal to zero.
+
+Add and subtract the expected value of Y of zero given A equal to one: the treated's unobserved untreated mean. Equation 7: the observed difference equals the expected value of Y of one given A equal to one minus the expected value of Y of zero given A equal to one, which is the ATT of equation 3; plus the expected value of Y of zero given A equal to one minus the expected value of Y of zero given A equal to zero, which is the selection bias.
+
+MHE's example, page 10, from the 2005 National Health Interview Survey, with health coded from 1, excellent, to 5, poor. The hospitalised have a mean of 2.79, with 7,774 people; the not hospitalised have 2.07, with 90,049 people. "The difference in the means is 0.71", with a t statistic of 58.9: hospitals seem to make people sicker. In equation 7 the selection term is large. The sick go to hospital, so the untreated health of those who went is worse than the untreated health of those who did not, and the selection term "may be so large that it completely masks a positive treatment effect", page 12.
+
+Three interactive companions already built for Classes 5 and 6 do exactly this decomposition. The Selection Bias Decomposer lets you choose who is treated and how effects vary, and watch the gap split into effect plus bias. Bigger Sample, Same Bias runs 500 studies: the intervals shrink onto the truth only under random assignment. The Eight-Person Table shows both potential outcomes and enumerates every random assignment. The worked notebook on potential outcomes covers MHE chapter 2, the Tennessee STAR experiment, and regression on a randomised dummy.
+
+Two point four. Course layer: the identifying assumptions. Slide page 16.
+
+SUTVA, the stable unit treatment value assumption. Take two assignment vectors, a bold, with entries a one to a N, and a bold prime, with entries a one prime to a N prime, such that a sub i equals a sub i prime. Equation 8: Y sub i of a bold equals Y sub i of a bold prime. In words, "the potential outcome of any subject i does not depend on the treatment received by the other subjects". No interference, and one version of each treatment. The slide's section 8 heading writes "STUVA".
+
+Consistency. Y sub i equals Y sub i of a if A sub i equals a. The observed outcome is the potential outcome of the treatment actually received. This is what licenses equation 1.
+
+Randomisation. If A is randomised, the pair Y of zero, Y of one is independent of A. Hence, for a equal to zero or one, equation 9: the expected value of Y sub i of a equals the expected value of Y sub i of a given A sub i equal to a, which equals the expected value of Y sub i given A sub i equal to a. The first equality is independence, the second is consistency. In equation 7 the selection term vanishes, because the expected value of Y of zero given A equal to one equals the expected value of Y of zero, which equals the expected value of Y of zero given A equal to zero. And the ATT equals the ATE, MHE page 12.
+
+Ignorability. It is also called no unmeasured confounders, unconfoundedness, or exchangeability, and it is MHE's conditional independence assumption, equation 3.2.2, page 40. Equation 10: the pair Y of zero, Y of one is independent of A given L. The slide: "L is a set of observed covariates that influence both Y and A (remember when we defined a fork?)". And the slides' warning: "The validity of ignorability cannot be assessed from the observed data, regardless of how large the sample size is", page 16.
+
+Positivity. Equation 11: the probability that A equals a given L equal to l is greater than zero, for all a and all l. Every covariate cell must contain both treated and untreated units; otherwise one of the conditional means below is undefined.
+
+Two point five. Course layer: identification, the adjustment formula.
+
+Three steps. First, iterate expectations over L: the expected value of Y of a equals the expectation over L of the expected value of Y of a given L.
+
+Second, ignorability, equation 10, lets us condition on A equal to a inside, since Y of a is independent of A given L; and positivity, equation 11, makes the conditioning event non-empty. So the expected value of Y of a equals the expectation over L of the expected value of Y of a given A equal to a and L.
+
+Third, consistency replaces Y of a by Y on the event A equal to a. Equation 12: the expected value of Y of a equals the expectation over L of the expected value of Y given A equal to a and L, which is the sum over l of the probability that L equals l, times the expected value of Y given A equal to a and L equal to l.
+
+The ATE is equation 12 at a equal to one minus equation 12 at a equal to zero. This is MHE's "averaging all of the X-specific effects", equation 3.2.3, page 42. And it is exactly the standardisation of section 1, point two.
+
+Two point five point one. Worked example: the slides' drug table, with gender as L.
+
+Gender is the fork of slide page 6, so take L equal to G. The probability that G equals zero is 357 over 700, which is 0.51; the probability that G equals one is 343 over 700, which is 0.49.
+
+For men: the treated mean is 81 over 87, which is 0.93103; the untreated mean is 234 over 270, which is 0.86667; the difference is 0.06437; the weight is 0.51. For women: the treated mean is 192 over 263, which is 0.73004; the untreated mean is 55 over 80, which is 0.68750; the difference is 0.04254; the weight is 0.49.
+
+The ATE by equation 12 is 0.51 times 0.06437 plus 0.49 times 0.04254, which is 0.03283 plus 0.02084, which is 0.05367.
+
+The ATT weights the same differences by the treated's gender mix. The probability of a man given treatment is 87 over 350, which is 0.24857, and of a woman is 263 over 350, which is 0.75143. So the ATT is 0.24857 times 0.06437 plus 0.75143 times 0.04254, which is 0.01600 plus 0.03196, which is 0.04796.
+
+The naive gap is 273 over 350 minus 289 over 350, which is 0.78000 minus 0.82571, which is minus 0.04571. By equation 7, the selection bias against the ATT is minus 0.04571 minus 0.04796, which is minus 0.09367. Drug takers are mostly women, whose untreated recovery is low.
+
+Same data, three numbers. Naive minus 4.57 points, ATE plus 5.37, ATT plus 4.80. Only the first is free of assumptions. The other two are correct if gender is the only confounder, which is ignorability, and if both genders contain takers and non-takers, which is positivity. The propensities below are 0.24 and 0.77, safely inside the interval from zero to one.
+
+Two point six. Course layer: the propensity score and inverse weighting. Slides pages 16 and 17.
+
+The definition: e of l equals the probability that A equals one given L equal to l.
+
+The proposition, slide page 16. Under SUTVA, consistency, ignorability and positivity, with a binary A, equation 13: the ATE equals the expected value of A Y over e of L, minus one minus A, times Y, over one minus e of L. Equivalently, it equals the expected value of Y times A minus e of L, over e of L times one minus e of L.
+
+The proof of the first term, in four steps. First, by consistency, A Y equals A times Y of one: when A is one, Y is Y of one, and when A is zero both sides are zero. So the expected value of A Y over e of L equals the expected value of A Y of one over e of L.
+
+Second, iterate on L: that equals the expectation over L of the expected value of A Y of one given L, divided by e of L.
+
+Third, by ignorability, equation 10, A is independent of Y of one given L, so the inner expectation factors: the expected value of A Y of one given L equals the expected value of A given L times the expected value of Y of one given L, which is e of L times the expected value of Y of one given L.
+
+Fourth, substitute. Positivity, equation 11, makes e of L greater than zero, so it cancels: the expected value of A Y over e of L equals the expectation over L of the expected value of Y of one given L, which is the expected value of Y of one.
+
+The second term follows identically, with one minus A and one minus e of L: the expected value of one minus A, times Y, over one minus e of L, equals the expected value of Y of zero. Subtracting gives the first form of equation 13.
+
+The second form. Put the two fractions over e times one minus e. A over e minus one minus A over one minus e equals A times one minus e, minus one minus A times e, all over e times one minus e. Expand the numerator: A minus A e minus e plus A e. The A e terms cancel, leaving A minus e over e times one minus e. End of proof.
+
+The plug-in estimator, slide page 17: the estimated ATE is one over n times the sum over i of Y sub i times A sub i minus e hat of L sub i, over e hat of L sub i times one minus e hat of L sub i. It is consistent "if we can estimate the propensity score sufficiently well".
+
+Two point six point one. Worked example: inverse weighting on the drug table.
+
+With L equal to G, the propensity is a cell frequency. e hat for men is 87 over 357, which is 0.24370; e hat for women is 263 over 343, which is 0.76676. Each treated man counts one over 0.24370, which is 4.103 times; each untreated man counts one over one minus 0.24370, which is 1.322 times; and so on. Evaluating equation 13 on the 700 rebuilt observations gives 0.05367, identical to the adjustment formula; this is checked in the Python note, section 2. This is not a coincidence. With a saturated, cell-frequency propensity, inverse weighting is standardisation: weighting each cell by one over e hat re-creates the population mix, the probability that L equals l, in each arm.
+
+The propensity score is a balancing score, slide page 17: "a useful one-dimensional summary of L". With many covariates, equation 12 needs a mean for every cell of L; equation 13 needs only one number per unit.
+
+Two point seven. Course layer: regression as an adjustment device. MHE section 3.2.1, pages 38 to 44.
+
+MHE writes the conditional independence assumption, equation 10, for schooling: the potential outcomes are independent of c sub i given X sub i, equation 3.2.2. And it writes the constant-effect linear causal model, f sub i of s equals alpha plus rho s plus eta sub i, equation 3.2.7. If eta sub i equals X sub i transposed gamma plus v sub i, with the expected value of eta sub i given X sub i equal to X sub i transposed gamma, then equation 14, MHE 3.2.9, page 44: y sub i equals alpha plus rho s sub i plus X sub i transposed gamma plus v sub i. And "the key assumption here is that the observable characteristics, X sub i, are the only reason why eta sub i and s sub i are correlated". That is selection on observables. Note three asks what happens to rho when part of X sub i is missing from equation 14.
+
+Two point eight. G layer: beyond the slides. Matching, doubly robust estimators and the efficiency theory of equation 13 are not on the slides. The Heckman, Lopes and Piatek 2014 Bayesian treatment-effects paper is listed on slide page 20, named only. And Greenberg section 11.1, pages 168 to 173, treats binary treatment with an instrument in a Bayesian latent-index model. These are tools of Classes 3 and 4, named only.
+
+Practice for this section. These are worked examples in the book, not exercises: MHE Table 2.2.1, page 14, and Table 2.2.2, page 15, the Tennessee STAR balance and experimental estimates. For the Bayesian treatment model of Greenberg section 11.1, Greenberg exercises 11.1 and 11.2, page 180, and 11.3 and 11.4, page 181.
+
+Recap of section 2. A causal effect is a contrast between two potential outcomes, only one of which is seen. The naive comparison is the effect on the treated plus selection bias. Randomisation zeroes the bias. Without it, SUTVA, consistency, ignorability and positivity identify the ATE by the adjustment formula, and inverse propensity weighting is the same identity in another form. On the drug table: naive minus 4.57, ATE plus 5.37, ATT plus 4.80.
+
+Checklist. You should be able to define the ATE, ATT, QTE, causal relative risk and CATE, and say why the QTE is not the quantile of individual effects. You should be able to derive the selection-bias decomposition, equation 7, in two lines. You should be able to state the four assumptions and say which step of the adjustment formula uses each one. You should be able to prove the inverse-weighting identity in four steps and simplify it to its second form. And you should be able to compute the ATE, the ATT and the selection bias on the drug table.
+
+Part one, section 3. Short equals long plus omitted times included, and the controls you must not add.
+
+This section covers the course site's omitted-variable page, by Lopes, dated 10 November 2025: a trivariate Gaussian, the conditional distribution of y given x and z, and a simulation with beta equal to 0.75, gamma equal to 1.20, n equal to 30, 1000 replications, and the correlation of x and z running from 0 to 0.95 in steps of 0.05. It also covers MHE section 3.2.2, The Omitted Variables Bias Formula, pages 44 to 46, with equations 3.2.10 and 3.2.11 on page 45, footnote 10 for the multivariate version, and Table 3.2.1 on page 46; and MHE section 3.2.3, Bad Control, pages 47 to 50, with equation 3.2.12 on page 48, the decomposition on page 49, and proxy control, equations 3.2.13 to 3.2.15, pages 49 and 50.
+
+The claim, before the derivations. Leaving a regressor z out of a regression moves the coefficient on x by exactly the effect of z on y times the slope of z on x. In MHE's words, page 45: "short equals long plus the effect of omitted times the regression of omitted on included". The site's simulation, with beta equal to 0.75 and gamma equal to 1.2, is that formula, the expected short coefficient equal to 0.75 plus 1.2 rho, plus a variance story: the long regression is centred, but its spread blows up as rho tends to one. Adding controls is not always better. A variable caused by the treatment, such as occupation after college, or a test score after schooling, is a bad control that reintroduces selection bias. It is the chain of section 1, now in regression form.
+
+The notation. y, x and z are the outcome, the included regressor, and the omitted or added regressor. In the site's model all three have mean zero and variance one. Sigma x y and sigma y z are the covariances of y with x and with z, which here equal correlations. Rho is the correlation of x and z, between minus one and one. The long regression is y equals beta x plus gamma z plus epsilon. The short regression is y equals beta superscript s times x plus u. Delta z x, the covariance of z and x over the variance of x, is the slope of z on x. In MHE, y sub i is the log wage, s sub i is schooling, A sub i is the ability vector, rho is the schooling coefficient, which is MHE's letter and not the correlation above, and context tells them apart; gamma is the vector of ability effects, and delta A s is the vector of slopes of A sub i on s sub i. And the site's design has n equal to 30 observations per replication, and 1000 replications.
+
+Three point one. Course layer: the site's model, a trivariate Gaussian.
+
+Equation 1: the vector y sub i, x sub i, z sub i is normal with mean zero and a covariance matrix whose rows are: one, sigma x y, sigma y z; then sigma x y, one, rho; then sigma y z, rho, one.
+
+The conditional mean. For a Gaussian vector, the expected value of y given x and z equals the covariance of y with the pair x, z, times the inverse of the covariance matrix of the pair, times the pair. Equation 2: the regressor block is the two by two matrix with rows one, rho and rho, one. Its inverse is one over one minus rho squared, times the matrix with rows one, minus rho and minus rho, one.
+
+Multiply the row vector sigma x y, sigma y z by equation 2. Equation 3: beta equals sigma x y minus rho sigma y z, over one minus rho squared; and gamma equals sigma y z minus rho sigma x y, over one minus rho squared.
+
+The conditional variance, tau squared, equals one minus the row vector of covariances times the inverse block times the same vector as a column. Substituting equation 2, equation 4: tau squared equals one minus the quantity sigma x y squared minus two rho sigma x y sigma y z plus sigma y z squared, over one minus rho squared. Over a common denominator, that is one minus rho squared minus sigma x y squared minus sigma y z squared plus two sigma x y sigma y z rho, all over one minus rho squared.
+
+So y sub i given x sub i and z sub i equals beta x sub i plus gamma z sub i plus epsilon sub i, with epsilon sub i normal with mean zero and variance tau squared, as on the page. The page prints the numerator as one minus rho minus and so on; it should be one minus rho squared minus and so on. The two agree only at rho equal to zero, the page's next case. This was checked against the Schur complement in the Python note, section 3.
+
+At rho equal to zero, the page's section 1.2, equation 3 gives beta equal to sigma x y and gamma equal to sigma y z, and equation 4 gives tau squared equal to one minus the sum of sigma x y squared and sigma y z squared.
+
+Three point two. Course layer: the omitted-variables bias formula.
+
+The short slope in the Gaussian model. Regressing y on x alone gives beta s equal to the covariance of y and x over the variance of x, which is sigma x y. Write sigma x y through the long model, y equals beta x plus gamma z plus epsilon. Sigma x y equals the covariance of beta x plus gamma z plus epsilon with x, which is beta times one, plus gamma times rho, plus zero. Hence equation 5: beta s equals beta plus gamma rho.
+
+A check with equation 3: beta plus gamma rho equals sigma x y minus rho sigma y z, plus rho sigma y z, minus rho squared sigma x y, all over one minus rho squared. The middle terms cancel, leaving sigma x y times one minus rho squared over one minus rho squared, which is sigma x y.
+
+MHE's general version, equation 3.2.11, page 45. The long regression is y sub i equals alpha plus rho s sub i plus A sub i transposed gamma plus epsilon sub i, equation 3.2.10, with epsilon sub i uncorrelated with s sub i and A sub i by construction. Plug it into the short-regression formula. Equation 6: the covariance of y sub i and s sub i over the variance of s sub i equals the covariance of alpha plus rho s sub i plus A sub i transposed gamma plus epsilon sub i with s sub i, over the variance of s sub i. That is rho, plus gamma transposed times the covariance of A sub i and s sub i over the variance of s sub i, which is rho plus gamma transposed delta A s.
+
+The sentence to remember: "Short equals long plus the effect of omitted times the regression of omitted on included", MHE page 45. The formula is mechanical. It links two regressions "whether or not the longer regression is causal", page 44. The sign of the bias is the sign of gamma times the sign of delta. Ability raises wages and probably schooling, so the short return is too big. If some omitted factor is negatively related to schooling, the short return can be too small, page 45. Short equals long exactly when the omitted and included variables are uncorrelated.
+
+The multivariate form, MHE footnote 10, page 45: the short coefficient vector beta one superscript s equals the long coefficient beta one superscript l, plus the inverse of the expected value of X one i times X one i transposed, times the expected value of X one i times X two i transposed, times beta two superscript l.
+
+Three point three. Course layer: the site's simulation, made exact.
+
+The design, from the omitted-variable page. The pair x sub i, z sub i is normal with mean zero, unit variances and correlation rho. y sub i equals 0.75 x sub i plus 1.2 z sub i plus e sub i, with e sub i standard normal. n is 30, with 1000 replications for each rho from 0 to 0.95 in steps of 0.05. Both regressions are run without an intercept.
+
+The short estimator. Write z sub i as rho x sub i plus the square root of one minus rho squared times v sub i, with v sub i standard normal and independent of x sub i. Substitute into y sub i: y sub i equals 0.75 x sub i plus 1.2 times rho x sub i plus the square root of one minus rho squared times v sub i, plus e sub i. That is 0.75 plus 1.2 rho, times x sub i, plus 1.2 times the square root of one minus rho squared times v sub i, plus e sub i.
+
+The no-intercept least squares slope is the sum of x sub i y sub i over the sum of x sub i squared. Substitute. Equation 7: beta s hat equals 0.75 plus 1.2 rho, plus the sum of x sub i times 1.2 root one minus rho squared v sub i plus e sub i, over the sum of x sub i squared.
+
+Given x, the last term has mean zero and variance 1.44 times one minus rho squared, plus one, over the sum of x sub i squared. The sum of x sub i squared is chi-squared with 30 degrees of freedom, and the expected value of one over a chi-squared with n degrees of freedom is one over n minus 2. So, equation 8: the expected value of beta s hat is 0.75 plus 1.2 rho, and its standard deviation is the square root of one plus 1.44 times one minus rho squared, over 28.
+
+The long estimator. It is unbiased. Given X, its variance is the first diagonal element of the inverse of X transposed X, since the error variance is one. A G-layer step: the inverse-Wishart mean, the expected value of the inverse of X transposed X, equals the inverse of Sigma over n minus p minus 1, with p equal to 2; and the first diagonal element of the inverse of Sigma is one over one minus rho squared, by equation 2. So, equation 9: the expected value of beta hat is 0.75, and its standard deviation is the square root of one over 27 times one minus rho squared.
+
+Now three cases, one at a time.
+
+At rho equal to zero: the expected short coefficient is 0.75 plus 1.2 times zero, which is 0.75. The short standard deviation is the square root of 2.44 over 28, which is 0.2952. The long standard deviation is the square root of one over 27, which is 0.1925. The mean squared errors are 0.0871 for the short and 0.0370 for the long.
+
+At rho equal to 0.5: the expected short coefficient is 0.75 plus 1.2 times 0.5, which is 1.35. The short standard deviation is the square root of 2.08 over 28, which is 0.2726. The long standard deviation is the square root of one over 20.25, which is 0.2222. The short mean squared error is 0.36 plus 0.0743, which is 0.4343; the long one is 0.0494.
+
+At rho equal to 0.95: the expected short coefficient is 0.75 plus 1.2 times 0.95, which is 1.89. The short standard deviation is the square root of 1.1404 over 28, which is 0.2018. The long standard deviation is the square root of one over 2.6325, which is 0.6163. The short mean squared error is 1.2996 plus 0.0407, which is 1.3403; the long one is 0.3799.
+
+The figure for this section shows two panels of boxplots of the least squares estimate of beta, over 1000 seeded replications with n equal to 30, at correlations from 0 to 0.95. The boxes are a seeded re-run of the site's simulation in Python, not the site's draws; the lines and bands are the exact equations 8 and 9. On the left, the long regression: boxes centred on 0.75 at every correlation, widening sharply beyond 0.8, inside the exact band of the mean plus or minus one standard deviation. On the right, the short regression: boxes rising along the exact line 0.75 plus 1.2 rho, from 0.75 to 1.89, with a slowly narrowing band.
+
+How to read it. The right panel is equation 5 drawn: every box sits on 0.75 plus 1.2 rho, and no amount of data moves it back to 0.75. The left panel is the price of including z when it is nearly collinear with x: centred, but at rho equal to 0.95 its standard deviation is three times the short regression's. Even so, the long regression wins on mean squared error at every rho in the list above, because the bias, 1.2 rho, grows faster than the variance it saves.
+
+Three point four. Course layer: reading MHE Table 3.2.1 through the formula. Page 46.
+
+The data are men in the National Longitudinal Survey of Youth, log wage on schooling, with 2,434 observations. Walk the columns. With no controls, the schooling coefficient is 0.132, standard error 0.007. With age dummies, 0.131, standard error 0.007. Adding parents' schooling, race and region, 0.114, standard error 0.007. Adding the AFQT score, 0.087, standard error 0.009. Adding occupation, 0.066, standard error 0.010.
+
+By equation 6, each drop is gamma transposed delta of the variables just added. Family background takes 0.132 minus 0.114, which is 0.018, off the coefficient. The AFQT, an ability proxy, takes 0.114 minus 0.087, which is 0.027. MHE calls this "a result of the fact that the additional controls are positively correlated with both wages and schooling", page 46. The last drop, 0.087 minus 0.066, which is 0.021, is not an omitted-variable correction: occupation is a bad control, the next point.
+
+Three point five. Course layer: bad control. MHE section 3.2.3, pages 47 to 49.
+
+"Bad controls are variables that are themselves outcome variables in the notional experiment at hand", page 47. College, c sub i, is randomly assigned. White-collar status, w sub i, and earnings, y sub i, both respond to it. Equation 10: y sub i equals c sub i y one i plus one minus c sub i times y zero i; and w sub i equals c sub i w one i plus one minus c sub i times w zero i.
+
+The comparison within white-collar workers, MHE equation 3.2.12, page 48, in three steps.
+
+First, on c sub i equal to one the observed pair is y one, w one, and on c sub i equal to zero it is y zero, w zero. So the expected value of y sub i given w sub i equal to one and c sub i equal to one, minus the expected value of y sub i given w sub i equal to one and c sub i equal to zero, equals the expected value of y one i given w one i equal to one and c sub i equal to one, minus the expected value of y zero i given w zero i equal to one and c sub i equal to zero.
+
+Second, random assignment of c sub i, independent of all four potential outcomes, drops the conditions on c sub i. The difference becomes the expected value of y one i given w one i equal to one, minus the expected value of y zero i given w zero i equal to one.
+
+Third, add and subtract the expected value of y zero i given w one i equal to one, MHE page 49. Equation 11: the difference equals the expected value of y one i minus y zero i given w one i equal to one, which is the causal effect on those who are white-collar with college; plus the expected value of y zero i given w one i equal to one minus the expected value of y zero i given w zero i equal to one, which is selection bias.
+
+Even with college randomly assigned, conditioning on occupation is apples to oranges. College changes who is in the white-collar pool. The selection term need not be zero even if y one i equals y zero i for everyone, page 49. In graph language, college into white-collar into earnings is a chain, and white-collar status is also a collider on the path where college goes into white-collar, ability goes into white-collar, and ability goes into earnings. Conditioning on it both blocks part of the effect and opens a back door.
+
+Three point five point one. Course layer: proxy control. MHE pages 49 and 50.
+
+Wanted: y sub i equals alpha plus rho s sub i plus gamma a sub i plus epsilon sub i, equation 3.2.13, with a sub i being ability measured before schooling. Available only: late ability, a l sub i, equal to pi zero plus pi one s sub i plus pi two a sub i, equation 3.2.14, which is raised by schooling, so pi one is positive.
+
+Three steps. First, solve equation 3.2.14 for a sub i: a sub i equals a l sub i minus pi zero minus pi one s sub i, all over pi two. Second, substitute into 3.2.13: y sub i equals alpha plus rho s sub i plus gamma times that fraction, plus epsilon sub i. Third, collect terms, MHE equation 3.2.15. Equation 12: y sub i equals alpha minus gamma pi zero over pi two, plus rho minus gamma pi one over pi two, times s sub i, plus gamma over pi two times a l sub i, plus epsilon sub i.
+
+With rho, gamma, pi one and pi two all positive, the schooling coefficient, rho minus gamma pi one over pi two, is too small. For example, rho equal to 0.10, gamma equal to 0.05, pi one equal to 0.2 and pi two equal to 1 give 0.10 minus 0.05 times 0.2 over 1, which is 0.09. With no control at all, equation 6 gives rho plus gamma delta a s, which is too big when delta a s is positive. So "the causal effect of interest lies between these two", page 50.
+
+Timing decides. "Variables measured before the variable of interest was determined are generally good controls", page 50. In graph terms: condition on forks, the confounders; never on chains out of the treatment, meaning mediators and outcomes, and never on colliders.
+
+Practice for this section: MHE Table 3.2.1, page 46, read as in point four.
+
+Recap of section 3. Short equals long plus the effect of the omitted variable times the regression of the omitted on the included. In the site's simulation the short estimator is centred on 0.75 plus 1.2 rho, and more data never fixes it; the long one is centred, with a standard deviation of the square root of one over 27 times one minus rho squared, which explodes near collinearity but still wins on mean squared error. Controls measured after the treatment are bad controls, and a proxy contaminated by the treatment biases the coefficient down, bracketing the truth with the no-control estimate.
+
+Checklist. You should be able to derive beta s equal to beta plus gamma rho in one line, and MHE's equation 3.2.11 in general. You should be able to state the sign rule. You should be able to derive the mean and standard deviation of the short estimator, and quote the long one's. You should be able to read MHE Table 3.2.1 drop by drop and say why the occupation drop is different. You should be able to derive the bad-control decomposition, equation 11, and the proxy-control coefficient, rho minus gamma pi one over pi two.
+
+Part one, section 4. A noisy regressor shrinks the slope towards zero, by exactly the reliability ratio.
+
+This section covers the one-page error-in-variables note from the course: y equals beta x plus epsilon, w equals x plus u, and the naive beta equal to the covariance of y and w over the variance of w, which is beta sigma squared of x over sigma squared of x plus sigma squared of u. It also covers Wooldridge section 9.4, Properties of OLS under Measurement Error, pages 287 to 292: section 9.4a, error in y, pages 287 to 289, and section 9.4b, error in an explanatory variable, pages 289 to 292, with equations 9.27 to 9.33 on attenuation, page 291, and equations 9.34 to 9.36 with other regressors, page 291. Then MHE's chapter 4 introduction, page 84, on the regression coefficient biased towards zero and instrumental variables as the fix, and footnote 8, page 95, on Wald 1940. And Wooldridge section 15.4, IV Solutions to Errors-in-Variables Problems, pages 479 to 481.
+
+The claim, before the derivations. If the regressor is observed with classical noise, w equals x plus u, least squares of y on w estimates beta times sigma squared of x over sigma squared of x plus sigma squared of u. The slope is attenuated towards zero by the share of the observed variance that is signal. Noise in y costs only precision; noise in x costs consistency. Controls that explain part of the true regressor make attenuation worse, since they remove signal and leave the noise. A second, independent measurement used as an instrument restores beta. That is the first appearance of instrumental variables in the unit, and historically one of its origins, MHE page 84.
+
+The notation, the slide's, with Wooldridge's letters given where they differ. x sub i, which Wooldridge calls x one star, is the true regressor, with variance sigma squared of x. w sub i, Wooldridge's x one, is the observed regressor. u sub i, Wooldridge's e one, is the measurement error, with mean zero and variance sigma squared of u. The true model is y sub i equals beta x sub i plus epsilon sub i, with epsilon sub i independent of x sub i; Wooldridge writes y equals beta zero plus beta one x one star plus u. Lambda, sigma squared of x over sigma squared of x plus sigma squared of u, between zero and one, is the reliability, or attenuation factor. Kappa, sigma squared of u over sigma squared of x, is the noise-to-signal ratio. And r one star is the error of the regression of x one star on the other regressors, Wooldridge equation 9.36, with variance sigma squared of r.
+
+Four point one. Course layer: the slide's derivation.
+
+The model. True: y sub i equals beta x sub i plus epsilon sub i. Observed: w sub i equals x sub i plus u sub i, with u sub i independent of x sub i and epsilon sub i.
+
+The naive slope. Regressing y on w estimates, equation 1, the covariance of y and w over the variance of w, in the limit.
+
+The numerator. Substitute both definitions and use the independence of x, u and epsilon. Equation 2: the covariance of y and w is the covariance of beta x plus epsilon with x plus u. That expands to beta times the variance of x, plus beta times the covariance of x and u, plus the covariance of epsilon and x, plus the covariance of epsilon and u. The last three are zero, so it equals beta sigma squared of x.
+
+The denominator. Equation 3: the variance of w equals the variance of x plus the variance of u, which is sigma squared of x plus sigma squared of u.
+
+Substitute equations 2 and 3 into equation 1. Equation 4: the naive beta hat converges to beta times sigma squared of x over sigma squared of x plus sigma squared of u, which is beta lambda, which is beta over one plus kappa.
+
+"The slope is biased toward zero (attenuation bias)", says the slide. Since lambda is less than one whenever sigma squared of u is positive, the absolute value of beta lambda is less than the absolute value of beta, with the same sign. The estimate never flips sign; it only shrinks.
+
+Worked numbers. With sigma of x and sigma of u both equal to one, lambda is one over one plus one, which is 0.5: half the slope. With beta equal to 1.5, sigma of x equal to 1 and sigma of u equal to 0.75, lambda is one over one plus 0.5625, which is 0.64, so least squares converges to 1.5 times 0.64, which is 0.96. The Python note, section 4, gets 0.959 on 400,000 draws.
+
+Four point two. Course layer: Wooldridge's two polar assumptions. Section 9.4b, pages 289 to 291.
+
+Wooldridge writes e one equals x one minus x one star, equation 9.28, and substitutes x one star equals x one minus e one into y equals beta zero plus beta one x one star plus u, equation 9.27. Equation 5: y equals beta zero plus beta one x one, plus the composite error u minus beta one e one.
+
+Whether least squares on equation 5 works depends on the correlation of x one with that composite error. Two assumptions.
+
+The first, equation 9.29: the covariance of x one and e one is zero. The error is uncorrelated with the observed measure. Then the composite error is uncorrelated with x one, so least squares is consistent; only the error variance rises, to sigma squared of u plus beta one squared times sigma squared of e one, Wooldridge page 290.
+
+The second, equation 9.31, the classical errors-in-variables assumption, or CEV: the covariance of x one star and e one is zero. The error is uncorrelated with the true value, which is the slide's case. Then the covariance of x one and e one is sigma squared of e one, equation 9.32, so least squares is inconsistent.
+
+The CEV algebra, Wooldridge equation 9.33, page 291. The composite error's covariance with x one, by equation 9.32, is minus beta one times the covariance of x one and e one, which is minus beta one sigma squared of e one. Then, equation 6: the probability limit of beta one hat equals beta one plus the covariance of x one with the composite error over the variance of x one. That is beta one minus beta one sigma squared of e one over sigma squared of x one star plus sigma squared of e one. Which equals beta one times sigma squared of x one star over sigma squared of x one star plus sigma squared of e one.
+
+That is the slide's equation 4 in Wooldridge's letters. "If the variance of x one star is large relative to the variance in the measurement error, then the inconsistency in OLS will be small", page 291.
+
+Four point two point one. Error in the dependent variable is harmless for consistency. Wooldridge section 9.4a, pages 287 to 289.
+
+If y equals y star plus e zero, with e zero uncorrelated with the regressors, then y equals beta zero plus beta one x plus u plus e zero. Least squares stays unbiased and consistent; only the variance of u plus e zero, which is sigma squared of u plus sigma squared of zero, larger than sigma squared of u, inflates the standard errors, Wooldridge page 288. Wooldridge's Example 9.6, page 289, shows the exception: if the error in y is correlated with a regressor, as when grant recipients under-report scrap, the coefficient is biased.
+
+Four point three. Course layer: other regressors make it worse. Wooldridge equation 9.36, page 291.
+
+Take y equals beta zero plus beta one x one star plus beta two x two plus beta three x three plus u, with only x one star mismeasured, under CEV. Equation 7: the probability limit of beta one hat equals beta one times sigma squared of r one star over sigma squared of r one star plus sigma squared of e one. Here r one star is the error in x one star equals alpha zero plus alpha one x two plus alpha two x three plus r one star.
+
+If the other regressors explain a share R squared of the variance of x one star, then sigma squared of r is one minus R squared, times sigma squared of x, while the noise, sigma squared of e one, is untouched. So equation 7 is equation 4 with the signal cut. Equation 8: lambda sub r equals one minus R squared times sigma squared of x, over one minus R squared times sigma squared of x plus sigma squared of u. That equals one minus R squared, over one minus R squared plus kappa, which is at most lambda.
+
+Worked numbers, from the Python note, section 4. x star equals 0.8 x two plus r, with the variance of r equal to 0.36, and sigma of u equal to 0.75. Lambda sub r is 0.36 over 0.36 plus 0.5625, which is 0.390, against lambda equal to 0.64 without the control. "Generally, measurement error in a single variable causes inconsistency in all estimators", Wooldridge page 291: the other coefficients are biased too, in directions not easily derived.
+
+The figure for this section. On the left, the attenuation factor, the probability limit of beta hat over beta, is plotted against the noise-to-signal ratio from 0 to 4. It falls from one as one over one plus kappa. Lower curves show controls that explain an R squared of 0.5 and of 0.8 of the true regressor. A flat line at one shows instrumental variables with an independent second measurement, and the point kappa equal to one, factor 0.5, is marked. On the right, one seeded sample of 300 points with beta equal to one plots y against the true x and against the noisy w, with fitted slopes 0.98 and 0.52. The right panel is a seeded illustration; the slide has no data.
+
+How to read it. On the left, attenuation depends only on the noise-to-signal ratio: at kappa equal to one, half the slope is lost; at kappa equal to four, four fifths. Each control that soaks up signal pushes the curve down. On the right, the noisy cloud is wider horizontally than the true one, with variance one plus one, which is two, instead of one, and with the same vertical relation to the signal. So the fitted line through it is flatter: 0.52 against 0.98 in this draw, with probability limit 0.5.
+
+Four point four. Course layer: the cure, an instrument that is a second measurement. Wooldridge section 15.4, pages 479 to 481, and MHE page 84.
+
+Suppose there is a second report, w two equals x plus u two, with u two independent of u one, x and epsilon. Use w two as an instrument for w one, which equals x plus u one, through the instrumental-variables formula, Wooldridge equation 15.9, treated in note five. Equation 9: the covariance of w two and y over the covariance of w two and w one equals the covariance of x plus u two with beta x plus epsilon, over the covariance of x plus u two with x plus u one. That is beta sigma squared of x over sigma squared of x, which is beta.
+
+The noise cancels because the two errors are independent. The instrument is correlated with the true signal, which is relevance, and uncorrelated with the composite error epsilon minus beta u one, which is exogeneity. Wooldridge's examples: parents' education for a mismeasured education variable, page 480; and two test scores as indicators of ability, Example 15.6, page 481. MHE page 84: "Today, we are more likely to find IV used to address measurement error problems than to estimate the parameters of an SEM". Wald, in 1940, proposed the grouping estimator for exactly this problem, MHE footnote 8, page 95. And MHE page 169 gives the panel version: Ashenfelter and Krueger, 1994, instrument each twin's schooling with the brother's report.
+
+Measurement error is endogeneity in disguise. In equation 5 the regressor is correlated with its own error term, the covariance being minus beta one sigma squared of e one. That is exactly the condition note five handles with instruments.
+
+Practice for this section, with the statements in the book. Wooldridge computer exercises 15.C3, page 492, and 15.C5, page 493, use the Card data of note five. Wooldridge Example 15.6, page 481, is the worked two-indicator case.
+
+Recap of section 4. Classical noise in a regressor shrinks the least squares slope by the reliability ratio, sigma squared of x over sigma squared of x plus sigma squared of u; it never flips the sign. Noise in the outcome only widens the standard errors. Controls that explain the true regressor remove signal but not noise, so attenuation worsens, 0.39 against 0.64 in the worked case. A second independent measurement used as an instrument recovers beta exactly.
+
+Checklist. You should be able to derive the attenuation factor from the covariance and variance in three lines. You should be able to state Wooldridge's two polar assumptions and say which one makes least squares inconsistent. You should be able to explain why error in y is harmless for consistency, and give the exception. You should be able to write the attenuation factor with controls, one minus R squared over one minus R squared plus kappa, and evaluate the worked case. And you should be able to show that a second measurement as instrument gives beta.
+
+Recap of part 1. Simpson's paradox is a mixing effect, and the graph decides whether to stratify. Potential outcomes define the effect and the selection-bias decomposition says what the naive comparison gets wrong; ignorability and positivity give the adjustment formula and its inverse-weighting twin. In a regression, omitting a confounder adds gamma times delta, controlling for a consequence of the treatment adds selection bias, and measuring a regressor with noise shrinks it towards zero. Part 2 turns to the designs that supply variation when no list of controls will do: instruments, difference in differences, and regression discontinuity.
+

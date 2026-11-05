@@ -1,0 +1,59 @@
+# Gary Koop and Justin L. Tobias
+# "Learning about Heterogeneity in Returns to Schooling"
+#  Journal of Applied Econometrics, Vol. 19, No. 7, 2004, pp. 827-849.
+#
+# This panel data set consists of  N=2,178 individuals. 
+# The data are taken from the National Longitudinal Survey of Youth. 
+
+# The variables are: 
+# Column 1: Education (educ)
+# Column 2: Log Hourly Wage (logwage) 
+# Column 3: Potential Experience (exper)
+# Column 4: Ability (ability)
+# Column 5: Mother's Education (momeduc)
+# Column 6: Father's Education (dadeduc)
+# Column 7: Dummy for Residence in Broken Home (broken)
+# Column 8: Number of Siblings (siblings)
+
+data = read.table("https://hedibert.org/wp-content/uploads/2024/10/kooptobias.txt",header=TRUE)
+
+n = nrow(data)
+
+attach(data)
+
+
+# Simple linear regression
+# ------------------------
+
+par(mfrow=c(2,2))
+
+fit = lm(logwage ~ educ)
+r2 = round(summary(fit)$adj.r.squared,3)
+plot(educ,logwage,main=paste("R2 = ",r2,sep=""),xlab="Education")
+abline(fit$coef,col=2,lwd=2)
+
+fit = lm(logwage ~ exper)
+r2 = round(summary(fit)$adj.r.squared,3)
+plot(exper,logwage,main=paste("R2 = ",r2,sep=""),xlab="Potential experience")
+abline(fit$coef,col=2,lwd=2)
+
+
+fit = lm(logwage ~ ability)
+r2 = round(summary(fit)$adj.r.squared,3)
+plot(ability,logwage,main=paste("R2 = ",r2,sep=""),xlab="Ability")
+abline(fit$coef,col=2,lwd=2)
+
+
+fit = lm(logwage ~ momeduc)
+r2 = round(summary(fit)$adj.r.squared,3)
+plot(momeduc,logwage,main=paste("R2 = ",r2,sep=""),xlab="Mother's education")
+abline(fit$coef,col=2,lwd=2)
+
+
+# Multiple linear regression
+# --------------------------
+cor(cbind(logwage,educ,exper,ability,momeduc))
+
+fit = lm(logwage~educ+exper+ability)
+
+summary(fit)

@@ -1,0 +1,1645 @@
+% =============================================================================
+% L01 (Class 1, Review of basic ingredients) --- book exercises, verbatim statements + solutions.
+% Built from the MPE exam template (lista-exam.tex). One source, two outputs:
+%   \solucoesfalse  -> blank list (space to work)
+%   \solucoestrue   -> answer key (same file)
+% Compile: pdflatex (2x); check: pdffonts <file>.pdf (Type 1 only).
+% Every number printed in the solutions is reproduced and asserted by
+%   python Listas/L01-book-exercises-check.py
+% =============================================================================
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}   % Type 1 vector fonts (replaces PK bitmaps)
+\usepackage{cmap}      % ToUnicode CMap -> copyable text and accents
+\usepackage[brazil,english]{babel}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage[a4paper,margin=2.2cm]{geometry}
+\usepackage{enumitem}
+\usepackage{fancyhdr}
+\usepackage{comment}
+% One cut file per job: parallel builds in one folder would otherwise share comment.cut and
+% swap solutions. Redefine DefaultCutFileName; overriding CommentCutFile alone is reset by comment.sty.
+\def\DefaultCutFileName{\def\CommentCutFile{\jobname.cut}}
+\usepackage{needspace}
+\usepackage{xcolor}
+\usepackage{microtype}
+\usepackage{booktabs}
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.16}
+
+% ====================== CONFIGURATION ======================
+\newif\ifsolucoes
+\solucoesfalse                 % <<<< \solucoestrue for the ANSWER KEY; \solucoesfalse for the LIST
+
+\newcommand{\disciplina}{Econometria Avançada --- MPE (Insper)}
+\newcommand{\listatema}{\textit{L01 --- Review of basic ingredients (book exercises)}}
+\newcommand{\espacoresol}{4.5cm}   % height of the working space in the blank list
+
+% ====================== MACHINERY ======================
+\ifsolucoes\includecomment{sol}\else\excludecomment{sol}\fi
+
+\pagestyle{fancy}\fancyhf{}
+\lhead{\footnotesize\disciplina}
+\rhead{\footnotesize L01 book exercises\ifsolucoes{} --- Solutions\fi}
+\cfoot{\footnotesize\thepage}
+\renewcommand{\headrulewidth}{0.3pt}
+\setlength{\headheight}{14pt}
+
+\setlist{topsep=2pt,itemsep=2pt}
+\newcounter{questao}
+\numberwithin{equation}{questao}   % equation (q.m): question q, equation m
+
+% Block header (one block per book, in the class plan's order)
+\newcommand{\bloco}[3]{\bigskip\noindent
+  {\large\bfseries\color{blue!55!black}Block #1 --- #2}\hfill\textit{(#3)}\par
+  \noindent\rule{\linewidth}{0.3pt}\smallskip}
+
+% Question (automatic numbering)
+\newcommand{\questao}[1]{\refstepcounter{questao}\medskip\needspace{5\baselineskip}\noindent
+  \textbf{Question \thequestao.}~#1\par}
+% Source line that opens every book statement
+\newcommand{\fonte}[1]{\par\noindent{\small\textbf{Source:} #1}\par\smallskip}
+% Notation list that opens every solution (estilo-avaliacao §4, "Equations, notation and layout").
+\newenvironment{notacao}{\par\smallskip\noindent\textbf{Notation.}\begin{itemize}[leftmargin=1.4em,topsep=1pt,itemsep=0pt]\small}{\end{itemize}}
+\allowdisplaybreaks
+
+% Working space in the blank list
+\newcommand{\resolespaco}{\ifsolucoes\else\par\textit{Solution:}\vspace{\espacoresol}\par\fi}
+
+% Solution step (use inside sol)
+\newcommand{\passo}[2]{\par\smallskip\noindent\textbf{Step --- #1.}~#2}
+\newcommand{\intuicao}[1]{\par\smallskip\noindent\textit{Intuition.}~#1}
+\newcommand{\refbib}[1]{\par\smallskip\noindent{\footnotesize\color{black!60}\textbf{Ref:} #1}}
+\newcommand{\solhead}{\par\medskip\noindent{\color{blue!55!black}\rule{\linewidth}{0.3pt}}\par\noindent\textbf{Solution.}}
+
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\Var}{\operatorname{Var}}
+\newcommand{\Cov}{\operatorname{Cov}}
+
+% =============================================================================
+\begin{document}
+\begin{center}
+  {\Large\bfseries \disciplina}\\[2pt]
+  {\large Exercise list: \listatema}\ifsolucoes\\[2pt]\textit{Solutions}\fi
+\end{center}
+\vspace{2pt}
+
+{\footnotesize\noindent\textbf{Instructions.} Every question is a textbook exercise from the
+\emph{Practice} list of Class~1 in \texttt{Map/class-plan.md}, reproduced verbatim from the book PDF
+(statements from Portuguese-language books stay in Portuguese). Show every step. Computer exercises
+are solved in Python; the script \texttt{Listas/L01-book-exercises-check.py} reproduces and asserts
+every number printed in the solutions. Book abbreviations follow the class plan: T = Tsay, W =
+Wooldridge, G = Greenberg, I = ISLP, B = Bolfarine \& Sandoval, MS = Morettin \& Singer.\par}
+
+% =============================================================================
+\bloco{1}{Tsay, \textit{Analysis of Financial Time Series}}{T 2.2}
+
+\questao{T 2.2 --- AR(2) moments and forecasts.}
+\fonte{Tsay, R.~S. (2010), \textit{Analysis of Financial Time Series}, 3rd ed., Wiley, Chapter~2
+Exercises, Exercise~2.2, p.~104 --- reproduced verbatim. (Header of the exercise set: ``If not
+specifically specified, use 5\% significance level to draw conclusions in the exercises.'')}
+
+2.2. Suppose that the daily log return of a security follows the model
+\[ r_t = 0.01 + 0.2 r_{t-2} + a_t , \]
+where $\{a_t\}$ is a Gaussian white noise series with mean zero and variance 0.02. What are the mean
+and variance of the return series $r_t$? Compute the lag-1 and lag-2 autocorrelations of $r_t$.
+Assume that $r_{100} = -0.01$, and $r_{99} = 0.02$. Compute the 1- and 2-step-ahead forecasts of the
+return series at the forecast origin $t = 100$. What are the associated standard deviations of the
+forecast errors?
+\resolespaco
+\begin{sol}
+\solhead
+\begin{notacao}
+\item $r_t$: daily log return; $a_t\sim N(0,\sigma_a^2)$ i.i.d.\ shock, $\sigma_a^2=0.02$.
+\item $\phi_0=0.01$, $\phi_2=0.2$ (the lag-1 coefficient is $\phi_1=0$).
+\item $\mu=\E(r_t)$; $\gamma_\ell=\Cov(r_t,r_{t-\ell})$; $\rho_\ell=\gamma_\ell/\gamma_0$, $\ell\ge 0$.
+\item $\hat r_{100}(\ell)=\E(r_{100+\ell}\mid r_{100},r_{99},\dots)$: $\ell$-step forecast at origin 100;
+  $e_{100}(\ell)=r_{100+\ell}-\hat r_{100}(\ell)$: forecast error.
+\end{notacao}
+
+\passo{Model and stationarity}{The model is}
+\begin{equation}\label{q1:model}
+r_t=\phi_0+\phi_2 r_{t-2}+a_t .
+\end{equation}
+Its characteristic equation $1-\phi_2x^2=0$ has roots $x=\pm 1/\sqrt{\phi_2}=\pm 1/\sqrt{0.2}=\pm 2.2361$,
+both outside the unit circle, so $r_t$ is weakly stationary and $\mu$, $\gamma_\ell$ do not depend on $t$.
+
+\passo{Mean}{Taking expectations of \eqref{q1:model} and using $\E(a_t)=0$:}
+\begin{equation}\label{q1:meaneq}
+\mu=\phi_0+\phi_2\mu .
+\end{equation}
+Solving \eqref{q1:meaneq} for $\mu$:
+\begin{equation}\label{q1:mean}
+\mu=\frac{\phi_0}{1-\phi_2}.
+\end{equation}
+Substituting the numbers into \eqref{q1:mean}:
+\[
+\mu=\frac{(0.01)}{1-(0.2)}=\frac{0.01}{0.8}=0.0125 .
+\]
+
+\passo{Autocovariance equations}{Subtracting \eqref{q1:meaneq} from \eqref{q1:model}:}
+\begin{equation}\label{q1:dev}
+r_t-\mu=\phi_2\,(r_{t-2}-\mu)+a_t .
+\end{equation}
+Multiplying \eqref{q1:dev} by $(r_{t-\ell}-\mu)$ and taking expectations:
+\begin{equation}\label{q1:yw}
+\gamma_\ell=\phi_2\,\gamma_{\ell-2}+\E\big[a_t(r_{t-\ell}-\mu)\big],
+\qquad
+\E\big[a_t(r_{t-\ell}-\mu)\big]=\begin{cases}\sigma_a^2,&\ell=0,\\ 0,&\ell\ge1,\end{cases}
+\end{equation}
+because $a_t$ is uncorrelated with the past and $\E[a_t(r_t-\mu)]=\E(a_t^2)=\sigma_a^2$ by \eqref{q1:dev}.
+
+\passo{Variance}{Setting $\ell=0$ and $\ell=2$ in \eqref{q1:yw}, with $\gamma_{-2}=\gamma_2$:}
+\begin{align}
+\gamma_0&=\phi_2\gamma_2+\sigma_a^2, \label{q1:g0}\\
+\gamma_2&=\phi_2\gamma_0. \label{q1:g2}
+\end{align}
+Substituting \eqref{q1:g2} into \eqref{q1:g0}:
+\[
+\gamma_0=\phi_2\,(\phi_2\gamma_0)+\sigma_a^2 .
+\]
+Collecting $\gamma_0$:
+\begin{equation}\label{q1:var}
+\gamma_0=\frac{\sigma_a^2}{1-\phi_2^2}.
+\end{equation}
+Substituting the numbers into \eqref{q1:var}:
+\[
+\gamma_0=\frac{(0.02)}{1-(0.2)^2}=\frac{0.02}{0.96}=0.020833,
+\qquad \sqrt{\gamma_0}=0.1443 .
+\]
+
+\passo{Autocorrelations}{Setting $\ell=1$ in \eqref{q1:yw}, with $\gamma_{-1}=\gamma_1$:}
+\begin{equation}\label{q1:g1}
+\gamma_1=\phi_2\gamma_1 \;\Longrightarrow\; (1-\phi_2)\gamma_1=0 \;\Longrightarrow\; \gamma_1=0,
+\end{equation}
+since $\phi_2=0.2\neq1$. Hence $\rho_1=\gamma_1/\gamma_0=0$. Dividing \eqref{q1:g2} by $\gamma_0$:
+\[
+\rho_2=\frac{\gamma_2}{\gamma_0}=\phi_2=0.2 .
+\]
+
+\passo{1-step forecast}{Writing \eqref{q1:model} at $t=101$:}
+\begin{equation}\label{q1:r101}
+r_{101}=\phi_0+\phi_2 r_{99}+a_{101}.
+\end{equation}
+$r_{99}$ is known at the origin and $\E(a_{101}\mid\cdot)=0$, so
+\begin{equation}\label{q1:f1}
+\hat r_{100}(1)=\phi_0+\phi_2 r_{99}.
+\end{equation}
+Substituting the numbers into \eqref{q1:f1}:
+\[
+\hat r_{100}(1)=0.01+0.2\,(0.02)=0.01+0.004=0.014 .
+\]
+
+\passo{2-step forecast}{Writing \eqref{q1:model} at $t=102$:}
+\begin{equation}\label{q1:r102}
+r_{102}=\phi_0+\phi_2 r_{100}+a_{102},
+\end{equation}
+and $r_{100}$ is known, so
+\begin{equation}\label{q1:f2}
+\hat r_{100}(2)=\phi_0+\phi_2 r_{100}.
+\end{equation}
+Substituting the numbers into \eqref{q1:f2}:
+\[
+\hat r_{100}(2)=0.01+0.2\,(-0.01)=0.01-0.002=0.008 .
+\]
+
+\passo{Forecast-error standard deviations}{Subtracting \eqref{q1:f1} from \eqref{q1:r101} and
+\eqref{q1:f2} from \eqref{q1:r102}:}
+\begin{equation}\label{q1:err}
+e_{100}(1)=a_{101},\qquad e_{100}(2)=a_{102}.
+\end{equation}
+Both have variance $\sigma_a^2$, so
+\[
+\operatorname{sd}[e_{100}(1)]=\operatorname{sd}[e_{100}(2)]=\sqrt{0.02}=0.1414 .
+\]
+(In a general AR(2), $e_h(2)=a_{h+2}+\phi_1a_{h+1}$; here $\phi_1=0$, so the 2-step error is as small as
+the 1-step error.)
+
+\intuicao{With $\phi_1=0$ the series is two interleaved AR(1) processes, one on odd and one on even
+days. Returns two days apart are correlated ($\rho_2=0.2$), adjacent days are not ($\rho_1=0$). The
+2-step forecast is driven by a return already observed ($r_{100}$), so it is as precise as the
+1-step one; both forecasts sit close to $\mu=0.0125$ because $\phi_2$ is small, and the error
+standard deviation $0.1414$ is only slightly below the unconditional $0.1443$.}
+\refbib{Tsay (2010), §2.4.1 (properties of AR models, pp.~38--46) and §2.4.4 (forecasting, pp.~54--56).}
+\end{sol}
+
+% =============================================================================
+\bloco{2}{Wooldridge, \textit{Introductory Econometrics}}{W 11.C8; W 12.1}
+
+\questao{W 11.C8 --- AR(1) for unemployment (computer exercise).}
+\fonte{Wooldridge, J.~M. (2016), \textit{Introductory Econometrics: A Modern Approach}, 6th ed.,
+Cengage, Chapter~11, Computer Exercise C8, p.~370 --- reproduced verbatim.}
+
+C8 Use the data in PHILLIPS for this exercise.
+\begin{enumerate}[label=(\roman*),leftmargin=2.4em]
+\item Estimate an AR(1) model for the unemployment rate. Use this equation to predict the
+unemployment rate for 2004. Compare this with the actual unemployment rate for 2004. (You can find
+this information in a recent \textit{Economic Report of the President}.)
+\item Add a lag of inflation to the AR(1) model from part (i). Is $inf_{t-1}$ statistically
+significant?
+\item Use the equation from part (ii) to predict the unemployment rate for 2004. Is the result better
+or worse than in the model from part (i)?
+\item Use the method from Section 6-4 to construct a 95\% prediction interval for the 2004
+unemployment rate. Is the 2004 unemployment rate in the interval?
+\end{enumerate}
+\resolespaco
+\begin{sol}
+\solhead
+\begin{notacao}
+\item $unem_t$: U.S.\ civilian unemployment rate in year $t$ (percent); $inf_t$: CPI inflation rate
+  in year $t$ (percent). PHILLIPS covers 1948--2003; with one lag the estimation sample is
+  1949--2003, $n=55$.
+\item $\beta_j$: population coefficients; $\hat\beta_j$: OLS estimates; $\operatorname{se}(\cdot)$:
+  usual OLS standard error; $u_t$: error; $\hat\sigma^2=\mathrm{SSR}/(n-k-1)$; $R^2$.
+\item $\hat y_0$: prediction of $unem_{2004}$; $\hat e_0=unem_{2004}-\hat y_0$: prediction error;
+  $\theta_0$: population value of the prediction. Actual 2004 rate: $5.5$ (BLS annual average,
+  as reported in the \textit{Economic Report of the President}; the mean of the 12 monthly FRED
+  \texttt{UNRATE} values for 2004 is $5.54$).
+\item 2003 values used for the 2004 prediction: $unem_{2003}=6.0$, $inf_{2003}=2.3$.
+\end{notacao}
+
+\passo{(i) AR(1) estimates}{The model is}
+\begin{equation}\label{q2:ar1}
+unem_t=\beta_0+\beta_1\,unem_{t-1}+u_t .
+\end{equation}
+OLS on 1949--2003 gives
+\begin{equation}\label{q2:ar1hat}
+\widehat{unem}_t=\underset{(0.5202)}{1.489685}+\underset{(0.0893)}{0.742382}\,unem_{t-1},
+\qquad n=55,\quad R^2=0.5660,\quad \hat\sigma=0.9986 .
+\end{equation}
+
+\passo{(i) Prediction for 2004}{Evaluating \eqref{q2:ar1hat} at $unem_{2003}$:}
+\begin{equation}\label{q2:f1}
+\widehat{unem}_{2004}=\hat\beta_0+\hat\beta_1\,unem_{2003}.
+\end{equation}
+Substituting the numbers into \eqref{q2:f1}:
+\[
+\widehat{unem}_{2004}=1.489685+0.742382\,(6.0)=1.489685+4.454292=5.9440 .
+\]
+Prediction error against the actual rate:
+\[
+\hat y_0-unem_{2004}=5.9440-5.5=0.4440 ,
+\]
+so the AR(1) overpredicts 2004 unemployment by about 0.44 percentage points.
+
+\passo{(ii) Adding lagged inflation}{The model is}
+\begin{equation}\label{q2:ar1inf}
+unem_t=\beta_0+\beta_1\,unem_{t-1}+\beta_2\,inf_{t-1}+u_t ,
+\end{equation}
+with OLS estimates
+\begin{equation}\label{q2:ar1infhat}
+\widehat{unem}_t=\underset{(0.4413)}{1.296416}+\underset{(0.0779)}{0.649479}\,unem_{t-1}
++\underset{(0.0388)}{0.183009}\,inf_{t-1},
+\qquad n=55,\quad R^2=0.6963 .
+\end{equation}
+The $t$ statistic for $H_0:\beta_2=0$ is
+\begin{equation}\label{q2:t}
+t_{\hat\beta_2}=\frac{\hat\beta_2}{\operatorname{se}(\hat\beta_2)}=\frac{0.183009}{0.0388}=4.72 ,
+\end{equation}
+against a two-sided 5\% critical value $t_{52,\,0.975}=2.0066$ (two-sided $p$-value $0.00002$).
+So $inf_{t-1}$ is statistically significant at any conventional level. The positive sign says that
+a year of higher inflation is followed by higher unemployment, the pattern of an
+expectations-augmented Phillips curve with supply shocks, not a stable inflation--unemployment
+trade-off.
+
+\passo{(iii) Prediction from \eqref{q2:ar1infhat}}{Evaluating \eqref{q2:ar1infhat} at the 2003 values:}
+\begin{equation}\label{q2:f2}
+\widehat{unem}_{2004}=\hat\beta_0+\hat\beta_1\,unem_{2003}+\hat\beta_2\,inf_{2003}.
+\end{equation}
+Substituting the numbers into \eqref{q2:f2}:
+\[
+\widehat{unem}_{2004}=1.296416+0.649479\,(6.0)+0.183009\,(2.3)
+=1.296416+3.896874+0.420921=5.6142 .
+\]
+Prediction error:
+\[
+\hat y_0-unem_{2004}=5.6142-5.5=0.1142 .
+\]
+Since $0.1142<0.4440$, the model with lagged inflation predicts 2004 better (for this one year).
+
+\passo{(iv) Section 6-4: the prediction and its standard error}{The population prediction is}
+\begin{equation}\label{q2:theta0}
+\theta_0=\beta_0+\beta_1(6.0)+\beta_2(2.3).
+\end{equation}
+Solving \eqref{q2:theta0} for $\beta_0$ and substituting into \eqref{q2:ar1inf}:
+\begin{equation}\label{q2:centred}
+unem_t=\theta_0+\beta_1\,(unem_{t-1}-6.0)+\beta_2\,(inf_{t-1}-2.3)+u_t ,
+\end{equation}
+so the OLS intercept of \eqref{q2:centred} is $\hat y_0=5.6142$ (the same number as in (iii)) and its
+standard error is $\operatorname{se}(\hat y_0)=0.136381$.
+
+\passo{(iv) Standard error of the prediction error}{The prediction error
+$\hat e_0=u_{2004}-(\hat y_0-\theta_0)$ adds the new error to the estimation error, which are
+uncorrelated, so (Wooldridge eq.~(6.36))}
+\begin{equation}\label{q2:see}
+\operatorname{se}(\hat e_0)=\sqrt{\operatorname{se}(\hat y_0)^2+\hat\sigma^2}.
+\end{equation}
+With $\hat\sigma^2=\mathrm{SSR}/52=0.711321$, substituting into \eqref{q2:see}:
+\[
+\operatorname{se}(\hat e_0)=\sqrt{(0.136381)^2+(0.711321)}=\sqrt{0.018600+0.711321}
+=\sqrt{0.729921}=0.8544 .
+\]
+
+\passo{(iv) 95\% prediction interval}{The interval (Wooldridge eq.~(6.37)) is}
+\begin{equation}\label{q2:pi}
+\hat y_0\pm t_{52,\,0.975}\cdot\operatorname{se}(\hat e_0).
+\end{equation}
+Substituting into \eqref{q2:pi}: the half-width is $2.0066\,(0.8544)=1.7144$, so
+\[
+[\,5.6142-1.7144,\;5.6142+1.7144\,]=[\,3.8998,\;7.3286\,].
+\]
+The actual 2004 rate, $5.5$, lies inside the interval.
+
+\passo{Python}{Code and key output (the full version, with assertions, is in the check script):}
+{\small
+\begin{verbatim}
+import wooldridge, statsmodels.api as sm, numpy as np
+ph = wooldridge.data("phillips").sort_values("year")
+ph["unem_1"], ph["inf_1"] = ph.unem.shift(1), ph.inf.shift(1)
+e = ph.dropna(subset=["unem_1", "inf_1"])                     # 1949-2003, n = 55
+m1 = sm.OLS(e.unem, sm.add_constant(e[["unem_1"]])).fit()     # 1.489685, 0.742382
+m2 = sm.OLS(e.unem, sm.add_constant(e[["unem_1", "inf_1"]])).fit()
+#   const 1.296416 (0.4413)  unem_1 0.649479 (0.0779)  inf_1 0.183009 (0.0388), t = 4.72
+X = np.column_stack([np.ones(55), e.unem_1 - 6.0, e.inf_1 - 2.3])
+m3 = sm.OLS(e.unem.values, X).fit()                           # 5.6142, se 0.136381
+se_e0 = np.sqrt(m3.bse[0]**2 + m3.scale)        # 0.8544 -> PI [3.8998, 7.3286]
+\end{verbatim}
+}
+
+\intuicao{Unemployment is persistent ($\hat\beta_1\approx0.74$), so an AR(1) mostly extrapolates 2003's
+6.0\%. Lagged inflation carries extra information about where the cycle is heading, which lowers
+the 2004 forecast toward the realised 5.5\%. The prediction interval is wide because its width is
+dominated by $\hat\sigma^2=0.711$, the variance of next year's shock; parameter uncertainty
+($0.0186$) is a small part of it. One year of forecast comparison is weak evidence: a fair comparison
+would use many out-of-sample years.}
+\refbib{Wooldridge (2016), §11-2 and Example 11.5 (dynamic models, PHILLIPS), §18-5 (forecasting),
+§6-4a (prediction intervals, pp.~186--190).}
+\end{sol}
+
+\questao{W 12.1 --- OLS standard errors under AR(1) errors.}
+\fonte{Wooldridge, J.~M. (2016), \textit{Introductory Econometrics: A Modern Approach}, 6th ed.,
+Cengage, Chapter~12, Problem~1, p.~396 --- reproduced verbatim.}
+
+1 When the errors in a regression model have AR(1) serial correlation, why do the OLS standard
+errors tend to underestimate the sampling variation in the $\hat\beta_j$? Is it always true that the
+OLS standard errors are too small?
+\resolespaco
+\begin{sol}
+\solhead
+\begin{notacao}
+\item $y_t=\beta_0+\beta_1x_t+u_t$, $t=1,\dots,n$; $x_t$ treated as nonrandom (condition on $X$),
+  with $\bar x=0$ for simplicity (as in Wooldridge §12-1b).
+\item $u_t=\rho u_{t-1}+e_t$, $|\rho|<1$, $e_t$ i.i.d.\ $(0,\sigma_e^2)$;
+  $\sigma^2=\Var(u_t)=\sigma_e^2/(1-\rho^2)$.
+\item $\mathrm{SST}_x=\sum_t x_t^2$; $\lambda$: first-order autocorrelation of $x_t$ when $x_t$ is
+  itself AR(1) (used only for the illustration).
+\end{notacao}
+
+\passo{Sampling error of the slope}{With $\bar x=0$, OLS gives}
+\begin{equation}\label{q3:b1}
+\hat\beta_1=\beta_1+\frac{\sum_{t=1}^n x_tu_t}{\mathrm{SST}_x}.
+\end{equation}
+Under the AR(1) model the error covariances are
+\begin{equation}\label{q3:cov}
+\Cov(u_t,u_{t+j})=\rho^{j}\sigma^2,\qquad j\ge0 .
+\end{equation}
+
+\passo{True variance}{Taking the variance of \eqref{q3:b1}:}
+\begin{equation}\label{q3:varsum}
+\Var(\hat\beta_1)=\frac{1}{\mathrm{SST}_x^2}\Big[\sum_t x_t^2\Var(u_t)+2\sum_{t<s}x_tx_s\Cov(u_t,u_s)\Big].
+\end{equation}
+Substituting \eqref{q3:cov} into \eqref{q3:varsum}:
+\begin{equation}\label{q3:true}
+\Var(\hat\beta_1)=\frac{\sigma^2}{\mathrm{SST}_x}
++\frac{2\sigma^2}{\mathrm{SST}_x^2}\sum_{t=1}^{n-1}\sum_{j=1}^{n-t}\rho^{j}x_tx_{t+j},
+\end{equation}
+which is Wooldridge's equation (12.4).
+
+\passo{What the usual formula estimates}{The usual OLS variance is}
+\begin{equation}\label{q3:usual}
+\widehat{\Var}_{\mathrm{OLS}}(\hat\beta_1)=\frac{\hat\sigma^2}{\mathrm{SST}_x},
+\end{equation}
+an estimate of the first term of \eqref{q3:true} only. The usual standard error is therefore biased
+by the omitted second term.
+
+\passo{Why it is usually too small}{In economic data $\rho>0$ and the regressors are positively
+autocorrelated (persistent, trending), so $x_tx_{t+j}>0$ on average and every $\rho^j>0$: the double
+sum in \eqref{q3:true} is positive and \eqref{q3:usual} understates the true variance. A large-$n$
+illustration: if $x_t$ is AR(1) with autocorrelation $\lambda$, then
+$\sum_{t}\sum_{j}\rho^jx_tx_{t+j}\approx\mathrm{SST}_x\sum_{j\ge1}(\rho\lambda)^j$, and substituting into
+\eqref{q3:true}:}
+\begin{equation}\label{q3:ratio}
+\Var(\hat\beta_1)\approx\frac{\sigma^2}{\mathrm{SST}_x}\Big[1+\frac{2\rho\lambda}{1-\rho\lambda}\Big]
+=\frac{\sigma^2}{\mathrm{SST}_x}\cdot\frac{1+\rho\lambda}{1-\rho\lambda}.
+\end{equation}
+With $\rho=\lambda=0.5$, \eqref{q3:ratio} gives the ratio $(1+0.25)/(1-0.25)=1.25/0.75=1.6667$: the true
+standard error is $\sqrt{1.6667}=1.2910$ times the usual one.
+
+\passo{Not always}{The sign of the second term in \eqref{q3:true} is the sign of
+$\sum\rho^jx_tx_{t+j}$. If $\rho<0$ (with persistent $x$), or if $\rho>0$ but $x_t$ alternates in sign
+(negatively autocorrelated), the cross terms are negative on net and the usual standard error is too
+large. In \eqref{q3:ratio}, $\rho=-0.5$, $\lambda=0.5$ gives $(1-0.25)/(1+0.25)=0.75/1.25=0.6000$, so the
+true standard error is only $\sqrt{0.6}=0.7746$ times the usual one. If $x_t$ is serially uncorrelated
+($\lambda=0$) the bias vanishes in large samples even with $\rho\neq0$. So the answer to the second
+question is no.}
+
+\intuicao{Positively correlated errors make neighbouring observations repeat each other, so the
+sample carries less independent information than $n$ suggests; the usual formula counts every
+observation as new. When regressor and error both drift slowly, a run of positive errors coincides
+with a run of large $x$, which tilts the fitted slope more than independent errors would.}
+\refbib{Wooldridge (2016), §12-1b (efficiency and inference, pp.~373--374).}
+\end{sol}
+
+% =============================================================================
+\bloco{3}{Greenberg, \textit{Introduction to Bayesian Econometrics}}{G 2.2; G 7.3}
+
+\questao{G 2.2 --- gamma--Poisson conjugacy.}
+\fonte{Greenberg, E. (2008), \textit{Introduction to Bayesian Econometrics}, 1st ed., Cambridge
+University Press, §2.5 Exercises, Exercise~2.2, p.~19 --- reproduced verbatim.}
+
+2.2 The Poisson distribution has probability mass function
+\[ p(y_i\mid\theta)=\frac{\theta^{y_i}e^{-\theta}}{y_i!},\qquad \theta>0,\ y_i=0,1,\dots, \]
+and let $y_1,\dots,y_n$ be a random sample from this distribution.
+\begin{enumerate}[label=\textbf{(\alph*)},leftmargin=2.4em]
+\item Show that the gamma distribution $G(\alpha,\beta)$ is a conjugate prior distribution for the
+Poisson distribution.
+\item Show that $\bar y$ is the MLE for $\theta$.
+\item Write the mean of the posterior distribution as a weighted average of the mean of the prior
+distribution and the MLE.
+\item What happens to the weight on the prior mean as $n$ becomes large?
+\end{enumerate}
+\resolespaco
+\begin{sol}
+\solhead
+\begin{notacao}
+\item $y_i\in\{0,1,\dots\}$: counts; $\theta>0$: Poisson rate; $s=\sum_{i=1}^ny_i$, $\bar y=s/n$.
+\item $G(\alpha,\beta)$, $\alpha,\beta>0$: gamma with shape $\alpha$ and rate $\beta$ (Greenberg's
+  convention, App.~A), $\pi(\theta)=\frac{\beta^\alpha}{\Gamma(\alpha)}\theta^{\alpha-1}e^{-\beta\theta}$,
+  mean $\alpha/\beta$.
+\item $\ell(\theta)$: log-likelihood; $\hat\theta$: MLE; $w$: weight on the prior mean.
+\end{notacao}
+
+\passo{(a) Likelihood}{Independence gives}
+\begin{equation}\label{q4:lik}
+p(y\mid\theta)=\prod_{i=1}^n\frac{\theta^{y_i}e^{-\theta}}{y_i!}=\frac{\theta^{s}e^{-n\theta}}{\prod_iy_i!}.
+\end{equation}
+
+\passo{(a) Posterior}{Bayes' theorem, $\pi(\theta\mid y)\propto p(y\mid\theta)\pi(\theta)$, with
+\eqref{q4:lik} and the gamma prior, dropping factors free of $\theta$:}
+\begin{equation}\label{q4:post0}
+\pi(\theta\mid y)\propto\big(\theta^{s}e^{-n\theta}\big)\big(\theta^{\alpha-1}e^{-\beta\theta}\big).
+\end{equation}
+Adding exponents in \eqref{q4:post0}:
+\begin{equation}\label{q4:post}
+\pi(\theta\mid y)\propto\theta^{\alpha+s-1}e^{-(\beta+n)\theta},
+\end{equation}
+the kernel of $G(\alpha+s,\ \beta+n)$. Prior and posterior are both gamma, so the gamma family is
+conjugate for the Poisson likelihood.
+
+\passo{(b) MLE}{Taking logs of \eqref{q4:lik}:}
+\begin{equation}\label{q4:ll}
+\ell(\theta)=s\log\theta-n\theta-\sum_i\log y_i!.
+\end{equation}
+Differentiating \eqref{q4:ll} and setting the score to zero:
+\begin{equation}\label{q4:score}
+\ell'(\theta)=\frac{s}{\theta}-n=0\;\Longrightarrow\;\hat\theta=\frac{s}{n}=\bar y .
+\end{equation}
+The second derivative $\ell''(\theta)=-s/\theta^2<0$ when $s>0$, so \eqref{q4:score} is a maximum. (If
+$s=0$, $\ell(\theta)=-n\theta$ decreases and the supremum is at the boundary $0=\bar y$.)
+
+\passo{(c) Posterior mean as a weighted average}{The mean of the gamma \eqref{q4:post} is}
+\begin{equation}\label{q4:pm}
+\E(\theta\mid y)=\frac{\alpha+s}{\beta+n}.
+\end{equation}
+Substituting $\alpha=\beta(\alpha/\beta)$ and $s=n\bar y$ into \eqref{q4:pm}:
+\[
+\E(\theta\mid y)=\frac{\beta\,(\alpha/\beta)+n\,(\bar y)}{\beta+n}.
+\]
+Splitting the fraction:
+\begin{equation}\label{q4:wavg}
+\E(\theta\mid y)=\underbrace{\frac{\beta}{\beta+n}}_{w}\cdot\frac{\alpha}{\beta}
++\underbrace{\frac{n}{\beta+n}}_{1-w}\cdot\bar y .
+\end{equation}
+
+\passo{(d) Large $n$}{From \eqref{q4:wavg},}
+\begin{equation}\label{q4:lim}
+w=\frac{\beta}{\beta+n}\xrightarrow[n\to\infty]{}0,
+\end{equation}
+so the posterior mean converges to the MLE $\bar y$; the posterior variance $(\alpha+s)/(\beta+n)^2$
+also goes to zero at rate $1/n$.
+
+\passo{Numerical illustration}{Coal-mining disasters 1851--1891 ($n=41$, $s=127$,
+$\bar y=3.097561$) with the prior of G~7.3, $\alpha=0.5$, $\beta=1$. By \eqref{q4:lim},
+$w=1/(1+41)=0.023810$; by \eqref{q4:wavg},}
+\[
+\E(\theta\mid y)=0.023810\,(0.5)+0.976190\,(3.097561)=0.011905+3.023810=3.035714,
+\]
+which equals \eqref{q4:pm}: $(0.5+127)/(1+41)=127.5/42=3.035714$.
+
+\intuicao{The prior acts like $\beta$ extra periods of data containing $\alpha$ events in total.
+After $n$ real periods it weighs $\beta/(\beta+n)$; with 41 years of data a prior worth one year
+moves the estimate only from $3.098$ to $3.036$.}
+\refbib{Greenberg (2008), §2.2 (pp.~12--18) and App.~A (gamma distribution); the Class~1 deck
+\textit{first Bayesian example} (Poisson with an exponential prior, the case $\alpha=1$).}
+\end{sol}
+
+\questao{G 7.3 --- Gibbs sampler for the coal-mining switch point (computer exercise).}
+\fonte{Greenberg, E. (2008), \textit{Introduction to Bayesian Econometrics}, 1st ed., Cambridge
+University Press, §7.5 Exercises, Exercise~7.3, p.~106 --- reproduced verbatim. Equations (7.3) and
+(7.4), to which the exercise refers, are reproduced verbatim from §7.1.1, pp.~93--94.}
+
+\emph{Equations referred to (Greenberg 2008, pp.~93--94):}
+\[
+p(y_i)=\begin{cases}\dfrac{e^{-\theta_1}\theta_1^{y_i}}{y_i!}, & \text{for } i=1,\dots,k,\\[8pt]
+\dfrac{e^{-\theta_2}\theta_2^{y_i}}{y_i!}, & \text{for } i=k+1,\dots,n,\end{cases}\tag{7.3}
+\]
+``where $y_i=0,1,\dots,$ and the switch point $k$ is unknown. The specification is completed by
+assigning the conditionally conjugate priors,
+\[
+\theta_1\sim G(\alpha_{10},\beta_{10}),\quad \theta_2\sim G(\alpha_{20},\beta_{20}),\quad
+\pi(k=j)=1/n,\quad j=1,\dots,n.\text{''}\tag{7.4}
+\]
+
+7.3 Construct a Gibbs algorithm to analyze the Poisson model with unknown switch point. Given the
+specification in Equations (7.3) and (7.4), show that
+\[
+\pi(\theta_1,\theta_2,k\mid y)\propto\theta_1^{\alpha_{10}-1}e^{-\beta_{10}\theta_1}\theta_2^{\alpha_{20}-1}e^{-\beta_{20}\theta_2}
+\prod_{i=1}^{k}e^{-\theta_1}\theta_1^{y_i}\prod_{i=k+1}^{n}e^{-\theta_2}\theta_2^{y_i},
+\]
+and verify that
+\begin{gather*}
+\theta_1\mid y,k\sim G\Big(\alpha_{10}+\sum_{1}^{k}y_i,\ \beta_{10}+k\Big),\\
+\theta_2\mid k,y\sim G\Big(\alpha_{20}+\sum_{k+1}^{n}y_i,\ \beta_{20}+n-k\Big),\\
+\pi(k\mid y,\theta_1,\theta_2)=\frac{e^{k(\theta_2-\theta_1)}(\theta_1/\theta_2)^{\sum_1^ky_i}}
+{\sum_{k=1}^{n}e^{k(\theta_2-\theta_1)}\,(\theta_1/\theta_2)^{\sum_1^ky_i}},\qquad k=1,\dots,n.
+\end{gather*}
+Apply your algorithm to the mining disaster data analyzed by Carlin et al.\ (1992a); the data may be
+found in the article. Your analysis should generate marginal posterior distributions for
+$\theta_1$, $\theta_2$, $p(k)$, and the marginal likelihood computed by the method of Chib (1995).
+For simplicity, set $\alpha_{10}=\alpha_{20}=0.5$ and $\beta_{10}=\beta_{20}=1.0$. (Curiously,
+although these data have been analyzed from the Bayesian viewpoint in several papers, none of them
+present historical material that might shed light on when changes in parameters took place. For
+example, changes in government regulation, technology, or the location of mines might be expected
+to affect the probability of a disaster. A more general version of the model permits multiple
+switch points if necessary.)
+\resolespaco
+\begin{sol}
+\solhead
+\begin{notacao}
+\item $y_i$: number of British coal-mining disasters in year $i$, $i=1$ (1851) to $n=112$ (1962);
+  the series of Carlin, Gelfand \& Smith (1992) is Jarrett (1979), total $S=\sum_iy_i=191$.
+\item $k\in\{1,\dots,n\}$: switch point, the last year of regime 1 (year $1850+k$); $k=n$ means no change.
+\item $\theta_1,\theta_2>0$: disaster rates before and after the switch;
+  $S_k=\sum_{i=1}^ky_i$ (so $\sum_{k+1}^ny_i=S-S_k$).
+\item $G(a,b)$: gamma with shape $a$, rate $b$; $\alpha_{10}=\alpha_{20}=\alpha=0.5$,
+  $\beta_{10}=\beta_{20}=\beta=1$.
+\item $g=1,\dots,G$: Gibbs iteration; $\theta^*=(\theta_1^*,\theta_2^*)$: point where Chib's
+  identity is evaluated; $m(y)$: marginal likelihood.
+\end{notacao}
+
+\passo{Joint posterior}{By (7.3) and independence, the likelihood is}
+\begin{equation}\label{q5:lik}
+p(y\mid\theta_1,\theta_2,k)=\prod_{i=1}^k\frac{e^{-\theta_1}\theta_1^{y_i}}{y_i!}
+\prod_{i=k+1}^n\frac{e^{-\theta_2}\theta_2^{y_i}}{y_i!},
+\end{equation}
+and by (7.4) the prior is
+\begin{equation}\label{q5:prior}
+\pi(\theta_1,\theta_2,k)=\frac{\beta_{10}^{\alpha_{10}}}{\Gamma(\alpha_{10})}\theta_1^{\alpha_{10}-1}e^{-\beta_{10}\theta_1}
+\cdot\frac{\beta_{20}^{\alpha_{20}}}{\Gamma(\alpha_{20})}\theta_2^{\alpha_{20}-1}e^{-\beta_{20}\theta_2}\cdot\frac1n .
+\end{equation}
+Multiplying \eqref{q5:lik} by \eqref{q5:prior} and dropping the factors free of
+$(\theta_1,\theta_2,k)$ (the $y_i!$, the gamma constants, $1/n$) gives the expression in the statement:
+\begin{equation}\label{q5:joint}
+\pi(\theta_1,\theta_2,k\mid y)\propto\theta_1^{\alpha_{10}-1}e^{-\beta_{10}\theta_1}\theta_2^{\alpha_{20}-1}e^{-\beta_{20}\theta_2}
+\prod_{i=1}^{k}e^{-\theta_1}\theta_1^{y_i}\prod_{i=k+1}^{n}e^{-\theta_2}\theta_2^{y_i}.
+\end{equation}
+
+\passo{Full conditional of $\theta_1$}{Keeping in \eqref{q5:joint} only the factors with $\theta_1$:}
+\[
+\pi(\theta_1\mid y,k,\theta_2)\propto\theta_1^{\alpha_{10}-1}e^{-\beta_{10}\theta_1}\big(e^{-k\theta_1}\theta_1^{S_k}\big).
+\]
+Adding exponents:
+\begin{equation}\label{q5:t1}
+\pi(\theta_1\mid y,k)\propto\theta_1^{\alpha_{10}+S_k-1}e^{-(\beta_{10}+k)\theta_1}
+\;\Longrightarrow\;\theta_1\mid y,k\sim G(\alpha_{10}+S_k,\ \beta_{10}+k).
+\end{equation}
+
+\passo{Full conditional of $\theta_2$}{In the same way, the $\theta_2$ factors of \eqref{q5:joint}
+are}
+\[
+\pi(\theta_2\mid y,k,\theta_1)\propto\theta_2^{\alpha_{20}-1}e^{-\beta_{20}\theta_2}\big(e^{-(n-k)\theta_2}\theta_2^{S-S_k}\big),
+\]
+so, adding exponents,
+\begin{equation}\label{q5:t2}
+\theta_2\mid y,k\sim G(\alpha_{20}+S-S_k,\ \beta_{20}+n-k).
+\end{equation}
+Neither \eqref{q5:t1} nor \eqref{q5:t2} involves the other rate: given $k$, $\theta_1$ and $\theta_2$
+are independent.
+
+\passo{Full conditional of $k$}{The factors of \eqref{q5:joint} that change with $k$ are the two
+products:}
+\begin{equation}\label{q5:k0}
+\pi(k\mid y,\theta_1,\theta_2)\propto e^{-k\theta_1}\theta_1^{S_k}\,e^{-(n-k)\theta_2}\theta_2^{S-S_k}.
+\end{equation}
+Dividing \eqref{q5:k0} by the $k$-free factor $e^{-n\theta_2}\theta_2^{S}$:
+\begin{equation}\label{q5:k}
+\pi(k\mid y,\theta_1,\theta_2)\propto e^{k(\theta_2-\theta_1)}\Big(\frac{\theta_1}{\theta_2}\Big)^{S_k},
+\qquad k=1,\dots,n,
+\end{equation}
+and normalising over $k=1,\dots,n$ gives the formula in the statement.
+
+\passo{Algorithm}{Start at $k^{(0)}=56$. For $g=1,\dots,11{,}000$: draw $\theta_1^{(g)}$ from
+\eqref{q5:t1} and $\theta_2^{(g)}$ from \eqref{q5:t2} given $k^{(g-1)}$; compute the $n$ weights
+\eqref{q5:k} on the log scale, normalise, and draw $k^{(g)}$. Discard 1{,}000 burn-in draws and keep
+$G=10{,}000$ (NumPy seed 2026).}
+
+\passo{Exact benchmark}{Because the priors are conjugate given $k$, $\theta_1,\theta_2$ integrate out
+of \eqref{q5:lik}$\times$\eqref{q5:prior} in closed form:}
+\begin{equation}\label{q5:pyk}
+p(y\mid k)=\frac{1}{\prod_iy_i!}\cdot\frac{\beta^\alpha\,\Gamma(\alpha+S_k)}{\Gamma(\alpha)\,(\beta+k)^{\alpha+S_k}}
+\cdot\frac{\beta^\alpha\,\Gamma(\alpha+S-S_k)}{\Gamma(\alpha)\,(\beta+n-k)^{\alpha+S-S_k}} ,
+\end{equation}
+so the exact marginal likelihood and posterior of $k$ are
+\begin{equation}\label{q5:exact}
+m(y)=\sum_{k=1}^n\frac1n\,p(y\mid k),\qquad p(k\mid y)=\frac{p(y\mid k)/n}{m(y)},
+\end{equation}
+giving $\log m(y)=-179.4590$, $\E(\theta_1\mid y)=3.0500$, $\E(\theta_2\mid y)=0.9147$. These check the
+sampler.
+
+\passo{Marginal posteriors}{Gibbs output (exact values from \eqref{q5:exact} for $k$):}
+\begin{center}\small
+\begin{tabular}{lccc}
+\toprule
+ & Posterior mean & Posterior sd & 95\% interval \\
+\midrule
+$\theta_1$ (before) & 3.0506 & 0.2809 & $[2.530,\ 3.635]$\\
+$\theta_2$ (after)  & 0.9166 & 0.1163 & $[0.701,\ 1.156]$\\
+\bottomrule
+\end{tabular}
+\qquad
+\begin{tabular}{cccc}
+\toprule
+$k$ & year & $p(k\mid y)$ Gibbs & exact \\
+\midrule
+41 & 1891 & 0.2471 & 0.2482\\
+40 & 1890 & 0.1849 & 0.1848\\
+39 & 1889 & 0.1433 & 0.1414\\
+42 & 1892 & 0.0987 & 0.1010\\
+37 & 1887 & 0.0881 & 0.0898\\
+36 & 1886 & 0.0742 & 0.0745\\
+\bottomrule
+\end{tabular}
+\end{center}
+The posterior of $k$ has mean $40.14$ and mode $k=41$ (1891); $P(36\le k\le46\mid y)=0.98$, i.e.\ the
+switch happened between 1886 and 1896 with high probability. Disasters fell from about 3.05 to
+about 0.92 per year.
+
+\passo{Marginal likelihood by Chib (1995)}{For any $\theta^*$, Bayes' theorem rearranged gives the
+identity}
+\begin{equation}\label{q5:chib}
+\log m(y)=\log p(y\mid\theta^*)+\log\pi(\theta^*)-\log\pi(\theta^*\mid y).
+\end{equation}
+Here $k$ is a latent parameter, so the likelihood term sums it out with its prior:
+\begin{equation}\label{q5:lstar}
+p(y\mid\theta^*)=\sum_{k=1}^n\frac1n\,p(y\mid\theta_1^*,\theta_2^*,k).
+\end{equation}
+For the ordinate, conditional independence of $\theta_1,\theta_2$ given $k$ (from \eqref{q5:t1} and
+\eqref{q5:t2}) gives the Rao--Blackwell estimate
+\begin{equation}\label{q5:ord}
+\hat\pi(\theta^*\mid y)=\frac1G\sum_{g=1}^G G\big(\theta_1^*\mid\alpha+S_{k^{(g)}},\beta+k^{(g)}\big)\,
+G\big(\theta_2^*\mid\alpha+S-S_{k^{(g)}},\beta+n-k^{(g)}\big),
+\end{equation}
+with $G(\cdot\mid a,b)$ the gamma density. At the posterior means $\theta^*=(3.0506,\ 0.9166)$:
+$\log p(y\mid\theta^*)=-172.2563$ from \eqref{q5:lstar}, $\log\pi(\theta^*)=-5.6261$ from (7.4), and
+$\log\hat\pi(\theta^*\mid y)=1.5765$ from \eqref{q5:ord}. Substituting into \eqref{q5:chib}:
+\[
+\log\hat m(y)=(-172.2563)+(-5.6261)-(1.5765)=-179.4589 ,
+\]
+against the exact $-179.4590$ from \eqref{q5:exact}.
+
+\passo{Python}{Core of the sampler (complete code with assertions in the check script):}
+{\small
+\begin{verbatim}
+cs, ks = np.cumsum(y), np.arange(1, n + 1)        # S_k and k = 1..n
+rng, k = np.random.default_rng(2026), n // 2
+for g in range(11000):
+    t1 = rng.gamma(a0 + cs[k-1], 1 / (b0 + k))                 # (5.4) theta1 | k
+    t2 = rng.gamma(a0 + S - cs[k-1], 1 / (b0 + n - k))         # (5.5) theta2 | k
+    lp = ks * (t2 - t1) + cs * np.log(t1 / t2)                 # (5.7) log pi(k | ...)
+    p = np.exp(lp - lp.max()); k = rng.choice(ks, p=p / p.sum())
+# output: theta1 3.0506 (0.2809), theta2 0.9166 (0.1163), mode k = 41 (1891)
+# Chib: -172.2563 + (-5.6261) - 1.5765 = -179.4589 ; exact -179.4590
+\end{verbatim}
+}
+
+\intuicao{The data choose a sharp break: about three disasters a year until around 1890, under one
+afterwards, with the switch year pinned down within a few years. The Gibbs sampler works because
+each block is easy given the others: rates are conjugate gammas given $k$, and $k$ is a discrete
+draw over 112 years given the rates. On the historical question Greenberg raises, the posterior
+mass near 1887--1891 sits close to the Coal Mines Regulation Act of 1887, a candidate explanation
+that this model does not test. Chib's identity recovers the exact marginal likelihood to the fourth
+decimal, which is what makes it usable for comparing this model with, say, a no-break Poisson in
+Classes 3+4.}
+\refbib{Greenberg (2008), §7.1.1 (pp.~91--95) and §7.4 (Chib 1995); Class~1 deck
+\textit{Poisson with breakpoint} and \texttt{Notas/L01/L01-03-coal-mining-change-point} (the profile
+likelihood also peaks at 1891).}
+\end{sol}
+
+% =============================================================================
+\bloco{4}{James, Witten, Hastie, Tibshirani \& Taylor, \textit{ISLP}}{I 5.2; I 5.9}
+
+\questao{I 5.2 --- probability that an observation is in a bootstrap sample.}
+\fonte{James, G., Witten, D., Hastie, T., Tibshirani, R. and Taylor, J. (2023), \textit{An
+Introduction to Statistical Learning with Applications in Python}, Springer, §5.4 Exercises
+(Conceptual), Exercise~2, pp.~224--225 --- reproduced verbatim (the margin index entry
+``\texttt{np.empty()}'' is omitted).}
+
+2. We will now derive the probability that a given observation is part of a bootstrap sample.
+Suppose that we obtain a bootstrap sample from a set of $n$ observations.
+\begin{enumerate}[label=(\alph*),leftmargin=2.4em]
+\item What is the probability that the first bootstrap observation is \emph{not} the $j$th
+observation from the original sample? Justify your answer.
+\item What is the probability that the second bootstrap observation is \emph{not} the $j$th
+observation from the original sample?
+\item Argue that the probability that the $j$th observation is \emph{not} in the bootstrap sample
+is $(1-1/n)^n$.
+\item When $n=5$, what is the probability that the $j$th observation is in the bootstrap sample?
+\item When $n=100$, what is the probability that the $j$th observation is in the bootstrap sample?
+\item When $n=10{,}000$, what is the probability that the $j$th observation is in the bootstrap
+sample?
+\item Create a plot that displays, for each integer value of $n$ from 1 to 100,000, the probability
+that the $j$th observation is in the bootstrap sample. Comment on what you observe.
+\item We will now investigate numerically the probability that a bootstrap sample of size $n=100$
+contains the $j$th observation. Here $j=4$. We first create an array \texttt{store} with values that
+will subsequently be overwritten using the function \texttt{np.empty()}. We then repeatedly create
+bootstrap samples, and each time we record whether or not the fifth observation is contained in the
+bootstrap sample.
+{\small
+\begin{verbatim}
+rng = np.random.default_rng(10)
+store = np.empty(10000)
+for i in range(10000):
+    store[i] = np.sum(rng.choice(100, replace=True) == 4)
+          > 0
+np.mean(store)
+\end{verbatim}
+}
+Comment on the results obtained.
+\end{enumerate}
+\resolespaco
+\begin{sol}
+\solhead
+\begin{notacao}
+\item $n$: sample size; $j\in\{1,\dots,n\}$: a fixed original observation.
+\item $Z_1,\dots,Z_n$: indices of the bootstrap draws, i.i.d.\ uniform on $\{1,\dots,n\}$ (sampling
+  with replacement).
+\item $p_n=P(j\text{ is in the bootstrap sample})$.
+\end{notacao}
+
+\passo{(a)}{Each draw picks one of the $n$ original observations with equal probability $1/n$, so}
+\begin{equation}\label{q6:a}
+P(Z_1\neq j)=1-\frac1n .
+\end{equation}
+
+\passo{(b)}{Sampling is with replacement, so $Z_2$ has the same distribution as $Z_1$ and is
+independent of it:}
+\begin{equation}\label{q6:b}
+P(Z_2\neq j)=1-\frac1n .
+\end{equation}
+
+\passo{(c)}{$j$ is absent only if every draw misses it; by independence and \eqref{q6:a}--\eqref{q6:b}
+applied to all $n$ draws:}
+\begin{equation}\label{q6:c}
+P(j\notin\text{sample})=\prod_{m=1}^nP(Z_m\neq j)=\Big(1-\frac1n\Big)^n .
+\end{equation}
+
+\passo{(d)--(f)}{Taking the complement of \eqref{q6:c}:}
+\begin{equation}\label{q6:p}
+p_n=1-\Big(1-\frac1n\Big)^n .
+\end{equation}
+Substituting into \eqref{q6:p}:
+\begin{align*}
+n=5:&\quad p_5=1-(4/5)^5=1-0.32768=0.67232,\\
+n=100:&\quad p_{100}=1-(0.99)^{100}=1-0.366032=0.633968,\\
+n=10{,}000:&\quad p_{10000}=1-(0.9999)^{10000}=1-0.367861=0.632139.
+\end{align*}
+
+\passo{(g) Plot and limit}{Since $n\log(1-1/n)=n\big(-\tfrac1n-\tfrac1{2n^2}-\dots\big)\to-1$,}
+\begin{equation}\label{q6:lim}
+\lim_{n\to\infty}p_n=1-e^{-1}=0.632121 .
+\end{equation}
+\begin{center}
+\begin{tikzpicture}
+\begin{semilogxaxis}[width=0.72\linewidth,height=5cm,xlabel={$n$ (log scale)},
+  ylabel={$p_n$},ymin=0.6,ymax=1.02,xmin=1,xmax=100000,grid=major,
+  every axis plot/.append style={thick}]
+\addplot[blue!60!black,mark=*,mark size=1.3pt] coordinates {(1,1.0000) (2,0.7500) (3,0.7037)
+  (5,0.6723) (10,0.6513) (20,0.6415) (50,0.6358) (100,0.6340) (1000,0.6323) (10000,0.6321)
+  (100000,0.6321)};
+\addplot[red!70!black,dashed,domain=1:100000] {0.632121};
+\end{semilogxaxis}
+\end{tikzpicture}
+\end{center}
+$p_n$ falls from 1 at $n=1$ and flattens almost immediately at $1-e^{-1}\approx0.632$ (dashed): for
+$n\ge100$ the curve is indistinguishable from the limit.
+
+\passo{(h) The printed code}{\texttt{rng.choice(100, replace=True)} without \texttt{size} returns a
+\emph{single} integer, so each iteration checks whether one draw equals 4, an event of probability
+$1/100$. Run as printed, \texttt{np.mean(store)} returns $0.0089$, not a bootstrap probability. The
+intended code draws a whole bootstrap sample, \texttt{rng.choice(100, size=100, replace=True)},
+and then returns $0.6362$, close to $p_{100}=0.633968$ from (e) (Monte Carlo standard error
+$\sqrt{0.634\cdot0.366/10000}\approx0.005$). Index 4 is the fifth observation because Python
+counts from 0, which is why the text says ``fifth''.}
+
+\intuicao{A bootstrap sample of size $n$ contains only about 63.2\% of the distinct original
+observations; the other 36.8\% are ``out of bag''. This is why bootstrap estimates of test error
+that reuse the training points are optimistic, and why out-of-bag points can serve as a free
+validation set.}
+\refbib{ISLP (2023), §5.2 (the bootstrap, pp.~212--215).}
+\end{sol}
+
+\questao{I 5.9 --- bootstrap standard errors for Boston \texttt{medv} (computer exercise).}
+\fonte{James, G., Witten, D., Hastie, T., Tibshirani, R. and Taylor, J. (2023), \textit{An
+Introduction to Statistical Learning with Applications in Python}, Springer, §5.4 Exercises
+(Applied), Exercise~9, pp.~227--228 --- reproduced verbatim (the margin index entry
+``\texttt{np.percentile()}'' is omitted).}
+
+9. We will now consider the \texttt{Boston} housing data set, from the \texttt{ISLP} library.
+\begin{enumerate}[label=(\alph*),leftmargin=2.4em]
+\item Based on this data set, provide an estimate for the population mean of \texttt{medv}. Call
+this estimate $\hat\mu$.
+\item Provide an estimate of the standard error of $\hat\mu$. Interpret this result.\\
+\textit{Hint: We can compute the standard error of the sample mean by dividing the sample standard
+deviation by the square root of the number of observations.}
+\item Now estimate the standard error of $\hat\mu$ using the bootstrap. How does this compare to
+your answer from (b)?
+\item Based on your bootstrap estimate from (c), provide a 95\,\% confidence interval for the mean
+of \texttt{medv}. Compare it to the results obtained by using \texttt{Boston['medv'].std()} and the
+two standard error rule (3.9).\\
+\textit{Hint: You can approximate a 95\,\% confidence interval using the formula
+$[\hat\mu-2\mathrm{SE}(\hat\mu),\hat\mu+2\mathrm{SE}(\hat\mu)]$.}
+\item Based on this data set, provide an estimate, $\hat\mu_{med}$, for the median value of
+\texttt{medv} in the population.
+\item We now would like to estimate the standard error of $\hat\mu_{med}$. Unfortunately, there is
+no simple formula for computing the standard error of the median. Instead, estimate the standard
+error of the median using the bootstrap. Comment on your findings.
+\item Based on this data set, provide an estimate for the tenth percentile of \texttt{medv} in
+Boston census tracts. Call this quantity $\hat\mu_{0.1}$. (You can use the \texttt{np.percentile()}
+function.)
+\item Use the bootstrap to estimate the standard error of $\hat\mu_{0.1}$. Comment on your findings.
+\end{enumerate}
+\resolespaco
+\begin{sol}
+\solhead
+\begin{notacao}
+\item $x_i$: \texttt{medv} of tract $i$, median value of owner-occupied homes in thousands of US
+  dollars; $N=506$ tracts (file \texttt{Listas/data/Boston.csv}, from the ISLP repository).
+\item $\hat\mu$: sample mean; $s$: sample standard deviation (divisor $N-1$); $\mathrm{SE}$: standard
+  error.
+\item $B=10{,}000$ bootstrap samples $x^{*b}$ of size $N$ drawn with replacement (NumPy seed 1);
+  $\hat\mu^{*b}$, $\hat\mu^{*b}_{med}$, $\hat\mu^{*b}_{0.1}$: the statistic on sample $b$.
+\end{notacao}
+
+\passo{(a) Mean}{}
+\begin{equation}\label{q7:mean}
+\hat\mu=\frac1N\sum_{i=1}^Nx_i=22.5328 .
+\end{equation}
+
+\passo{(b) Formula standard error}{}
+\begin{equation}\label{q7:se}
+\mathrm{SE}(\hat\mu)=\frac{s}{\sqrt N}.
+\end{equation}
+Substituting into \eqref{q7:se}:
+\[
+\mathrm{SE}(\hat\mu)=\frac{9.1971}{\sqrt{506}}=\frac{9.1971}{22.4944}=0.4089 .
+\]
+If we could draw many samples of 506 tracts, their means would scatter around the population mean
+with a standard deviation of about 0.41 (roughly 409 US dollars).
+
+\passo{(c) Bootstrap standard error}{}
+\begin{equation}\label{q7:seb}
+\mathrm{SE}_B(\hat\mu)=\sqrt{\frac1{B-1}\sum_{b=1}^B\Big(\hat\mu^{*b}-\frac1B\sum_{b'=1}^B\hat\mu^{*b'}\Big)^2}=0.4098 .
+\end{equation}
+It agrees with \eqref{q7:se} to within $0.0009$, the size of the Monte Carlo error of $B=10{,}000$
+replicates: for the mean, the bootstrap reproduces the textbook formula.
+
+\passo{(d) 95\% intervals}{Using the two-standard-error rule with \eqref{q7:seb}:}
+\begin{equation}\label{q7:ci}
+[\hat\mu-2\,\mathrm{SE},\ \hat\mu+2\,\mathrm{SE}].
+\end{equation}
+Substituting into \eqref{q7:ci}:
+\begin{align*}
+&[\,22.5328-2(0.4098),\ 22.5328+2(0.4098)\,]\\
+&=[\,22.5328-0.8196,\ 22.5328+0.8196\,]=[\,21.7132,\ 23.3524\,].
+\end{align*}
+With \texttt{Boston['medv'].std()} $=s$ in \eqref{q7:se}: $[\,22.5328-0.8177,\ 22.5328+0.8177\,]=[\,21.7151,\ 23.3505\,]$.
+The two intervals differ only in the third decimal.
+
+\passo{(e) Median}{With $N$ even, $\hat\mu_{med}$ is the average of the 253rd and 254th ordered values:
+$\hat\mu_{med}=21.2$.}
+
+\passo{(f) Bootstrap SE of the median}{Applying \eqref{q7:seb} to $\hat\mu^{*b}_{med}$:
+$\mathrm{SE}_B(\hat\mu_{med})=0.3796$. The median is estimated about as precisely as the mean, even a
+little more: \texttt{medv} is right-skewed and capped at 50, and the median ignores the tail
+observations that inflate the variance of the mean.}
+
+\passo{(g) Tenth percentile}{\texttt{np.percentile(medv, 10)} (linear interpolation) gives
+$\hat\mu_{0.1}=12.75$.}
+
+\passo{(h) Bootstrap SE of the tenth percentile}{Applying \eqref{q7:seb} to $\hat\mu^{*b}_{0.1}$:
+$\mathrm{SE}_B(\hat\mu_{0.1})=0.5080$, larger than for the median. Fewer observations lie near the 10th
+percentile, so it moves more from sample to sample; asymptotically
+$\mathrm{SE}(\hat q_p)\approx\sqrt{p(1-p)/N}/f(q_p)$, which grows where the density $f$ is low.}
+
+\passo{Python}{}
+{\small
+\begin{verbatim}
+medv = pd.read_csv("Listas/data/Boston.csv")["medv"].to_numpy()   # N = 506
+mu, se = medv.mean(), medv.std(ddof=1) / np.sqrt(len(medv))       # 22.5328, 0.4089
+rng = np.random.default_rng(1)
+boot = medv[rng.integers(0, 506, size=(10000, 506))]              # B = 10,000 samples
+boot.mean(1).std(ddof=1)                     # 0.4098
+np.median(boot, 1).std(ddof=1)               # 0.3796   (median 21.2)
+np.percentile(boot, 10, axis=1).std(ddof=1)  # 0.5080   (10th percentile 12.75)
+\end{verbatim}
+}
+
+\intuicao{The bootstrap replaces a formula by resampling: for the mean it reproduces $s/\sqrt N$, and
+for the median and percentiles, which have no simple formula, it is the practical tool. The SEs
+also show that tail quantiles are noisier than central ones.}
+\refbib{ISLP (2023), §5.2 (the bootstrap, pp.~212--215) and §3.1.2 (the two standard error rule (3.9)).}
+\end{sol}
+
+% =============================================================================
+\bloco{5}{Bolfarine \& Sandoval, \textit{Introdução à Inferência Estatística}}{B 1.4, 1.9, 1.12 $\to$ 2.2, 2.4, 2.10 $\to$ 3.6, 3.13, 3.17}
+
+\questao{B 1.4 --- MSE of $S^2$ and $\hat\sigma^2$.}
+\fonte{Bolfarine, H. and Sandoval, M.~C. (2010), \textit{Introdução à Inferência Estatística},
+§1.4 Exercícios, Exercício~1.4, p.~13 --- reproduced verbatim. The expressions it refers to are
+reproduced verbatim from Exemplo~1.3.6, p.~9.}
+
+\begin{otherlanguage}{brazil}
+\textbf{1.4.} Verifique a validade das expressões (1.3.10) e (1.3.11).
+
+\smallskip
+\emph{Expressões referidas (Exemplo 1.3.6, p.~9):} ``Sejam $X_1,\dots,X_n$ uma amostra aleatória da
+variável aleatória $X\sim N(\mu,\sigma^2)$. Conforme visto no Exemplo 1.3.3, $\hat\sigma^2$ é um
+estimador viciado para $\sigma^2$. De (1.3.3) segue que
+\[ S^2=\frac{n}{n-1}\hat\sigma^2=\frac1{n-1}\sum_{i=1}^n(X_i-\overline X)^2 \]
+é um estimador não viciado para $\sigma^2$. Por outro lado, temos (ver Exercício 1.4) que
+\[ EQM[S^2]=Var[S^2]=\frac{2\sigma^4}{n-1}, \tag{1.3.10}\]
+e que
+\[ EQM[\hat\sigma^2]=\frac{2\sigma^4}{(n-1)}\left[1-\frac{(3n-1)}{2n^2}\right].\text{''} \tag{1.3.11}\]
+\end{otherlanguage}
+\resolespaco
+\begin{sol}
+\solhead
+\begin{notacao}
+\item $X_1,\dots,X_n$ i.i.d.\ $N(\mu,\sigma^2)$, $n\ge2$; $\overline X$: sample mean.
+\item $\hat\sigma^2=\frac1n\sum_i(X_i-\overline X)^2$ (MLE, Exemplo 1.3.3); $S^2=\frac1{n-1}\sum_i(X_i-\overline X)^2$.
+\item $EQM[T]=\E[(T-\sigma^2)^2]$: mean squared error; $\chi^2_\nu$: chi-square with $\nu$ degrees of freedom.
+\end{notacao}
+
+\passo{Sampling distribution}{For a normal sample (Student--Fisher theorem),}
+\begin{equation}\label{q8:chi}
+\frac{(n-1)S^2}{\sigma^2}\sim\chi^2_{n-1},\qquad \E(\chi^2_\nu)=\nu,\quad \Var(\chi^2_\nu)=2\nu .
+\end{equation}
+
+\passo{Moments of $S^2$}{Writing $S^2=\frac{\sigma^2}{n-1}\cdot\frac{(n-1)S^2}{\sigma^2}$ and using \eqref{q8:chi}:}
+\begin{align}
+\E[S^2]&=\frac{\sigma^2}{n-1}\,(n-1)=\sigma^2, \label{q8:es2}\\
+\Var[S^2]&=\frac{\sigma^4}{(n-1)^2}\,\big(2(n-1)\big)=\frac{2\sigma^4}{n-1}. \label{q8:vs2}
+\end{align}
+
+\passo{(1.3.10)}{The decomposition}
+\begin{equation}\label{q8:mse}
+EQM[T]=\Var[T]+\big(\E[T]-\sigma^2\big)^2
+\end{equation}
+with \eqref{q8:es2} (zero bias) and \eqref{q8:vs2} substituted gives
+$EQM[S^2]=\frac{2\sigma^4}{n-1}+(0)^2=\frac{2\sigma^4}{n-1}$, which is (1.3.10).
+
+\passo{Moments of $\hat\sigma^2$}{Since}
+\begin{equation}\label{q8:rel}
+\hat\sigma^2=\frac{n-1}{n}S^2 ,
+\end{equation}
+substituting \eqref{q8:es2} and \eqref{q8:vs2}:
+\begin{align}
+\E[\hat\sigma^2]&=\frac{n-1}{n}\,(\sigma^2)\;\Longrightarrow\;\text{bias}=\frac{n-1}{n}\sigma^2-\sigma^2=-\frac{\sigma^2}{n}, \label{q8:bias}\\
+\Var[\hat\sigma^2]&=\frac{(n-1)^2}{n^2}\Big(\frac{2\sigma^4}{n-1}\Big)=\frac{2(n-1)\sigma^4}{n^2}. \label{q8:vhat}
+\end{align}
+
+\passo{(1.3.11)}{Substituting \eqref{q8:bias} and \eqref{q8:vhat} into \eqref{q8:mse}:}
+\begin{equation}\label{q8:msehat}
+EQM[\hat\sigma^2]=\frac{2(n-1)\sigma^4}{n^2}+\Big(-\frac{\sigma^2}{n}\Big)^2=\frac{(2n-1)\sigma^4}{n^2}.
+\end{equation}
+Expanding the book's form:
+\[
+\frac{2\sigma^4}{n-1}\left[1-\frac{3n-1}{2n^2}\right]=\frac{2\sigma^4}{n-1}\cdot\frac{2n^2-3n+1}{2n^2}
+=\frac{2\sigma^4}{n-1}\cdot\frac{(2n-1)(n-1)}{2n^2}=\frac{(2n-1)\sigma^4}{n^2},
+\]
+equal to \eqref{q8:msehat}, which verifies (1.3.11).
+
+\passo{Comparison}{The bracket in (1.3.11) is below 1 for every $n\ge1$, so
+$EQM[\hat\sigma^2]<EQM[S^2]$. For $n=10$: $EQM[S^2]=2/9\,\sigma^4=0.2222\,\sigma^4$ and
+$EQM[\hat\sigma^2]=19/100\,\sigma^4=0.19\,\sigma^4$.}
+
+\intuicao{Multiplying $S^2$ by $(n-1)/n<1$ adds a small downward bias but cuts the variance by more, so
+the biased MLE wins on MSE. Unbiasedness is one criterion among several, not a guarantee of accuracy.}
+\refbib{Bolfarine \& Sandoval (2010), §1.3, Exemplos 1.3.3 and 1.3.6 (pp.~6--9).}
+\end{sol}
+
+\questao{B 1.9 --- Bernoulli: unbiased $X$ versus the constant $1/2$.}
+\fonte{Bolfarine, H. and Sandoval, M.~C. (2010), \textit{Introdução à Inferência Estatística},
+§1.4 Exercícios, Exercício~1.9, p.~14 --- reproduced verbatim.}
+
+\begin{otherlanguage}{brazil}
+\textbf{1.9.} Seja $X$ uma única variável aleatória com distribuição de Bernoulli com parâmetro
+$\theta$. Sejam $\hat\theta_1=X$ e $\hat\theta_2=1/2$ dois estimadores de $\theta$.\\
+(i) Verifique se $\hat\theta_1$ e $\hat\theta_2$ são não viciados para $\theta$.\\
+(ii) Compare os $EQMs$. Faça um gráfico dos $EQMs$ como função de $\theta$.
+\end{otherlanguage}
+\resolespaco
+\begin{sol}
+\solhead
+\begin{notacao}
+\item $X\sim\text{Bernoulli}(\theta)$, $\theta\in(0,1)$: $P(X=1)=\theta$, $\E X=\theta$, $\Var X=\theta(1-\theta)$.
+\item $EQM_j(\theta)=\E[(\hat\theta_j-\theta)^2]$, $j=1,2$.
+\end{notacao}
+
+\passo{(i) Bias}{}
+\begin{equation}\label{q9:bias}
+\E[\hat\theta_1]=\E[X]=\theta,\qquad \E[\hat\theta_2]=\tfrac12 .
+\end{equation}
+$\hat\theta_1$ is unbiased; $\hat\theta_2$ has bias $\tfrac12-\theta$, so it is unbiased only at $\theta=1/2$.
+
+\passo{(ii) MSEs}{Using $EQM=\Var+\text{bias}^2$ with \eqref{q9:bias}:}
+\begin{align}
+EQM_1(\theta)&=\theta(1-\theta)+0^2=\theta(1-\theta), \label{q9:m1}\\
+EQM_2(\theta)&=0+\big(\tfrac12-\theta\big)^2=\big(\tfrac12-\theta\big)^2. \label{q9:m2}
+\end{align}
+
+\passo{(ii) Where each wins}{$EQM_2<EQM_1$ means, by \eqref{q9:m1}--\eqref{q9:m2},}
+\[
+\tfrac14-\theta+\theta^2<\theta-\theta^2 .
+\]
+Collecting terms:
+\begin{equation}\label{q9:quad}
+2\theta^2-2\theta+\tfrac14<0 .
+\end{equation}
+The roots of \eqref{q9:quad} are
+\[
+\theta=\frac{2\pm\sqrt{4-4\cdot2\cdot\frac14}}{2\cdot2}=\frac{2\pm\sqrt2}{4},
+\quad\text{i.e.}\quad 0.1464\ \text{and}\ 0.8536 .
+\]
+So $\hat\theta_2=1/2$ has smaller MSE for $\theta\in(0.1464,\,0.8536)$ and $\hat\theta_1=X$ for
+$\theta$ outside it; the MSEs are equal at the two roots.
+\begin{center}
+\begin{tikzpicture}
+\begin{axis}[width=0.55\linewidth,height=5cm,xlabel={$\theta$},ylabel={$EQM$},xmin=0,xmax=1,
+  ymin=0,ymax=0.27,samples=101,domain=0:1,legend pos=outer north east,legend style={font=\small},
+  every axis plot/.append style={thick}]
+\addplot[blue!60!black] {x*(1-x)}; \addlegendentry{$EQM_1=\theta(1-\theta)$}
+\addplot[red!70!black,dashed] {(0.5-x)^2}; \addlegendentry{$EQM_2=(1/2-\theta)^2$}
+\addplot[gray,densely dotted] coordinates {(0.1464,0) (0.1464,0.125)};
+\addplot[gray,densely dotted] coordinates {(0.8536,0) (0.8536,0.125)};
+\end{axis}
+\end{tikzpicture}
+\end{center}
+
+\intuicao{A constant guess has zero variance and is excellent when it happens to be near the truth,
+and poor otherwise. Neither estimator has smaller MSE for every $\theta$, so MSE alone cannot rank
+them; this is why the theory restricts the class (unbiased estimators) before looking for a best one.}
+\refbib{Bolfarine \& Sandoval (2010), §1.3 (erro quadrático médio, pp.~4--13).}
+\end{sol}
+
+\questao{B 1.12 --- $U(0,\theta)$: $c_1\overline X$ versus $c_2X_{(n)}$.}
+\fonte{Bolfarine, H. and Sandoval, M.~C. (2010), \textit{Introdução à Inferência Estatística},
+§1.4 Exercícios, Exercício~1.12, p.~14 --- reproduced verbatim.}
+
+\begin{otherlanguage}{brazil}
+\textbf{1.12.} Sejam $X_1,\dots,X_n$ uma amostra aleatória de tamanho $n$ da distribuição de uma
+variável aleatória $X\sim U(0,\theta)$. Considere os estimadores $\hat\theta_1=c_1\overline X$ e
+$\hat\theta_2=c_2X_{(n)}$.\\
+(i) Encontre $c_1$ e $c_2$ que tornam os estimadores não viciados.\\
+(ii) Encontre e compare os $EQMs$ dos dois estimadores.
+\end{otherlanguage}
+\resolespaco
+\begin{sol}
+\solhead
+\begin{notacao}
+\item $X_i$ i.i.d.\ $U(0,\theta)$, $\theta>0$: $\E X=\theta/2$, $\Var X=\theta^2/12$.
+\item $X_{(n)}=\max_iX_i$; $c_1,c_2>0$ constants; $EQM_j=\E[(\hat\theta_j-\theta)^2]$.
+\end{notacao}
+
+\passo{Distribution of $X_{(n)}$}{$X_{(n)}\le x$ iff every $X_i\le x$, so for $0\le x\le\theta$}
+\begin{equation}\label{q10:cdf}
+F_{(n)}(x)=\Big(\frac x\theta\Big)^n,\qquad f_{(n)}(x)=\frac{n\,x^{n-1}}{\theta^n}
+\end{equation}
+(Bolfarine's (1.3.14)). Its moments follow from \eqref{q10:cdf}:
+\begin{equation}\label{q10:mom}
+\E[X_{(n)}^r]=\int_0^\theta x^r\frac{nx^{n-1}}{\theta^n}dx=\frac{n\,\theta^r}{n+r}.
+\end{equation}
+Setting $r=1,2$ in \eqref{q10:mom}:
+\begin{equation}\label{q10:m12}
+\E[X_{(n)}]=\frac{n\theta}{n+1},\qquad \E[X_{(n)}^2]=\frac{n\theta^2}{n+2}.
+\end{equation}
+Hence
+\begin{equation}\label{q10:var}
+\Var[X_{(n)}]=\frac{n\theta^2}{n+2}-\Big(\frac{n\theta}{n+1}\Big)^2
+=\frac{n\theta^2\big[(n+1)^2-n(n+2)\big]}{(n+1)^2(n+2)}=\frac{n\theta^2}{(n+1)^2(n+2)}
+\end{equation}
+(Bolfarine's (1.3.15)).
+
+\passo{(i) Unbiasing constants}{$\E[c_1\overline X]=c_1\theta/2=\theta$ and, by \eqref{q10:m12},
+$\E[c_2X_{(n)}]=c_2\,n\theta/(n+1)=\theta$:}
+\begin{equation}\label{q10:c}
+c_1=2,\qquad c_2=\frac{n+1}{n}.
+\end{equation}
+
+\passo{(ii) MSE of $\hat\theta_1$}{Both are unbiased, so $EQM=\Var$. With $\Var\overline X=\theta^2/(12n)$:}
+\begin{equation}\label{q10:m1}
+EQM_1=\Var(2\overline X)=4\cdot\frac{\theta^2}{12n}=\frac{\theta^2}{3n}.
+\end{equation}
+
+\passo{(ii) MSE of $\hat\theta_2$}{Substituting \eqref{q10:c} and \eqref{q10:var}:}
+\begin{equation}\label{q10:m2}
+EQM_2=\Big(\frac{n+1}{n}\Big)^2\cdot\frac{n\theta^2}{(n+1)^2(n+2)}=\frac{\theta^2}{n(n+2)}.
+\end{equation}
+
+\passo{(ii) Comparison}{Dividing \eqref{q10:m2} by \eqref{q10:m1}:}
+\begin{equation}\label{q10:ratio}
+\frac{EQM_2}{EQM_1}=\frac{\theta^2/[n(n+2)]}{\theta^2/(3n)}=\frac{3}{n+2},
+\end{equation}
+which is $1$ at $n=1$ (both estimators are $2X_1$) and below 1 for every $n\ge2$. For $n=10$,
+$\theta=1$: $EQM_1=1/30=0.0333$, $EQM_2=1/120=0.0083$, ratio $3/12=0.25$. A Monte Carlo run with
+200{,}000 samples (check script) gives $0.0333$ and $0.0084$.
+
+\intuicao{$X_{(n)}$ is sufficient for $\theta$ and sits right below the upper end of the support,
+which is exactly what we estimate; $\overline X$ throws that information away. Because the support
+depends on $\theta$, the MSE of $\hat\theta_2$ falls like $1/n^2$, faster than the $1/n$ of regular
+problems (Cramér--Rao does not apply).}
+\refbib{Bolfarine \& Sandoval (2010), §1.3, Exemplo 1.3.8 and (1.3.14)--(1.3.15) (pp.~10--11).}
+\end{sol}
+
+\questao{B 2.2 --- Binomial$(2,\theta)$: Cramér--Rao bound and an efficient estimator.}
+\fonte{Bolfarine, H. and Sandoval, M.~C. (2010), \textit{Introdução à Inferência Estatística},
+§2.6 Exercícios, Exercício~2.2, p.~32 --- reproduced verbatim.}
+
+\begin{otherlanguage}{brazil}
+\textbf{2.2.} Sejam $X_1,\dots,X_n$ uma amostra aleatória da variável aleatória
+$X\sim\mathit{Binomial}(2,\theta)$.\\
+(i) Encontre o limite inferior da variância dos estimadores não viciados de $\theta$.\\
+(ii) Encontre uma estatística suficiente para $\theta$.\\
+(iii) Obtenha um estimador não viciado para $\theta$ que seja função da estatística suficiente.\\
+(iv) Verifique se o estimador é eficiente.
+\end{otherlanguage}
+\resolespaco
+\begin{sol}
+\solhead
+\begin{notacao}
+\item $f(x\mid\theta)=\binom2x\theta^x(1-\theta)^{2-x}$, $x\in\{0,1,2\}$, $\theta\in(0,1)$;
+  $\E X=2\theta$, $\Var X=2\theta(1-\theta)$.
+\item $LI(\theta)$: Cramér--Rao lower bound, Bolfarine (2.1.1); $T=\sum_iX_i\sim\text{Binomial}(2n,\theta)$.
+\end{notacao}
+
+\passo{(i) Score}{}
+\begin{equation}\label{q11:logf}
+\log f(x\mid\theta)=\log\tbinom2x+x\log\theta+(2-x)\log(1-\theta).
+\end{equation}
+Differentiating \eqref{q11:logf}:
+\[
+\frac{\partial\log f}{\partial\theta}=\frac x\theta-\frac{2-x}{1-\theta}
+=\frac{x(1-\theta)-(2-x)\theta}{\theta(1-\theta)} .
+\]
+Simplifying the numerator:
+\begin{equation}\label{q11:score}
+\frac{\partial\log f}{\partial\theta}=\frac{x-2\theta}{\theta(1-\theta)}.
+\end{equation}
+
+\passo{(i) Information and bound}{Squaring \eqref{q11:score} and taking expectations, with $\E(X-2\theta)^2=\Var X$:}
+\begin{equation}\label{q11:info}
+\E\Big[\Big(\frac{\partial\log f(X\mid\theta)}{\partial\theta}\Big)^2\Big]=\frac{2\theta(1-\theta)}{\theta^2(1-\theta)^2}=\frac{2}{\theta(1-\theta)}.
+\end{equation}
+Substituting \eqref{q11:info} into Bolfarine's (2.1.1), $LI(\theta)=1/\{nE[(\partial\log f/\partial\theta)^2]\}$:
+\begin{equation}\label{q11:LI}
+LI(\theta)=\frac{1}{n\cdot\frac{2}{\theta(1-\theta)}}=\frac{\theta(1-\theta)}{2n}.
+\end{equation}
+
+\passo{(ii) Sufficient statistic}{The joint probability function is}
+\begin{equation}\label{q11:joint}
+\prod_{i=1}^nf(x_i\mid\theta)=\underbrace{\prod_{i=1}^n\tbinom2{x_i}}_{h(\mathbf x)}\;
+\underbrace{\theta^{\sum x_i}(1-\theta)^{2n-\sum x_i}}_{g_\theta(T(\mathbf x))},
+\end{equation}
+so by the factorisation criterion (Teorema 2.2.1) $T=\sum_{i=1}^nX_i$ is sufficient.
+
+\passo{(iii) Unbiased function of $T$}{$\E T=n\,\E X=2n\theta$, so}
+\begin{equation}\label{q11:est}
+\hat\theta=\frac{T}{2n}=\frac{\overline X}{2},\qquad \E\hat\theta=\frac{2n\theta}{2n}=\theta .
+\end{equation}
+
+\passo{(iv) Efficiency}{With $\Var T=2n\theta(1-\theta)$:}
+\begin{equation}\label{q11:var}
+\Var\hat\theta=\frac{\Var T}{4n^2}=\frac{2n\theta(1-\theta)}{4n^2}=\frac{\theta(1-\theta)}{2n}.
+\end{equation}
+\eqref{q11:var} equals \eqref{q11:LI}, so $e(\hat\theta)=LI(\theta)/\Var\hat\theta=1$: $\hat\theta$ is
+efficient (and, $T$ being complete, also the ENVVUM).
+
+\intuicao{A Binomial$(2,\theta)$ observation is two Bernoulli trials, so the sample is $2n$ trials and
+the natural estimator is the success proportion $T/(2n)$. The score \eqref{q11:score} is linear in
+$x$, which is the condition for the bound to be attained.}
+\refbib{Bolfarine \& Sandoval (2010), §2.1 (Teorema 2.1.1, pp.~15--19) and §2.2 (Teorema 2.2.1, pp.~20--23).}
+\end{sol}
+
+\questao{B 2.4 --- $X_1+2X_2$ is not sufficient for a Poisson mean.}
+\fonte{Bolfarine, H. and Sandoval, M.~C. (2010), \textit{Introdução à Inferência Estatística},
+§2.6 Exercícios, Exercício~2.4, p.~32 --- reproduced verbatim.}
+
+\begin{otherlanguage}{brazil}
+\textbf{2.4.} Sejam $X_1,X_2$ uma amostra aleatória da variável aleatória $X\sim\mathit{Poisson}(\theta)$.
+Mostre que $T=X_1+2X_2$ não é suficiente para $\theta$.
+\end{otherlanguage}
+\resolespaco
+\begin{sol}
+\solhead
+\begin{notacao}
+\item $X_1,X_2$ i.i.d.\ Poisson$(\theta)$, $P(X=x)=\theta^xe^{-\theta}/x!$, $\theta>0$; $T=X_1+2X_2$.
+\item Sufficiency (Definição 2.2.1): $P(\mathbf X=\mathbf x\mid T=t)$ does not depend on $\theta$.
+\end{notacao}
+
+\passo{Pick a value of $T$}{The pairs with $T=2$ are}
+\begin{equation}\label{q12:set}
+\{T=2\}=\{(X_1,X_2)=(2,0)\}\cup\{(X_1,X_2)=(0,1)\}.
+\end{equation}
+
+\passo{Probabilities}{By independence,}
+\begin{align}
+P(X_1=2,X_2=0)&=\frac{\theta^2e^{-\theta}}{2!}\cdot e^{-\theta}=\frac{\theta^2e^{-2\theta}}{2}, \label{q12:p20}\\
+P(X_1=0,X_2=1)&=e^{-\theta}\cdot\theta e^{-\theta}=\theta e^{-2\theta}. \label{q12:p01}
+\end{align}
+Adding \eqref{q12:p20} and \eqref{q12:p01} as \eqref{q12:set} requires:
+\begin{equation}\label{q12:pT}
+P(T=2)=e^{-2\theta}\Big(\frac{\theta^2}{2}+\theta\Big).
+\end{equation}
+
+\passo{Conditional probability}{Dividing \eqref{q12:p20} by \eqref{q12:pT}:}
+\[
+P(X_1=2,X_2=0\mid T=2)=\frac{\theta^2e^{-2\theta}/2}{e^{-2\theta}(\theta^2/2+\theta)}=\frac{\theta^2/2}{\theta^2/2+\theta}.
+\]
+Dividing numerator and denominator by $\theta/2$:
+\begin{equation}\label{q12:cond}
+P(X_1=2,X_2=0\mid T=2)=\frac{\theta}{\theta+2},
+\end{equation}
+which depends on $\theta$ (e.g.\ $1/3=0.3333$ at $\theta=1$, $2/4=0.5$ at $\theta=2$). So $T$ is not
+sufficient.
+
+\intuicao{The sufficient statistic here is $X_1+X_2$. Weighting $X_2$ twice merges sample points with
+different totals: $T=2$ mixes ``two events'' with ``one event'', and the split between these cases
+still carries information about $\theta$.}
+\refbib{Bolfarine \& Sandoval (2010), §2.2 (estatísticas suficientes, pp.~20--23; Exemplo 2.2.4).}
+\end{sol}
+
+\questao{B 2.10 --- ENVVUM of $\theta(1-\theta)$ for Bernoulli data.}
+\fonte{Bolfarine, H. and Sandoval, M.~C. (2010), \textit{Introdução à Inferência Estatística},
+§2.6 Exercícios, Exercício~2.10, p.~33 --- reproduced verbatim.}
+
+\begin{otherlanguage}{brazil}
+\textbf{2.10.} Sejam $X_1,\dots,X_n$ uma amostra aleatória da variável aleatória.
+$X\sim\mathit{Bernoulli}(\theta)$. Obtenha o ENVVUM para $\theta(1-\theta)$.\\
+Sugestão: verifique se $S^2=\frac{n}{(n-1)}\overline X(1-\overline X)$ é não viciado para $\theta(1-\theta)$.
+\end{otherlanguage}
+\resolespaco
+\begin{sol}
+\solhead
+\begin{notacao}
+\item $X_i$ i.i.d.\ Bernoulli$(\theta)$, $\theta\in(0,1)$, $n\ge2$; $T=\sum_iX_i\sim\text{Binomial}(n,\theta)$;
+  $\overline X=T/n$.
+\item ENVVUM: \emph{estimador não viciado de variância uniformemente mínima} (UMVUE).
+\end{notacao}
+
+\passo{Moments of $\overline X$}{}
+\begin{equation}\label{q13:m}
+\E\overline X=\theta,\qquad \Var\overline X=\frac{\theta(1-\theta)}{n}.
+\end{equation}
+Hence
+\begin{equation}\label{q13:m2}
+\E\overline X^2=\Var\overline X+(\E\overline X)^2=\frac{\theta(1-\theta)}{n}+\theta^2 .
+\end{equation}
+
+\passo{Bias of the plug-in}{Using \eqref{q13:m} and \eqref{q13:m2}:}
+\[
+\E\big[\overline X(1-\overline X)\big]=\E\overline X-\E\overline X^2=\theta-\Big(\frac{\theta(1-\theta)}{n}+\theta^2\Big).
+\]
+Since $\theta-\theta^2=\theta(1-\theta)$:
+\begin{equation}\label{q13:bias}
+\E\big[\overline X(1-\overline X)\big]=\theta(1-\theta)-\frac{\theta(1-\theta)}{n}=\frac{n-1}{n}\,\theta(1-\theta).
+\end{equation}
+
+\passo{Unbiased correction}{Multiplying \eqref{q13:bias} by $n/(n-1)$:}
+\begin{equation}\label{q13:unb}
+\E[S^2]=\frac{n}{n-1}\cdot\frac{n-1}{n}\,\theta(1-\theta)=\theta(1-\theta).
+\end{equation}
+
+\passo{Function of a complete sufficient statistic}{Substituting $\overline X=T/n$:}
+\begin{equation}\label{q13:T}
+S^2=\frac{n}{n-1}\cdot\frac Tn\Big(1-\frac Tn\Big)=\frac{T(n-T)}{n(n-1)} .
+\end{equation}
+$T$ is sufficient and complete for the Bernoulli family (one-parameter exponential family, Teorema
+2.5.2). By Lehmann--Scheffé (Teorema 2.5.3), the unbiased estimator \eqref{q13:unb} that is a function
+of $T$, \eqref{q13:T}, is the unique ENVVUM of $\theta(1-\theta)$.
+
+\intuicao{Since $X_i^2=X_i$, $S^2$ is exactly the usual sample variance with divisor $n-1$. The plug-in
+$\overline X(1-\overline X)$ is the MLE of $\theta(1-\theta)$ (Exemplo 3.2.1) and is biased downward by
+the factor $(n-1)/n$, the same correction as $\hat\sigma^2$ versus $S^2$ in B~1.4.}
+\refbib{Bolfarine \& Sandoval (2010), §2.5 (completude, Teoremas 2.5.2--2.5.3, pp.~29--32).}
+\end{sol}
+
+\questao{B 3.6 --- MLE of $\mu^2$ versus the unbiased $\overline X^2-1/n$.}
+\fonte{Bolfarine, H. and Sandoval, M.~C. (2010), \textit{Introdução à Inferência Estatística},
+§3.8 Exercícios, Exercício~3.6, p.~53 --- reproduced verbatim. Exercise 2.9, to which it refers, is
+reproduced verbatim from §2.6, p.~33.}
+
+\begin{otherlanguage}{brazil}
+\textbf{3.6.} Encontre o estimador de máxima verossimilhança de $\theta^2$ no Exercício 2.9 e compare
+seu erro quadrático médio com o do estimador eficiente $\hat\gamma$ dado no Exercício 2.9, (i).
+
+\smallskip
+\emph{Exercício referido (p.~33):} \textbf{2.9.} Sejam $X_1,\dots,X_n$ uma amostra aleatória da
+variável aleatória $X\sim N(\mu,1)$.\\
+(i) Mostre que o estimador $\hat\gamma=\overline X^2-1/n$ é não viciado para $g(\mu)=\mu^2$.\\
+(ii) Existe ENVVUM para $\mu^2$?\\
+(iii) Encontre o limite inferior da variância dos estimadores não viciados de $g(\mu)=\mu^2$ e
+verifique se $\hat\gamma$ é eficiente.
+\end{otherlanguage}
+
+\noindent{\small\emph{Note:} the parameter of Exercise 2.9 is $\mu$; the ``$\theta^2$'' of 3.6 is read as
+$\mu^2$.}
+\resolespaco
+\begin{sol}
+\solhead
+\begin{notacao}
+\item $X_i$ i.i.d.\ $N(\mu,1)$, $\mu\in\mathbb R$; $\overline X\sim N(\mu,1/n)$; $Z\sim N(0,1)$.
+\item $\widehat{\mu^2}$: MLE of $\mu^2$; $\hat\gamma=\overline X^2-1/n$; $EQM(T)=\E[(T-\mu^2)^2]$.
+\end{notacao}
+
+\passo{MLE}{The log-likelihood $\ell(\mu)=-\frac n2\log2\pi-\frac12\sum_i(x_i-\mu)^2$ has score
+$\sum_i(x_i-\mu)=0$, so $\hat\mu=\overline X$. The map $\mu\mapsto\mu^2$ is not one-to-one, but the
+likelihood of $\eta=\mu^2$, $L^*(\eta)=\max\{L(\sqrt\eta),L(-\sqrt\eta)\}$, is maximised at
+$\eta=\overline X^2$ (the extension of the invariance principle, Teorema 3.2.2):}
+\begin{equation}\label{q14:mle}
+\widehat{\mu^2}=\overline X^2 .
+\end{equation}
+
+\passo{Moments of $\overline X^2$}{Write}
+\begin{equation}\label{q14:Z}
+\overline X=\mu+\frac{Z}{\sqrt n}\;\Longrightarrow\;\overline X^2=\mu^2+\frac{2\mu Z}{\sqrt n}+\frac{Z^2}{n}.
+\end{equation}
+With $\E Z=0$, $\E Z^2=1$, $\Var Z^2=2$, $\Cov(Z,Z^2)=\E Z^3=0$, \eqref{q14:Z} gives
+\begin{align}
+\E\overline X^2&=\mu^2+\frac1n, \label{q14:E}\\
+\Var\overline X^2&=\frac{4\mu^2}{n}\Var Z+\frac{1}{n^2}\Var Z^2=\frac{4\mu^2}{n}+\frac{2}{n^2}. \label{q14:V}
+\end{align}
+
+\passo{MSE of the MLE}{By \eqref{q14:E} the bias is $1/n$; adding its square to \eqref{q14:V}:}
+\begin{equation}\label{q14:mse1}
+EQM(\overline X^2)=\frac{4\mu^2}{n}+\frac{2}{n^2}+\Big(\frac1n\Big)^2=\frac{4\mu^2}{n}+\frac{3}{n^2}.
+\end{equation}
+
+\passo{MSE of $\hat\gamma$}{By \eqref{q14:E}, $\E\hat\gamma=\mu^2$; subtracting a constant leaves the
+variance \eqref{q14:V} unchanged:}
+\begin{equation}\label{q14:mse2}
+EQM(\hat\gamma)=\Var\hat\gamma=\frac{4\mu^2}{n}+\frac{2}{n^2}.
+\end{equation}
+
+\passo{Comparison}{Subtracting \eqref{q14:mse2} from \eqref{q14:mse1}:}
+\[
+EQM(\overline X^2)-EQM(\hat\gamma)=\frac{3}{n^2}-\frac{2}{n^2}=\frac1{n^2}>0 ,
+\]
+so $\hat\gamma$ has smaller MSE for every $\mu$ and $n$. For $\mu=1$, $n=5$: $0.92$ versus $0.88$
+(Monte Carlo with 400{,}000 replicates reproduces both).
+
+\passo{A remark on ``eficiente''}{$\hat\gamma$ is a function of the complete sufficient statistic
+$\overline X$ and unbiased, so it is the ENVVUM (the answer to 2.9(ii)). It is \emph{not} efficient in
+the Cramér--Rao sense: the bound for $g(\mu)=\mu^2$ is $(g'(\mu))^2/n=4\mu^2/n$, strictly below
+\eqref{q14:mse2} (answer to 2.9(iii)). The word ``eficiente'' in 3.6 should be read as ``best unbiased''.}
+
+\intuicao{Squaring a noisy $\overline X$ adds the noise variance $1/n$ on average, so $\overline X^2$
+overestimates $\mu^2$; $\hat\gamma$ removes exactly that bias without adding variance. Invariance
+gives the MLE for free but says nothing about its finite-sample bias. ($\hat\gamma$ can be negative;
+$\max\{\hat\gamma,0\}$ would lower the MSE further.)}
+\refbib{Bolfarine \& Sandoval (2010), §3.2.1 (invariância, Teorema 3.2.2, p.~43) and §2.1 (pp.~15--19).}
+\end{sol}
+
+\questao{B 3.13 --- MLE of $P[X>1]$ for exponential data and its large-sample distribution.}
+\fonte{Bolfarine, H. and Sandoval, M.~C. (2010), \textit{Introdução à Inferência Estatística},
+§3.8 Exercícios, Exercício~3.13, p.~54 --- reproduced verbatim.}
+
+\begin{otherlanguage}{brazil}
+\textbf{3.13.} Sejam $X_1,\dots,X_n$ uma amostra aleatória da variável aleatória $X$ com distribuição
+exponencial com parâmetro $\theta$. Encontre o estimador de máxima verossimilhança de $g(\theta)=P[X>1]$
+e sua distribuição aproximada quando $n$ for grande.
+\end{otherlanguage}
+\resolespaco
+\begin{sol}
+\solhead
+\begin{notacao}
+\item $f(x\mid\theta)=\theta e^{-\theta x}$, $x>0$, $\theta>0$ (Bolfarine's parametrisation, Exemplo
+  3.2.3): $\E X=1/\theta$.
+\item $g(\theta)=P[X>1]=e^{-\theta}$; $I_F(\theta)$: Fisher information per observation.
+\end{notacao}
+
+\passo{MLE of $\theta$}{}
+\begin{equation}\label{q15:ll}
+\ell(\theta)=n\log\theta-\theta\sum_{i=1}^nx_i .
+\end{equation}
+Differentiating \eqref{q15:ll} and setting the score to zero:
+\begin{equation}\label{q15:mle}
+\ell'(\theta)=\frac n\theta-\sum_ix_i=0\;\Longrightarrow\;\hat\theta=\frac{1}{\overline X},
+\end{equation}
+a maximum since $\ell''(\theta)=-n/\theta^2<0$.
+
+\passo{MLE of $g$}{$g(\theta)=e^{-\theta}$ is one-to-one on $\theta>0$, so by invariance (Teorema 3.2.2)
+and \eqref{q15:mle}:}
+\begin{equation}\label{q15:g}
+g(\hat\theta)=e^{-1/\overline X}.
+\end{equation}
+
+\passo{Fisher information}{$\log f=\log\theta-\theta x$, so $\partial^2\log f/\partial\theta^2=-1/\theta^2$ and}
+\begin{equation}\label{q15:I}
+I_F(\theta)=-\E\Big[\frac{\partial^2\log f(X\mid\theta)}{\partial\theta^2}\Big]=\frac1{\theta^2}.
+\end{equation}
+
+\passo{Delta method}{$g'(\theta)=-e^{-\theta}$. Substituting it and \eqref{q15:I} into Bolfarine's (3.2.4),
+$\sqrt n\,(g(\hat\theta)-g(\theta))\overset{a}{\sim}N\big(0,(g'(\theta))^2/I_F(\theta)\big)$:}
+\[
+\sqrt n\,\big(e^{-1/\overline X}-e^{-\theta}\big)\overset{a}{\sim}N\Big(0,\ \frac{(-e^{-\theta})^2}{1/\theta^2}\Big).
+\]
+Simplifying the variance:
+\begin{equation}\label{q15:asy}
+e^{-1/\overline X}\overset{a}{\sim}N\Big(e^{-\theta},\ \frac{\theta^2e^{-2\theta}}{n}\Big).
+\end{equation}
+
+\intuicao{The MLE of a probability is the probability evaluated at the MLE, and the delta method turns
+the $1/n$ variance of $\hat\theta$ into a variance for $g(\hat\theta)$ scaled by $g'(\theta)^2$. The
+model-free alternative, the share of $X_i>1$, has variance $e^{-\theta}(1-e^{-\theta})/n$, never smaller
+than \eqref{q15:asy}: using the exponential model buys precision if the model is right.}
+\refbib{Bolfarine \& Sandoval (2010), §3.2.1--3.2.2, Exemplo 3.2.3 and (3.2.4) (p.~44).}
+\end{sol}
+
+\questao{B 3.17 --- consistency of the estimators in five examples.}
+\fonte{Bolfarine, H. and Sandoval, M.~C. (2010), \textit{Introdução à Inferência Estatística},
+§3.8 Exercícios, Exercício~3.17, p.~55 --- reproduced verbatim. The list of the examples' estimators
+below the statement is a summary (not verbatim) of pp.~37, 43, 44 and 51.}
+
+\begin{otherlanguage}{brazil}
+\textbf{3.17.} Verifique se os estimadores obtidos nos Exemplos 3.1.2, 3.1.3, 3.2.1, 3.2.3 e 3.6.2
+são consistentes.
+\end{otherlanguage}
+
+\smallskip
+\noindent{\small\emph{Estimators in the examples (summary):} 3.1.2, Bernoulli$(\theta)$:
+$\hat\theta=\overline X$; 3.1.3, $U(0,\theta)$: $\hat\theta=X_{(n)}$; 3.2.1, Bernoulli$(\theta)$:
+$g(\hat\theta)=\overline X(1-\overline X)$ for $\theta(1-\theta)$; 3.2.3, $Exp(\theta)$ with density
+$\theta e^{-\theta x}$: $g(\hat\theta)=e^{-1/\overline X}$ for $P_\theta[X>1]=e^{-\theta}$; 3.6.2,
+gamma$(\alpha,\beta)$ with density $\beta^\alpha x^{\alpha-1}e^{-\beta x}/\Gamma(\alpha)$, method of
+moments: $\hat\alpha=\overline X^2/\hat\sigma^2$, $\hat\beta=\overline X/\hat\sigma^2$,
+$\hat\sigma^2=\sum_i(X_i-\overline X)^2/n$.}
+\resolespaco
+\begin{sol}
+\solhead
+\begin{notacao}
+\item Consistency (Definição 3.7.1): $\lim_{n\to\infty}P(|\hat\theta-\theta|>\epsilon)=0$ for every
+  $\epsilon>0$, written $\hat\theta\xrightarrow{p}\theta$.
+\item $m_2=\frac1n\sum_iX_i^2$; $EQM(\hat\theta)=\E[(\hat\theta-\theta)^2]$.
+\end{notacao}
+
+\passo{Tools}{Markov's inequality applied to $(\hat\theta-\theta)^2$ (Chebyshev, as in Exemplo 3.7.1):}
+\begin{equation}\label{q16:cheb}
+P(|\hat\theta-\theta|>\epsilon)\le\frac{EQM(\hat\theta)}{\epsilon^2},
+\end{equation}
+so $EQM(\hat\theta)\to0$ implies consistency. And the continuous-mapping theorem (standard; not
+stated in Bolfarine): if $\hat\theta\xrightarrow{p}\theta$ and $h$ is continuous at $\theta$, then
+\begin{equation}\label{q16:cmt}
+h(\hat\theta)\xrightarrow{p}h(\theta),
+\end{equation}
+also for vectors $\hat\theta$.
+
+\passo{Exemplo 3.1.2: $\overline X$}{Unbiased with $EQM=\Var\overline X=\theta(1-\theta)/n\to0$, so by
+\eqref{q16:cheb} $\overline X\xrightarrow{p}\theta$. Consistent.}
+
+\passo{Exemplo 3.1.3: $X_{(n)}$}{Since $X_{(n)}\le\theta$, for $0<\epsilon<\theta$ and by
+\eqref{q10:cdf}:}
+\begin{equation}\label{q16:max}
+P(|X_{(n)}-\theta|>\epsilon)=P(X_{(n)}<\theta-\epsilon)=\Big(\frac{\theta-\epsilon}{\theta}\Big)^n\xrightarrow[n\to\infty]{}0 ,
+\end{equation}
+and for $\epsilon\ge\theta$ the probability is 0. Consistent (although biased, Exemplo 1.3.8).
+
+\passo{Exemplo 3.2.1: $\overline X(1-\overline X)$}{$\overline X\xrightarrow{p}\theta$ (Exemplo 3.1.2) and
+$h(t)=t(1-t)$ is continuous, so by \eqref{q16:cmt} $\overline X(1-\overline X)\xrightarrow{p}\theta(1-\theta)$.
+Consistent; its bias $-\theta(1-\theta)/n$ from \eqref{q13:bias} vanishes.}
+
+\passo{Exemplo 3.2.3: $e^{-1/\overline X}$}{$\E X=1/\theta$ and $\Var X=1/\theta^2$, so
+$EQM(\overline X)=1/(n\theta^2)\to0$ and, by \eqref{q16:cheb},}
+\begin{equation}\label{q16:exp}
+\overline X\xrightarrow{p}\frac1\theta .
+\end{equation}
+$h(t)=e^{-1/t}$ is continuous at $t=1/\theta>0$; by \eqref{q16:cmt} and \eqref{q16:exp},
+$e^{-1/\overline X}\xrightarrow{p}e^{-\theta}$. Consistent.
+
+\passo{Exemplo 3.6.2: $\hat\alpha,\hat\beta$}{For the gamma, $\E X=\alpha/\beta$,
+$\E X^2=\alpha/\beta^2+\alpha^2/\beta^2$, and all moments are finite, so by \eqref{q16:cheb}
+(the variances of $\overline X$ and $m_2$ are $O(1/n)$):}
+\begin{equation}\label{q16:mom}
+\overline X\xrightarrow{p}\frac\alpha\beta,\qquad m_2\xrightarrow{p}\frac{\alpha}{\beta^2}+\frac{\alpha^2}{\beta^2}.
+\end{equation}
+Since $\hat\sigma^2=m_2-\overline X^2$, \eqref{q16:cmt} applied to \eqref{q16:mom} gives
+\begin{equation}\label{q16:s2}
+\hat\sigma^2\xrightarrow{p}\Big(\frac{\alpha}{\beta^2}+\frac{\alpha^2}{\beta^2}\Big)-\Big(\frac\alpha\beta\Big)^2=\frac{\alpha}{\beta^2}.
+\end{equation}
+The maps $(a,b)\mapsto a^2/b$ and $(a,b)\mapsto a/b$ are continuous for $b>0$; by \eqref{q16:cmt} with
+\eqref{q16:mom} and \eqref{q16:s2}:
+\[
+\hat\alpha=\frac{\overline X^2}{\hat\sigma^2}\xrightarrow{p}\frac{(\alpha/\beta)^2}{\alpha/\beta^2}=\alpha,
+\qquad
+\hat\beta=\frac{\overline X}{\hat\sigma^2}\xrightarrow{p}\frac{\alpha/\beta}{\alpha/\beta^2}=\beta .
+\]
+Consistent. All five estimators are consistent.
+
+\intuicao{Consistency is a weak, large-sample property: biased estimators ($X_{(n)}$,
+$\overline X(1-\overline X)$, $\hat\alpha$) can be consistent, and smooth functions of consistent
+estimators inherit it. Sample moments converge by the law of large numbers, and everything built
+continuously from them follows.}
+\refbib{Bolfarine \& Sandoval (2010), §3.7 (estimadores consistentes, Definição 3.7.1 and Exemplo
+3.7.1, p.~52); examples on pp.~37, 43, 44, 51.}
+\end{sol}
+
+% =============================================================================
+\bloco{6}{Morettin \& Singer, \textit{Estatística e Ciência de Dados}}{MS 6.15}
+
+\questao{MS 6.15 --- decomposition of the total sum of squares.}
+\fonte{Morettin, P.~A. and Singer, J.~M. (2021), \textit{Estatística e Ciência de Dados} (versão
+preliminar, abril 2021), §6.7 Exercícios, Exercício~15, p.~240 --- reproduced verbatim. The
+definitions it uses are reproduced verbatim from §6.2, p.~185.}
+
+\begin{otherlanguage}{brazil}
+\textbf{15)} Mostre que $SQTot=SQRes+SQReg$.
+
+\smallskip
+\emph{Definições (§6.2, p.~185):} ``[\dots] em que a \textbf{soma de quadrados total} é
+$SQTot=\sum_{i=1}^n(y_i-\overline y)^2$, a \textbf{soma de quadrados dos resíduos} é
+$SQRes=\sum_{i=1}^n(y_i-\widehat y_i)^2$ e a \textbf{soma de quadrados da regressão} é
+$SQReg=\sum_{i=1}^n(\widehat y_i-\overline y)^2$.'' (Model: $y_i=\alpha+\beta x_i+e_i$, with
+$\widehat y_i=\widehat\alpha+\widehat\beta x_i$ fitted by least squares.)
+\end{otherlanguage}
+\resolespaco
+\begin{sol}
+\solhead
+\begin{notacao}
+\item $(x_i,y_i)$, $i=1,\dots,n$; $\widehat\alpha,\widehat\beta$: least-squares estimates (MS (6.6)--(6.7));
+  $\widehat y_i=\widehat\alpha+\widehat\beta x_i$: fitted values; $\widehat e_i=y_i-\widehat y_i$: residuals;
+  $\overline y$: sample mean of $y$.
+\item $Q(\alpha,\beta)=\sum_i(y_i-\alpha-\beta x_i)^2$: least-squares criterion.
+\end{notacao}
+
+\passo{Normal equations}{Setting the derivatives of $Q$ to zero at $(\widehat\alpha,\widehat\beta)$:}
+\begin{align}
+\frac{\partial Q}{\partial\alpha}=-2\sum_i(y_i-\widehat\alpha-\widehat\beta x_i)=0&\;\Longrightarrow\;\sum_i\widehat e_i=0, \label{q17:ne1}\\
+\frac{\partial Q}{\partial\beta}=-2\sum_ix_i(y_i-\widehat\alpha-\widehat\beta x_i)=0&\;\Longrightarrow\;\sum_ix_i\widehat e_i=0. \label{q17:ne2}
+\end{align}
+
+\passo{Decompose each deviation}{Adding and subtracting $\widehat y_i$:}
+\begin{equation}\label{q17:dev}
+y_i-\overline y=\widehat e_i+(\widehat y_i-\overline y).
+\end{equation}
+Squaring \eqref{q17:dev} and summing over $i$:
+\begin{equation}\label{q17:sq}
+\sum_i(y_i-\overline y)^2=\sum_i\widehat e_i^{\,2}+\sum_i(\widehat y_i-\overline y)^2+2\sum_i\widehat e_i(\widehat y_i-\overline y).
+\end{equation}
+
+\passo{The cross term vanishes}{Substituting $\widehat y_i=\widehat\alpha+\widehat\beta x_i$ in the cross term:}
+\[
+\sum_i\widehat e_i(\widehat y_i-\overline y)=\sum_i\widehat e_i\big((\widehat\alpha+\widehat\beta x_i)-\overline y\big)
+=(\widehat\alpha-\overline y)\sum_i\widehat e_i+\widehat\beta\sum_ix_i\widehat e_i .
+\]
+Substituting \eqref{q17:ne1} and \eqref{q17:ne2}:
+\begin{equation}\label{q17:cross}
+\sum_i\widehat e_i(\widehat y_i-\overline y)=(\widehat\alpha-\overline y)\,(0)+\widehat\beta\,(0)=0 .
+\end{equation}
+
+\passo{Conclusion}{Substituting \eqref{q17:cross} into \eqref{q17:sq}:}
+\[
+\underbrace{\sum_i(y_i-\overline y)^2}_{SQTot}=\underbrace{\sum_i\widehat e_i^{\,2}}_{SQRes}+\underbrace{\sum_i(\widehat y_i-\overline y)^2}_{SQReg}.
+\]
+The same proof covers multiple regression with an intercept: the normal equations
+$\mathbf X^\top\widehat{\mathbf e}=\mathbf 0$ include the column of ones (giving \eqref{q17:ne1}) and
+imply $\widehat{\mathbf y}^\top\widehat{\mathbf e}=\widehat{\boldsymbol\beta}^\top\mathbf X^\top\widehat{\mathbf e}=0$.
+Without an intercept \eqref{q17:ne1} fails in general and so does the identity. (The check script
+verifies it numerically on simulated data.)
+
+\intuicao{Geometrically, the residual vector is orthogonal to every column of the design, hence to
+$\widehat{\mathbf y}-\overline y\mathbf 1$; the decomposition is Pythagoras' theorem in $\mathbb R^n$.
+It is what makes $R^2=SQReg/SQTot$ a share between 0 and 1.}
+\refbib{Morettin \& Singer (2021), §6.2 (pp.~184--185) and Figura 6.34 with the result on p.~227.}
+\end{sol}
+
+\end{document}

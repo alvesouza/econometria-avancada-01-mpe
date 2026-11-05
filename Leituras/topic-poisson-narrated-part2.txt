@@ -1,0 +1,535 @@
+Advanced Econometrics. Topic narration: Poisson inference. Narrated study notes, part 2 of 2.
+
+How to listen.
+
+This is the second of two files narrating the study notes on Poisson inference for the course Econometria Avançada, Insper. File 1 covered the model, the likelihood, sufficiency, the maximum likelihood estimator and its properties, efficiency, the Monte Carlo study, invariance, and the coal-mining data: overdispersion, the profile likelihood, the likelihood-ratio test with Wilks' theorem, and profiling against integrating. This file continues with the first Bayesian Poisson example; the general Gamma-Poisson update and the predictive distribution; and Poisson regression against Gaussian regression. Then the support parts: pitfalls, implementation, the reading route, a glossary, the spoken formula sheet, the self-test, and the whole topic in five lines. Parts are numbered across both files: parts one to ten are in file 1, and parts eleven to twenty-one are in this file.
+
+Math is spoken in words, and the equation numbers are those of the written notes. Two facts from file 1 are used here. The coal series has 112 years and 191 disasters, with a single-rate estimate of 1.705. And its first 41 years, 1851 to 1891, contain 127 disasters, with a maximum likelihood estimate of 127 over 41, which is 3.098.
+
+
+Part eleven. The first Bayesian example: an exponential prior and a Gamma posterior.
+
+This part covers the handwritten notes class1 poisson with exponential prior, pages 1 to 3, the site's R page class1 poisson for the 1851 to 1891 data, and Greenberg section 2.2, printed pages 12 to 18, equations 2.1 to 2.5.
+
+The claim first. The prior lambda exponential with rate a, with a equal to one half, encodes about 2 disasters a year with variance 4. Multiplied by the Poisson likelihood lambda to the s sub n times e to the minus n lambda, it gives a posterior with kernel lambda to the s sub n times e to the minus a plus n times lambda, which is a Gamma with shape s sub n plus one and rate a plus n. On the 1851 to 1891 coal data, with n equal to 41 and s sub n equal to 127, the posterior mean is 128 over 41.5, which is 3.084; the mode is 127 over 41.5, which is 3.060; and the standard deviation is the square root of 128 over 41.5, which is 0.273. The maximum likelihood estimate is 127 over 41, which is 3.098. The prior is weak, worth half a year of data, but it still pulls both summaries a little to the left of the maximum likelihood estimate. That pull is shrinkage.
+
+The notation. G of alpha and beta is the Gamma distribution with shape alpha and rate beta. Capital Gamma of a number is the gamma function, with Gamma of k plus one equal to k factorial. Greenberg writes pi for a prior or posterior density; the handwritten notes write p.
+
+Eleven point one. Some pre-existing knowledge about lambda, handwritten page 1.
+
+The page opens with a sketch. Before seeing the data, the researcher thinks lambda is probably around 2 to 3, surely positive, and unlikely above 5. The Bayesian move is to write that belief down as a density and let the data update it. The handwritten notes pick a deliberately simple shape: "An easy to handle density is the Exponential density."
+
+Equation 1 of that note: the prior density of lambda given a equals a times e to the minus a lambda, for lambda positive. The handwritten page writes only the kernel, e to the minus a lambda; the normalising factor a is visible in its page 4 plot, where the prior starts at 0.5, which is a, at lambda equal to zero.
+
+The exponential's shape is not the hump of the sketch: its mode is zero. The choice trades shape for algebra, and part twelve shows that the price is small here.
+
+Eleven point two. One integral does all the work.
+
+Equation 2 of that note: the integral from zero to infinity of lambda to the k, times e to the minus b lambda, d lambda, equals Gamma of k plus one over b raised to the k plus one, for k greater than minus one and b positive.
+
+The proof is one substitution. Let u equal b lambda, so d lambda equals d u over b. The integral becomes the integral of u over b to the k, times e to the minus u, times d u over b. Pull out b to the minus k plus one. What remains is the integral of u to the k times e to the minus u, which is the definition of Gamma of k plus one.
+
+Eleven point three. The prior moments and the calibration of a.
+
+Apply equation 2 with b equal to a. For the mean, take k equal to one: the expected value of lambda equals a times Gamma of 2 over a squared, which is one over a. For the second moment, take k equal to two: a times Gamma of 3 over a cubed, which is 2 over a squared. Equation 3: the variance is 2 over a squared minus one over a squared, which is one over a squared.
+
+The calibration, handwritten page 1: "If we believe E of lambda approximately 2 and are happy with V of lambda approximately 4, then a equal to 1 over 2 is a reasonable choice." Indeed equation 3 gives one over a equal to 2 and one over a squared equal to 4. The prior standard deviation is 2, and the central 95 per cent of the prior runs from minus 2 log 0.975, which is 0.051, to minus 2 log 0.025, which is 7.38. That is a vague statement about the rate.
+
+Eleven point four. Bayes' theorem, Greenberg section 2.2.
+
+For a parameter theta and data y, Greenberg's equation 2.2, printed page 13, says that the posterior pi of theta given y equals f of y given theta times pi of theta, divided by f of y, where f of y is the integral of f of y given theta times pi of theta over theta. Since f of y does not involve theta, his equation 2.3 is the proportional form. Equation 4 of the note: the posterior is proportional to f of y given theta times pi of theta. Posterior proportional to likelihood times prior.
+
+Greenberg's warning, printed page 14: the likelihood is "not a p.d.f. for θ". It is the data density read as a function of theta, the same object the maximum likelihood estimator maximises in part two. The prior supplies what the data do not, and the normaliser f of y can be recovered at the end from the family of the kernel.
+
+Eleven point five. The posterior is Gamma, handwritten page 2.
+
+"The Bayesian approach allows us to combine different sources of information." Equation 5 of the note: the likelihood is proportional to lambda to the s sub n times e to the minus n lambda; the prior is proportional to e to the minus a lambda. The likelihood is equation 5 of part two without its constant; the prior is equation 1 without its constant a.
+
+Substitute both into the proportional form of Bayes' theorem. Equation 6: the posterior is proportional to lambda to the s sub n times e to the minus n lambda, times e to the minus a lambda, which is lambda to the s sub n times e to the minus a plus n times lambda.
+
+Normalise. By equation 2 with k equal to s sub n and b equal to a plus n, the area under the kernel is Gamma of s sub n plus one, over a plus n raised to the s sub n plus one. Divide by it. Equation 7: the posterior density equals a plus n raised to the s sub n plus one, over Gamma of s sub n plus one, times lambda raised to s sub n plus one minus one, times e to the minus a plus n times lambda.
+
+Compare with the Gamma density on handwritten page 3: X is G of alpha and beta if and only if its density is beta to the alpha over Gamma of alpha, times x to the alpha minus one, times e to the minus beta x. Equation 7 is that density with alpha equal to s sub n plus one and beta equal to a plus n. Equation 8, boxed: lambda given the data is Gamma with shape s sub n plus one and rate a plus n.
+
+Conjugacy, read off the parameters. The exponential prior with rate a is itself a Gamma with shape 1 and rate a. The posterior adds the event count s sub n to the shape and the exposure n to the rate. So the prior acts like one disaster observed over a, that is half a year, of earlier data. This is Greenberg's reading of the beta prior's parameters as prior heads and tails, printed page 17, transposed to counts.
+
+Checklist for part eleven. You should be able to write the exponential prior, derive its mean one over a and variance one over a squared from the Gamma integral, and calibrate a equal to one half from a prior mean 2 and variance 4. You should be able to prove the Gamma integral with the substitution u equal to b lambda. You should be able to multiply the likelihood kernel by the prior kernel, recognise the Gamma kernel, normalise it, and state the posterior: Gamma with shape s sub n plus one and rate a plus n. And you should be able to read the prior as pseudo-data: one event in half a year.
+
+
+Part twelve. Posterior summaries, the coal numbers, and shrinkage.
+
+This part covers the handwritten pages 3 and 4 and Greenberg's equation 2.5, printed page 17.
+
+Twelve point one. The Gamma facts.
+
+The Gamma facts on handwritten page 3 follow from equation 2 exactly as the prior moments did. Equation 9: the mean of a Gamma with shape alpha and rate beta is alpha over beta; the variance is alpha over beta squared; and the mode, for alpha at least one, is alpha minus one over beta. The mode comes from setting the derivative of the log density to zero. The log density is alpha minus one times log x, minus beta x, plus a constant. Its derivative is alpha minus one over x minus beta. Set it to zero and solve for x.
+
+Twelve point two. The posterior summaries.
+
+Substitute alpha equal to s sub n plus one and beta equal to a plus n into equation 9, then put a equal to one half.
+
+Equation 10: the posterior mean is s sub n plus one over a plus n, which with a equal to one half is s sub n plus one over n plus one half.
+
+Equation 11: the posterior mode is s sub n plus one minus one over a plus n, which is s sub n over a plus n, or s sub n over n plus one half.
+
+Equation 12: the posterior variance is s sub n plus one over a plus n squared, or s sub n plus one over n plus one half squared.
+
+Twelve point three. Worked: coal mining, 1851 to 1891.
+
+The data are the 41 counts on the site's R page: n equal to 41 and s sub n equal to 127, a mean of 3.097561.
+
+The posterior mean: 127 plus one over 41 plus 0.5, which is 128 over 41.5, which is 3.0843, about 3.084.
+
+The posterior mode: 127 over 41.5, which is 3.0602, about 3.060.
+
+The posterior standard deviation: the square root of 128 over 41.5, which is 11.3137 over 41.5, which is 0.2726, about 0.273.
+
+And, "Recall that", the maximum likelihood estimate is 127 over 41, which is 3.098.
+
+Now compare the three side by side. The maximum likelihood estimate, s sub n over n, is 3.098, with standard error the square root of 3.098 over 41, which is 0.275, and a Wald interval from 2.559 to 3.636. The posterior mode, s sub n over n plus a, is 3.060. The posterior mean, s sub n plus one over n plus a, is 3.084, with posterior standard deviation 0.273 and an equal-tail 95 per cent interval from 2.573 to 3.641, the 2.5 and 97.5 per cent quantiles of a Gamma with shape 128 and rate 41.5. The two intervals are computed in the notes, not on the handwritten page.
+
+Numerically the two intervals almost coincide. Their readings differ. The posterior interval is a probability statement about lambda given the data. The Wald interval is a coverage statement about the procedure.
+
+The notes' figure draws the prior, the likelihood normalised to a density, and the posterior over lambda from zero to six. The prior decays from 0.5 at zero. The normalised likelihood, which is a Gamma with shape 128 and rate 41, and the posterior, a Gamma with shape 128 and rate 41.5, are nearly identical narrow peaks of height about 1.46 near 3.1. The posterior is a slightly shifted copy of the normalised likelihood. Over the region where the likelihood lives, roughly 2.3 to 4, the prior is almost flat, falling from 0.16 to 0.07, so it can only tilt the likelihood a little toward smaller values. Compare Greenberg's Figure 2.2, printed page 18, where n equal to 10 leaves the prior visible and n equal to 50 buries it.
+
+The handwritten page 4, quoted: "In this example, the prior information is small when compared to the information in the likelihood. Still E of lambda given y 1 to y n and Mode of lambda given y 1 to y n are a little bit to the left of lambda hat MLE. This is what we call shrinkage."
+
+Twelve point four. Shrinkage as a weighted average.
+
+Split equation 10 the way Greenberg splits the beta-binomial mean in his equation 2.5, printed page 17. Equation 13: s sub n plus one over n plus a equals a over n plus a, the prior weight, times one over a, the prior mean, plus n over n plus a, the data weight, times s sub n over n, the maximum likelihood estimate.
+
+Check it. The first product is a over n plus a times one over a, which is one over n plus a. The second is n over n plus a times s sub n over n, which is s sub n over n plus a. They add to s sub n plus one over n plus a, which is equation 10.
+
+The coal numbers. The prior weight is 0.5 over 41.5, which is 0.01205, and the data weight is 41 over 41.5, which is 0.98795. Then 0.01205 times 2, plus 0.98795 times 3.09756, equals 0.02410 plus 3.06024, which is 3.08434. It checks.
+
+The mode shrinks toward the prior's mode, which is zero. Equation 14: s sub n over n plus a equals n over n plus a times s sub n over n, which is 0.98795 times 3.09756, which is 3.06024.
+
+Both summaries sit to the left of the maximum likelihood estimate because the prior centre, 2 for the mean and 0 for the mode, is to the left of 3.098. The pull is proportional to the prior weight a over n plus a, which vanishes like one over n. With 41 years of data and a prior worth half a year, it is about 1 per cent.
+
+Why this matters later. The same prior weight against data weight structure is behind every shrinkage estimator in the course: the normal-mean posterior, ridge, and the hierarchical models of Classes 3 and 4. There the prior weight is not negligible.
+
+Twelve point five. Links outward, G layer, named and not examinable here.
+
+Which summary to report? The posterior mean is the Bayes estimator under quadratic loss, Bolfarine Theorem 4.4.1, printed page 63. The mode is the maximum a posteriori value. Loss functions and their estimators are Greenberg section 3.2.1, in Classes 3 and 4.
+
+The general conjugate result. With a Gamma prior with shape a and rate b, Bolfarine's equation 4.4.12, his Example 4.4.2, printed page 67, gets lambda given X as Gamma with shape the sum of the x's plus a, and rate n plus b, and a posterior mean of the sum of the x's plus a over n plus b. Our case is shape 1 and rate a. Watch the letter clash: the handwritten a is Bolfarine's b.
+
+More data do not cure a wrong model. On all 112 years, with s sub n equal to 191, equation 10 gives 192 over 112.5, which is 1.707, next to the maximum likelihood estimate 1.705. Both are confident estimates of a single rate that part seven showed does not exist. The prior regularises estimates; it does not test the likelihood.
+
+Checklist for part twelve. You should be able to state the Gamma mean, variance and mode, and derive the mode by setting the derivative of the log density to zero. You should be able to compute the coal posterior: mean 3.084, mode 3.060, standard deviation 0.273, against the maximum likelihood estimate 3.098, and compare the posterior interval 2.573 to 3.641 with the Wald interval 2.559 to 3.636, saying how their readings differ. You should be able to write the posterior mean as a weighted average of the prior mean and the maximum likelihood estimate, with prior weight a over n plus a, and check it with 0.01205 and 0.98795. And you should be able to say why the posterior mean is not always above the estimate: the pull is toward the prior centre, 2, which here lies below 3.098.
+
+
+Part thirteen. The Gamma-Poisson conjugate update, sequential updating, and the predictive distribution.
+
+This part covers the Class 3 note on conjugate and sequential updating: the Gamma-Poisson pair, Tsay's Result 12.4, printed page 620, and Bolfarine and Sandoval Example 4.4.2, printed pages 67 and 68; sequential updating, Greenberg section 3.1.3, printed page 25; large samples, Greenberg section 3.1.4, printed pages 25 to 27; and prediction, Greenberg section 3.2.3, printed pages 32 and 33.
+
+The claim first. For a conjugate pair the posterior is the prior's family with updated parameters, and the update is a count. The Gamma prior adds events to its shape and exposure to its rate. The posterior mean is a weighted average of the prior mean and the maximum likelihood estimate, with the prior's weight falling like one over n. Because the update is a count, updating in batches or one observation at a time gives the same posterior.
+
+Thirteen point one. The prior as data seen earlier.
+
+Greenberg's reading, printed page 17: in a beta prior, the first parameter is the number of heads obtained in the experiment on which the prior is based, and the second the number of tails. After the data, the posterior is what you would have believed had you seen both experiments. That is why conjugate updating is sequential by construction, and why a prior can be judged by asking how many observations it is worth. For the Gamma, the rate parameter counts periods of exposure: in part eleven the exponential one half prior was worth half a year.
+
+Thirteen point two. The general Gamma-Poisson update.
+
+Take a Gamma prior with shape alpha sub 0 and rate beta sub 0: its density is proportional to lambda to the alpha sub 0 minus one, times e to the minus beta sub 0 lambda. The Poisson likelihood kernel is lambda to the s sub n times e to the minus n lambda. Multiply the kernels and add the exponents. The power of lambda becomes alpha sub 0 plus s sub n, minus one. The exponential becomes e to the minus beta sub 0 plus n, times lambda. That is a Gamma kernel. So the posterior is Gamma with shape alpha sub 0 plus s sub n and rate beta sub 0 plus n, and the posterior mean is alpha sub 0 plus s sub n, over beta sub 0 plus n.
+
+This is Tsay's Result 12.4 and Bolfarine's Example 4.4.2. The exponential data model gives a twin result, Tsay's Result 12.5: with exponential observations with density theta e to the minus theta x and the same Gamma prior, the posterior is Gamma with shape alpha sub 0 plus n and rate beta sub 0 plus the sum of the x's. There the roles flip: the count of observations goes to the shape and the total waiting time to the rate.
+
+The coal example of part eleven is the Poisson case with alpha sub 0 equal to 1, beta sub 0 equal to one half, n equal to 41 and s sub n equal to 127: a Gamma with shape 128 and rate 41.5, with mean 128 over 41.5, which is 3.084.
+
+And the weighted average generalises. Split the posterior mean the same way as equation 13 of part twelve: beta sub 0 over beta sub 0 plus n, times the prior mean alpha sub 0 over beta sub 0, plus n over beta sub 0 plus n, times the sample mean. The prior's weight is its exposure over the total exposure.
+
+Thirteen point three. Sequential updating is exact.
+
+Greenberg section 3.1.3, printed page 25, shows it for the beta-Bernoulli pair; the Gamma-Poisson case works the same way, because the update is again a count. Suppose a first batch has n sub 1 periods and s sub 1 events. The posterior is Gamma with shape alpha sub 0 plus s sub 1 and rate beta sub 0 plus n sub 1. Use it as the prior for a second batch with n sub 2 periods and s sub 2 events, and update again. The shape becomes alpha sub 0 plus s sub 1 plus s sub 2, and the rate beta sub 0 plus n sub 1 plus n sub 2. That is exactly the posterior from the original prior and all n sub 1 plus n sub 2 periods at once. The order and grouping of the data do not matter; only the sufficient statistic does.
+
+Thirteen point four. Large samples.
+
+Greenberg section 3.1.4, printed pages 25 to 27. Write the posterior as the prior times the exponential of n times the mean log-likelihood contribution. A second-order expansion of that mean log-likelihood around the maximum likelihood estimate, where the first derivative vanishes, gives equation 16 of the Class 3 note: the posterior is approximately the prior times e to the minus n over two v, times theta minus theta hat squared, where v is one over minus the second derivative of the mean log-likelihood at the estimate. So for large n the posterior is approximately normal with mean theta hat and variance v over n, provided the prior is not zero at the estimate. Greenberg draws three consequences: the prior's role shrinks; the posterior concentrates at the true value, the Bayesian counterpart of consistency; and it is approximately normal around the maximum likelihood estimate.
+
+For the Poisson, the per-observation information is one over lambda, so this normal approximation has mean lambda hat and variance lambda hat over n: the same numbers as the frequentist approximation of equation 14. That is why, on the coal data, the posterior standard deviation 0.273 sits next to the standard error 0.275.
+
+Thirteen point five. The predictive distribution.
+
+Greenberg section 3.2.3, printed pages 32 and 33. To predict a new value y sub f after observing y, introduce the parameter and integrate it out. Greenberg's general form: the predictive density f of y sub f given y equals the integral of f of y sub f given theta and y, times the posterior pi of theta given y, d theta. When the new observation is independent of the old ones given theta, y drops out of the first factor.
+
+Greenberg also gives the way to think of it by simulation: draw a value of theta from its posterior, compute the probability of the new outcome at that value, repeat many times, and average. The predictive averages the model over the posterior; it does not plug in an estimate.
+
+His worked case is the coin. With a beta posterior with parameters alpha sub 1 and beta sub 1, the probability that the next toss is a head is the integral of theta times the beta posterior density. The integrand is the kernel of a beta with parameters alpha sub 1 plus one and beta sub 1, so the integral is a ratio of beta functions, which simplifies, using Gamma of a plus one equal to a times Gamma of a twice, to alpha sub 1 over alpha sub 1 plus beta sub 1. That is alpha sub 0 plus s sub n over alpha sub 0 plus beta sub 0 plus n, which equals the posterior mean of theta, because for a Bernoulli variable the expected value of y given theta is theta.
+
+Now the Poisson. The notes name the result and leave the derivation to Greenberg's Exercise 3.2, printed page 39, and to Classes 3 and 4: the posterior predictive for next year's count is a negative binomial. The steps below are not written out in the notes; they only apply the Gamma integral of part eleven, equation 2, to Greenberg's general form.
+
+Let the posterior be Gamma with shape alpha sub 1 and rate beta sub 1, where alpha sub 1 is alpha sub 0 plus s sub n and beta sub 1 is beta sub 0 plus n. The probability that next year's count equals k is the integral from zero to infinity of the Poisson probability, lambda to the k times e to the minus lambda over k factorial, times the Gamma posterior density, beta sub 1 to the alpha sub 1 over Gamma of alpha sub 1, times lambda to the alpha sub 1 minus one, times e to the minus beta sub 1 lambda.
+
+Step one: collect the constants outside the integral. They are beta sub 1 to the alpha sub 1, over k factorial times Gamma of alpha sub 1.
+
+Step two: collect what is left inside. Lambda to the k plus alpha sub 1 minus one, times e to the minus beta sub 1 plus one, times lambda.
+
+Step three: apply the Gamma integral with power k plus alpha sub 1 minus one and rate beta sub 1 plus one. The integral equals Gamma of k plus alpha sub 1, over beta sub 1 plus one raised to the k plus alpha sub 1.
+
+Step four: put it together. The predictive probability of k equals Gamma of k plus alpha sub 1, over k factorial times Gamma of alpha sub 1, times beta sub 1 over beta sub 1 plus one raised to the alpha sub 1, times one over beta sub 1 plus one raised to the k. That is the negative binomial form the notes name, with success probability beta sub 1 over beta sub 1 plus one.
+
+Its mean follows without any algebra, by the same argument as the coin: the expected value of next year's count given lambda is lambda, so the predictive mean is the posterior mean of lambda, alpha sub 1 over beta sub 1. On the coal data of part eleven that is 3.084. And the predictive is more spread out than a Poisson with the same mean, by the law of total variance of part seven: its variance is the posterior mean of lambda plus the posterior variance of lambda. It carries the uncertainty about lambda, which plugging in an estimate would forget.
+
+Checklist for part thirteen. You should be able to derive the Gamma-Poisson update by multiplying kernels: shape plus events, rate plus exposure, with posterior mean alpha sub 0 plus s sub n over beta sub 0 plus n, and to state the exponential twin. You should be able to show that sequential updating gives the same posterior as a single batch. You should be able to state Greenberg's three large-sample consequences and the proviso that the prior is not zero at the estimate. And you should be able to write the predictive as an integral of the model over the posterior, derive the coin result, and carry the Gamma integral through to the negative binomial predictive for a Poisson count, with mean equal to the posterior mean.
+
+
+Part fourteen. Poisson regression against Gaussian regression.
+
+This part covers the Class 2 site page Gaussian vs Poisson regression, by Lopes, dated 27 October 2025, with data from Albert and Hu, 2020, Probability and Bayesian Modeling, section 8.8; ISLP section 4.6, printed pages 167 to 173, equations 4.35 to 4.42; and Wooldridge section 17.3, printed pages 543 to 546, equations 17.31 to 17.35.
+
+The claim first. A count is modelled as Poisson with log lambda sub i equal to x sub i transposed times beta. So a coefficient is a rate ratio, e to the beta sub j; the fitted means are always positive; and the variance is tied to the mean. On the site's 28 days of blog visits, Gaussian and Poisson regressions on a weekend dummy give the same fitted means, 109 and 83.33 visitors, because the model is saturated in two groups. They differ in the variance they assume, a constant 140.4 against a variance equal to the mean, and therefore in their standard errors. The data are mildly overdispersed, with a dispersion estimate of 1.44, which widens the Poisson standard error by 20 per cent and changes no conclusion.
+
+The notation. y sub i is the number of visitors on day i, for 28 days in June 2018. w sub i is the page's weekend dummy. Lambda sub i is the Poisson mean, and alpha and beta are the intercept and slope of log lambda sub i equal to alpha plus beta w sub i, the page's letters. Beta sub 0 and beta sub 1 are the intercept and slope of the Gaussian model, and s is its residual standard error. n sub 0 equal to 16 and S sub 0 equal to 1744 are the number of weekdays and their total; n sub 1 equal to 12 and S sub 1 equal to 1000 are the same for the weekend group. Sigma squared is the dispersion factor in the variance of y given x equal to sigma squared times the mean of y given x, Wooldridge's equation 17.35.
+
+Fourteen point one. The data and the question.
+
+Visitors to a baseball-analytics blog, 28 consecutive days, read week by week. Week one: 95, 81, 85, 100, 111, 130, 113. Week two: 92, 65, 78, 96, 118, 120, 104. Week three: 91, 91, 79, 106, 91, 114, 110. Week four: 98, 61, 84, 96, 126, 119, 90.
+
+The page labels the days Friday, Saturday, Sunday, Monday, Tuesday, Wednesday, Thursday, because 1 June 2018 was a Friday, and it sets the weekend dummy to one for the first three days of each week: Friday, Saturday and Sunday. So the weekend group has the first three numbers of each week.
+
+Group summaries. Weekdays, Monday to Thursday: 16 days, total 1744, mean 109.00, standard deviation 12.15, variance 147.73, and variance over mean 1.36. The Friday to Sunday group: 12 days, total 1000, mean 83.33, standard deviation 11.42, variance 130.42, and variance over mean 1.57.
+
+The question: how much lower is traffic on weekend days, and how sure are we? A count is non-negative, it is a whole number, and it is typically noisier when its mean is higher. Those are three things the Gaussian linear model ignores, ISLP section 4.6.1, printed pages 167 to 169, and Wooldridge, printed page 543.
+
+Fourteen point two. The Gaussian regression.
+
+Equation 1 of the Class 2 note: y sub i equals beta sub 0 plus beta sub 1 w sub i plus epsilon sub i, with the errors independent normal with mean zero and constant variance.
+
+With one dummy, ordinary least squares reproduces the group means. The two normal equations are: the sum of y sub i minus beta sub 0 minus beta sub 1 w sub i equals zero; and the sum of w sub i times the same residual equals zero. Subtract the second from the first. What remains is the sum over weekdays of y sub i minus beta sub 0 equal to zero, so beta sub 0 hat is S sub 0 over n sub 0. The second equation alone says beta sub 0 hat plus beta sub 1 hat is S sub 1 over n sub 1. So beta sub 0 hat is 1744 over 16, which is 109.000, and beta sub 1 hat is 1000 over 12 minus 109, which is 83.333 minus 109, which is minus 25.667.
+
+Standard errors, with the pooled residual variance on 28 minus 2, which is 26, degrees of freedom. The page prints s equal to 11.85. The standard error of the slope is s times the square root of one over n sub 0 plus one over n sub 1: 11.8495 times the square root of one sixteenth plus one twelfth, which is 11.8495 times 0.38188, which is 4.525. The standard error of the intercept is s over the square root of n sub 0: 11.8495 over 4, which is 2.962.
+
+The t statistic is minus 25.667 over 4.525, which is minus 5.67, with a p-value of 5.8 times 10 to the minus 6, and the R squared is 0.553, all as printed. The reading: weekend days have 25.7 fewer visitors, in absolute terms, with one common spread, s squared equal to 140.4, for both groups.
+
+Fourteen point three. The Poisson regression: model and log-likelihood.
+
+The model, ISLP equations 4.35 to 4.37, printed pages 169 and 170, and Wooldridge equations 17.31 and 17.32, printed page 544. Equation 2 of the note: y sub i given w sub i is Poisson with mean lambda sub i, so the probability that y sub i equals k is e to the minus lambda sub i, times lambda sub i to the k, over k factorial; and log lambda sub i equals alpha plus beta w sub i.
+
+The log-likelihood, ISLP equation 4.38 and Wooldridge equation 17.33. Take logs of the probability and sum over the 28 days. Equation 3: lowercase l of alpha and beta equals the sum over i of y sub i log lambda sub i, minus lambda sub i, minus log y sub i factorial. Substituting the link, that is the sum of y sub i times alpha plus beta w sub i, minus e to the alpha plus beta w sub i, minus log y sub i factorial.
+
+Fourteen point four. The score.
+
+Differentiate equation 3. The derivative of e to the alpha plus beta w sub i with respect to alpha is lambda sub i, and with respect to beta it is w sub i times lambda sub i. Equation 4: the derivative with respect to alpha is the sum of y sub i minus lambda sub i, set to zero; and the derivative with respect to beta is the sum of w sub i times y sub i minus lambda sub i, set to zero.
+
+In matrix form, X transposed times y minus lambda equals zero. That is the same shape as the logit score in the Class 2 logistic regression note: both are generalized linear models with the canonical link. And with no covariate at all, the first equation alone would give lambda hat equal to y bar: the Poisson maximum likelihood estimator of part three. Here each group gets its own y bar.
+
+Fourteen point five. Solving the score in closed form.
+
+The second equation involves only weekend days, where lambda sub i equals e to the alpha plus beta. So S sub 1 minus n sub 1 times e to the alpha plus beta equals zero, and e to the alpha hat plus beta hat is 1000 over 12, which is 83.333.
+
+Subtract the second equation from the first. What remains are the weekdays, where lambda sub i equals e to the alpha. So S sub 0 minus n sub 0 times e to the alpha equals zero, and e to the alpha hat is 1744 over 16, which is 109.
+
+Take logs. Alpha hat is log 109, which is 4.69135. Beta hat is the log of 83.333 over 109, which is the log of 0.764526, which is minus 0.26850. These are the page's estimates.
+
+Fourteen point six. The Hessian and the standard errors.
+
+Differentiate the score again and change sign. The negative Hessian is the sum over i of lambda sub i times the two by two matrix with rows one, w sub i, and w sub i, w sub i. Because w sub i is zero or one, this sum is a two by two matrix: the top-left entry is n sub 0 e to the alpha plus n sub 1 e to the alpha plus beta; the off-diagonal entries and the bottom-right entry are all n sub 1 e to the alpha plus beta.
+
+At the estimates, n sub 0 e to the alpha hat is 1744 and n sub 1 e to the alpha hat plus beta hat is 1000. So the estimated information matrix has rows 2744, 1000 and 1000, 1000. Its determinant is 2744 times 1000 minus 1000 squared, which is 1,744,000.
+
+Its inverse is one over 1,744,000 times the matrix with rows 1000, minus 1000 and minus 1000, 2744. The standard error of alpha hat is the square root of 1000 over 1,744,000, which is the square root of one over 1744, which is 0.02395. The standard error of beta hat is the square root of 2744 over 1,744,000, which equals the square root of one over 1744 plus one over 1000, which is 0.03967. These are the printed 0.02395 and 0.03967: each standard error is built from the group totals alone. The z statistic is minus 0.26850 over 0.03967, which is minus 6.77.
+
+Note the link to part four: the standard error of alpha hat, one over the square root of S sub 0, is the Fisher information n over lambda of part four on the log scale. And the page's line "Number of Fisher Scoring iterations: 4" refers to iteratively reweighted least squares, with weights equal to the fitted lambdas and working response eta sub i plus y sub i minus lambda sub i over lambda sub i: the logistic regression algorithm with the log link.
+
+Fourteen point seven. Reading the two slopes.
+
+Gaussian: additive, in visitors. Beta sub 1 hat is minus 25.667 visitors per day.
+
+Poisson: multiplicative. From equation 2, the ratio of the weekend mean to the weekday mean is e to the alpha plus beta over e to the alpha, which is e to the beta: the rate ratio. ISLP, printed page 171, in its own words: "an increase in X sub j by one unit is associated with a change in E of Y by a factor of exp of beta sub j". Here e to the minus 0.26850 is 0.7645, so weekend traffic is 23.5 per cent lower than weekday traffic: 100 times 0.7645 minus one is minus 23.5.
+
+Wooldridge's shortcut, printed page 544, reads 100 times beta hat, minus 26.85 per cent, as the percentage change. That is the log approximation. For a dummy, the exact change is 100 times e to the beta hat minus one, minus 23.55 per cent, on the same page. At an absolute beta of about 0.27, the two differ by 3.30 points.
+
+Fourteen point eight. Same means, different variance.
+
+The page's comparison. Gaussian: weekday mean beta sub 0 hat, 109.0000, and weekend mean beta sub 0 hat plus beta sub 1 hat, 83.333. Poisson: weekday mean e to the alpha hat, 109.0002, and weekend mean e to the alpha hat plus beta hat, 83.33345. The fourth-decimal gaps come from exponentiating the five-decimal printed coefficients.
+
+With two groups and two parameters, both models are saturated in the means. What differs is the variance each assumes, and hence a t of minus 5.67 against a z of minus 6.77. Compare them in four respects. First, the variance on weekdays: the Gaussian assumes s squared, 140.4; the Poisson assumes lambda, 109. Second, the variance on weekend days: the Gaussian again assumes 140.4; the Poisson assumes 83.3. Third, the fitted values: Gaussian fits can be negative in general, Poisson fits are always positive, ISLP printed page 172. Fourth, the reading of the slope: minus 25.7 visitors for the Gaussian, a factor of 0.7645, or minus 23.5 per cent, for the Poisson.
+
+Fourteen point nine. The mean-variance check and overdispersion.
+
+The Poisson model says the variance of y given x equals the mean of y given x: Wooldridge equation 17.34, printed page 545, and ISLP printed page 172. The sample says 147.7 against 109 and 130.4 against 83.3: ratios of 1.36 and 1.57.
+
+The dispersion estimate, Wooldridge printed page 546: sigma squared hat equals one over n minus k minus one, times the sum of the squared residuals divided by the fitted values, where each residual is y sub i minus lambda sub i hat. That is the Pearson chi-squared statistic over its degrees of freedom: 37.546 over 26, which is 1.444. Its square root, sigma hat, is 1.202.
+
+The quasi-Poisson correction, Wooldridge equation 17.35 and printed page 546: multiply the standard errors by sigma hat. The corrected standard error of beta hat is 1.202 times 0.03967, which is 0.0477, and the corrected z is minus 0.26850 over 0.0477, which is minus 5.63. The point estimate is unchanged, because the score equations need only the mean to be right. What overdispersion breaks is the standard error, which was too small by the factor 1.202.
+
+The deviance view. The residual deviance is 38.324 on 26 degrees of freedom, a ratio of 1.47, and the probability that a chi-squared with 26 degrees of freedom exceeds 38.324 is 0.056: borderline evidence of lack of fit. The likelihood-ratio test of the weekend effect is the null deviance minus the residual deviance, 85.141 minus 38.324, which is 46.82, on one degree of freedom, Wooldridge equation 17.12. Under equation 17.35, divide by sigma squared hat: 46.82 over 1.444, which is 32.4. The AIC is 221.76.
+
+The notes' figure. On the left, the 28 counts by day, with the common fitted step at 109 and 83.3, a Gaussian band of constant width and a Poisson band whose width depends on the mean. The Poisson band is narrower for the lower weekend mean, the square root of 83.3 being 9.1 against the square root of 109 being 10.4. The weekday 130 and the weekend 65 and 61 sit outside the Poisson bands, 109 plus or minus 20.5 and 83.3 plus or minus 17.9: three of 28 days, where about 1.4 are expected. That is the overdispersion. On the right, both groups' sample points lie above the Poisson line, variance equal to the mean, and close to the quasi-Poisson line, 1.444 times the mean; the Gaussian constant 140.4 sits between them.
+
+With means near 100, the Poisson and Gaussian models nearly agree, because a Poisson with a large mean is close to a normal. The log link earns its keep with small counts, where linear fits go negative, 9.6 per cent of ISLP's Bikeshare fitted values, printed page 168, and where the variance visibly grows with the mean, ISLP printed page 172. And Poisson standard errors are only right if the variance equals the mean: always check, and inflate by sigma hat when it fails. ISLP's footnote 5, printed page 172, says that overdispersion "causes the Z-values to be inflated".
+
+Fourteen point ten. One template for linear, logistic and Poisson regression.
+
+G layer, ISLP section 4.6.3, printed pages 172 and 173, equation 4.42: a link function eta of the mean of Y given X equals beta sub 0 plus beta sub 1 X sub 1 plus and so on up to beta sub p X sub p. Three members. Linear regression: Gaussian distribution, identity link, constant variance sigma squared, and score X transposed times y minus X beta, over sigma squared. Logistic regression: Bernoulli distribution, the log of the mean over one minus the mean as link, variance the mean times one minus the mean, and score X transposed times y minus pi. Poisson regression: Poisson distribution, log link, variance equal to the mean, and score X transposed times y minus lambda. Each link is the canonical one for its distribution, which is why the score is always X transposed times the data minus the fitted mean, and why Newton-Raphson, Fisher scoring and iteratively reweighted least squares coincide.
+
+The page's Bayesian part is named only: independent normal priors, alpha normal with mean 4.7 and standard deviation 0.1, beta normal with mean minus 0.3 and standard deviation 0.1, a grid posterior and sampling importance resampling, ending with posterior densities of the weekday and weekend rates. That belongs to Classes 3 and 4.
+
+Checklist for part fourteen. You should be able to write the Poisson regression model with the log link and its log-likelihood, differentiate it to the score X transposed times y minus lambda, and solve it in closed form for one dummy: e to the alpha hat equal to 109 and e to the alpha hat plus beta hat equal to 83.333, so alpha hat 4.69135 and beta hat minus 0.26850. You should be able to build the information matrix from the group totals, 2744, 1000, 1000, 1000, and get the standard errors 0.02395 and 0.03967 and z equal to minus 6.77. You should be able to read e to the beta as a rate ratio, 0.7645 or minus 23.5 per cent, and say why 100 times beta, minus 26.85, is only an approximation. You should be able to explain why the Gaussian and Poisson fits give the same means but different standard errors. And you should be able to run the mean-variance check: sigma squared hat 1.444 from the Pearson statistic, the quasi-Poisson standard error 0.0477 and z of minus 5.63, with an unchanged point estimate.
+
+
+Part fifteen. The Poisson pitfalls.
+
+This part collects the Poisson entries of the pitfalls notes for Classes 1 and 2. Each is said as the error, then the correction.
+
+Pitfall one. Overdispersion read as a change point. The error is to say: the variance over the mean is 1.59 with a p-value below 0.001, so the rate changed. The correction: the dispersion index does not depend on the order of the years. Shuffle the 112 coal counts and the index is still exactly 1.592, with a p-value below 0.001. But the best-cut likelihood-ratio statistic of the shuffled series has a 95 per cent quantile of about 14 across permutations, against 70.0 in calendar order. Overdispersion also arises from year-to-year rate heterogeneity with no break at all. Overdispersion says not one Poisson rate. Only the time structure, the profile likelihood and the segment fits, says a change around 1890.
+
+Pitfall two. A searched likelihood ratio referred to a chi-squared with one degree of freedom. The error is to say: LR is 70.0, so the p-value is the probability that a chi-squared with one degree of freedom exceeds 70. The correction: the cut was chosen to maximise the statistic, it is not identified under the null, and it is discrete, so Wilks does not apply. Under an independent Poisson null with rate 1.705 and no break, the maximised statistic has a 95 per cent quantile of 9.9, not 3.84. The single-rate model is still rejected, because 70.0 exceeds every one of 4000 null and 4000 permutation draws. The conclusion survives; the chi-squared p-value does not.
+
+Pitfall three. The profile weight read as the posterior of the change point. The error is to treat w of tau as the posterior of tau. The correction: it is a posterior with the rates profiled out, which keeps each segment's peak height and ignores the uncertainty about the rates. On the toy series six followed by seven ones, the weight on a break after year one is 0.783 profiled and 0.653 integrated. On the coal data both routes give 0.251 at 1891, because both segments are long. Profiling plugs in the peak height; integrating keeps the area. They agree only when every segment is long and the prior is weak.
+
+Pitfall four. The maximum likelihood estimator always exists. The error is to assume the Poisson likelihood always has a maximiser in the open interval from zero to infinity. The correction: if every count is zero, the log-likelihood is log c minus n lambda, which increases as lambda falls to zero, and there is no maximum on the open space. This happens with probability e to the minus n lambda, which is not negligible when n lambda is small.
+
+Pitfall five. Two consistent estimators are equally good in large samples. The error is to say that because the sample mean and the sample variance are both unbiased and consistent for lambda, they are equally precise for large samples. The correction: the variance of s squared is lambda over n plus two lambda squared over n minus one, and its efficiency tends to one over one plus two lambda, 0.2 at lambda equal to 2. It needs about five times the data. Consistency is a limit statement; it says nothing about precision at any n.
+
+Pitfall six. Chebyshev used for numbers. The error is to quote Chebyshev's bound as an approximation to the probability that the sample mean is near lambda. The correction: at lambda equal to 2 and n equal to 50, Chebyshev's lower bound on the probability of being within 0.25 is 0.36, while the exact value, from a Poisson with rate 100, is 0.789. At n equal to 10 the bound is vacuous. The bound proves consistency but is far too crude to quantify it.
+
+Pitfall seven. The Cramér-Rao bound used to build estimators. The error is to look for the estimator inside the information inequality. The correction, in Bolfarine's words on printed page 19: the inequality is not a method for constructing estimators. The maximum likelihood estimator is the construction; the bound is the certificate.
+
+Pitfall eight. The posterior mean always above the estimate because the prior adds an event. The error is to say that with the exponential one half prior, the posterior mean s sub n plus one over n plus one half always exceeds s sub n over n. The correction: the prior adds one event and half a year. The posterior mean is a weighted average of the prior mean 2 and the sample mean, so it exceeds the estimate only when the sample mean is below 2. On the 1851 to 1891 data the sample mean is 3.098 and the posterior mean 3.084, below it. The pull is toward the prior centre, not always upward.
+
+Pitfall nine. A confident posterior read as a right model. The error is to trust a tight posterior. The correction: on all 112 coal years the posterior mean is 1.707 with a tight posterior around it, a precise estimate of a single rate that the change-point analysis showed does not exist. The prior regularises the estimate; it does not test the likelihood.
+
+Pitfall ten. Same fitted means, same significance. The error is to say that because the Gaussian and Poisson regressions on the weekend dummy both give means 109 and 83.33, it does not matter which is fitted. The correction: the means coincide because the model is saturated in two groups. The variance each assumes differs, constant 140.4 against equal to the mean, hence t of minus 5.67 against z of minus 6.77 for the same effect. With a continuous covariate and small counts the Gaussian line can also go negative, as in 9.6 per cent of ISLP's Bikeshare fits; the log link cannot.
+
+Pitfall eleven, two-sided. Overdispersion and the coefficients. One error is to say that a variance above the mean makes the Poisson coefficients wrong. The opposite error is to say that Poisson standard errors are fine whatever the variance. The correction: quasi-Poisson leaves beta hat at minus 0.26850, unchanged, because the score equations need only the mean to be right; but it multiplies the standard error by sigma hat, 1.202, and z falls from minus 6.77 to minus 5.63. Point estimates survive; precision was overstated.
+
+Pitfall twelve. 100 times beta read as the exact percentage change. The error is to read beta hat equal to minus 0.26850 as a 26.85 per cent fall. The correction: for a dummy the exact change is 100 times e to the beta hat minus one, minus 23.55 per cent. The two differ by 3.30 points here, and the gap grows with the size of the coefficient.
+
+
+Part sixteen. Implementation, described as a sequence of steps.
+
+The notes port the lecturer's R to Python, with asserts that check every number. No code is read here; each routine is described by its inputs, its steps and the one trap that breaks it.
+
+Routine one, the Monte Carlo study of the two estimators. Inputs: lambda equal to 2, 1000 replications, and the sample sizes 10, 50 and 200. For each sample size, draw a matrix of Poisson counts with one row per replication and n columns; take the mean of each row and the variance of each row; then average them, compute their variances across replications, and divide the bound lambda over n by each variance to get the efficiencies. The trap: the variance of each row must use the n minus one denominator, or s squared is no longer unbiased and the comparison with equation 19 breaks.
+
+Routine two, the coverage of the plus or minus 0.25 window. Inputs: lambda and n. Compute it three ways: exactly, by summing the Poisson probabilities with rate 2 n over the totals that put the sample mean strictly within 0.25 of 2; approximately, with the normal; and as Chebyshev's lower bound. The trap: the window is open, so the endpoints must be excluded when counting totals.
+
+Routine three, the dispersion test. Inputs: a vector of counts. Compute the mean, the sample variance, the statistic n minus one times s squared over the mean, and the upper tail of a chi-squared with n minus one degrees of freedom. The trap: the test is against overdispersion, so it is the upper tail, not a two-sided p-value.
+
+Routine four, the profile-likelihood scan. Inputs: the counts in calendar order and a set of candidate cuts. For each cut, compute the years and totals on each side, the two segment rates, and s sub 1 log lambda sub 1 hat plus s sub 2 log lambda sub 2 hat; subtract the maximum; exponentiate; and normalise over the window. Then compute the likelihood-ratio statistic against the single rate. The traps: use zero times log zero equal to zero for an empty segment, and subtract the maximum before exponentiating so that nothing underflows.
+
+Routine five, the Gamma posterior. Inputs: the prior shape and rate, n and the total. Add the total to the shape and n to the rate, then read off the mean, mode, standard deviation and the 2.5 and 97.5 per cent quantiles. The trap: the library's Gamma may be parameterised by a scale, which is one over the rate.
+
+Routine six, the Poisson regression. Inputs: the counts and the design matrix with an intercept and the dummy. Fit the generalized linear model with the Poisson family and log link, read the coefficients and standard errors, compute the Pearson statistic over the residual degrees of freedom, and multiply the standard errors by its square root for the quasi-Poisson version. The trap: the dummy must match the page's definition, Friday to Sunday as the first three days of each week, or the group totals 1744 and 1000 will not be reproduced.
+
+
+Part seventeen. Reading route and exercises.
+
+Addresses only; the statements are in the books, and the exercises index of the project lists them.
+
+Reading. Bolfarine and Sandoval: section 1.1.4, printed pages 2 to 3; section 2.1, printed pages 15 to 19, with Example 2.1.2; section 2.2, printed pages 20 to 23, with Examples 2.2.3 and 2.2.4; section 3.1, printed pages 35 to 42; section 3.2, printed pages 42 to 45, with Example 3.2.5; section 3.4, printed pages 46 to 49, the profile likelihood; section 3.7, printed page 52; and section 6.5, printed pages 103 to 114, the generalized likelihood-ratio test and Wilks. Greenberg: section 2.2, printed pages 12 to 18; sections 3.1.3, 3.1.4 and 3.2.3, printed pages 24 to 33; and section 7.1.1, printed pages 91 to 95, the switch-point model. ISLP section 4.6, printed pages 167 to 173. Wooldridge section 17.3, printed pages 543 to 546.
+
+Exercises. Bolfarine 2.4, printed page 32: sufficiency by the definition, Poisson. Bolfarine 2.2, printed page 32: the Cramér-Rao bound and efficiency. Bolfarine 3.13, printed page 54: invariance and the delta method. Bolfarine 3.17, printed page 55: consistency. Bolfarine 1.4, printed page 13: two variance estimators compared by mean squared error. Bolfarine 6.11, printed page 116: the approximate generalized likelihood-ratio test for equal Poisson means of two samples, the fixed-cut version of the coal statistic. Bolfarine 4.9, printed page 72, and 5.11, printed page 89: a Bayesian interval with an exponential one prior. Greenberg 2.2, printed page 19: the Gamma-Poisson posterior mean as a weighted average. Greenberg 3.2, printed page 39: the Poisson-Gamma predictive. Greenberg 3.4, printed page 39: sequential Poisson updating. Greenberg 7.3, printed page 106: Gibbs for the coal switch point, a preview of Classes 3 and 4. Wooldridge 17.C4 and 17.C5, printed page 561: Poisson regression on real data.
+
+
+Part eighteen. Glossary.
+
+Poisson model: counts with probability lambda to the k times e to the minus lambda over k factorial, whose mean and variance both equal lambda.
+
+Equidispersion: the variance equal to the mean, the Poisson fingerprint.
+
+Overdispersion: a variance above the mean; it rules out a single Poisson rate but does not by itself locate a break.
+
+Sufficient statistic: a statistic given which the sample's distribution is free of the parameter; for the Poisson, the total count.
+
+Factorisation criterion: the likelihood splits into a function of the data alone times a function of the parameter and the statistic.
+
+Score: the derivative of the log-likelihood; for the Poisson sample, s sub n over lambda minus n.
+
+Fisher information: the expected squared score, or minus the expected second derivative; n over lambda for a Poisson sample.
+
+Cramér-Rao bound: the smallest variance of an unbiased estimator, one over the information.
+
+Efficiency: the bound divided by the estimator's variance.
+
+Invariance: the maximum likelihood estimator of a function of the parameter is the function of the estimator.
+
+Profile likelihood: the likelihood with the nuisance parameters replaced by their maximisers for each value of the parameter of interest.
+
+Generalized likelihood ratio: the restricted supremum of the likelihood over the unrestricted supremum.
+
+Wilks' theorem: under regularity, minus two log of that ratio tends to a chi-squared with the difference in free parameters as degrees of freedom.
+
+Conjugate prior: a prior whose posterior is in the same family; the Gamma for the Poisson rate.
+
+Shrinkage: the pull of a posterior summary toward the prior centre, in proportion to the prior weight.
+
+Predictive distribution: the model averaged over the posterior; for a Poisson count with a Gamma posterior, a negative binomial.
+
+Rate ratio: e to a Poisson regression coefficient, the factor by which the mean changes per unit of the covariate.
+
+Quasi-Poisson: the Poisson fit with standard errors multiplied by the square root of the estimated dispersion.
+
+
+Part nineteen. The spoken formula sheet.
+
+How to use it. Each item opens with a prompt. Pause the audio after the prompt, say the formula out loud, then play on and hear the answer. If you missed it, go back to the part named in the answer.
+
+Formula one. The Poisson probability function. Pause now.
+Answer: the probability that y equals k, given lambda, is lambda to the k times e to the minus lambda, over k factorial, for k equal to zero, one, two and so on, with lambda positive. Part one.
+
+Formula two. The Poisson mean and variance. Pause now.
+Answer: both equal lambda. The mean comes from the exponential series; the variance from the factorial moment, the expected value of y times y minus one, which is lambda squared. Part one.
+
+Formula three. The likelihood of a Poisson sample. Pause now.
+Answer: a constant c times lambda to the s sub n times e to the minus n lambda, where one over c is the product of the y sub i factorials. Part two.
+
+Formula four. The conditional law of the sample given the total. Pause now.
+Answer: t factorial over the product of the y sub i factorials, times one over n to the t: a multinomial with t trials and equal cell probabilities one over n, free of lambda. Part two.
+
+Formula five. The score and the maximum likelihood estimator. Pause now.
+Answer: the score is s sub n over lambda minus n; setting it to zero gives lambda hat equal to s sub n over n, the sample mean. The second derivative is minus s sub n over lambda squared. Part three.
+
+Formula six. The mean and variance of the estimator. Pause now.
+Answer: the expected value is lambda, so it is unbiased; the variance is lambda over n, which tends to zero. Part three.
+
+Formula seven. Chebyshev's bound for the Poisson mean. Pause now.
+Answer: the probability that the absolute value of lambda hat minus lambda exceeds epsilon is at most lambda over n epsilon squared. Part three.
+
+Formula eight. The normal approximation and the standard error. Pause now.
+Answer: lambda hat is approximately normal with mean lambda and variance lambda over n; the standard error is the square root of lambda hat over n, and the Wald interval is lambda hat plus or minus 1.96 times that. Part three.
+
+Formula nine. The score of one Poisson observation. Pause now.
+Answer: y over lambda minus one. Its second derivative is minus y over lambda squared. Part four.
+
+Formula ten. The Fisher information of a Poisson sample and the Cramér-Rao bound. Pause now.
+Answer: I of lambda equals n over lambda, so the bound is lambda over n, equal to the variance of the sample mean: efficiency one. Part four.
+
+Formula eleven. The variance of the sample variance under the Poisson. Pause now.
+Answer: lambda over n plus two lambda squared over n minus one. Part four.
+
+Formula twelve. The efficiency of the sample variance. Pause now.
+Answer: one over the quantity one plus two lambda times n over n minus one, which tends to one over one plus two lambda: 0.2 at lambda equal to 2. Part four.
+
+Formula thirteen. The delta method for e to the minus lambda. Pause now.
+Answer: root n times e to the minus y bar minus e to the minus lambda is asymptotically normal with mean zero and variance lambda times e to the minus two lambda. G layer. Part six.
+
+Formula fourteen. The dispersion statistic. Pause now.
+Answer: D equals n minus one times s squared over y bar, approximately chi-squared with n minus one degrees of freedom under the Poisson; the upper tail tests for overdispersion. Part seven.
+
+Formula fifteen. The variance of a two-rate mixture. Pause now.
+Answer: the expected value of lambda plus pi times one minus pi times lambda sub 1 minus lambda sub 2 squared. On the coal data, 1.705 plus 1.120, which is 2.825. Part seven.
+
+Formula sixteen. The segment rates and the profile log-likelihood of the cut. Pause now.
+Answer: lambda sub j hat equals s sub j over n sub j, and the profile log-likelihood is s sub 1 log lambda sub 1 hat plus s sub 2 log lambda sub 2 hat minus 191, plus a constant. Part eight.
+
+Formula seventeen. The normalised weight of a cut. Pause now.
+Answer: w of tau equals e to the profile log-likelihood at tau, over the sum of the same over the window; equivalently e to the gap below the maximum, normalised. Part eight.
+
+Formula eighteen. The likelihood-ratio statistic for a change point. Pause now.
+Answer: twice the profile log-likelihood at the best cut minus the single-rate log-likelihood; compactly, two times s sub 1 log of lambda sub 1 hat over lambda hat plus s sub 2 log of lambda sub 2 hat over lambda hat. On the coal data, 69.99. Part nine.
+
+Formula nineteen. Bolfarine's Poisson likelihood-ratio statistic with a fixed null value. Pause now.
+Answer: minus two times the quantity minus n times lambda sub 0 minus x bar, plus the sum of the x's times log of lambda sub 0 over x bar, referred to a chi-squared with one degree of freedom. Part nine.
+
+Formula twenty. Wilks' theorem. Pause now.
+Answer: under regularity and the null, minus two log lambda of X converges to a chi-squared with degrees of freedom equal to the number of free parameters under the full space minus the number under the null. Part nine.
+
+Formula twenty-one. The integrated segment likelihood with an exponential prior. Pause now.
+Answer: a times Gamma of s sub j plus one, over n sub j plus a raised to the s sub j plus one. G layer. Part ten.
+
+Formula twenty-two. The Gamma integral. Pause now.
+Answer: the integral from zero to infinity of lambda to the k times e to the minus b lambda equals Gamma of k plus one over b to the k plus one. Part eleven.
+
+Formula twenty-three. The exponential prior's mean and variance. Pause now.
+Answer: one over a and one over a squared; with a equal to one half, 2 and 4. Part eleven.
+
+Formula twenty-four. The posterior with an exponential prior. Pause now.
+Answer: Gamma with shape s sub n plus one and rate a plus n. Part eleven.
+
+Formula twenty-five. The Gamma mean, variance and mode. Pause now.
+Answer: alpha over beta; alpha over beta squared; and alpha minus one over beta, for alpha at least one. Part twelve.
+
+Formula twenty-six. The posterior mean as a weighted average. Pause now.
+Answer: a over n plus a times one over a, plus n over n plus a times s sub n over n. On the coal data, 0.01205 times 2 plus 0.98795 times 3.09756, which is 3.084. Part twelve.
+
+Formula twenty-seven. The general Gamma-Poisson update. Pause now.
+Answer: a Gamma prior with shape alpha sub 0 and rate beta sub 0 becomes a Gamma with shape alpha sub 0 plus s sub n and rate beta sub 0 plus n, with posterior mean alpha sub 0 plus s sub n over beta sub 0 plus n. Part thirteen.
+
+Formula twenty-eight. The predictive distribution. Pause now.
+Answer: the integral of the model for the new value given theta times the posterior of theta. For the coin, the predictive probability of a head is the posterior mean. For a Poisson count with a Gamma posterior, a negative binomial with mean equal to the posterior mean of lambda. Part thirteen.
+
+Formula twenty-nine. The Poisson regression and its score. Pause now.
+Answer: y sub i is Poisson with log lambda sub i equal to x sub i transposed beta; the score is X transposed times y minus lambda, set to zero. Part fourteen.
+
+Formula thirty. The rate ratio and the exact percentage change. Pause now.
+Answer: e to the beta sub j is the factor by which the mean changes per unit of x sub j; for a dummy the exact percentage change is 100 times e to the beta minus one; 100 times beta is only the log approximation. Part fourteen.
+
+Formula thirty-one. The dispersion estimate and the quasi-Poisson correction. Pause now.
+Answer: sigma squared hat equals one over n minus k minus one times the sum of the squared residuals over the fitted values, the Pearson statistic over its degrees of freedom; multiply each standard error by sigma hat. On the blog data, 1.444, and a standard error of 0.0477. Part fourteen.
+
+
+Part twenty. Self-test: eighteen true or false statements.
+
+How to use it. Each statement is read once. Pause the audio, decide true or false, and say why in one sentence. Then play on to hear the answer and the reason.
+
+Statement one. For an independent Poisson sample, the conditional distribution of the counts given their total depends on lambda only through the sample size. Pause now.
+False. It does not depend on lambda at all. Given the total t, the counts are multinomial with t trials and equal cell probabilities one over n, which is why the total is sufficient. Part two.
+
+Statement two. If every count in a Poisson sample is zero, the maximum likelihood estimate of lambda is zero. Pause now.
+False. The log-likelihood is log c minus n lambda, which increases as lambda falls toward zero, so there is no maximum on the open space lambda greater than zero. This happens with probability e to the minus n lambda. Part three.
+
+Statement three. If the Poisson model is right, no unbiased estimator of lambda has a smaller variance than the sample mean. Pause now.
+True. The variance of the sample mean, lambda over n, equals the Cramér-Rao bound, one over the information n over lambda, so under the bound's regularity conditions no unbiased competitor does better. It is also the minimum variance unbiased estimator. Parts four and six.
+
+Statement four. The sample variance is also unbiased for lambda, and because both it and the sample mean are consistent, they are equally precise in large samples. Pause now.
+False. Both are unbiased and consistent, but the variance of s squared is lambda over n plus two lambda squared over n minus one. Its efficiency tends to one over one plus two lambda, 0.2 at lambda equal to 2, so it needs about five times the data. Part four.
+
+Statement five. The information inequality is how Bolfarine constructs the efficient estimator of a Poisson rate. Pause now.
+False. In Bolfarine's words on printed page 19, it is not a method for constructing estimators; it only checks whether a given estimator is efficient. The construction is maximum likelihood. Part four.
+
+Statement six. At lambda equal to 2 and n equal to 50, Chebyshev's lower bound on the probability that the sample mean is within 0.25 of lambda is a close approximation to the exact probability. Pause now.
+False. Chebyshev gives one minus 2 over 50 times 0.25 squared, which is 0.36. The exact probability, from a Poisson with rate 100, is 0.789. Part five.
+
+Statement seven. The maximum likelihood estimator of the probability of a zero count is e to the minus y bar, with asymptotic variance, after scaling by root n, equal to lambda times e to the minus two lambda. Pause now.
+True. That is invariance and the delta method, Bolfarine's Example 3.2.5: the squared derivative e to the minus two lambda, divided by the information one over lambda. G layer. Part six.
+
+Statement eight. On the full coal series the dispersion statistic is 176.7 on 111 degrees of freedom, and the test rejects the single Poisson rate. Pause now.
+True. D equals 111 times 2.7142 over 1.7054, which is 176.7, and the upper-tail p-value is 0.00007, below 0.001. Part seven.
+
+Statement nine. A dispersion index of 1.6 with a dispersion-test p-value below 0.001 shows that the rate changed at some date. Pause now.
+False. The index ignores the order of the years: shuffling the coal series leaves it at exactly 1.592, while the shuffled best-cut likelihood-ratio statistic has a 95 per cent quantile near 14, against 70 in calendar order. Overdispersion rules out one rate; locating a break needs the time structure. Pitfall one, part fifteen.
+
+Statement ten. A mixture of two Poisson rates has a variance equal to its mean, because each component has a variance equal to its mean. Pause now.
+False. By the law of total variance the mixture's variance is its mean plus pi times one minus pi times the squared difference of the rates. On the coal data that is 1.705 plus 1.120, which is 2.825. Part seven.
+
+Statement eleven. The single-rate model can never attain a higher maximised likelihood than the best two-regime model. Pause now.
+True. One rate is the special case lambda sub 1 equal to lambda sub 2 of the two-regime model, and maximising over a larger set cannot give a lower maximum. That is why the dashed single-rate line lies below every cut. Part eight.
+
+Statement twelve. The coal data pin the change point to the year 1891. Pause now.
+False. 1891 is the maximum, but with weight only 0.251. The years 1889 to 1892 together carry 0.696. The data locate the change around 1890 but cannot pin down the exact year. Part eight.
+
+Statement thirteen. In the coal data the likelihood-ratio statistic at the profile-maximising cut is 70.0, so the correct p-value is the probability that a chi-squared with one degree of freedom exceeds 70. Pause now.
+False. The cut was chosen to maximise the statistic, it is not identified under the null, and it is discrete, so Wilks does not apply. Under a no-break null the maximised statistic has a 95 per cent quantile of 9.9, not 3.84. The single rate is still rejected, because 70 exceeds every simulated null draw. Part nine.
+
+Statement fourteen. Profiling and integrating the rates out of the two-regime likelihood always give the same weights for the cut. Pause now.
+False. They agree on the coal data, 0.251 at 1891 both ways, because both segments are long. On a short segment they part: on the toy series six followed by seven ones, 0.783 profiled against 0.653 integrated. Part ten.
+
+Statement fifteen. With an exponential prior with rate a and n Poisson counts summing to s sub n, the posterior of lambda is Gamma with shape s sub n plus one and rate a plus n. Pause now.
+True. The prior kernel e to the minus a lambda times the likelihood kernel lambda to the s sub n times e to the minus n lambda is the Gamma kernel lambda to the s sub n times e to the minus a plus n times lambda. The update adds the count to the shape and the exposure to the rate. Part eleven.
+
+Statement sixteen. With the exponential one half prior, the posterior mean always exceeds the maximum likelihood estimate, because the prior adds one pseudo-event. Pause now.
+False. The prior adds one event and half a year. The posterior mean is a weighted average of the prior mean 2 and the sample mean, so it exceeds the estimate only when the sample mean is below 2. On 1851 to 1891 it is 3.084, below 3.098. Part twelve.
+
+Statement seventeen. Because the Gaussian and Poisson regressions on the weekend dummy give the same fitted means, 109 and 83.33, they attach the same statistical significance to the weekend effect. Pause now.
+False. Same means, different variance functions: a constant 140.4 against a variance equal to the mean. The Gaussian t is minus 5.67, the Poisson z is minus 6.77, and the quasi-Poisson z is minus 5.63. Part fourteen.
+
+Statement eighteen. Overdispersion makes the Poisson estimate of the weekend coefficient inconsistent. Pause now.
+False. The score equations X transposed times y minus lambda equal zero need only the mean to be right, and the quasi-Poisson fit returns the same beta hat, minus 0.26850. What overdispersion breaks is the standard error, too small by the factor 1.202. Part fourteen.
+
+Answer key at a glance. True: statements 3, 7, 8, 11 and 15. False: statements 1, 2, 4, 5, 6, 9, 10, 12, 13, 14, 16, 17 and 18.
+
+
+Part twenty-one. The whole topic in five lines.
+
+One. For independent Poisson counts the total is sufficient, and the sample mean is the maximum likelihood estimator: unbiased, with variance lambda over n equal to the Cramér-Rao bound, so it is efficient, while the sample variance is only one over one plus two lambda efficient.
+
+Two. The mean equals the variance is the model's fingerprint: the coal series fails it, with a dispersion statistic of 176.7, and splitting at 1890 gives two rates, 3.125 and 0.917, that each pass.
+
+Three. The profile likelihood puts the break at 1891 with weight 0.251 and 0.696 on 1889 to 1892, and the likelihood ratio of 70.0 rejects one rate even though, with a searched cut, it is not chi-squared with one degree of freedom.
+
+Four. A Gamma prior adds events to the shape and exposure to the rate; on 1851 to 1891 the posterior mean 3.084 is shrunk from 3.098 toward the prior mean 2 by the prior weight a over n plus a, and the predictive for next year's count is a negative binomial.
+
+Five. In Poisson regression a coefficient is a rate ratio, e to the beta, the score is X transposed times y minus lambda, and the standard errors are right only if the variance equals the mean: check it, and multiply by sigma hat when it fails.

@@ -1,0 +1,264 @@
+Advanced Econometrics. Topic narration: Monte Carlo methods for inference. Narrated study notes, part 2 of 3.
+
+How to listen. This file continues the Monte Carlo topic narration. Part 1 covered Monte Carlo integration and its standard error, Monte Carlo studies of estimators, and exact sampling by the inverse distribution function, composition and accept-reject. This file holds three sections: section 4, importance sampling, its variance, and sampling importance resampling, the last of the independent methods; section 5, Markov chains and stationarity, where dependent simulation begins; and section 6, the Gibbs sampler, with the coal-mining switch point. Part 3 holds Metropolis-Hastings, mixing and diagnostics, and the support parts.
+
+As in part 1, every formula is spoken in words, equations are numbered within each section, and each section ends with a spoken checklist. The scope rule holds here too: Hamiltonian Monte Carlo, the no-U-turn sampler, Rao-Blackwellisation, Chib's marginal likelihood and sequential Monte Carlo are named only, not examinable.
+
+
+Section 4. Importance sampling, its variance, and sampling importance resampling.
+
+This section covers the Monte Carlo note, subsections 6, 7 and 9; Greenberg section 5.4, printed pages 70 to 72, with Algorithm 5.5, and section 5.5, printed page 72; Morettin and Singer section B.6.2, printed pages 470 to 471, with equations B.15 to B.17 and Example B.16; and three of the lecturer's site pages: the four physicists, the correlation coefficient, and zero-inflated Poisson fishing.
+
+The claim, before the derivations. When we cannot draw from f at all, draw from another density h and reweight: multiply and divide by h, and the expectation under f becomes an expectation under h of g times the weight f over h. When f is known only up to a constant, divide by the sum of the weights. The method is only as good as the weights' variance, and that variance is infinite when h has thinner tails than f, or vanishes where f does not. Greenberg's own example, a truncated exponential approximated with a Beta of 2 and 3, has infinite variance: its printed standard error means nothing. Resampling the proposals with probabilities proportional to their weights, sampling importance resampling, turns weighted draws into approximate draws from f; the effective sample size says how many of them really count.
+
+The notation. f is the target density, often a posterior known up to a constant. h, or g in Morettin and Singer, is the importance density we can sample. G or n is the number of draws. w i is the importance weight of draw i, f of x i over h of x i, never negative. Normalised weights, written the same way, are the weights divided by their sum.
+
+Four point one. The importance sampling identity. Greenberg section 5.4, printed page 70; Morettin and Singer equations B.15 and B.16, printed pages 470 to 471.
+
+Greenberg's setting, printed page 70: we want the expected value of g of X under f, the integral is not computable analytically, and we cannot sample from f. Let h be a density we can simulate.
+
+Equation 1. Multiply and divide the integrand by h. The expected value under f of g of X is the integral of g of x times f of x over h of x, times h of x, d x. The last factor, h of x d x, says this is itself an expectation, now under h, of g times the ratio f over h. So, by equation 1 of section 1, it is approximately one over G times the sum over i of g of X i times w i, where w i is f of X i over h of X i and the X i are drawn from h. Greenberg calls it a weighted average of the g of X i, with importance weights f over h. Morettin and Singer write the same thing as their equation B.16, in a notation where h is the function, pi the target and g the importance density: phi of x equals h of x times pi of x over g of x, and its average over draws from g estimates the expectation.
+
+Equation 2, the self-normalised form, Morettin and Singer equation B.17. When f is known only up to a constant, the weights are known only up to the same constant. Divide by their sum: theta tilde equals the sum over i of w i times g of X i, divided by the sum over i of w i. The unknown constant appears in the numerator and the denominator and cancels. Morettin and Singer, printed page 471, cite Geweke, 1989: theta tilde converges with probability one to the true value if three conditions hold. One, the support of the importance density includes the support of the target. Two, the draws are independent and identically distributed from the importance density. Three, the expected value of the function is finite. Geweke also gives its standard error: the square root of the sum over i of g of x i minus theta tilde, squared, times w i squared, divided by the square of the sum of the w i.
+
+Morettin and Singer add a reading, printed page 471: the estimator gives more weight to regions where the importance density is below the target. That is the whole mechanism. The importance density oversamples some regions and undersamples others, and the weights undo the distortion.
+
+Four point two. The variance condition. Greenberg printed page 70; the Monte Carlo note, subsection 6.
+
+Greenberg's argument in three steps. First, the variance of the estimator is its second moment minus its mean squared, and the mean converges to the square of the expected value of g of X, a fixed number. So the variance is driven by the second moment. Second, the second moment of one weighted term is the expected value under h of g times f over h, squared. Third, write that expectation as an integral against h: g squared times f squared over h squared, times h, which is equation 3: the integral of g squared times f squared over h, d x.
+
+When is equation 3 large? Greenberg, printed page 70: "This integral is large when f of x over h of x is large, a situation that tends to occur when the tail values of h are very small compared to the tail values of f." Two consequences he draws. "Since the normal distribution tends to zero very quickly, it is often not a good choice" for the importance density. And "in general, the variance is small when f over h does not vary greatly." The ideal is an h shaped like g times f, with tails at least as heavy as the target's.
+
+And if equation 3 is not just large but infinite, the estimator still converges, by the law of large numbers, which needs only a finite mean; but its variance is infinite, so there is no central limit theorem, its sample standard error estimates nothing, and convergence is erratic.
+
+Four point three. Worked: Greenberg's Algorithm 5.5, and its hidden flaw. Greenberg printed pages 70 to 71; the Monte Carlo note, equation 11.
+
+The target. The expected value of one over one plus x squared, for x exponential with rate one truncated to zero to one. So f of x is e to the minus x, divided by one minus e to the minus one, on zero to one. The importance density is a Beta of 2 and 3, h of x equal to 12 x times the square of one minus x, chosen by Greenberg because it lives on zero to one and matches the target well over part of the interval.
+
+The numbers. The exact value is 0.8302, Greenberg printed page 71, by numerical integration; quadrature in the note gives 0.830217. Greenberg reports 0.8268, with an approximate standard error of 0.0030, from G equal to 10,000. A seeded Python run in the note gives 0.8003, with a computed numerical standard error of 0.0089. That run is 0.8302 minus 0.8003, which is 0.030, away from the truth: three of its own "standard errors".
+
+The reason lives near x equal to zero. At zero, the target's density times the function is f of zero times g of zero, which is one over one minus e to the minus one, times one, which is 1.582. The Beta of 2 and 3, on the other hand, vanishes at zero: near zero, h of x is approximately 12 x. So the integrand of equation 3 near zero is approximately 1.582 squared over 12 x.
+
+Equation 4: the integral from zero to epsilon of g squared f squared over h is approximately the integral from zero to epsilon of 1.582 squared over 12 x, d x. The integral of one over x diverges at zero, logarithmically. So equation 3 is infinite. The estimator has infinite variance.
+
+How slowly it diverges, in numbers. Each factor of 100 closer to zero adds 1.582 squared, times the log of 100, over 12, to the truncated second moment: 2.503 times 4.605, over 12, which is 0.960. Draws very close to zero are rare under the Beta of 2 and 3, but when one comes, its weight is enormous, and it moves the estimate. Most runs never see such a draw, so their printed standard errors look small and confident, and they are wrong.
+
+The cure. A proposal with a positive density at zero, such as the uniform on zero to one or the truncated exponential itself, removes the problem: the ratio f over h is then bounded.
+
+Four point four. Worked: genetic linkage, Morettin and Singer Example B.16, printed page 471.
+
+In a genetic linkage model, animals fall into four classes with probabilities theta plus 2 over 4, one minus theta over 4, one minus theta over 4, and theta over 4. Of 197 animals, the observed frequencies are 125, 18, 20 and 34. The multinomial likelihood is proportional to 2 plus theta, to the power 125, times one minus theta, to the power 38, times theta to the power 34; the 38 is 18 plus 20. With a constant prior, the posterior is proportional to the same expression.
+
+The importance density. Take g of theta proportional to theta to the 34, times one minus theta to the 38: that is a Beta of 35 and 39. It carries two of the three factors of the posterior exactly. So the weight, the posterior over g, is proportional to the remaining factor, 2 plus theta i, to the power 125, normalised by its sum over the draws. The posterior mean is estimated by the self-normalised equation 2: the sum of w i times theta i over the sum of the w i. With 10,000 draws from the Beta of 35 and 39, Morettin and Singer obtain 0.6180.
+
+The design lesson. Put into h every factor of the target that you can sample exactly, and leave only a smooth, slowly varying factor in the weights. That is Greenberg's rule that the variance is small when f over h does not vary greatly.
+
+Four point five. Sampling importance resampling, SIR. Morettin and Singer section B.6.2, printed page 470; the Monte Carlo note, subsection 7.
+
+Morettin and Singer call it "reamostragem ponderada", weighted resampling, and contrast it with accept-reject: the same two stages, simulate from a convenient density and then correct, but the importance density no longer needs to be an envelope.
+
+Three steps. Step a: draw x 1 to x n from g. Step b: compute normalised weights, w i equal to f of x i over g of x i, divided by the sum over j of f of x j over g of x j. Step c: resample from the x i, treating them as a discrete distribution with probability w i on x i. The resampled values are approximately draws from f.
+
+Why it works, Morettin and Singer printed page 470. The distribution function of a resampled value at a point a is the sum of the w i over the x i at most a. That is the sum of the ratios f over g times the indicator that x i is at most a, divided by the sum of all the ratios. Divide numerator and denominator by n. By the strong law of large numbers, the numerator converges to the integral of f over g times the indicator times g, which is the integral of f up to a; and the denominator converges to the integral of f, which is one, or the normalising constant if f is unnormalised, in which case it cancels against the same constant in the numerator. So the resampled distribution function converges to the target's.
+
+With a uniform g on a box, w i is proportional to the likelihood times the prior at x i. The lecturer's site pages use exactly this.
+
+Four point six. Worked: physicist C, from the site page on the four physicists.
+
+Ten to the sixth proposals from the uniform on 600 to 1000. Weights equal to the normal density of the measurement 850 given theta, with standard deviation 40, times the Student t prior density with 5 degrees of freedom, location 900 and scale squared 240. Then ten to the sixth draws resampled with those weights. Seeded Python gives a posterior mean of 891.13, against the quadrature value 891.12.
+
+The effective sample size. Equation 5: the square of the sum of the weights, divided by the sum of the squared weights. If all weights are equal, it equals the number of draws; if one weight dominates, it is close to one. Here it is 144,275 out of a million: only about one draw in seven carries real weight, because most uniform proposals land where the posterior is negligible. That is the price of a flat box.
+
+Four point seven. Worked: the correlation coefficient, from the correlation-coefficient site page.
+
+Standardised pairs x i, with components x i one and x i two, n equal to 14, are modelled as bivariate normal with unit variances and correlation rho. Equation 6, the likelihood: one over 2 pi times the square root of one minus rho squared, all raised to the n; times the exponential of minus one over 2 times one minus rho squared, times the bracket: the sum over i of x i one squared plus x i two squared, minus 2 rho times the sum over i of x i one times x i two.
+
+The page says the posterior "has no known form, regardless of which prior one uses", so it uses SIR. The data are the heights and weights of 14 students; the fifteenth, the lecturer, was removed as an outlier. The sample correlation is 0.615. The posterior quantiles at 2.5, 50 and 97.5 per cent, under three priors, from the page's resampling and exactly by quadrature on rho.
+
+The uniform prior, density one half on minus one to one: the page gives 0.102, 0.569 and 0.784; exactly, 0.105, 0.567 and 0.784.
+
+What the page actually codes, a prior proportional to one over the square root of one plus rho squared: the page gives 0.081, 0.558 and 0.783; exactly, 0.089, 0.556 and 0.781.
+
+The arc-sine prior as stated on the page, one over pi, times one minus rho squared to the minus one half: not run on the page; exactly, 0.130, 0.589 and 0.794.
+
+So the page states the arc-sine prior but codes another one, and its second set of quantiles is the posterior under that other prior. The true arc-sine prior puts more mass near plus and minus one and moves the posterior up. With 14 observations the prior visibly matters in the lower tail. And the gaps between the page's SIR quantiles and the exact ones, a few thousandths, are the Monte Carlo error of resampling.
+
+Four point eight. Worked: zero-inflated Poisson, from the fishing site page.
+
+Fish are caught by groups that brought a camper and children. Some groups never fish, so zeros come from two sources: with probability pi, a structural zero; otherwise a Poisson count with rate lambda. Equation 7: the probability that y i equals zero is pi plus one minus pi times e to the minus lambda; the probability that y i equals a positive count y is one minus pi, times lambda to the y, times e to the minus lambda, over y factorial. The mean of y i is one minus pi times lambda; its variance is one minus pi times lambda times one plus pi lambda.
+
+The data, from the page's frequency table: 24 zeros; then the count 1 six times, 2 twice, 3 four times, 4 twice, 5 three times, and the counts 7, 8, 14 and 16 once each. That is 45 groups. The page's text says 42, but its printed estimates need 45. The number of zeros, n zero, is 24; the sum of the y i is 90; y bar is 2; and the sample variance is 12.318.
+
+The maximum likelihood estimates, for comparison. The log-likelihood is n zero times the log of D, plus n minus n zero times the log of one minus pi minus lambda, plus the sum of the y i times the log of lambda, where D is pi plus one minus pi times e to the minus lambda. Setting the score for pi to zero gives D equal to n zero times one minus pi, times one minus e to the minus lambda, over n minus n zero. Substituting into the score for lambda leaves equation 8: lambda over one minus e to the minus lambda equals z bar, the sum of the y i over n minus n zero, which is 90 over 21, which is 4.2857; and pi hat equals one minus y bar over lambda hat. The root is lambda hat equal to 4.223, through the principal branch of the Lambert W function, and pi hat is one minus 2 over 4.223, which is 0.526.
+
+The method of moments, as the page computes it: lambda equal to the sample variance plus y bar squared, over y bar, minus one, which is 12.318 plus 4, over 2, minus one, which is 7.159; and pi equal to the sample variance minus y bar, over the sample variance plus y bar squared minus y bar, which is 10.318 over 14.318, which is 0.721. The two large counts, 14 and 16, inflate the variance and drive these estimates; the page's fitted frequencies show maximum likelihood fitting the zeros exactly and the moments overpredicting them, 32 against 24.
+
+The posterior, by SIR. Uniform priors on lambda between 1 and 8 and on pi between 0.1 and 0.9: that is the page's resampling box, and on it the weights are just the likelihood of equation 7. On a fine grid the posterior means are 4.266 for lambda and 0.524 for pi, close to the maximum likelihood estimates because the priors are flat over the region the likelihood occupies. And the page's posterior predictive intervals for each count come from pushing the resampled draws through equation 7, draw by draw: section 1, subsection 6, again.
+
+Four point nine. Why independent methods stop working. Greenberg section 5.5, printed page 72. The G layer, named only.
+
+Multivariate normal draws are easy: X equals mu plus C transposed Z, with Z a vector of independent standard normals and sigma equal to C transposed C, the Cholesky factorisation; this is used in every Gibbs step that draws a coefficient vector. But for nonstandard multivariate targets, Greenberg writes, designing independent samplers "can be extremely challenging": accept-reject "requires finding a dominating density over the whole support, and importance sampling requires finding a distribution with sufficiently heavy tails." That is what motivates Markov chain Monte Carlo, the subject of sections 5 to 8, starting right after this section.
+
+Recap of section 4. Importance sampling rewrites an expectation under f as an expectation under h of g times f over h, equation 1; the self-normalised version, equation 2, handles an unknown constant and is consistent when the support of h covers that of f. Its variance is governed by the integral of g squared f squared over h, equation 3, which explodes when h has thin tails or vanishes where f does not. Greenberg's Beta of 2 and 3 for the truncated exponential has infinite variance, because h is about 12 x near zero while f times g is 1.582. SIR resamples with normalised weights and converges in distribution by the strong law; the effective sample size, the squared sum of weights over the sum of squared weights, was 144,275 of a million for physicist C.
+
+Checklist for section 4. You should be able to derive the importance sampling identity and the self-normalised estimator, and say why the unknown constant cancels. You should be able to derive the second moment, the integral of g squared f squared over h, and state Greenberg's tail condition. You should be able to show, with the numbers 1.582 and 12 x, why Greenberg's Algorithm 5.5 has infinite variance, and name a proposal that fixes it. You should be able to build the importance density for the genetic linkage posterior and say why it works well. You should be able to state the three steps of SIR, prove that the resampled distribution function converges, and compute and interpret the effective sample size.
+
+
+Section 5. Markov chains and stationarity: a process whose long-run distribution is the target.
+
+This section covers the Markov chains and Gibbs note, subsections 1 to 3; Greenberg chapter 6, printed pages 76 to 87, with equations 6.1 to 6.9 and Theorems 6.1 to 6.7; and Morettin and Singer appendix B, section B.7, chapter note 1, printed page 472.
+
+The claim, before the derivations. Independent draws are a luxury: accept-reject and importance sampling need a density close to the target over its whole support, which is hard to find in many dimensions. Markov chain Monte Carlo reverses the question. Instead of a distribution that is easy to sample, build a process that is easy to run and that settles into the target. A Markov chain has an invariant distribution pi when one step of the chain, started from pi, leaves pi unchanged. If the chain is irreducible and aperiodic, it converges to pi from any start, and averages along the chain converge to expectations under pi: the ergodic theorem, which is the law of large numbers that Markov chain Monte Carlo needs. Greenberg's two-state chain with transition probabilities 0.750, 0.250 and 0.125, 0.875 has invariant distribution one third, two thirds, and forgets its starting state to three decimals within 20 steps.
+
+The notation. Capital P, with entries p i j, is the transition matrix: p i j is the probability that the chain is in state j at time t plus one given that it is in state i at time t; each row sums to one. Pi is the invariant distribution: a probability vector, or a density, with pi times P equal to pi. p of x and y is the transition kernel for a continuous state: a density in y, for each current x.
+
+Five point one. Why build a chain at all. The Gibbs note, subsection 1; Greenberg printed page 76. The U layer.
+
+The draws from a Markov chain are no longer independent, but averages still converge, and the recipe works, in Greenberg's words, for "a great variety of distributions without having to undertake an intensive analysis of the special features of the distribution". Morettin and Singer, printed page 472, put the idea in one line: generate a Markov chain and sample from its stationary distribution, which is made to coincide with the target. To do that, the transition kernel of the chain must be built properly. Sections 6 and 7 are two ways of building it.
+
+Five point two. Markov chains on a finite state space. Greenberg section 6.1, printed pages 76 to 81. The C layer.
+
+Equation 1. A process X t on the states 1 to s is a homogeneous Markov chain if p i j, the probability that X at t plus one equals j given that X at t equals i, does not depend on t, nor on X at t minus one, t minus two, or earlier. The future depends on the past only through the present, and the rule does not change with time.
+
+The n-step transition probabilities are the entries of P to the power n, Greenberg equation 6.3: to go from i to j in two steps, sum over the intermediate state k of p i k times p k j, which is the i j entry of P squared.
+
+Equation 2, invariance. A distribution pi is invariant if, for every state j, pi j equals the sum over i of pi i times p i j. In matrix form, pi times P equals pi. Read it as a balance: if today the chain is in state i with probability pi i, then tomorrow it is in state j with probability the sum over i of pi i times p i j, and invariance says that is pi j again.
+
+Worked: Greenberg's two-state chain, his equation 6.2, printed page 79. The transition matrix has first row 0.750 and 0.250, and second row 0.125 and 0.875.
+
+Step one. Write the first column of equation 2: pi one equals 0.750 times pi one plus 0.125 times pi two.
+
+Step two. Substitute pi two equal to one minus pi one: pi one equals 0.750 pi one plus 0.125 minus 0.125 pi one.
+
+Step three. Collect terms: pi one minus 0.750 pi one plus 0.125 pi one is 0.375 pi one, and it equals 0.125. So pi one is 0.125 over 0.375, which is one third, and pi two is two thirds. Equation 3: the invariant distribution is one third and two thirds.
+
+Convergence, Greenberg printed page 80. P to the tenth has rows 0.339, 0.661 and 0.330, 0.670. P to the twentieth has both rows equal to 0.333, 0.667. Every row converges to pi. Since row i of P to the n is the distribution of the chain after n steps from state i, after 20 steps the starting state is forgotten to three decimals.
+
+The speed. It is set by the second eigenvalue of P, which for a two-state chain is one minus the two off-diagonal probabilities: one minus 0.250 minus 0.125, which is 0.625, Greenberg Exercise 6.5. The distance to pi shrinks like 0.625 to the n. By n equal to 20 that factor is below one ten-thousandth, which is why the rows agree with pi to three decimals. The closer the second eigenvalue is to one, the slower the chain forgets: that is the finite-state version of poor mixing in section 8.
+
+When convergence fails, Greenberg printed pages 78 to 81. A reducible chain, one whose transition matrix is block-diagonal, never leaves the block it starts in, and has many invariant distributions, one per block and any mixture of them. A periodic chain, for example one that alternates between two states with probability one, has P to the n oscillating, and it does not converge. Theorem 6.2: if P is irreducible and aperiodic on a finite state space, there is a unique invariant pi, and the distance between the n-step probability p i j to the n and pi j is at most r to the n over nu, for some r less than one. Convergence is geometric.
+
+Five point three. General state spaces and the ergodic average. Greenberg sections 6.2 and 6.3, printed pages 81 to 87.
+
+For a continuous state the transition kernel p of x and y replaces the matrix entries, and equation 4, Greenberg equation 6.9: a density pi is invariant if pi of y equals the integral of pi of x times p of x and y, d x. Same balance as equation 2, with an integral for the sum.
+
+Worked: the autoregression of order one, Greenberg printed pages 85 to 86. y t equals phi times y t minus one plus u t, with the absolute value of phi below one and u t normal with mean zero and variance sigma squared. Its invariant density is a normal with mean zero and variance sigma squared over one minus phi squared: the equilibrium distribution of the time-series review of Class 1. The check in one line: if y t minus one is normal with variance v equal to sigma squared over one minus phi squared, then the variance of y t is phi squared v plus sigma squared. Substitute v: phi squared sigma squared over one minus phi squared, plus sigma squared, which over the common denominator is sigma squared over one minus phi squared, which is v again. One step leaves the distribution unchanged. Hold on to this example: section 8 shows that a Gibbs sampler with highly correlated blocks is exactly such an autoregression, with phi close to one.
+
+Theorem 6.3, the ergodic average, equation 5. For an irreducible chain whose states are positive recurrent, there is a unique invariant distribution pi, and for any starting distribution, one over n times the sum from m equal to 1 to n of f of X m converges to the expected value under pi of f of X, whenever the expected absolute value of f under pi is finite.
+
+Equation 5 is the law of large numbers that Markov chain Monte Carlo needs: averages along the chain estimate posterior expectations, exactly as equation 1 of section 1 did for independent draws. What it does not give is the variance of those averages; that is section 8.
+
+The reversal, Greenberg printed page 84. Classical Markov-chain theory starts from a transition kernel and asks for its invariant distribution. Markov chain Monte Carlo turns this around: it starts from the target pi and constructs a kernel that has pi as invariant distribution. Theorems 6.5 and 6.6 then give convergence for kernels that are pi-irreducible and aperiodic. Two constructions follow: Gibbs, in section 6, and Metropolis-Hastings, in section 7.
+
+Recap of section 5. A homogeneous Markov chain has a fixed transition matrix or kernel. An invariant distribution satisfies pi times P equal to pi, or its integral form. Greenberg's two-state chain has invariant one third, two thirds, reached within 20 steps, at speed 0.625 to the n. Reducible and periodic chains fail to converge; irreducible aperiodic chains converge geometrically. The ergodic theorem makes chain averages consistent. Markov chain Monte Carlo builds a chain whose invariant distribution is the posterior.
+
+Checklist for section 5. You should be able to state the Markov property and the invariance condition, in sums and in integrals. You should be able to solve for the invariant distribution of a two-state chain and get one third, two thirds for Greenberg's matrix. You should be able to say what the second eigenvalue governs and compute 0.625. You should be able to give an example of a reducible and of a periodic chain and say why each fails. You should be able to verify that the normal with variance sigma squared over one minus phi squared is invariant for the autoregression. And you should be able to state the ergodic theorem and explain how Markov chain Monte Carlo reverses classical Markov-chain theory.
+
+Section 6. The Gibbs sampler: draw each block from its full conditional.
+
+This section covers the Markov chains and Gibbs note, subsections 4 to 7 and 9; Greenberg section 7.1, printed pages 91 to 95, with Algorithms 7.1 to 7.3, equations 7.1 to 7.4 and the bivariate-normal example; Tsay sections 12.1 to 12.3, printed pages 614 to 621, equations 12.1 to 12.3; Morettin and Singer appendix B, chapter note 2, printed pages 472 to 473, equations B.18 to B.24, and appendix C, section C.5, printed pages 487 to 488, equations C.16 and C.17; and the coal-mining data of Jarrett, 1979, kept in the project's agent notes.
+
+The claim, before the derivations. When a posterior cannot be sampled directly but each full conditional can, draw the blocks one at a time, each from its conditional given the latest values of the others. The draws form a Markov chain whose invariant distribution is the joint posterior; after a burn-in, their histograms are the marginals. Finding a full conditional is mechanical: write likelihood times prior, keep the factors that contain the block, and recognise the kernel. On the coal-mining series, with the Class 1 prior on both rates, a three-block Gibbs sampler puts the switch at 1891 with posterior probability 0.240, against the exact 0.240, and gives posterior means of 3.106 disasters a year before the switch and 0.930 after.
+
+The notation. Theta, with components theta one to theta d, are the parameter blocks; a block can be a scalar, a vector or a matrix. Theta minus j means all blocks except theta j. Capital B is the burn-in length and capital G the number of retained draws. For the coal model: k is the switch point, the last year of the first regime, from 1 to n; lambda one and lambda two are the Poisson rates before and after the switch; and S k, the sum of the y i for i up to k, is the cumulative count.
+
+Six point one. The Gibbs algorithm. Greenberg section 7.1.1, printed page 91; Tsay section 12.2; Morettin and Singer, printed pages 472 to 473.
+
+Greenberg's Algorithm 7.1, two blocks. Choose a starting value x two zero. Then, at iteration g, equation 1: draw x one g from the conditional of x one given x two at g minus one; then draw x two g from the conditional of x two given the new x one g. Discard the first B draws, the burn-in, and keep the next G.
+
+With d blocks, Greenberg Algorithm 7.2, and Morettin and Singer equation B.22 onwards: at each sweep, draw theta one from its conditional given the previous values of theta two to theta d; then theta two given the new theta one and the previous theta three to theta d; and so on, until theta d given the new values of all the others. Iterate until convergence. Tsay's equation 12.1 is the same scheme for three parameters.
+
+Morettin and Singer, printed page 473, write the transition kernel of one sweep, equation B.23: the product of the d full conditionals, each evaluated at the newest values available. Because this product depends on iteration j only through iteration j minus one, and its form does not change with j, the Gibbs sequence is a homogeneous Markov chain, equation B.24.
+
+Six point two. Why the target is invariant. Greenberg printed pages 91 to 92; the Gibbs note, equation 7.
+
+Take two blocks. The Gibbs kernel from the current point x, with components x one and x two, to the new point y, with components y one and y two, is equation 2: p of x and y equals f of y one given x two, times f of y two given y one. Note that it does not involve x one: the first draw uses only x two.
+
+Check invariance with equation 4 of section 5: integrate p of x and y times the target f of x over x.
+
+Step one. Write it out: the double integral over x one and x two of f of y one given x two, times f of y two given y one, times f of x one and x two.
+
+Step two. The factor f of y two given y one does not involve x, so it comes out. And f of y one given x two does not involve x one, so the integral over x one acts only on the joint f of x one and x two, and it gives the marginal f of x two. What remains is f of y two given y one, times the integral over x two of f of y one given x two times f of x two.
+
+Step three. That integral is the law of total probability: it is the marginal f of y one.
+
+Step four. f of y two given y one times f of y one is the joint, f of y. So equation 3: the integral of p of x and y times f of x, d x, equals f of y. The target is invariant under a full Gibbs sweep.
+
+Morettin and Singer, printed page 473, add a way to use the output when the conditionals are known in closed form, equation B.20: estimate the marginal density of X by the average, over the draws y i, of the conditional density of X given y i, because the expectation of that conditional density is the marginal. This is the Rao-Blackwell idea that the Gibbs note, subsection 9, names and leaves out of the exam.
+
+Six point three. How to find a full conditional. Greenberg printed page 55; the Gibbs note, subsection 4.
+
+Write the joint posterior as likelihood times prior. Keep only the factors that contain the block of interest. Everything else, every factor free of that block, goes into the constant of proportionality. Then recognise the kernel of a known distribution. Conditionally conjugate priors, Greenberg section 4.9, are the priors that make every such kernel standard, even when the joint posterior is not.
+
+And using the output, Tsay equation 12.3 and printed page 616: point estimates and variances are sample moments of the retained draws, and differences, ratios and other functions of the parameters are computed draw by draw: section 1, subsection 6, again.
+
+Six point four. Worked: a normal mean and precision. Greenberg Algorithm 7.3 and equations 7.1 to 7.2, printed page 93; the Gibbs note, equations 8 to 10.
+
+The model. y 1 to y n are independent normal with mean mu and precision h, that is, variance one over h. The priors are independent: mu is normal with mean mu zero and precision h zero, and h is a Gamma with shape alpha zero over 2 and rate delta zero over 2. They are not conjugate jointly, Greenberg section 4.9, but each is conjugate given the other.
+
+The joint posterior, equation 4: it is proportional to h to the n over 2, times the exponential of minus h over 2 times the sum of y i minus mu squared, from the likelihood; times the exponential of minus h zero over 2 times mu minus mu zero squared, from the prior on mu; times h to the alpha zero over 2 minus one, times the exponential of minus delta zero h over 2, from the prior on h.
+
+The conditional of h. Keep the factors with h: the powers h to the n over 2 and h to the alpha zero over 2 minus one, which combine to h to the alpha zero plus n, over 2, minus one; and the two exponentials in h, which combine to the exponential of minus h times delta zero plus the sum of y i minus mu squared, over 2. Equation 5: h given mu and y is a Gamma with shape alpha zero plus n over 2 and rate delta zero plus the sum of y i minus mu squared, over 2.
+
+The conditional of mu. Keep the factors with mu, and complete the square in mu, as Greenberg does on printed page 93. Data precision h n and prior precision h zero add. Equation 6: mu given h and y is normal with mean h zero mu zero plus h n y bar, over h zero plus h n; and variance one over h zero plus h n. The mean is a precision-weighted average of the prior mean and the sample mean.
+
+Alternate equations 5 and 6. On a seeded data set with the design of the lecturer's Stan example 1, n equal to 100, data normal with mean 1.6 and standard deviation 0.2, and a prior on mu normal with mean 1.7 and standard deviation 0.3: 5000 draws after 1000 of burn-in give a posterior mean of mu of 1.6079, against y bar equal to 1.6077; and one over the square root of the posterior mean of h is 0.195, the sample standard deviation. The prior on mu is worth h zero over h n of the data: one over 0.09, divided by 100 over 0.04, which is 0.4 per cent.
+
+Six point five. Worked: the coal-mining switch point. Greenberg equations 7.3 and 7.4, printed pages 93 to 94, and Exercise 7.3; the Gibbs note, subsection 6.
+
+The model. Annual counts of coal-mining disasters, y 1 to y n, for n equal to 112 years, 1851 to 1962, with 191 disasters in total. Equation 7: y i is Poisson with rate lambda one for i up to k, and Poisson with rate lambda two for i after k. The priors: each rate is a Gamma with shape alpha zero and rate beta zero, and the switch point k is uniform on 1 to n, where k equal to n means no change. Greenberg's equation 7.4 gives the two rates their own gamma priors; here both rates get the Class 1 prior, a Gamma with shape 1 and rate one half, that is, an exponential with rate one half, so the results connect to the first Bayesian Poisson analysis of Class 1.
+
+The joint posterior. Likelihood times priors, dropping the product of y i factorials and other constants. Equation 8: it is proportional to lambda one to the alpha zero minus one, times e to the minus beta zero lambda one; times lambda two to the alpha zero minus one, times e to the minus beta zero lambda two; times lambda one to the S k, times e to the minus k lambda one; times lambda two to the S n minus S k, times e to the minus n minus k, times lambda two. The uniform prior on k is a constant and disappears.
+
+The full conditionals. Keep the factors with each block.
+
+For lambda one: the powers alpha zero minus one and S k, and the exponents beta zero and k. Equation 9, first half: lambda one given k and y is a Gamma with shape alpha zero plus S k and rate beta zero plus k. For lambda two, in the same way: a Gamma with shape alpha zero plus S n minus S k and rate beta zero plus n minus k. Each rate is updated by the disasters and the years of its own regime.
+
+For k: keep the factors that depend on k: lambda one to the S k, e to the minus k lambda one, lambda two to the S n minus S k, and e to the minus n minus k times lambda two. Divide by the factors free of k, e to the minus n lambda two times lambda two to the S n. What remains is e to the k times lambda two minus lambda one, times lambda one over lambda two to the S k. Equation 10: the probability of k given the rates and the data is that expression, divided by its sum over k prime from 1 to n. A discrete distribution on 112 points, sampled directly.
+
+Each sweep is two gamma draws and one discrete draw.
+
+An exact check. The rates can be integrated out of equation 8 with the gamma integral of Class 1: the integral of lambda to the a minus one times e to the minus b lambda is the gamma function of a over b to the a. Equation 11: the marginal posterior of k is proportional to the gamma function of alpha zero plus S k, over beta zero plus k to the alpha zero plus S k; times the gamma function of alpha zero plus S n minus S k, over beta zero plus n minus k to the alpha zero plus S n minus S k. This is the integrated likelihood of the Class 1 change-point note, now with a prior. It lets the Gibbs output be checked against the truth.
+
+The exact numbers, year by year, giving k, S k, the exact posterior probability of k, and the conditional posterior means of the two rates.
+
+1886: k equal to 36, S k equal to 117, probability 0.0854, rates 3.233 and 0.980.
+
+1887: k equal to 37, S k equal to 119, probability 0.0995, rates 3.200 and 0.967.
+
+1889: k equal to 39, S k equal to 123, probability 0.1463, rates 3.139 and 0.939.
+
+1890: k equal to 40, S k equal to 125, probability 0.1849, rates 3.111 and 0.924.
+
+1891, the mode: k equal to 41, S k equal to 127, probability 0.2402, rates 3.084 and 0.909.
+
+1892: k equal to 42, S k equal to 128, probability 0.0945, rates 3.035 and 0.908.
+
+1896: k equal to 46, S k equal to 134, probability 0.0328, rates 2.903 and 0.872.
+
+The years 1886 to 1896 hold 98.1 per cent of the posterior mass.
+
+One entry, worked. At k equal to 41, the conditional posterior mean of lambda one is shape over rate: alpha zero plus S k, which is 1 plus 127, which is 128, over beta zero plus k, which is 0.5 plus 41, which is 41.5. So 128 over 41.5, which is 3.084: the Class 1 posterior mean for 1851 to 1891, the same computation. For lambda two: 1 plus 191 minus 127, which is 65, over 0.5 plus 71, which is 71.5, giving 0.909.
+
+Averaging equation 9 over equation 11 gives the marginal posterior means: 3.106 for lambda one, with standard deviation 0.289, and 0.930 for lambda two, with standard deviation 0.117. A Gibbs run of 20,000 sweeps after 1000 of burn-in gives 3.107 and 0.931, and its histogram of k is within total-variation distance 0.010 of equation 11.
+
+The figure of the Gibbs note. Left: the exact posterior probability of the switch year from 1880 to 1902 as bars, peaking at 1891 at 0.24, with secondary mass at 1886 to 1887 and 1889 to 1890; the Gibbs relative frequencies, from 10,000 seeded sweeps, sit on the bars as dots. Right: the Gibbs histograms of the two rates, centred near 3.1 and 0.93, with the exact marginal densities, mixtures of gammas weighted by equation 11, drawn over them.
+
+Readings. The switch is located to within a few years but not to one year: the posterior is jagged, because a single year's count, a 4 in 1886 or a 3 in 1896, can make a candidate split better or worse. The rates are well determined: about 3.1 disasters a year before, 0.93 after, a ratio of about 3.3, as in the Class 1 profile likelihood, which gave 3.098 and 0.901 at 1891. Profiling against integrating, once more: Class 1 maximised over the two rates for each candidate year; equation 11 integrates them out against a prior; and the Gibbs sampler does the integration by simulation. Here all three agree on 1891; with a vaguer prior or a shorter series they need not.
+
+Six point six. Data augmentation. Tsay section 12.1, printed page 615; Morettin and Singer section C.5, printed pages 487 to 488; the Gibbs note, subsection 7.
+
+A "parameter" can be anything unobserved: a missing value, a latent volatility, a latent utility, a regime indicator, Tsay printed page 615. Adding such variables z to the sampler, Tanner and Wong's data augmentation, often turns an intractable posterior into easy conditionals.
+
+Morettin and Singer write the two identities the algorithm iterates. Equation 12, the posterior identity, their C.16: the posterior of theta given y is the integral over z of the posterior of theta given y and z, times the predictive of z given y. Equation 13, the predictive identity, their C.17: the predictive of z given y is the integral over theta of the distribution of z given theta and y, times the posterior of theta given y.
+
+Their algorithm, printed page 488, in three steps. Step one: simulate z 1 to z m from the current estimate of the predictive of z. Step two: update the estimate of the posterior of theta as the average, over j, of the posterior of theta given y and z j. Step three: iterate until convergence. Step one is itself done by composition, from equation 13: draw theta star from the current estimate of the posterior, then draw z from its distribution given theta star and y. They call it the S I algorithm, for simulation and integration, in contrast with the E and M steps of the EM algorithm.
+
+Collapse each step to a single draw and it is a two-block Gibbs sampler: draw z given theta and y, then theta given y and z. The switch point k is such a latent variable; so are the Student t precisions lambda i of section 3, Greenberg section 8.1.2; the latent utilities of the probit, Greenberg Algorithm 8.3; and the log-volatilities of the stochastic volatility model in section 7.
+
+Recap of section 6. Gibbs draws each block from its full conditional given the latest values of the others; one sweep has the joint posterior as invariant distribution, by integrating out the old values and applying the law of total probability. Full conditionals come from likelihood times prior, keeping the factors with the block. For the normal model the conditionals are a gamma for the precision and a normal for the mean. For the coal series, two gammas and a discrete distribution on 112 points; the switch is at 1891 with probability 0.2402, and the rates are 3.106 and 0.930. Data augmentation adds latent variables to make every conditional easy.
+
+Checklist for section 6. You should be able to state the Gibbs algorithm for two and for d blocks. You should be able to prove, in four steps, that the joint distribution is invariant under a Gibbs sweep. You should be able to derive the gamma conditional of the precision and the normal conditional of the mean in the normal model. You should be able to write the joint posterior of the coal model, derive the three full conditionals, and compute 128 over 41.5 equal to 3.084. You should be able to derive the marginal posterior of k by integrating the rates out with the gamma integral. And you should be able to explain data augmentation with the posterior and predictive identities, and name four latent variables it handles.
+
+This is the end of part 2. Part 3 continues with Metropolis-Hastings, mixing and diagnostics, and the support parts.
+

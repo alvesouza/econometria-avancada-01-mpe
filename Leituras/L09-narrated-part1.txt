@@ -1,0 +1,415 @@
+Advanced Econometrics, Class 9. Multivariate time series. Narrated study notes, part 1 of 3.
+
+How to listen.
+
+This is a listening version of the finished study notes for Class 9 of the course Econometria Avançada, in the professional master's in economics at Insper, taught by Hedibert Freitas Lopes. It carries the same content as the written notes, re-voiced for the ear. Every formula is spoken in words, the way you would dictate it to someone writing on a board, and then its meaning is said in plain language. Matrices are read entry by entry, row by row.
+
+The narration comes in three files. Part 1, this file, covers the map of the class, then the vector autoregression and what it can say: estimation and forecasting; the moving-average form, impulse responses and the forecast-error variance decomposition; and the structural vector autoregression. Part 2 covers too many parameters, with the Bayesian vector autoregression, the Minnesota prior and stochastic search variable selection, and factor models and the factor-augmented vector autoregression; then letting things move, with time-varying parameters, stochastic volatility and the state-space form, and finally factor stochastic volatility, DCC and time-varying covariances. Part 3 holds the support material: the pitfalls, the spoken formula sheet, the implementation described as a sequence of steps, the reading route and exercises, a true or false self-test, a glossary, and the whole class in five lines.
+
+A word on the three layers the notes use. The U layer is intuition: why vector autoregressions, why shrink, what a factor is, what the Kalman gain means, why correlations rise in crises. The C layer is the course layer, the examinable one: the algebra of the vector autoregression of order p, least squares equal to maximum likelihood, the companion form, forecasts and order selection; the moving-average weights, the Cholesky impulse response and the variance decomposition; the structural model and the order condition; the Minnesota prior and posterior, other priors, and stochastic search variable selection; the factor model, its identification, its full conditionals and the factor-augmented model; the vector autoregression with stochastic volatility, the time-varying-parameter version, and the Kalman filter; and the exponentially weighted moving average, DCC and factor stochastic volatility. The G layer is graduate material, not examinable unless asked: Uhlig's scalar martingale condition, the West and Harrison discounting formula, rank deficiency in factor models, parsimonious Bayesian factor analysis, and the spatial dynamic factor model. Each time a G item comes up, the narration says so out loud.
+
+A word on scope. Cointegration and error-correction models are out: they are listed in the class plan as a syllabus item that no class covers. The BEKK and diagonal VEC estimation details of Tsay section 10.2 are out, and so are principal-component asymptotics, Tsay section 9.6. Named only: Uhlig's beta-Wishart dynamics beyond the scalar case; the Waggoner and Zha, and Rubio-Ramírez and coauthors, algorithms; parsimonious Bayesian factor analysis, the British Cohort Study, and the spatial dynamic factor model; the ENC prior; and sign restrictions, Ahmadi and Uhlig, in the references.
+
+The sources are cited by short names. The slides are Lopes's two decks: part 1, "Lecture 4: Bayesian VAR", 48 slides, and part 2, "Lecture 5: BVAR Extensions", 67 slides. Slide numbers without a deck name refer to part 1. The site pages are the VAR example, the stochastic volatility and factor stochastic volatility page on the United States and Brazil, and the WTI and S and P 500 time-varying covariance page. Tsay is Analysis of Financial Time Series, third edition, 2010. Greenberg is Introduction to Bayesian Econometrics, first edition, 2007. The Bayesian vector autoregression, the factor-augmented model and the time-varying-parameter model are in no book on disk: the slides are the source.
+
+From here on, VAR means vector autoregression, and VAR of order p is said "VAR p". OLS means ordinary least squares, MLE the maximum likelihood estimator, IRF the impulse response function, FEVD the forecast-error variance decomposition, SVAR the structural VAR, BVAR the Bayesian VAR, SSVS stochastic search variable selection, FAVAR the factor-augmented VAR, SV stochastic volatility, and TVP time-varying parameters.
+
+
+Part zero. The map of Class 9.
+
+This part covers the map note: the one claim of the class, the reading order, the one result to hold, the numbers to memorize, the scope, and the position in the course.
+
+The one claim. A VAR is a multivariate regression. OLS equation by equation is its MLE, the companion matrix decides stationarity, and impulse responses and forecasts are powers of it.
+
+Its shocks are correlated, so every structural reading needs restrictions, q times q minus one over two of them, and the familiar Cholesky ordering is one such set, not a neutral device.
+
+Its parameters grow like q squared times p, and the two answers of the lecture are shrinkage, the Minnesota prior, whose posterior is ridge regression toward a random walk, and factors, a few common components carrying the cross-section, in a FAVAR or in the covariance.
+
+When coefficients and volatilities move, each is a state and the Kalman filter updates it. When only covariances move, DCC models correlations directly, while factor SV derives them from the factor's volatility.
+
+The reading order has three parts and three support notes.
+
+Part one, the VAR and what it can say. Note one, VAR p estimation and forecasting: slides 3 to 9, 13, 27 and 45; Tsay sections 8.2.3 and 8.2.4, pages 403 to 409; Greenberg section 9.1. It settles that OLS equals the conditional MLE, which equals SUR, seemingly unrelated regression, by GLS when the regressors are common; that the covariance of beta hat is Sigma Kronecker the inverse of X transposed X; the companion eigenvalues, with 0.9099 for the slide's VAR 2; forecasts and their mean squared error, with Tsay's limits 7.0436 and 5.5454; and the lag-order selection, AIC choosing 2 and BIC choosing 1. Note two, the moving-average form, impulse responses and the variance decomposition: slides 10 to 12, 17, 20 and 21; Tsay section 8.2.5, pages 412 to 417. It settles the recursion for the moving-average weights Psi s; the Cholesky-orthogonalised responses, Tsay's Theta one; the FEVD, reproducing the site's table, 0.0758 at horizon one; and two label errata in the site script. Note three, the structural VAR: slides 31 to 37; Tsay Example 8.3, pages 400 and 401. It settles that Sigma equals the inverse of A zero transposed A zero; the rotation problem and the count q times q minus one over two; that recursive equals Cholesky; Example 8.3's two structural equations, with 13.6 per cent against 48.5 per cent of the variance decomposition; and the counting of zeros in the slides' illustrations.
+
+Part two, too many parameters. Note four, the BVAR, the Minnesota prior and SSVS: slides 22 to 30, and part 2 slides 3 to 13, 50, and 56 to 60. It settles the Minnesota prior and its closed-form posterior; lambda moving the posterior from the random walk to OLS; why the Normal-Wishart prior forces theta equal to one; the SSVS inclusion threshold of 0.30 standard errors; and that large BVARs beat OLS, 7.56 against 0.46. Note five, factor models and the FAVAR: part 2 slides 14 to 37, 51 to 55, and 59; Tsay sections 9.1 and 9.2. It settles Omega equal to beta beta transposed plus Sigma; rotation and the bound on the number of factors, k at most two m plus one minus the square root of eight m plus one, all over two; the factor-score posterior; the exchange-rate example; and the FAVAR and its root mean squared forecast error.
+
+Part three, letting things move. Note six, TVP-VAR, SV and the state space: slides 38 to 44; part 2 slide 61; Tsay sections 11.1 and 11.3.1; Greenberg section 10.3. It settles the VAR with GARCH errors, the VAR with SV, and Primiceri's TVP-VAR with SV as a drifting recursive SVAR; the Kalman filter, derived; the steady-state gain K star equal to 0.1418, which is one minus theta hat, for Tsay's Alcoa volatility; and discounting. Note seven, factor SV, DCC and covariances: part 2 slides 38 to 43; Tsay sections 10.1, 10.3.1, 10.4.3 and 10.6; and the two site pages. It settles the exponentially weighted moving average, DCC in the Engle and the Tse and Tsui versions and their half-lives, 7.2 against 2.4 days; the S and P GARCH persistence of 1.0029; and factor SV's implied correlation rising with factor volatility.
+
+The support notes are the formula sheet, with the exam specification mapped, every result and every number; the pitfalls note, with 18 confusions with counterexamples and a 24-item original true or false self-test; and the Python note, the reference code, with assertions against the printed numbers.
+
+The one result to hold. Every structural or forecasting statement from a VAR is a function of B and Sigma plus an assumption. The moving-average weights and the forecasts need only B and Sigma. Orthogonalised impulse responses, variance decompositions and "structural" equations need an ordering or other restrictions on A zero, because Sigma equal to the inverse of A zero transposed A zero leaves q times q minus one over two degrees of freedom. And with many series, B itself needs a prior.
+
+Now the numbers and cases to have memorized. Eleven of them.
+
+First, the largest companion modulus of the slide-13 VAR 2: 0.9099.
+
+Second, the United Kingdom, United States and Canada VAR 3: AIC picks lag 2 and BIC lag 1; the largest root is 0.6107.
+
+Third, the FEVD of the United States due to a United Kingdom shock at horizon one: rho squared, 0.0758.
+
+Fourth, Tsay Example 8.3: the share of r one's 10-step variance due to r two is 13.6 per cent or 48.5 per cent, depending on the ordering.
+
+Fifth, the restrictions needed for q equal to 3, 5 and 6: 3, 10 and 15.
+
+Sixth, parameter counts for a VAR 1 with q equal to 3, 20 and 131: 15, 610 and 25,807.
+
+Seventh, Bańbura and coauthors, employment at horizon one: the CEE-sized OLS model gives 7.56, the large BVAR 0.46.
+
+Eighth, the maximum number of factors for m equal to 6, 12, 20 and 50: 3, 7, 14 and 40.
+
+Ninth, the steady-state gain in Tsay Example 11.1: 0.1418, which is one minus 0.858.
+
+Tenth, the DCC half-lives, Engle and Tse-Tsui: 7.22 and 2.43 days.
+
+Eleventh, the factor SV correlation for the slide-22 pair, at factor variance h equal to one and h equal to 0.05: 0.939 and 0.489.
+
+The interactive companions. The Ordering Dial lets you move the four coefficients of a bivariate VAR 1, the innovation correlation rho and the Cholesky ordering. You watch the orthogonalised responses, solid for the current ordering and dashed for the other; the eigenvalues on the unit circle; and the FEVD share of r one's 10-step variance due to the r two shock, 13.6 per cent against 48.5 per cent at Tsay Example 8.3's defaults. The landmarks are rho equal to zero and modulus one. The Factor-Volatility Dial lets you move two loadings, two idiosyncratic variances and the factor log-variance lambda t. You watch rho t travel along the exact curve and the covariance ellipse change; the answer is rho t, 0.939 at slide 22's defaults. The landmarks are lambda equal to zero and the half-limit point. Both pages are verified against their own JavaScript at three control vectors plus degenerate ones.
+
+The scope, said once in full. Examinable, the C layer: everything the slides state as a model, prior, posterior or result, the derivations in the notes built on them, and the reading of the site pages' printed output. Named only, the G layer, and out, as listed in the how-to-listen section.
+
+The position of Class 9 in the course. From Class 1: the VAR 1 mean, the covariance Gamma zero by the vec formula, Tsay Example 8.3, and the OLS algebra. From Class 2: bias and variance, which is why shrinkage helps forecasts. From Classes 3 and 4: conjugate priors, Gibbs sampling, and ridge and shrinkage priors, the machinery of notes four and five. From Classes 5, 6 and 7: causal inference and hierarchical models; the SVAR's identification problem is the time-series twin of the causal-inference one. And from Class 8: univariate AR and ARMA models, unit roots, GARCH and SV, the univariate pieces of every model here.
+
+The bibliography actually used: Lopes's two slide decks and the three site pages; Tsay, 2010, sections 8.2, 9.1 and 9.2, 10.1, 10.3.1, 10.4.3, 10.6, 11.1 and 11.3.1; and Greenberg, 2007, sections 9.1 and 10.3.
+
+Recap of part zero. A VAR is a regression; its structural reading needs restrictions; its size needs a prior or factors; and its moving parts are states for the Kalman filter.
+
+
+Part one, section 1. A VAR p is a multivariate regression: OLS is the MLE, the companion matrix decides stationarity, and forecasts are powers of it.
+
+This section covers slides 3 to 9: VAR at a glance, the model set-up, the multivariate regression, the matrix normal, the multivariate normal, the h-step forecast, and stationarity; slide 13, the simulated VAR 2; and slides 27 and 45, the parameter counts. It covers the site's VAR example, sections 2 to 3.1: OLS step by step, the MTS fit, and VARorder. It covers Tsay sections 8.2.3 and 8.2.4, pages 403 to 409, equations 8.13 to 8.19 and Table 8.5, and the VAR 1 S-Plus output, pages 414 to 416. And Greenberg section 9.1, pages 134 to 137, on SUR.
+
+The claim, before the derivations. Stack the lags in x t and a VAR p is y t equals B x t plus u t, a multivariate regression with the same regressors in every equation. That one fact makes equation-by-equation OLS the conditional MLE and the SUR, or GLS, estimator at once, and it gives the estimated covariance of beta hat as Sigma hat Kronecker the inverse of X transposed X. Writing the VAR p as a VAR 1 in q times p dimensions, the companion form, settles both remaining questions: the process is stationary if and only if every eigenvalue of the companion matrix lies inside the unit circle, and the h-step forecast is its h-th power applied to the current state.
+
+The notation. y t is the q by one vector of series at time t, for t from one to n; Tsay calls it r t, with dimension k. B i is the q by q autoregressive matrix at lag i, for i from one to p; Tsay calls it Phi i. B, the matrices B one to B p side by side, is q by q p. x t is the q p by one vector of stacked lags, y t minus one down to y t minus p. Mu, which Tsay calls phi zero, is the intercept; slide 13 calls it mu. u t is the innovation, iid normal with mean zero and covariance Sigma, a q by q positive definite matrix. Y, X and U are the data matrices, n by q, n by q p and n by q, with rows y t transposed, x t transposed and u t transposed. Beta, the vec of B transposed, is q squared p by one: equation one's coefficients, then equation two's, and so on, as on slide 22. A is the q p by q p companion matrix. And Psi i are the moving-average weights, derived in section 2, with Psi zero equal to the identity.
+
+One point one. The intuition: why a VAR.
+
+Slide 3 quotes Del Negro and Schorfheide, 2011: VARs "appear to be straightforward multivariate generalizations of univariate autoregressive models. They turn out to be one of the key empirical tools in modern macroeconomics." Sims, in 1980, proposed them in place of large structural models whose exclusion restrictions he called "incredible". The VAR makes no exclusion: every variable depends on every lag of every variable. That buys flexibility and costs parameters, the tension the whole of Class 9 is about, in point eight below and then in section 4.
+
+One point two. Course layer: the model. Slide 4, and Tsay equation 8.13, page 403.
+
+Equation 1: y t equals mu plus B one y t minus one plus and so on up to B p y t minus p, plus u t, with u t iid normal with mean zero and covariance Sigma.
+
+The slide writes equation 1 without mu, "the (basic) VAR(p)"; the simulated example on slide 13 and Tsay keep it.
+
+The stationary mean. If y t is weakly stationary with expected value m, take expectations of equation 1, in three steps. First, m equals mu plus B one m plus and so on up to B p m. Second, the identity minus B one minus and so on minus B p, times m, equals mu. Third, equation 2: m equals the inverse of the identity minus B one minus and so on minus B p, times mu. Tsay page 403 writes this as mu equals the inverse of Phi of one times phi zero. It requires the identity minus the sum of the B i to be invertible.
+
+One point three. Course layer: the multivariate regression form. Slides 5 to 7.
+
+Stack the lags. With B equal to B one through B p and x t the stacked lags, equation 1 without mu is equation 3: y t equals B x t plus u t, with u t normal with mean zero and covariance Sigma. A constant is one more column of x t.
+
+Transpose equation 3 and stack the n rows. Equation 4: Y equals X B transposed plus U, with U matrix normal with mean zero, row covariance the n by n identity, and column covariance Sigma. That is, the rows of U are independent across t, each row with covariance Sigma. Slide 6 writes Y equals X B plus U, with B already transposed. Column i of equation 4 is equation i: y superscript i equals X beta i plus u superscript i, where beta i transposed is row i of B and y superscript i holds the n observations of series i.
+
+Stack the columns, using the vec of X B transposed equal to the identity of order q Kronecker X, times the vec of B transposed. Equation 5: y, the vec of Y, equals the identity Kronecker X, times beta, plus u, with u normal with mean zero and covariance Sigma Kronecker the n by n identity. That is slide 7.
+
+Sigma Kronecker the identity says two things: errors of different equations at the same date are correlated, with covariance Sigma i j; errors at different dates are not. That is exactly the seemingly unrelated regression of Greenberg section 9.1, page 134, equations 9.1 and 9.2: "the covariances permit nonzero correlations for disturbances with the same second subscript". Here the same regressor block, x t transposed, appears in every equation.
+
+One point four. Course layer: OLS is the conditional MLE, and also the SUR, or GLS, estimator.
+
+One point four point one. The likelihood. Conditioning on the first p observations, equation 3 gives the log-likelihood, equation 6: l of B and Sigma equals minus n q over two log two pi, minus n over two log determinant of Sigma, minus one half the sum over t of y t minus B x t, transposed, times Sigma inverse, times y t minus B x t.
+
+A scalar is its own trace, and the trace of a b transposed equals b transposed a. So, equation 7: the sum of the quadratic forms equals the trace of Sigma inverse times the sum over t of y t minus B x t times its transpose, which is the trace of Sigma inverse times S of B. Here S of B, Y minus X B transposed, transposed, times Y minus X B transposed, is a q by q matrix of residual cross-products.
+
+One point four point two. Completing the square in B.
+
+Define the OLS solution B hat transposed equal to the inverse of X transposed X times X transposed Y, so that the normal equations hold. Equation 8: X transposed times Y minus X B hat transposed equals zero.
+
+Write Y minus X B transposed as Y minus X B hat transposed, plus X times B hat minus B, transposed, and expand S of B. It has four terms: S of B hat; then Y minus X B hat transposed, transposed, times X times B hat minus B transposed; then B hat minus B times X transposed times Y minus X B hat transposed; and finally B hat minus B, times X transposed X, times B hat minus B transposed.
+
+By equation 8, the two middle terms are zero. Equation 9: S of B equals S of B hat plus B hat minus B, times X transposed X, times B hat minus B transposed.
+
+Substitute equation 9 into equation 7. Equation 10: the trace of Sigma inverse S of B equals the trace of Sigma inverse S of B hat, plus the trace of Sigma inverse times B hat minus B, times X transposed X, times B hat minus B transposed.
+
+The last trace equals the trace of C transposed Sigma inverse C, which is at least zero, with C equal to B hat minus B times the square root of X transposed X; and it is zero if and only if B equals B hat. So, for every Sigma, equation 6 is maximised in B at B hat. Equation 11, boxed: B hat transposed equals the inverse of X transposed X times X transposed Y, which is the same as beta hat i equal to the inverse of X transposed X times X transposed y superscript i, for each equation i from one to q.
+
+Each equation is fitted by its own OLS. Tsay page 405: "Parameters can be estimated by the ordinary least-squares (OLS) method"; and page 406: "the OLS estimates are equivalent to the (conditional) ML estimates". Then, maximising minus n over two log determinant of Sigma minus one half the trace of Sigma inverse S of B hat over Sigma gives Sigma tilde equal to S of B hat over n, Tsay equation 8.19. The bias-adjusted version divides by n minus q p, with one constant more if there is an intercept; Tsay equation 8.17 uses T minus 2 i minus 1 for the univariate count.
+
+One point four point three. Why SUR, or GLS, adds nothing here.
+
+GLS on equation 5 is beta hat GLS equal to the inverse of: the identity Kronecker X, transposed, times Sigma inverse Kronecker the identity, times the identity Kronecker X; all multiplied by the identity Kronecker X, transposed, times Sigma inverse Kronecker the identity, times y. Use the rule that A Kronecker B times C Kronecker D equals A C Kronecker B D. The matrix to invert becomes Sigma inverse Kronecker X transposed X. The vector becomes Sigma inverse Kronecker X transposed, times y. So, equation 12: beta hat GLS equals Sigma Kronecker the inverse of X transposed X, times Sigma inverse Kronecker X transposed, times y, which is the identity Kronecker the inverse of X transposed X times X transposed, times y.
+
+That is equation 11 stacked. Sigma drops out because every equation has the same regressors. The SUR gain of Greenberg section 9.1 appears only when the regressor matrices differ; for a VAR, when some coefficients are restricted to zero, the "refined" VAR of the site page, treated in section 2. The sampling covariance follows from equation 12 and the covariance of y equal to Sigma Kronecker the identity. Equation 13: the covariance of beta hat equals the identity Kronecker the inverse of X transposed X times X transposed, times Sigma Kronecker the identity, times the identity Kronecker X times the inverse of X transposed X, which is Sigma Kronecker the inverse of X transposed X.
+
+One point four point four. Worked: the site's VAR 3 for United Kingdom, United States and Canada GDP growth. The site's section 2.
+
+The data are quarterly growth of real GDP, standardised, from the second quarter of 1980 to the second quarter of 2011, Tsay 2014, Example 2.3. q is 3, p is 3, x t has dimension 9, and there is no constant, since the data are standardised. The script builds X from the three lags, computes beta hat as the inverse of X transposed X times X transposed y, which is equation 11, and computes the covariance as the Kronecker product of Sigma hat and the inverse of X transposed X, which is equation 13.
+
+The printed B one hat, row by row, with columns United Kingdom, United States and Canada. The United Kingdom row: 0.4308, 0.0587, 0.1274. The United States row: 0.4380, 0.2405, 0.1747. The Canada row: 0.2938, 0.4887, 0.3231. Sigma hat has diagonal 0.5272, 0.5851 and 0.4952.
+
+The MTS package's VAR fit of order 3, with a constant, prints the first row of B one hat as 0.430, 0.0576 and 0.128: the same coefficients to the third decimal, since the standardised series have mean zero. Its residual covariance differs, 0.4918 for the United Kingdom, because the script divides by a hand-typed 114, computed as 123 minus 3 plus 1 times 2 minus 1, while MTS reports the ML version. The divisor changes Sigma hat and the standard errors, never B hat: by equation 11, B hat does not involve Sigma.
+
+Reading row 2 of B one hat: last quarter's United Kingdom growth enters United States growth with 0.438, larger than United States growth's own coefficient, 0.2405. The equations are fitted separately, but they are read together: this lead-lag pattern is what the impulse responses of section 2 turn into a picture.
+
+One point five. Course layer: companion form and stationarity. Slides 8 and 9, and Tsay equation 8.15, pages 404 and 405.
+
+Stack Y t as y t, y t minus one, down to y t minus p plus one, a q p by one vector. Then equation 1 without mu is the VAR 1 of equation 14: Y t equals A Y t minus one plus U t. The companion matrix A has first block row B one, B two, through B p minus one and B p. Below it, an identity of order q sits in each block just below the diagonal, and every other block is zero. And U t is u t stacked on zeros.
+
+The first block row is equation 1; the others are the identities y t minus j equals y t minus j. Everything proved for a VAR 1 in Class 1 now applies to equation 14: it is stationary if and only if all eigenvalues of A have modulus below one, slide 9.
+
+The equivalent root condition, slide 9: all z with the determinant of the identity minus B one z minus and so on minus B p z to the p equal to zero lie outside the unit circle. Show it for p equal to two. A has rows B one, B two, and the identity, zero. So lambda times the identity of order 2 q, minus A, has blocks: lambda I minus B one, and minus B two, in the first row; minus I, and lambda I, in the second.
+
+The block-determinant rule: the determinant of the block matrix with blocks P, Q, R, S equals the determinant of S times the determinant of P minus Q S inverse R, for lambda not zero. Take P equal to lambda I minus B one, Q equal to minus B two, R equal to minus I, and S equal to lambda I. Three steps. First, the determinant of lambda I minus A equals the determinant of lambda times the identity of order q, times the determinant of lambda I minus B one minus, minus B two times lambda I inverse times minus I. Second, that is lambda to the q times the determinant of lambda I minus B one minus lambda inverse B two. Third, equation 15: that is lambda to the 2 q times the determinant of I minus B one lambda inverse minus B two lambda to the minus 2.
+
+With z equal to one over lambda, a nonzero eigenvalue lambda of A is exactly the reciprocal of a root z of the determinant of I minus B one z minus B two z squared equal to zero. Hence the absolute value of lambda is below one if and only if the absolute value of z is above one. The same Schur step, repeated, gives the general p; Tsay page 405 states that the determinant of I minus Phi B equals the determinant of Phi of B.
+
+Stationarity is a property of the whole system, not of any coefficient. A diagonal entry above one can sit in a stationary VAR: Tsay Example 8.3, with Phi two two equal to 1.1, treated in Class 1. And all entries small can still sum to a unit root.
+
+One point five point one. Worked: the slide-13 simulated VAR 2.
+
+B one has rows 0.7, 0.1, 0; then 0, 0.4, 0.1; then 0.9, 0, 0.8. B two has rows minus 0.2, 0, 0; then 0, 0.1, 0.1; then 0, 0, 0. Sigma has rows 0.26, 0.03, 0; then 0.03, 0.09, 0; then 0, 0, 0.81. And mu is 2, 1, 0. The slide says it is "based on Lütkepohl's (2007) Problem 2.3".
+
+The 6 by 6 companion matrix has eigenvalues 0.9099; 0.4118 plus or minus 0.3382 i, with modulus 0.5329; 0.3456; minus 0.1792; and 0. All lie inside the unit circle: stationary, but with a dominant root of 0.91, which means a half-life of log 0.5 over log 0.9099, or 7.3 periods. The zero root comes from the zero third row of B two.
+
+Phi of one, the identity minus B one minus B two, has rows 0.5, minus 0.1, 0; then 0, 0.5, minus 0.2; then minus 0.9, 0, 0.2. Its determinant is 0.032: small, because z equal to one is close to a root. If slide 13's mu is the intercept, as the constant in Sims's code, equation 2 gives the mean. Solve Phi of one times m equal to mu row by row. Row three: minus 0.9 m one plus 0.2 m three equals zero, so m three equals 4.5 m one. Row two: 0.5 m two minus 0.2 times 4.5 m one equals one, so m two equals 2 plus 1.8 m one. Row one: 0.5 m one minus 0.1 times 2 plus 1.8 m one equals 2, so 0.32 m one equals 2.2, and m one equals 6.875.
+
+So m is 6.875, 14.375 and 30.94. A seeded 60-period simulation, used in section 4, has sample means 6.81, 14.19 and 30.24. A small determinant of Phi of one magnifies the intercept into a large mean: the multivariate version of mu equal to phi zero over one minus phi one, with phi one near one.
+
+One point five point two. Worked: the United Kingdom, United States and Canada VAR 3.
+
+The 9 by 9 companion matrix of the fitted B one, B two and B three has moduli 0.6107, twice; 0.5842, twice; 0.5620; 0.5165, twice; and 0.3288, twice. All lie inside, so the fitted VAR 3 is stationary and its impulse responses die out; they are below 0.005 by horizon 20.
+
+The figure for this section shows the unit circle with the six companion eigenvalues of the slide-13 VAR 2, the largest at 0.9099 on the real axis, and the nine eigenvalues of the VAR 3, all within a dotted circle of radius 0.6107. Both sets lie inside the unit circle. The VAR 2's root at 0.91 sits close to the boundary, so the system is persistent, while the GDP VAR 3 has no root above 0.61. Complex pairs mean damped oscillation in the responses; the VAR 3 has four such pairs.
+
+One point six. Course layer: forecasting. Slide 8, and Tsay page 409.
+
+From equation 14, Y t plus h equals A to the h times Y t plus the sum, for i from zero to h minus one, of A to the i times U t plus h minus i. Take the expectation given the information at t, and read the first q rows with J, the selection matrix made of the identity followed by zero blocks. Equation 16: the forecast y t of h, the expected value of y t plus h given F t, equals J A to the h Y t. Slide 8 writes it as F of A, y t and h equal to A to the h y t, "a highly nonlinear function of B one to B p".
+
+The forecast error uses J A to the i J transposed equal to Psi i, the moving-average weights of section 2. Equation 17: e t of h, which is y t plus h minus y t of h, equals the sum, for i from zero to h minus one, of Psi i u t plus h minus i.
+
+And, the u's being uncorrelated across dates, equation 18: the mean squared error at horizon h, the covariance of e t of h, equals Sigma plus Psi one Sigma Psi one transposed plus and so on up to Psi h minus one Sigma Psi h minus one transposed. That is slide 11. For h equal to two, Tsay page 409 writes the error as a h plus 2 plus Phi one a h plus 1, with covariance Sigma plus Phi one Sigma Phi one transposed. Under stationarity, as h goes to infinity, the forecast tends to m and the mean squared error tends to Gamma zero, the covariance of y t.
+
+The Bayesian forecast, slide 8. With a posterior for B and Sigma, equation 19: the forecast is the integral of F of A, y t and h, times the posterior density of B and Sigma given the data. Because F is a power of A, the expected value of A to the h is not the expected value of A, to the h. Plugging the posterior mean into equation 16 is not the posterior mean forecast. Posterior draws of B pushed through equation 16 give it, and its bands.
+
+One point six point one. Worked: Tsay's VAR 1 for IBM and the S and P 500. Pages 414 to 416.
+
+Fitted: phi zero is 1.0614 and 0.4087. Phi has rows minus 0.0320, 0.1503; and minus 0.0223, 0.1020. The residual standard deviations are 7.0078 and 5.5247. By equation 2: the identity minus Phi has rows 1.0320, minus 0.1503; and 0.0223, 0.8980. Its determinant is 1.0320 times 0.8980 minus, minus 0.1503 times 0.0223, which is 0.92674 plus 0.00335, which is 0.93009.
+
+Then m one equals 0.8980 times 1.0614 plus 0.1503 times 0.4087, over 0.93009. That is 0.95314 plus 0.06143 over 0.93009, which is 1.0908. And m two equals minus 0.0223 times 1.0614 plus 1.0320 times 0.4087, over 0.93009. That is minus 0.02367 plus 0.42178 over 0.93009, which is 0.4280.
+
+Tsay's 6-step forecasts are 1.0909 and 0.4280: the forecast has already converged to the mean, because the eigenvalues of Phi are 0.0013 and 0.0687. The forecast standard errors converge to the square roots of the diagonal of Gamma zero. With Gamma zero from the vec formula of Class 1, and the innovation correlation 0.642 from section 2, those square roots are 7.0436 and 5.5455, against Tsay's printed 7.0436 and 5.5454. At h equal to two, equation 18 gives 7.0434 and 5.5454, against the printed 7.0434 and 5.5453.
+
+One point seven. Course layer: choosing p. Tsay section 8.2.4, pages 405 to 407.
+
+Fit VAR 0, VAR 1, and so on by OLS. Let Sigma tilde i be the ML residual covariance, equation 8.19, of the VAR of order i, and T the sample size. Equation 20: M of i equals minus the quantity T minus k minus i minus three halves, times the log of the determinant of Sigma tilde i over the determinant of Sigma tilde i minus one. It is asymptotically chi-squared with k squared degrees of freedom under the null that Phi i is zero.
+
+Equation 21. AIC of i equals the log determinant of Sigma tilde i plus 2 k squared i over T. BIC of i equals the log determinant plus k squared i log T over T. HQ of i equals the log determinant plus 2 k squared i log log T over T.
+
+Each lag adds k squared coefficients, hence the k squared in every penalty and in the chi-squared degrees of freedom. BIC's penalty, log T, exceeds AIC's 2 once T exceeds e squared, about 7.4, so BIC never picks a longer lag than AIC.
+
+One point seven point one. Worked: VARorder on the GDP data. The site's section 3.1.
+
+Read the table lag by lag: AIC, BIC, HQ, then M and its p-value.
+Lag 0: AIC, BIC and HQ all minus 1.6743.
+Lag 1: AIC minus 2.6013; BIC minus 2.3976, the BIC minimum; HQ minus 2.5185, the HQ minimum; M equal to 115.13, p-value 0.0000.
+Lag 2: AIC minus 2.6825, the AIC minimum; BIC minus 2.2752; HQ minus 2.5171; M equal to 23.54, p-value 0.0051.
+Lag 3: AIC minus 2.6418; BIC minus 2.0309; HQ minus 2.3936; M equal to 10.49, p-value 0.3126.
+Lag 4: AIC minus 2.6154; BIC minus 1.8008; HQ minus 2.2845; M equal to 11.58, p-value 0.2382.
+
+The output says "selected order", with AIC equal to 2, BIC equal to 1 and HQ equal to 1. With k equal to 3, M is chi-squared with 9 degrees of freedom, with a 5 per cent critical value of 16.92. M of 2, 23.54, rejects Phi two equal to zero; M of 3, 10.49, does not; so the sequential test stops at p equal to 2, with a stray rejection again at p equal to 8, M equal to 24.48. HQ is a near-tie: minus 2.5185 at p equal to 1 against minus 2.5171 at p equal to 2. The lecturer fits p equal to 3 anyway, one lag beyond AIC: a choice the criteria do not support, but one that costs only 9 coefficients here. Section 4 replaces the lag-length decision by a prior that shrinks long lags toward zero.
+
+One point eight. Course layer: the curse of dimensionality. Slides 27 and 45.
+
+Without intercepts, a VAR p has q squared p coefficients plus q times q plus one over two in Sigma. For a VAR 1, with the sizes of Bańbura, Giannone and Reichlin, slide 45: small, q equal to 3, 9 plus 6, which is 15; medium, q equal to 20, 400 plus 210, which is 610; large, q equal to 131, 17,161 plus 8,646, which is 25,807.
+
+Kadiyala and Karlsson's revisit of Litterman, slide 27: q equal to 7 and p equal to 6 give "7 plus 6 times 7 squared, which is 301 parameters", intercepts and coefficients, with Sigma excluded, from 133 quarterly observations. That is 43 coefficients per equation from 133 data points. OLS is still defined, but its variance, equation 13, scales with the inverse of X transposed X in a 43-dimensional regression: forecasts are poor. That is the opening of the Bayesian half of the lecture.
+
+One point nine. The intuition: the site's R and its Python twin. The site's VAR example does equations 11 and 13 by hand, then runs the MTS package's VAR, VARorder, refVAR and FEVdec. The Python note uses least squares from numpy for equation 11, the Kronecker product for equation 13, the statsmodels VAR fit without trend, its lag-order selection for equation 21, and the eigenvalues of equation 14. Statsmodels normalises the criteria differently; only the minimising lag matters, as Tsay page 414 says of S-Plus against SCA.
+
+Practice for this section, by number and printed page only: Tsay exercise 8.1, page 462; 8.2, pages 462 and 463; 8.3, 8.4 and 8.5, page 463; and Greenberg exercise 10.4, page 167, for the SUR structure of point three.
+
+Recap of section 1. A VAR p is a multivariate regression with common regressors, so OLS equation by equation is the conditional MLE and equals GLS, and the coefficient covariance is Sigma Kronecker the inverse of X transposed X. The companion form turns it into a VAR 1: stationarity means every companion eigenvalue inside the unit circle, 0.9099 for the slide's VAR 2 and 0.6107 for the GDP VAR 3, and forecasts are powers of the companion matrix, with mean squared error built from the moving-average weights. AIC chooses 2 lags and BIC 1 on the GDP data. And parameters grow like q squared p.
+
+Checklist. You should be able to write a VAR p as a multivariate regression, in matrix normal form and in vec form. You should be able to complete the square to show that OLS is the MLE for every Sigma, and show that GLS collapses to OLS with common regressors. You should be able to derive the covariance Sigma Kronecker the inverse of X transposed X. You should be able to build the companion matrix, link its eigenvalues to the roots of the lag polynomial, and compute a stationary mean. You should be able to write the h-step forecast and its mean squared error. And you should be able to read a VARorder table.
+
+Part one, section 2. Impulse responses and variance decompositions: the Psi s recursion, the Cholesky factor, and what the ordering decides.
+
+This section covers slide 10, the infinite-order moving-average representation; slide 11, the variance decomposition; slide 12, the impulse-response function; slides 13 to 17, the simulated VAR 2 with posterior summaries and impulse responses; and slides 18 to 21, the Zivot and Wang real-data example. It covers the site's VAR example, section 3.2, with the refVAR and FEVdec output, and section 4, impulse responses by recursion and simulation bands. And it covers Tsay section 8.2.5, pages 412 to 417, equations 8.21 and 8.22, with the S-Plus VAR 1 output for IBM and the S and P 500, pages 414 to 417.
+
+The claim, before the derivations. A stationary VAR is a moving average of its innovations: y t equals the sum over s of Psi s u t minus s, with Psi s equal to B one Psi s minus one plus and so on up to B p Psi s minus p. The i j entry of Psi s is the response of variable i, s periods later, to a unit innovation in variable j. But innovations are correlated, so "holding the others constant" is not an experiment the data contain. A Cholesky factor P of Sigma makes the shocks orthogonal, Theta s equal to Psi s P, and then the h-step forecast-error variance splits exactly into shares, one per shock. Both objects depend on the ordering of the variables, which is an identifying assumption, not a detail, as section 3 shows.
+
+The notation, as in section 1, plus the following. Psi s is the q by q moving-average weight, the reduced-form impulse response at horizon s, with Psi zero equal to the identity. P is the lower-triangular Cholesky factor, with P P transposed equal to Sigma and a positive diagonal. Tsay writes Sigma as L G L transposed, with L unit lower triangular and G diagonal, so that P equals L times the square root of G. Epsilon t, P inverse u t, are the orthogonalised shocks, standard normal with identity covariance. Theta s, Psi s P, is the orthogonalised impulse response, the response to a one-standard-deviation shock. And omega i j of h is the share of variable i's h-step forecast-error variance due to shock j.
+
+Two point one. Course layer: the infinite-order moving-average representation. Slide 10, and Tsay equation 8.21, page 412.
+
+Write the VAR p with the lag operator L: Phi of L times y t equals u t, with Phi of L equal to I minus B one L minus and so on minus B p L to the p. If the companion eigenvalues lie inside the unit circle, Phi of L is invertible. Equation 1: y t equals Phi of L inverse u t, which is Psi of L u t, which is the sum from i equal to zero to infinity of Psi i u t minus i.
+
+The Psi i solve Phi of L times Psi of L equal to the identity. Equation 2: I minus B one L minus and so on minus B p L to the p, times Psi zero plus Psi one L plus Psi two L squared plus and so on, equals I.
+
+Collect the coefficient of L to the s on the left, and set it equal to the right-hand side's, which is the identity for s equal to zero and zero for s at least one. For L to the zero: Psi zero equals the identity. For L to the s, with s at least one: Psi s minus B one Psi s minus one minus and so on minus B p Psi s minus p equals zero, with Psi s minus i equal to zero when s minus i is negative.
+
+Equation 3, boxed, slide 10: Psi zero equals the identity of order q, and Psi s equals B one Psi s minus one plus B two Psi s minus two plus and so on up to B p Psi s minus p, for s equal to one, two, and so on.
+
+Equivalently, Psi s equals J A to the s J transposed, with the companion matrix A and J the identity followed by zero blocks. So Psi s goes to zero geometrically, at the rate of the largest companion eigenvalue. For a VAR 1, Psi s equals B one to the s.
+
+Two point two. Course layer: the impulse-response function. Slide 12, and Tsay page 412.
+
+Differentiate equation 1. Equation 4: the derivative of y t plus s with respect to u t transposed equals Psi s.
+
+Slide 12: "the (i, j) element of Psi s identifies the consequences of a one-unit increase in the innovation of variable j at time t for the value of variable i at time t plus s, holding all other innovations at all dates constant." Plotted against s it is the impulse-response function, "highly nonlinear on B one to B p", as the forecast was in section 1.
+
+The problem, Tsay page 413: "since the components of a t are often correlated, the interpretation of elements in Psi i is not straightforward." If Sigma one two is not zero, a unit u one t comes on average with the expected value of u two t given u one t equal to one equal to Sigma two one over Sigma one one. So "holding u two t constant" describes a shock pattern the data rarely produce.
+
+Two point two point one. Worked: Psi two of the United Kingdom, United States and Canada VAR 3.
+
+By equation 3, Psi one equals B one, and Psi two equals B one Psi one plus B two, which is B one squared plus B two. Take the United Kingdom, United Kingdom entry, with B one hat and B two hat from section 1. The one-one entry of B one squared is 0.4308 times 0.4308, plus 0.0587 times 0.4380, plus 0.1274 times 0.2938. Add B two's one-one entry, 0.0008. That is 0.18559 plus 0.02571 plus 0.03743 plus 0.0008, which is 0.2495.
+
+The full matrices, row by row, with columns United Kingdom, United States, Canada. Psi two: the United Kingdom row is 0.2495, 0.0578, 0.2545; the United States row is 0.1354, 0.3399, 0.0597; the Canada row is 0.2690, 0.3155, 0.0357. Psi three: the United Kingdom row is 0.2754, 0.3335, minus 0.1409; the United States row is 0.1639, 0.1141, 0.0078; the Canada row is 0.1506, 0.1013, 0.1204.
+
+Errata in the site script. The loop plots the i j entries of Psi under the title "Response of the j-th name to shock in the i-th name". By equation 4, the i j entry of Psi s is the response of i to a shock in j, so every off-diagonal title is transposed. The script also starts the plot at s equal to one, which hides Psi zero, the identity.
+
+Two point three. Course layer: orthogonalised responses. Slide 11, and Tsay equation 8.22, page 413.
+
+Sigma is positive definite, so it has a Cholesky factorisation, Sigma equal to P P transposed, with P lower triangular and a positive diagonal; in Tsay's terms, Sigma equals L G L transposed with P equal to L times the square root of G. Define, equation 5: epsilon t equals P inverse u t. Then the covariance of epsilon t equals P inverse Sigma times P inverse transposed, which is P inverse P P transposed P transposed inverse, which is the identity.
+
+Insert u t minus i equal to P epsilon t minus i into equation 1. Equation 6: y t equals the sum over i of Psi i P epsilon t minus i, which is the sum over i of Theta i epsilon t minus i, with Theta i equal to Psi i P.
+
+The i j entry of Theta s is the response of y i at t plus s to a one-standard-deviation orthogonal shock, epsilon j t. At impact, Theta zero equals P, which is lower triangular: shock one moves every variable at once; shock q moves only variable q at impact. Tsay, page 413: "the result depends on the ordering of the components of r t. In particular, b one t equals a one t so that a one t is not transformed." Slide 11 writes the same with epsilon t equal to A inverse u t, normal with covariance D, and Sigma equal to A D A transposed, with A unit lower triangular and D diagonal, "via singular value decomposition or Cholesky decomposition".
+
+Two point three point one. Worked: Tsay's VAR 1 for IBM and the S and P 500. Pages 414 to 417.
+
+The S-Plus impulse-response routine prints responses in rows and innovations in columns, with IBM first. Theta zero has rows 6.9973, 0; and 3.5432, 4.2280. Theta one has rows 0.3088, 0.6353; and 0.2050, 0.4312.
+
+Check Theta one equals Phi times Theta zero, with Phi having rows minus 0.0320, 0.1503; and minus 0.0223, 0.1020, page 415. Entry one one: minus 0.0320 times 6.9973 plus 0.1503 times 3.5432, which is minus 0.22391 plus 0.53254, which is 0.3086. Entry one two: minus 0.0320 times 0 plus 0.1503 times 4.2280, which is 0.6355. Entry two one: minus 0.0223 times 6.9973 plus 0.1020 times 3.5432, which is minus 0.15604 plus 0.36141, which is 0.2054. Entry two two: 0.1020 times 4.2280, which is 0.4313. These are the printed values, to the rounding of the four-decimal Phi.
+
+The implied Sigma, Theta zero times Theta zero transposed. Sigma one one is 6.9973 squared, 48.96. Sigma two one is 6.9973 times 3.5432, 24.79. Sigma two two is 3.5432 squared plus 4.2280 squared, which is 12.554 plus 17.876, which is 30.43. The correlation is 3.5432 over the square root of 30.43, which is 0.642: the "concurrent correlation, 0.63" of Tsay's VAR 5, page 408.
+
+The reading. A one-standard-deviation S and P innovation, 4.23 points, orthogonal to IBM's, raises next month's IBM return by 0.64. That is the "unidirectional dynamic relationship from the monthly S and P 500 index return to the IBM return", page 408. Meanwhile, the IBM shock moves the S and P at impact by 3.54, only because IBM was ordered first.
+
+Two point three point two. Worked: the United Kingdom, United States and Canada VAR 3.
+
+The Cholesky factor of the script's Sigma hat has rows 0.7261, 0, 0; then 0.2126, 0.7348, 0; then 0.1077, 0.2800, 0.6365. Its entries: P one one is the square root of 0.52719, which is 0.7261. P two one is 0.15433 over 0.7261, which is 0.2126. P two two is the square root of 0.58511 minus 0.2126 squared, which is the square root of 0.58511 minus 0.04520, which is the square root of 0.53991, which is 0.7348.
+
+Then Theta one equals B one hat times P. For example, Canada's response one quarter after a one-standard-deviation United States shock, entry three two: 0.2938 times 0, plus 0.4887 times 0.7348, plus 0.3231 times 0.2800. That is 0.35910 plus 0.09047, which is 0.4496.
+
+The figure for this section is a three by three grid of impulse responses over 20 quarters for United Kingdom, United States and Canada GDP growth, with the ordering United Kingdom, United States, Canada. Grey curves are the reduced-form Psi h from equation 3, starting at the identity; blue curves are the Cholesky-orthogonalised Theta h from equation 6, starting at the Cholesky factor. All decay to zero within about ten quarters. Above the diagonal the blue curves start at zero, because a later-ordered shock cannot move an earlier variable at impact; below it they start at the positive P i j. The largest cross-effects run from the United States to Canada, a blue peak of about 0.45 at horizon one, and from the United Kingdom to the United States. Every response is negligible after ten quarters, as the companion moduli, at most 0.61, imply.
+
+Two point four. Course layer: the forecast-error variance decomposition. Slide 11.
+
+Start from the forecast mean squared error, equation 18 of section 1, and substitute Sigma equal to P P transposed, which is the sum over j of p j p j transposed, where p j is column j of P. Equation 7: the mean squared error at horizon h equals the sum over s from zero to h minus one of Psi s Sigma Psi s transposed. That equals the sum over s of Psi s times the sum over j of p j p j transposed, times Psi s transposed. Exchange the sums: it equals the sum over j of the bracket, the sum over s of Psi s p j times its transpose.
+
+The bracket is the contribution of orthogonal shock j. Slide 11 writes it as d j times a j a j transposed plus Psi one a j a j transposed Psi one transposed plus and so on up to Psi h minus one a j a j transposed Psi h minus one transposed, with p j equal to the square root of d j times a j. Its i i element is the sum over s of Theta s of i j, squared. So the share of variable i's h-step forecast-error variance due to shock j is, equation 8, boxed: omega i j of h equals the sum over s from zero to h minus one of Theta s of i j squared, over the sum over k from one to q, and over s from zero to h minus one, of Theta s of i k squared. And the shares sum to one over j.
+
+At h equal to one, Theta zero equals P, so omega i j of one equals P i j squared over Sigma i i. For i equal to two and j equal to one: P two one squared over Sigma two two, which is Sigma two one over the square root of Sigma one one, squared, over Sigma two two, which is Sigma two one squared over Sigma one one times Sigma two two, which is rho two one squared, the squared innovation correlation. The first-ordered variable takes all of the shared variation.
+
+Two point four point one. Worked: reproducing the site's FEVdec table. The site's section 3.2.
+
+The site first runs refVAR, which drops insignificant coefficients; for example, B one hat's one two entry is set to zero, and the whole third row of B three hat is set to zero. So the model now has different regressors per equation and is estimated by GLS: the case where SUR matters, as section 1 explained. Its residual covariance has Sigma one one equal to 0.49497, Sigma two two equal to 0.55162, Sigma two one equal to 0.14385, Sigma three three equal to 0.46841, and Sigma three one equal to 0.07301.
+
+At h equal to one, by the formula just derived. Omega two one of one is 0.14385 squared over 0.49497 times 0.55162, which is 0.020692 over 0.273037, which is 0.07579. Omega three one of one is 0.07301 squared over 0.49497 times 0.46841, which is 0.0053307 over 0.231850, which is 0.02299.
+
+FEVdec prints 0.07578528 and 0.02299206. The first forecast-error standard deviation is the square root of 0.49497, which is 0.7035; printed, 0.7035426. Running equations 3, 6 and 8 on the refined matrices reproduces the whole table. At h equal to 20, walk the rows, each giving the share due to shocks in the United Kingdom, the United States and Canada. The United Kingdom: 0.8774, 0.0676, 0.0550. The United States: 0.2657, 0.7051, 0.0292. Canada: 0.2379, 0.3263, 0.4359. These are the printed values; equation 8 on the three-decimal refined coefficients gives each to within 0.001.
+
+Canada's growth is mostly explained by foreign shocks, 56 per cent at 20 quarters, and the United Kingdom's almost entirely by its own, 88 per cent, partly because the United Kingdom is ordered first.
+
+Errata in the site script. It plots the variance decomposition for Canada from row 2 and for the United States from row 3, with the legend "UK, CAN, US" on the shocks. But the series order is United Kingdom, United States, Canada, as the printed correlation matrix shows: row 2 is the United States and row 3 is Canada. The table above uses the correct labels.
+
+The figure for this subsection has three stacked-area panels over horizons 1 to 20, showing the share of each country's forecast-error variance due to United Kingdom, United States and Canada shocks, asserted against the printed values at horizons 1 and 20. The United Kingdom is almost all own; the United States is about one quarter United Kingdom; Canada splits roughly 24, 33 and 44 per cent. The shares move only in the first four or five quarters and are flat afterwards: once the responses die out, extra horizons add nothing to either the numerator or the denominator of equation 8. At h equal to one the panels are triangular, the United Kingdom 100 per cent own and Canada 82 per cent own, which is the Cholesky ordering, not a finding.
+
+Two point five. The intuition: uncertainty bands, two ways, and a third example.
+
+The site's bands, section 4.1: draw beta superscript r equal to beta hat plus the transposed Cholesky factor of Sigma hat Kronecker the inverse of X transposed X, times z, with z standard normal, for r from one to 1000; recompute equation 3; and report the 2.5, 50 and 97.5 per cent quantiles. This is the normal approximation of equation 13 of section 1, equivalently the posterior under a flat prior with Sigma fixed at Sigma hat.
+
+The slides' bands, slides 14 to 17: posterior draws of mu, B one, B two and Sigma for the simulated VAR 2, "Posterior summaries based on 1000 draws", from Sims's code, each pushed through equations 3 and 6. With 1000 observations the posteriors of B one and B two concentrate near the true values of slide 13, and the impulse-response panels on slide 17 show, for example, the response of Y three to its own shock starting near the square root of 0.81, which is 0.9.
+
+The Zivot and Wang example, slides 18 to 21: monthly real stock returns, the real interest rate, real industrial production growth and inflation, from January 1947 to December 1987. The posterior means of B one and B two are on slide 19, and the impulse responses and the variance decomposition on slides 20 and 21, as figures only.
+
+Because the impulse response is nonlinear in B, the band of Psi s is not Psi s of B hat plus or minus two standard errors of anything simple: simulate.
+
+The interactive companion for this section is The Ordering Dial: move the four coefficients and the innovation correlation of a bivariate VAR 1, flip the ordering, and watch Theta h and the variance decomposition change.
+
+Practice for this section, by number and printed page only: Tsay exercise 8.5, page 463; and Tsay 8.7, parts a to c, page 463, on impulse responses and forecasts. Parts d and e are cointegration, outside Class 9.
+
+Recap of section 2. A stationary VAR is an infinite moving average with weights Psi s built by the recursion Psi s equal to B one Psi s minus one plus and so on. The i j entry of Psi s is the response of i to a unit innovation in j, but correlated innovations make that experiment unnatural. A Cholesky factor orthogonalises the shocks, Theta s equal to Psi s P, lower triangular at impact, and the forecast-error variance splits into shares; at horizon one the second variable's share due to the first is the squared innovation correlation, 0.0758 on the site's data. Both responses and shares depend on the ordering.
+
+Checklist. You should be able to derive the Psi recursion by matching powers of the lag operator. You should be able to compute Psi two for a VAR 3 entry by entry. You should be able to orthogonalise with a Cholesky factor, show that the new shocks have identity covariance, and say what lower triangular at impact means. You should be able to check Tsay's Theta one against Phi times Theta zero and recover Sigma and the correlation 0.642. You should be able to derive the variance-decomposition shares and show that the horizon-one share is rho squared. And you should be able to spot the two label errata in the site script.
+
+Part one, section 3. Structural VARs: the reduced form cannot tell orthogonal rotations apart, so q times q minus one over two restrictions must come from economics.
+
+This section covers slide 31, the Rubio-Ramírez, Waggoner and Zha 2010 quote; slide 32, the trivariate structural VAR 1 with commodity prices, output and the interest rate; slide 33, the SVAR p set-up; slide 34, exact identification; slides 35 and 36, Illustrations 1 and 2, the zero patterns of A zero; and slide 37, the monetary policy shock, a figure. It also covers Tsay section 8.2.1, pages 399 to 401, equations 8.9 and 8.10 and Example 8.3, and page 413, on the dependence on the ordering.
+
+The claim, before the derivations. A structural VAR, A zero y t equals A one y t minus one plus and so on plus u t, with orthogonal unit-variance shocks, maps to the reduced form by B i equal to A zero inverse A i, and Sigma equal to the inverse of A zero transposed A zero. Any orthogonal matrix Q turns A zero and A into Q A zero and Q A with exactly the same B and Sigma. So the data identify Sigma's q times q plus one over two numbers and nothing more, while A zero has q squared. The gap, q times q minus one over two, must be filled by restrictions. The Cholesky ordering of section 2 is one such set, a recursive SVAR, and Tsay's Example 8.3 shows two orderings giving two different, equally valid "structural" equations from one reduced form.
+
+The notation. A zero is the q by q contemporaneous structural matrix, invertible. A i, and A equal to A one through A p, are the structural lag matrices. u t are the structural shocks, standard normal with identity covariance, slide 33. B i and Sigma are the reduced-form coefficients and innovation covariance. e t, equal to A zero inverse u t, is the reduced-form innovation, called u t in section 1. Q is a q by q orthogonal matrix, with Q transposed Q equal to the identity. And L and G are Tsay's unit-lower-triangular and diagonal matrices, with Sigma equal to L G L transposed.
+
+Three point one. The intuition: the question.
+
+Slide 31 quotes Rubio-Ramírez, Waggoner and Zha, 2010: "Since the seminal work by Sims (1980), identification of structural vector autoregressions (SVARs) has been an unresolved theoretical issue. Filling this theoretical gap is of vital importance because impulse responses based on SVARs have been widely used for policy analysis and to provide stylized facts for dynamic stochastic general equilibrium (DSGE) models." A reduced-form VAR forecasts. A policy question, such as "what does a monetary shock do to output?", needs a shock with an economic name, and naming it is identification.
+
+Three point two. Course layer: from structure to reduced form. Slide 33.
+
+Equation 1: A zero y t equals A one y t minus one plus and so on up to A p y t minus p, plus u t, with u t iid standard normal of dimension q.
+
+Premultiply equation 1 by A zero inverse. Equation 2: y t equals A zero inverse A one y t minus one, plus and so on up to A zero inverse A p y t minus p, plus A zero inverse u t.
+
+Match equation 2 with the reduced form, y t equals B one y t minus one plus and so on plus e t. Equation 3: B i equals A zero inverse A i; B equals A zero inverse A; and e t equals A zero inverse u t.
+
+The innovation covariance, using the covariance of u t equal to the identity, and the inverse of M N equal to N inverse M inverse. Equation 4: Sigma, the covariance of e t, equals A zero inverse times the identity times A zero inverse transposed, which is A zero inverse times A zero transposed inverse, which is the inverse of A zero transposed A zero.
+
+These are slide 33's three formulas. The structural impulse response follows from equation 1 of section 2 with e t equal to A zero inverse u t. Equation 5: y t equals the sum over s of Psi s A zero inverse u t minus s, so the derivative of y t plus s with respect to u t transposed is Psi s A zero inverse.
+
+Three point three. Course layer: why the reduced form cannot identify A zero.
+
+Slide 34 defines g of A zero and A as the pair A zero inverse A, and the inverse of A zero transposed A zero. Take any orthogonal Q and set A zero tilde equal to Q A zero, and A tilde equal to Q A. Then, equation 6: A zero tilde inverse A tilde equals Q A zero inverse times Q A, which is A zero inverse Q inverse Q A, which is A zero inverse A, which is B. And, equation 7: the inverse of A zero tilde transposed A zero tilde equals the inverse of A zero transposed Q transposed Q A zero, which is the inverse of A zero transposed A zero, which is Sigma.
+
+So g of Q A zero and Q A equals g of A zero and A: the likelihood is flat along the orbit of Q A zero. Since B is pinned down once A zero is, because A equals A zero B by equation 3, everything reduces to recovering A zero from Sigma.
+
+The order condition, by counting. Sigma is symmetric: q times q plus one over two free numbers. A zero has q squared. The shortfall, equation 8: q squared minus q times q plus one over two equals q times q minus one over two. It is the dimension of the orthogonal group. With q equal to 2, one restriction; q equal to 3, three; q equal to 5, ten; q equal to 6, fifteen. Restrictions are typically zeros in A zero: a variable does not enter an equation contemporaneously.
+
+The definition, slide 34, verbatim: "The SVAR is exactly identified if and only if, for almost any reduced-form parameter point (B, Sigma), there exists a unique structural parameter point (A zero, A) in R such that g of A zero and A equals B and Sigma." Counting is necessary, not sufficient. The zeros must also be placed so that no rotation other than Q equal to the identity, up to sign, preserves them: the rank condition that Rubio-Ramírez, Waggoner and Zha make operational. "Much of the SVAR literature involves exactly identified models", slide 33. Waggoner and Zha, 2003, give an MCMC algorithm for a restricted A zero, slide 34; named only.
+
+Three point four. Course layer: recursive identification is the Cholesky factor.
+
+Restrict A zero to be lower triangular with a positive diagonal: q times q minus one over two zeros above the diagonal, exactly the count of equation 8. Then A zero inverse is lower triangular with a positive diagonal and, by equation 4, A zero inverse times A zero inverse transposed equals Sigma. The Cholesky factor is unique, so, equation 9: A zero inverse equals P, the lower Cholesky factor of Sigma, and Psi s A zero inverse equals Psi s P, which is Theta s.
+
+The orthogonalised impulse response of section 2 is the structural impulse response of a recursive SVAR. The economic content of the ordering: variable one's equation contains no other current variable, so it reacts to nothing within the period; variable q's equation contains them all.
+
+Three point four point one. Worked: Tsay Example 8.3, pages 400 and 401, both orderings.
+
+The reduced form: phi zero is 0.2 and 0.4. Phi has rows 0.2, 0.3; and minus 0.6, 1.1. Sigma has rows 2, 1; and 1, 1. This is the VAR 1 of Class 1.
+
+Ordering r one, then r two. Factor Sigma as L G L transposed, with L having rows 1, 0; and l, 1; and G diagonal with g one and g two. Then L G L transposed has rows g one, l g one; and l g one, l squared g one plus g two. Set it equal to Sigma: g one equals 2, l equals one half, and g two equals 1 minus one quarter times 2, which is 0.5.
+
+L inverse has rows 1, 0; and minus 0.5, 1. Tsay prints the same. Premultiply the reduced form by L inverse, Tsay equation 8.9. L inverse phi zero is 0.2, and minus 0.5 times 0.2 plus 0.4, which is 0.3. L inverse Phi has first row 0.2, 0.3; and second row minus 0.5 times 0.2 minus 0.6, which is minus 0.7, and minus 0.5 times 0.3 plus 1.1, which is 0.95.
+
+Row 2 of L inverse r t is r two t minus 0.5 r one t. Moving minus 0.5 r one t to the right gives Tsay's structural equation, Tsay equation 8.10. Equation 10: r two t equals 0.3 plus 0.5 r one t minus 0.7 r one, t minus one, plus 0.95 r two, t minus one, plus b two t, with the variance of b two t equal to 0.5.
+
+Ordering r two, then r one. Now Sigma star has rows 1, 1; and 1, 2. So g one is 1, l is 1, and g two is 2 minus 1, which is 1. L inverse has rows 1, 0; and minus 1, 1. And, Tsay page 401, equation 11: r one t equals minus 0.2 plus 1.0 r two t, minus 0.8 r two, t minus one, plus 0.8 r one, t minus one, plus c two t, with the variance of c two t equal to 1.
+
+A check. The intercept: minus 1 times 0.4 plus 0.2 is minus 0.2. The lag terms: minus 1 times 1.1 plus 0.3 is minus 0.8 on r two, t minus one; and minus 1 times minus 0.6 plus 0.2 is 0.8 on r one, t minus one.
+
+The point. Equation 10 says r one drives r two within the period; equation 11 says r two drives r one. Both are exact rewritings of the same reduced form. The data are silent between them: the choice is an assumption about timing.
+
+In the SVAR form of equation 1, A zero equals G to the minus one half times L inverse, with the rows rescaled to unit-variance shocks. The impact responses are A zero inverse, which is L times the square root of G, which is P. Walk the impacts. Under the ordering r one, r two: shock one moves r one by the square root of 2, 1.414, and r two by 0.5 times the square root of 2, 0.707; shock two moves r one by 0 and r two by the square root of 0.5, 0.707. Under the ordering r two, r one: the r one shock moves r one by 1 and r two by 0; the r two shock moves r one by 1 and r two by 1.
+
+In general, with sigma one, sigma two and rho: the ordering r one, r two gives r one an own impact of sigma one and a cross impact of zero; the ordering r two, r one gives sigma one times the square root of one minus rho squared, and rho sigma one. With sigma one equal to the square root of 2 and rho equal to one over the square root of 2: the square root of 2 times the square root of one half is 1, and one over the square root of 2 times the square root of 2 is 1, as in the impacts above.
+
+What it does to the variance decomposition. With Example 8.3's numbers, the share of r one's 10-step forecast-error variance attributed to the r two shock is 13.6 per cent under the ordering r one, r two, and 48.5 per cent under r two, r one. These are the defaults of the Ordering Dial, verified in the companion check. The same data, and a story that changes by 35 percentage points.
+
+The figure for this section has three panels for Tsay Example 8.3: the orthogonalised responses, Phi to the h times A zero inverse, under the two recursive orderings, and the impact on r one against rho, with sigma one squared equal to 2. In the first panel, the response of r one to its own shock starts at 1.414 under the ordering r one, r two, and at 1 under r two, r one. In the second, the response of r one to the r two shock starts at 0 under one ordering and at 1 under the other. The third panel plots the own and cross impacts against rho, coinciding only at rho equal to zero. The middle panel is the whole problem: "the effect of an r two shock on r one" is zero on impact and humped, or one on impact and monotone, depending only on the ordering. The right panel shows when it does not matter: the curves meet at rho equal to zero, and the gap grows with the absolute value of rho. At Example 8.3's rho of 0.707, the own impact falls from 1.414 to 1.
+
+Three point five. Course layer: non-recursive identification on the slides.
+
+Slide 32 has commodity prices, output and the interest rate in an SVAR 1. Equation one is "monetary policy", with a coefficient of 0.0 on log output: the central bank does not see current output. Equation two "characterizes behaviour of finished-goods producers", with 0.0 on the interest rate. Equation three, commodity prices "set in active competitive markets", is unrestricted. That is two zeros. Equation 8 asks for three with q equal to 3, so the zeros shown are not enough by themselves: a third restriction, another zero or a sign restriction, is needed to pin down A zero.
+
+Illustrations 1 and 2, slides 35 and 36, counted.
+
+Illustration 1 has five variables, log output, log prices, the interest rate, log money and log commodity prices, with equations labelled production sector, production sector, monetary policy, money demand, and information. q is 5, so equation 8 needs 10 restrictions. The zeros in A zero, row by row as printed, with rows for variables, are 1 for log output, 2 for log prices, 2 for the interest rate, 2 for log money and 4 for log commodity prices: 11 in all. The order condition is met, with one overidentifying restriction. The slide reuses the labels a one four and a one five in several rows; read them as distinct free entries.
+
+Illustration 2 has six variables, commodity prices, M2, the interest rate, output, the consumer price index and unemployment, with equations labelled information, monetary policy, money demand, and three production equations. q is 6, so 15 restrictions are needed. The zeros, row by row, are 0, 4, 2, 5, 4 and 3: 18 in all. The order condition is met, with three overidentifying restrictions. Illustration 2's monetary-policy row has free entries only on M2 and the interest rate: the Fed reacts within the month to money and the funds rate, not to output, prices or unemployment, which arrive with a lag.
+
+Overidentified models restrict Sigma and can be tested; exactly identified ones fit Sigma perfectly, whatever the zeros mean. Slide 37 shows the resulting monetary-policy-shock responses, as a figure only.
+
+Three point six. The intuition: Python. The statsmodels structural VAR class with type "A" estimates A zero from a mask marking the free entries. The recursive case needs no SVAR call at all: the orthogonalised impulse responses of a fitted VAR are equation 9. Both are used in the Python note, section 3.
+
+A forward link: in section 6, Primiceri's A t is a time-varying recursive A zero.
+
+The interactive companion for this section is again The Ordering Dial: set rho to zero and the two orderings coincide; push the absolute value of rho up and watch the impact matrix and the variance decomposition split.
+
+Practice for this section, by number and printed page only: Tsay exercise 8.1, page 462, and 8.7 part b, page 463, involve orthogonalised impulse responses whose ordering must be stated.
+
+Recap of section 3. Structure maps to the reduced form by B i equal to A zero inverse A i and Sigma equal to the inverse of A zero transposed A zero. Any orthogonal rotation of A zero leaves B and Sigma unchanged, so q times q minus one over two restrictions are needed: 3, 10 and 15 for q equal to 3, 5 and 6. A lower-triangular A zero is exactly the Cholesky factor, so Cholesky impulse responses are a recursive SVAR. Tsay's Example 8.3 gives two valid structural equations, and a variance share of 13.6 or 48.5 per cent, from one reduced form. The slides' illustrations meet the order condition with 11 and 18 zeros.
+
+Checklist. You should be able to derive B i and Sigma from the structural form. You should be able to show that an orthogonal rotation leaves the reduced form unchanged, and count the restrictions. You should be able to state slide 34's definition of exact identification and say why counting is not enough. You should be able to show that recursive identification gives the Cholesky factor. You should be able to redo Tsay Example 8.3 under both orderings, including the impact matrices. And you should be able to count the zeros in the slides' illustrations and judge the order condition.
+
+Recap of part 1. A VAR is a multivariate regression, estimated by OLS equation by equation, stationary when its companion eigenvalues lie inside the unit circle, and forecast by powers of the companion matrix. Its moving-average weights give impulse responses, the Cholesky factor orthogonalises them and splits the forecast-error variance into shares, and all of that depends on an ordering that is a structural identifying assumption. Part 2 takes up what happens when the VAR has too many parameters, and when its coefficients and volatilities move over time.
+

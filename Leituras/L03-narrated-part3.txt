@@ -1,0 +1,529 @@
+Advanced Econometrics, Classes 3 and 4. Introduction to Bayesian learning. Narrated study notes, part 3 of 3: the support material.
+
+How to listen. This file holds the support parts of the Classes 3 and 4 narration, where audio beats reading. Seven parts, in order. First, the pitfalls: fifteen confusions, each said as "the error is, the correction is", with the minimal counterexample. Second, the spoken formula sheet, built for active recall: you hear a prompt, pause the player, say the result aloud, then hear the answer. Third, the implementation: the reference Python routines described as sequences of steps, never read as code. Fourth, the reading route and the exercises, as addresses only. Fifth, a twenty-five-item true or false self-test, with a pause cue before each answer. Sixth, a glossary. Seventh, the whole unit in five lines, the piece worth replaying.
+
+A reminder on scope. The final exam has no code. Expect derivations, such as posteriors, predictives, full conditional distributions and acceptance probabilities; Bayes-factor arithmetic; and the reading of Markov chain Monte Carlo output, such as a Stan summary with its effective sample size.
+
+
+Support part one. The pitfalls.
+
+This part covers the pitfalls note, part one: the confusions this material produces, each with its minimal counterexample. Every number here is asserted in the Python checks, and equations are cited by each section note's own numbering.
+
+Pitfall one. The probability of the data given the state against the probability of the state given the data.
+The error: saying "a test with 95 per cent sensitivity means a positive patient is 95 per cent likely to be ill."
+The counterexample: Diego, section 1 equation 8. The probability of a positive test given ill is 0.95, but the probability of ill given a positive test is 0.847 with a 70 per cent prior, and it would be far lower with a rare disease: in Stone's example, smallpox gets 0.011 despite the better likelihood.
+The correction: the likelihood is a forward probability; the posterior needs the prior and the predictive. Section 1, subsections 1 and 6.
+
+Pitfall two. Sequential against batch updating.
+The error: saying "updating one test at a time double-counts or loses information."
+The counterexample: section 1, subsection 4. Sequentially, 0.70 goes to 0.8471 and then to 0.992762. In batch, on X equal to one and Y equal to one together, the answer is 0.992762.
+The correction: the two are equal whenever the data are conditionally independent given theta, section 1 equation 9. Section 1, subsection 4, and section 2, subsection 3.
+
+Pitfall three. Posterior mode, mean and maximum likelihood estimate under a uniform prior.
+The error: saying "a flat prior makes the Bayes estimate equal the maximum likelihood estimate."
+The counterexample: section 4, subsection 7. With a uniform prior, one success in ten trials, the mode is 0.100, which equals the maximum likelihood estimate; but the mean, the quadratic-loss Bayes estimator, is 2 over 12, which is 0.167, and the median is 0.148.
+The correction: "flat" fixes the mode, not the estimator. Section 2 equation 7, and section 4.
+
+Pitfall four. Plug-in prediction against the predictive distribution.
+The error: saying "the probability of the next success is the maximum likelihood estimate."
+The counterexample: section 2 equation 11. After zero successes in n trials, the maximum likelihood estimate predicts zero forever; the predictive under a uniform prior is one over n plus two.
+The correction: the predictive averages over theta's uncertainty. Section 2, subsection 4.
+
+Pitfall five. A normal prior's pull against a heavy-tailed prior's pull.
+The error: saying "two priors with the same mean and variance give the same posterior."
+The counterexample: section 3, subsection 6. The normal with mean 900 and standard deviation 20, and the t with 5 degrees of freedom, location 900 and scale squared 240, which also has variance 400. At x equal to 850: 890.0 against 891.1. At x equal to 1100: 940.0 against 1022.0.
+The correction: the normal pull is proportional to the conflict; the t pull is bounded and fades. Section 3, equations 11 and 12.
+
+Pitfall six. "The Bayes estimator is biased, the maximum likelihood estimator is not."
+The error: taking the contrast on the deck's slide 13 as a general rule.
+The counterexample: section 4 equation 14. For exponential data, the expected value of n over the sum of the x i is n theta over n minus one, so the maximum likelihood estimator is biased too.
+The correction: Bayes estimators are optimal for Bayes risk, one seventy-second below one sixtieth in Bolfarine example 4.4.1, not for unbiasedness. Section 4, subsections 8 and 9.
+
+Pitfall seven. Credible against confidence interval.
+The error: saying "95 per cent probability that theta is in my confidence interval."
+The counterexample: section 4, subsection 10. A credible interval conditions on the data and is a statement about theta; a confidence interval is a statement about the procedure over repeated samples, Greenberg printed page 31. For the skewed Beta of 2 and 10 posterior, the equal-tail and highest-posterior-density intervals differ: 0.023 to 0.413, against 0.006 to 0.368.
+The correction: say which interval you report and what it is a probability of. Section 4, subsection 10.
+
+Pitfall eight. Maximised likelihood against marginal likelihood.
+The error: saying "the bigger model always wins because it fits at least as well."
+The counterexample: section 5, subsection 4. Michaela and Lila both at 0.5 with m equal to 100: the two-probability model's maximised likelihood equals the one-probability model's, yet the log base ten Bayes factor is plus 0.756 for the simpler model.
+The correction: the marginal likelihood averages over the prior and charges one half log n per extra parameter. Section 5, subsection 6.
+
+Pitfall nine. Improper priors in Bayes factors.
+The error: saying "non-informative priors are safe everywhere."
+The counterexample: section 5 equation 9. With c times pi of theta improper, the Bayes factor scales by c one over c two, an arbitrary number.
+The correction: an improper prior is fine for one model's posterior and meaningless for comparing models. Section 5, subsection 7.
+
+Pitfall ten. Accept-reject against Metropolis-Hastings.
+The error: saying "both reject proposals, so both give independent draws."
+The counterexample: section 6 subsection 5, and section 8 subsection 1. Accept-reject retries until acceptance, so the accepted values are independent draws from f. Metropolis-Hastings keeps the current value on rejection, so the chain repeats values and its draws are correlated.
+The correction: only accept-reject gives independent draws. Section 6 equation 7, and section 8 subsection 2.
+
+Pitfall eleven. A printed Monte Carlo standard error against a valid one.
+The error: saying "any simulation's standard error formula can be trusted."
+The counterexample: section 6, subsection 6. Greenberg's importance sampler for the truncated exponential has an infinite integral of g squared f squared over h, because h, the Beta of 2 and 3, vanishes at zero. A seeded run gives 0.800 with a "standard error" of 0.009, against the truth 0.830. And for Markov chain Monte Carlo, the naive standard error ignores autocorrelation, by a factor of the square root of the inefficiency factor.
+The correction: check the variance condition, and use batch means for chains. Section 6 equation 11, and section 7 equations 19 and 20.
+
+Pitfall twelve. High acceptance rate against good mixing.
+The error: saying "a Metropolis-Hastings sampler accepting 95 per cent of proposals works well."
+The counterexample: section 8 equation 9. On a standard normal with s equal to 0.1, acceptance is 0.968, but every step is tiny and the chain crawls; s equal to 2.38 accepts 0.445 and mixes far better.
+The correction: tune the scale for mixing, not for acceptance. Section 8, subsection 4.
+
+Pitfall thirteen. Many Gibbs draws against many independent draws.
+The error: saying "5000 draws give a Monte Carlo error of sigma over the square root of 5000."
+The counterexample: section 7, equations 18 and 19. For the bivariate normal with rho equal to 0.999, the inefficiency factor is 999.5, so 5000 draws carry the information of about 5. Greenberg's means of 1.084 and minus 0.623 from two starts show it.
+The correction: divide the number of draws by the inefficiency factor. Section 7, subsection 8.
+
+Pitfall fourteen. Lasso zeros against posterior zeros.
+The error: saying "the Bayesian lasso sets coefficients exactly to zero."
+The counterexample: section 10, subsection 2. The lasso estimate is the posterior mode under a Laplace prior; the posterior mean is never exactly zero, and at large absolute y it stays one over b below y: 4.59 at y equal to 6, against the horseshoe's 5.66.
+The correction: exact zeros belong to the mode, not to the posterior. Section 10, subsections 2 and 5.
+
+Pitfall fifteen. Complete pooling, no pooling, partial pooling.
+The error: saying "either all hospitals share one rate or each has its own estimate."
+The counterexample: section 9, subsection 4. The hierarchical posterior means run from 0.057 to 0.089, between the separate estimates, 0.029 to 0.130, and the pooled 0.069, with weights eta over eta plus n i estimated from the data.
+The correction: partial pooling is the third option, and the data decide how much to pool. Section 9.
+
+Recap of the pitfalls. Do not invert a conditional without the prior. Sequential equals batch. Flat priors fix the mode, not the estimator. Predict with the predictive, not a plug-in. Same variance does not mean same pull. Bias is not the Bayesian criterion; Bayes risk is. Credible is not confidence. Marginal is not maximised likelihood, and improper priors break Bayes factors. Chains are correlated; check standard errors, mixing and the inefficiency factor. Lasso zeros are modes. And pooling has a third, estimated, option.
+
+
+Support part two. The spoken formula sheet.
+
+This part covers the formulas note. How to use it: after each prompt, pause the player, say the formula out loud, then resume and hear the answer. The equation numbers are those of each section note.
+
+First, the exam specification, mapped. The site describes Classes 3 and 4 as "Introduction to Bayesian learning: Prior, posterior, and predictive distributions; Sequential Bayesian updating and conjugate analysis, Bayes factor, posterior model probability, model selection; Monte Carlo and Markov Chain Monte Carlo methods; Sparsity in linear and log-linear models." Five items. Item one, "Prior, posterior, and predictive distributions", is settled in section 1, subsections 2 and 3; section 2, subsection 4; and section 3, subsections 2 and 3. Item two, "Sequential Bayesian updating and conjugate analysis", is section 1, subsection 4, and section 2, subsections 2 to 6. Item three, "Bayes factor, posterior model probability, model selection", is section 5. Item four, "Monte Carlo and Markov Chain Monte Carlo methods", is sections 6, 7 and 8. Item five, "Sparsity in linear and log-linear models", is section 10 for the linear case; the logit of section 8, subsection 6, is the log-linear, or log-odds, case.
+
+The goals of the class plan, item by item. Goal one, prior times likelihood proportional to posterior: section 1, subsection 2, equations 3 and 6. Goal two, the predictive distribution: section 1 equation 4, section 2 subsection 4, and section 3 subsection 2. Goal three, sequential updating, with the Beta-Bernoulli, the Pareto-uniform and discrete priors: section 1, subsections 4 and 7, and section 2, subsections 3 and 6. Goal four, conjugate analysis, the normal with four priors and the physicists: section 2, subsections 2 and 5, and section 3, subsections 3 to 5. Goal five, Bayes estimators and loss functions: section 4, subsections 2 to 9. Goal six, Bayes factors, posterior model probabilities and model selection: section 5, subsections 2 to 8. Goal seven, Monte Carlo and Markov chain Monte Carlo, with Gibbs, Metropolis-Hastings, and Hamiltonian Monte Carlo with Stan: section 6; section 7, subsections 4 to 8; and section 8, subsections 2 to 5, with Hamiltonian Monte Carlo named in subsection 8. Goal eight, the hierarchical Beta-Binomial and Gaussian models: section 9, subsections 4 and 5. Goal nine, sparsity priors, the horseshoe and the normal-gamma: section 10, subsections 3 to 7.
+
+The final exam has no code. Expect derivations of posteriors, predictives and full conditionals, the reading of Markov chain Monte Carlo output, and Bayes-factor arithmetic.
+
+Now the results, block by block.
+
+Block one, Bayes' rule and the predictive.
+
+Prompt: Bayes' rule, Greenberg 2.1, section 1 equation 3. Pause. Answer: p of theta given x equals p of x given theta, times p of theta, over p of x.
+
+Prompt: the predictive, by total probability, section 1 equation 4. Pause. Answer: p of x equals the sum over k of p of x given theta k times p of theta k; or, for continuous theta, the integral of p of x given theta times p of theta.
+
+Prompt: the proportional form, Greenberg 2.3, section 1 equation 6. Pause. Answer: p of theta given x is proportional to p of x given theta times p of theta.
+
+Prompt: sequential updating, Greenberg 3.1, section 1 equation 9. Pause. Answer: p of theta given y one and y two is proportional to f of y two given y one and theta, times p of theta given y one.
+
+Prompt: posterior odds between two states, section 1 subsection 6. Pause. Answer: the posterior ratio equals the likelihood ratio times the prior ratio.
+
+Block two, conjugate families.
+
+Prompt: Bernoulli data with s n successes in n trials and a Beta prior, section 2 equations 4 to 6. Pause. Answer: the posterior is Beta with parameters alpha zero plus s n and beta zero plus n minus s n; its mean is w times alpha zero over alpha zero plus beta zero, plus one minus w times x bar, with w equal to alpha zero plus beta zero over alpha zero plus beta zero plus n.
+
+Prompt: Poisson data with a Gamma prior, section 2 subsection 5. Pause. Answer: the posterior is Gamma with shape alpha zero plus s n and rate beta zero plus n; its mean is alpha zero plus s n over beta zero plus n.
+
+Prompt: exponential data with rate theta and a Gamma prior, section 2 subsection 5 and section 4 equations 12 and 13. Pause. Answer: the posterior is Gamma with shape alpha zero plus n and rate beta zero plus the sum of the x i; its mean is alpha zero plus n over beta zero plus the sum of the x i.
+
+Prompt: uniform data on zero to theta with a Pareto prior, section 2 equations 14 and 15. Pause. Answer: the posterior is Pareto with bound the larger of the sample maximum and theta zero, and shape alpha zero plus n; the mean is alpha one theta one over alpha one minus one, and the median is theta one times two to the one over alpha one.
+
+Prompt: normal data with known sigma and a normal prior, section 3 equations 5 to 8. Pause. Answer: the posterior is normal with mean w mu zero plus one minus w times x, and variance w tau zero squared, with w equal to sigma squared over sigma squared plus tau zero squared; precisions add: one over tau one squared equals one over sigma squared plus one over tau zero squared.
+
+Prompt: normal linear regression with a normal-inverse-gamma prior, section 3 subsection 7. Pause. Answer: beta bar equals B one times X transposed y plus B zero inverse beta zero, with B one equal to the inverse of X transposed X plus B zero inverse; the marginal of beta is multivariate t.
+
+Prompt: the uniform-prior Beta, section 2 equations 7 and 8. Pause. Answer: the mode is s n over n, the maximum likelihood estimate; the mean is one plus s n over two plus n; and the variance is one plus s n times one plus n minus s n, over two plus n squared times three plus n.
+
+Prompt: the Bernoulli predictive, section 2 equation 11. Pause. Answer: the probability that the next trial succeeds is alpha zero plus s n over alpha zero plus beta zero plus n: the posterior mean.
+
+Prompt: the normal predictive, section 3 equation 2. Pause. Answer: x is normal with mean mu zero and variance sigma squared plus tau zero squared.
+
+Prompt: the large-sample posterior, section 2 equation 16. Pause. Answer: approximately normal with mean theta hat and variance v over n, provided the prior at theta hat is not zero.
+
+Prompt: the influence of a t prior, section 3 equation 12. Pause. Answer: psi of theta equals nu plus one times theta minus mu zero, over nu s squared plus theta minus mu zero squared: bounded, and tending to zero in the tails.
+
+Block three, Bayes estimators.
+
+Prompt: the Bayes estimator under quadratic loss, section 4 equations 4 and 5. Pause. Answer: the posterior mean; the minimum expected loss is the posterior variance.
+
+Prompt: under absolute loss, section 4 equations 7 and 8. Pause. Answer: the posterior median, because the derivative of the expected loss is two F minus one.
+
+Prompt: under zero-one loss, section 4 equations 9 and 10. Pause. Answer: the posterior mode, the maximum a posteriori estimate.
+
+Prompt: under bilinear loss with weights a and b, section 4 equation 11. Pause. Answer: the posterior quantile of order a over a plus b.
+
+Prompt: the Bayes risk, section 4 equations 15 and 16. Pause. Answer: r of pi and d equals the integral of rho of d of x given x, times g of x; it is minimised by the Bayes estimator.
+
+Prompt: the bias of the exponential maximum likelihood estimator, section 4 equation 14. Pause. Answer: the expected value of n over the sum of the x i is n theta over n minus one.
+
+Prompt: the credible and highest-posterior-density interval, section 4 subsection 10. Pause. Answer: the integral of the posterior from t one to t two equals one minus epsilon; the highest-density interval is the shortest, with equal densities at its ends.
+
+Block four, model comparison.
+
+Prompt: the marginal likelihood, Greenberg 3.4, section 5 equation 3. Pause. Answer: m i of y equals the integral of f i of y given theta i times pi i of theta i.
+
+Prompt: the posterior odds and the posterior model probability, section 5 equation 4. Pause. Answer: R one two equals p one over p two times B one two, with B one two equal to m one over m two; and the posterior probability of model one is one over one plus the ratio of p two over p one to B one two.
+
+Prompt: Michaela and Lila's marginal likelihoods, section 5 equations 5 and 6. Pause. Answer: m one is the Beta function of s one plus s two plus one and two m minus s one minus s two plus one; m two is the Beta function of s one plus one and m minus s one plus one, times the Beta function of s two plus one and m minus s two plus one.
+
+Prompt: the large-sample Bayes factor, section 5 equation 8. Pause. Answer: the log Bayes factor is approximately the log likelihood ratio minus d one minus d two over two, times log n, plus a bounded term.
+
+Prompt: improper priors, section 5 equation 9. Pause. Answer: the Bayes factor scales by the arbitrary ratio c one over c two.
+
+Prompt: model averaging, section 5 equation 10. Pause. Answer: the predictive of y f given y is the sum over models of the posterior probability of model i times model i's predictive.
+
+Block five, Monte Carlo.
+
+Prompt: the Monte Carlo average and its numerical standard error, section 6 equations 1 and 2. Pause. Answer: g bar M is one over M times the sum of g of X i; the numerical standard error is the square root of the estimated variance over M.
+
+Prompt: hit-or-miss pi, section 6 equation 3. Pause. Answer: the standard error is 4 times the square root of p times one minus p over M, with p equal to pi over 4.
+
+Prompt: the inverse distribution function, section 6 equation 4. Pause. Answer: F inverse of U is distributed F; to truncate to c one and c two, use F inverse of F of c one plus U times F of c two minus F of c one.
+
+Prompt: the t as a scale mixture, section 6 equations 5 and 6. Pause. Answer: if u given lambda is normal with mean zero and variance sigma squared over lambda, and lambda is Gamma with parameters nu over two and nu over two, then u is t with nu degrees of freedom and scale squared sigma squared.
+
+Prompt: accept-reject, section 6 equation 7. Pause. Answer: accept if u is at most f over c times g; the acceptance probability is one over c.
+
+Prompt: importance sampling, section 6 equations 9 to 11. Pause. Answer: one over G times the sum of g of X times f of X over h of X; the self-normalised form divides by the sum of the weights; and the variance needs an h with tails at least as heavy as the target's.
+
+Prompt: sampling importance resampling, section 6 subsection 7. Pause. Answer: resample the proposals with weights proportional to f over g.
+
+Prompt: the zero-inflated Poisson maximum likelihood estimates, section 6 equation 14. Pause. Answer: lambda hat over one minus e to the minus lambda hat equals the sum of y over n minus n zero; and pi hat equals one minus y bar over lambda hat.
+
+Block six, Markov chain Monte Carlo.
+
+Prompt: the invariant distribution, section 7 equations 2 and 4. Pause. Answer: pi times P equals pi; in continuous state, pi of y equals the integral of pi of x times p of x and y.
+
+Prompt: the ergodic average, Theorem 6.3, section 7 equation 5. Pause. Answer: one over n times the sum of f of X m converges to the expected value of f under pi.
+
+Prompt: Gibbs invariance, section 7 equation 7. Pause. Answer: the integral of f of y one given x two, times f of y two given y one, times f of x, over x, equals f of y.
+
+Prompt: the normal mean and precision Gibbs sampler, section 7 equations 9 and 10. Pause. Answer: h given mu is Gamma with parameters alpha zero plus n over two, and delta zero plus the sum of y i minus mu squared, over two; mu given h is normal with mean h zero mu zero plus h n y bar over h zero plus h n, and variance one over h zero plus h n.
+
+Prompt: the switch-point full conditionals, section 7 equations 13 to 15. Pause. Answer: lambda one given k is Gamma with parameters alpha zero plus S k and beta zero plus k; lambda two given k is Gamma with parameters alpha zero plus S n minus S k and beta zero plus n minus k; the probability of k given the rates is proportional to e to the k times lambda two minus lambda one, times lambda one over lambda two to the S k; and the exact marginal of k is equation 15.
+
+Prompt: Gibbs on a bivariate normal with correlation rho, section 7 equations 17 to 19. Pause. Answer: the x one chain is a first-order autoregression with coefficient rho squared; its lag-h autocorrelation is rho to the two h; and its inefficiency factor is one plus rho squared over one minus rho squared.
+
+Prompt: the batch-means numerical standard error, section 7 equation 20. Pause. Answer: the square root of one over N times one over N minus one times the sum of the squared deviations of the batch means.
+
+Prompt: reversibility, section 8 equation 1. Pause. Answer: f of x times p of x and y equals f of y times p of y and x; it implies that f is invariant.
+
+Prompt: the Metropolis-Hastings acceptance probability, Greenberg 7.6, section 8 equations 4 to 6. Pause. Answer: alpha is the minimum of f of y q of y and x over f of x q of x and y, and one; for a random walk, the ratio is f of y over f of x; for an independence kernel, it is f of y over q of y, divided by f of x over q of x.
+
+Prompt: the random-walk acceptance rate on a standard normal, section 8 equation 9. Pause. Answer: two over pi times the arc tangent of two over s.
+
+Prompt: Gibbs as Metropolis-Hastings, section 8 equation 10. Pause. Answer: alpha equals one when the proposal is the full conditional.
+
+Block seven, hierarchical models and sparsity.
+
+Prompt: the hierarchy, Greenberg 4.10 to 4.12, section 9 equation 1. Pause. Answer: y is distributed f of y given theta; theta is distributed pi of theta given theta zero; theta zero is distributed pi of theta zero given theta zero zero; and theta zero is not identified by the likelihood.
+
+Prompt: the Beta-Binomial marginal, section 9 equation 3. Pause. Answer: p of y i given mu and eta equals n i choose y i, times the Beta function of mu eta plus y i and one minus mu times eta plus n i minus y i, over the Beta function of mu eta and one minus mu times eta.
+
+Prompt: partial pooling, section 9 equation 5. Pause. Answer: the conditional posterior mean of p i is w i mu plus one minus w i times y i over n i, with w i equal to eta over eta plus n i.
+
+Prompt: the random coefficients, section 9 equation 8. Pause. Answer: alpha i and beta i are bivariate normal with mean m i and covariance V i, with V i equal to the inverse of A inverse plus X i transposed X i over sigma squared.
+
+Prompt: ridge and lasso as posterior modes, section 10 equations 2 and 3. Pause. Answer: lambda equals sigma squared over tau squared for the Gaussian prior; lambda equals two sigma squared over b for the Laplace prior.
+
+Prompt: the scale mixture, section 10 equation 4. Pause. Answer: beta given Psi is normal with mean zero and variance Psi, and Psi is drawn from G.
+
+Prompt: the normal-gamma moments, section 10 equation 5. Pause. Answer: variance two lambda gamma squared, and excess kurtosis three over lambda.
+
+Prompt: the horseshoe, section 10 equations 7 to 9. Pause. Answer: the posterior mean of theta is one minus the posterior mean of kappa, times y; kappa is Beta with parameters one half and one half; and the posterior of kappa is proportional to one minus kappa to the minus one half, times e to the minus kappa y squared over two.
+
+Now every number, as recall prompts. Pause after each prompt; the answers follow.
+
+Prompt: Diego's predictive of a positive X, and his posterior after it. Pause. Answer: 0.785, and 0.8471.
+
+Prompt: Diego's posterior of healthy after a negative X. Pause. Answer: 0.8372; the slide prints 0.8373.
+
+Prompt: Diego's predictive of a positive Y given positive X; the posterior after both; and after Y alone. Pause. Answer: 0.8448; 0.9928; and 0.9830.
+
+Prompt: the three coins: the predictive of three heads, and the three posteriors. Pause. Answer: 0.618; and 0.0674, 0.3932 and 0.5394.
+
+Prompt: the three coins after four heads, and coin 3 after ten. Pause. Answer: 0.0364, 0.3818 and 0.5819; and 0.741.
+
+Prompt: Stone's chickenpox against smallpox, and the four candles. Pause. Answer: 0.988 against 0.011, a ratio of about 89; and 0.885 against 0.115.
+
+Prompt: Greenberg's Figure 2.2 posterior means. Pause. Answer: five fourteenths, 0.357; and seventeen fifty-fourths, 0.315.
+
+Prompt: the seeded Pareto example. Pause. Answer: theta one 1.8923; alpha one 50.1; mean 1.9308; median 1.9186; 90 per cent interval 1.8942 to 2.0089.
+
+Prompt: physicists A and B, and their predictive standard deviations. Pause. Answer: normal with mean 890 and standard deviation 17.89, and normal with mean 840 and standard deviation 35.78, with weights 0.8 and 0.2; predictive standard deviations 44.72 and 89.44.
+
+Prompt: the posterior means, and medians, of C and D. Pause. Answer: C, 891.12, median 892.41; D, 876.08, median 884.30.
+
+Prompt: normal against t prior at an observation of 1100. Pause. Answer: 940.0 against 1022.0.
+
+Prompt: the Beta of 2 and 10: mode, median, mean, and minimum quadratic loss. Pause. Answer: 0.100, 0.148, 0.167; and 0.0107.
+
+Prompt: its 95 per cent equal-tail and highest-density intervals. Pause. Answer: 0.0228 to 0.4128; and 0.0063 to 0.3675.
+
+Prompt: the Bayes risks at n equal to 10 with a uniform prior. Pause. Answer: one seventy-second, 0.0139, against one sixtieth, 0.0167, for the maximum likelihood estimator.
+
+Prompt: the ends of Table 3.2. Pause. Answer: from minus 2.506 to 0.297 at m equal to 10; from minus 30.775 to 0.756 at m equal to 100.
+
+Prompt: the row m equal to 10, counts 2 and 8. Pause. Answer: log base ten of m one, minus 6.5888; of m two, minus 5.3892; Bayes factor minus 1.200; BIC approximation minus 1.024.
+
+Prompt: the hit-or-miss standard error at 1000 and 10,000 draws. Pause. Answer: 0.0519 and 0.0164.
+
+Prompt: accept-reject for the Beta of 3 and 3, and the normal from a Laplace. Pause. Answer: c 1.875 with acceptance 0.5333; and c 1.3155 with acceptance 0.7602, where Greenberg prints 0.6577.
+
+Prompt: the importance-sampling target. Pause. Answer: 0.8302, with an infinite-variance estimator.
+
+Prompt: the zero-inflated Poisson. Pause. Answer: n equal to 45; maximum likelihood 4.223 and 0.526; method of moments 7.159 and 0.721.
+
+Prompt: the correlation coefficient under the uniform prior. Pause. Answer: the 2.5, 50 and 97.5 per cent quantiles are 0.105, 0.567 and 0.784.
+
+Prompt: P to the 10th for Greenberg's two-state chain, and its invariant distribution. Pause. Answer: rows 0.339 and 0.661, and 0.330 and 0.670; invariant distribution one third and two thirds.
+
+Prompt: the switch point. Pause. Answer: mode 1891 with probability 0.240; posterior means of lambda one 3.106 and of lambda two 0.930.
+
+Prompt: the inefficiency factors at rho equal to 0.5, 0.9 and 0.999. Pause. Answer: 1.67, 9.5 and 999.5.
+
+Prompt: the Beta of 3 and 4 independence sampler. Pause. Answer: exact acceptance 0.5726, against Greenberg's 0.57; mean three sevenths, 0.4286.
+
+Prompt: the random-walk acceptance at s equal to 2.38. Pause. Answer: 0.445.
+
+Prompt: the site's logit, generalized linear model against Bayes. Pause. Answer: minus 11.304, 0.0596 and 4.055, against minus 10.82, 0.06 and 3.82.
+
+Prompt: the hospitals: the posterior median of mu, and its mean. Pause. Answer: 0.0714, with Stan at 0.0715; and 0.0723.
+
+Prompt: the pooled weight-gain regression, and the hierarchical sigma. Pause. Answer: minus 4.526 plus 0.476 x, standard deviation 3.612; hierarchical sigma 1.10.
+
+Prompt: the shrinkage at an observation of 6. Pause. Answer: normal 3.00, Laplace 4.59, horseshoe 5.66.
+
+Prompt: the Vanguard risk ratios under squared error. Pause. Answer: maximum likelihood 10.63, horseshoe 1.07, Bayesian model averaging 1.00.
+
+Prompt: the near-infrared root mean squared errors. Pause. Answer: normal-gamma 1.94 and 2.59, against lasso 3.54 and 3.09.
+
+
+Support part three. The implementation, described.
+
+This part covers the Python note, which presents the runnable script Notas, L03, L03 python checks, split into its sections. The script uses numpy, scipy and statsmodels, with no R, and no PyMC or ArviZ, which are not installed. It checks every computation with an assertion against the number printed in the deck, the site page, the book or the section note. It runs in about one minute, prints one "ok" line per check, and ends with "ALL L03 CHECKS PASSED", which was the output of the run on October 29th, 2026. The code is not read here; each routine is described by its inputs, its steps, and the trap that breaks it.
+
+What is reused rather than rewritten. The Class 1 companion check script supplies the coal-mining series, loaded from the project's agent notes, and it is imported for the switch point in routine seven. The lecturer's hierarchical Gaussian linear model page holds the 68 by 7 weight-gain and week matrices inside its R code; routine nine parses them at run time and never copies them. The figure script draws the eight figures, each with its own assertions; it is cited, not imported, because importing it would redraw every figure and rerun the samplers. And the companion check script, a separate file, compares the two companions' read-outs with their JavaScript, using the same formulas as routines three and five.
+
+The conventions. A helper called near passes when a computed value matches a printed one to a stated tolerance, by default half a unit in the third decimal. Seeds are fixed. R's random streams cannot be reproduced in Python, so wherever the lecturer's page simulates, the script uses the page's design with a NumPy seed and checks formulas, not the page's draws. Monte Carlo tolerances are about four standard errors. Every sampler, Gibbs, Metropolis-Hastings and the horseshoe, is written out in NumPy.
+
+Routine zero, the setup. Locate the project root and the class materials folder, import the Class 1 companion script for the coal data, and define the two helpers: near, for tolerant comparison, and ok, which prints a tagged line of named values.
+
+Routine one, Bayes' rule on a finite space. A small function takes a prior vector and the likelihood of the observed datum under each state, multiplies them, and returns the normalised posterior together with the sum, which is the predictive. For Diego, apply it to the positive test X, the negative test X, the second test Y after X, and Y alone, and check the predictive 0.785, the posteriors 0.8471338, 0.8372093, 0.992762 and 0.982979, and the second predictive 0.8447771. Then apply it once to the product of the two likelihoods and check that the batch answer equals the sequential one. Check the maximum likelihood ratios, 2.375 and 12. For the three coins, compute the posterior after zero to ten heads; check the predictive 0.618 and the posteriors 0.0674, 0.3932 and 0.5394; and check that updating the three-head posterior with one more head equals the four-head batch posterior. For Stone, check 0.988, 0.011, 0.885 and 0.115 with p of x as printed. For the discrete prior on theta, 0.3, 0.5 and 0.8 with probabilities 0.4, 0.5 and 0.1, check that 40 successes in 50 trials give theta equal to 0.8 a posterior above 0.999. The printed line reads: Diego 0.785, 0.847134, 0.837209, 0.992762 and 0.982979; coins 0.618, 0.0674218, 0.393204 and 0.539374, with coin 1 at 0.0363668 and coin 3 at 0.581869 after four heads, and coin 3 at 0.74093 after ten; Stone 0.987654 and 0.0111111, and 0.988875 renormalised on the two diseases; and the discrete prior 0.999674.
+
+Routine two, conjugate updating. A function adds successes and failures to a Beta prior. For Greenberg's Figure 2.2, check that the Beta of 2 and 2 with 3 successes in 10 trials, and with 15 in 50, gives the means five fourteenths and seventeen fifty-fourths, both from the parameters and from the weighted average. Update with 10 trials and then 40 more, and check that the result equals the update with all 50 at once. Compute the predictive probability of a success as a numerical integral of theta against the posterior, and check that it equals the posterior mean. With a uniform prior and one success in ten, check that the mode is 0.1 and the mean one sixth. For the Gamma-Poisson pair on Class 1's coal data, 127 disasters in 41 years with the Gamma prior of shape 1 and rate one half, check the posterior mean 3.084, mode 3.060 and standard deviation 0.273. For the Pareto-uniform pair, a function sets the new bound to the larger of the old bound and the sample maximum, and adds n to the shape. Draw 50 seeded uniforms on zero to two, update the Pareto with bound 1.5 and shape 0.1, and check the median formula, theta one times two to the one over alpha one; check the posterior mean against 400,000 Pareto draws; and check that the site page's typed form, with alpha one plus one in the denominator, falls below the support. The printed line reads: means 0.357143 and 0.314815, predictive 0.357143; coal mean 3.08434, median 3.07631, mode 3.06024; and Pareto maximum 1.89226, shape 50.1, mean 1.9308, and quantiles 1.8942, 1.91862 and 2.00886.
+
+Routine three, the normal measurement model with four priors. A function returns the conjugate posterior mean, standard deviation and prior weight. Check physicist A's 890 and 17.9 and physicist B's 840 and 35.7, and the predictive standard deviations 44.72 and 89.44. Then build a fine grid of 180,001 points on 400 to 1300, write the t prior and the three-component mixture prior D, and write a grid summary that multiplies the prior by the normal likelihood, restricts to 600 to 1000, normalises by the trapezoid rule, and returns the posterior mean, the median, the probability that theta is below x, and the 5 per cent quantile. Compare all four posteriors with the site page's resampling table within Monte Carlo tolerances, and check that prior C's variance equals prior A's, 400. For bounded influence, check that at x equal to 900 the t and normal posterior means agree, and that at 1100 the t mean exceeds the normal one by more than 20. The printed lines read: A 890, B 839.999, C 891.122 with median 892.409, D 876.078 with median 884.299, probability below x for D 0.18696, standard deviations 17.8885 and 35.7771; and, at 1100, the t mean 1021.97 against the normal 940.
+
+Routine four, Bayes estimators and loss. Take the Beta of 2 and 10 posterior. On a grid of candidate estimates, compute the expected quadratic, absolute and zero-one losses by quadrature, with epsilon equal to 0.01 for the zero-one loss, and check that their minimisers are the mean, the median and the mode, and that the minimum expected quadratic loss is the posterior variance. Repeat with the bilinear loss with weights 1 and 3, and check that the minimiser is the 25 per cent quantile. For the exponential-Gamma example, draw 30 seeded exponentials with rate 2, and check that the Bayes estimate under the Gamma prior with parameters 2 and 1 is close to the maximum likelihood estimate, and that the vague limit equals it. For Bolfarine's Bayes risk, integrate the risk of S plus one over n plus two over a uniform theta and check one over six times n plus two; check that the sample mean's Bayes risk is larger. For the intervals, compute the equal-tail 95 per cent interval from quantiles, and find the highest-density interval by minimising the length of all 95 per cent intervals, checking that it is shorter and has equal densities at its ends. The printed lines read: mean 0.166667, median 0.147963, mode 0.1, minimum quadratic loss 0.0106838, quartile 0.08761; Bayes 2.16359 against maximum likelihood 2.17546, risks 0.0138889 and 0.0166667; and intervals 0.0228312 to 0.41278, and 0.00630176 to 0.367513.
+
+Routine five, Bayes factors. A function computes the log base ten Bayes factor for Michaela and Lila from log Beta functions, for symmetric Beta priors with parameter alpha. Loop over the ten entries of Table 3.2 and check each to the printed three decimals. Check that Greenberg's own gamma-function form gives the same value for the counts 2 and 8 at m equal to 10. A second function computes the large-sample approximation: the log likelihood ratio plus one half log of two m. Check the posterior model probability with even prior odds, and the coins-as-models Bayes factors 8 and 5.832. The trap: the binary log-likelihood must treat zero counts as contributing zero, not as the log of zero. The printed lines read: minus 2.50603 and minus 30.7748 at proportion 0.1; 0.296769 at m equal to 10 and 0.756273 at m equal to 100 for equal proportions, against the BIC approximation 1.15051; and the posterior probability of model one for counts 2 and 8, 0.0594014.
+
+Routine six, Monte Carlo. For hit-or-miss pi, check the standard errors 0.0519 and 0.0164 and run 10,000 seeded pairs. For accept-reject, check c equal to 1.875 for the Beta of 3 and 3, the density 0.4877 at 0.15, and, on 200,000 seeded proposals, an acceptance within four standard errors of 0.5333, with accepted draws of mean one half and variance one twenty-eighth. For the normal from a Laplace, check c equal to 1.3155 and the constant 0.6577, run Greenberg's test on 200,000 seeded exponentials, and check that the acceptance is near 0.760 and far from 0.6577, and that the accepted draws have second moment one. For importance sampling, compute the exact target by quadrature, 0.8302, draw 10,000 seeded Beta of 2 and 3 values, form the weights and the estimate, and then prove the infinite variance numerically: integrate the second-moment density over shrinking intervals near zero on a log scale, and check that the growth matches f of zero squared over 12 times the log of the range. For composition, draw 400,000 gamma precisions and then normals, and check the variance five thirds and the tail probability 0.05 beyond 2.571. For resampling, draw a million uniform proposals on 600 to 1000, weight them by likelihood times t prior, resample a million, and check the mean against the quadrature value; compute the effective sample size. For the zero-inflated Poisson, rebuild the 45 counts from the frequency table, solve the score equation with the Lambert W function, compute the moment estimates, and check 4.223, 0.526, 7.159 and 0.721; then evaluate the log-likelihood on a grid of lambda between 1 and 8 and pi between 0.1 and 0.9 for the posterior means under flat priors. For the correlation coefficient, enter the 15 height and weight pairs, drop the fifteenth, standardise, and compute the posterior quantiles of rho on a fine grid under the uniform prior, the prior the page codes, and the stated arc-sine prior. The printed lines read: standard errors 0.0519304 and 0.0164218, estimate 3.1452, and the deck's value 1.0477 standard errors high; acceptance 0.53385 and 0.760505, with c equal to 1.31549; importance target 0.830217, estimate 0.800335, printed standard error 0.00887156, variance growth 1.92086; t variance 1.65953 and tail 0.050205; resampling mean 891.133 against 891.122, effective sample size 144,275; zero-inflated Poisson 45 groups, 4.2229, 0.526392, 7.15909, 0.720635, posterior means 4.26584 and 0.524483; and correlation 0.614559, with quantiles 0.105, 0.567 and 0.784; 0.089, 0.556 and 0.781; and 0.13, 0.589 and 0.794.
+
+Routine seven, Markov chains and Gibbs. For Greenberg's two-state chain, find the invariant distribution from the leading left eigenvector, check one third and two thirds, check P to the 10th and P to the 20th, and check the second eigenvalue 0.625. Check that one step of the first-order autoregression with phi equal to 0.9 preserves its stationary variance. The normal mean and precision sampler alternates a gamma draw for h and a normal draw for mu; on 100 seeded draws with the design of the Stan example one, run 5000 draws after 1000 of burn-in and check the posterior mean of mu against y bar and the implied standard deviation against the sample's. For the switch point, compute the exact log posterior of k from the gamma integrals and normalise it with a log-sum-exp; then run the three-block sampler, two gamma draws and one discrete draw per sweep, for 20,000 sweeps after 1000 of burn-in. Check that the mode is 1891, that the total-variation distance between the Gibbs frequencies and the exact posterior is below 0.03, and that the Gibbs means of the rates match the exact ones. The trap: the discrete draw must be normalised in logs, since the unnormalised probabilities over 112 years overflow. For mixing, run the two-block bivariate normal sampler for 200,000 steps at rho equal to 0.5 and 0.9, check that the lag-one autocorrelation is rho squared, and check that the batch-means variance divided by the naive variance recovers the inefficiency factor within 25 per cent. The printed lines read: invariant one third, P to the 10th first entry 0.339397, second root 0.625; mu 1.60785 against y bar 1.60769, sigma 0.195068; switch mode 1891 with probability 0.240214, mass 0.981084 in 1886 to 1896, exact rate means 3.10636 and 0.930185, Gibbs 3.10729 and 0.930675, total variation 0.00993003; and inefficiency factors 1.66667 at rho equal to 0.5 and 999.5 at 0.999.
+
+Routine eight, Metropolis-Hastings. The independence sampler for the Beta of 3 and 4 proposes uniforms and accepts by the ratio of kernels; run 5000 draws after 500 of burn-in. Compute the exact stationary acceptance as the double integral of the minimum of the two densities on a grid, and check 0.57, the simulated acceptance, and the mean three sevenths. For the random walk on a standard normal, a function returns two over pi times the arc tangent of two over s; at s equal to 0.5, 2.38 and 8, run 200,000 seeded steps, compute the acceptance also by a two-dimensional numerical integral, and check that all three agree; check 0.4449 at 2.38. For the Bayesian logit, simulate 2000 observations with coefficients minus 1, 0.8 and 0.5, fit the maximum likelihood logit with statsmodels, and write the log posterior with a normal prior of variance 100. Run a random walk whose covariance is 2.38 squared over 3 times the maximum likelihood covariance, started at the maximum likelihood estimate, for 11,000 steps, keeping the last 10,000. Check that the posterior means are within 0.03 of the maximum likelihood estimates and that the acceptance lies between 0.2 and 0.5. The trap: the log of one plus e to the linear predictor must be computed stably, with a log-add-exp, or large predictors overflow. Finally check the site page's ratios 0.957 and 0.942. The printed lines read: exact acceptance 0.572583, simulated 0.5812, mean 0.422404 against 0.428571; acceptance 0.844042, 0.444906 and 0.155958; and maximum likelihood minus 1.072, 0.845 and 0.602, posterior minus 1.074, 0.85 and 0.605, acceptance 0.318455.
+
+Routine nine, hierarchical models. Enter the 13 hospitals' deaths and cases and check the totals 163 and 2366 and the rates 0.13043 and 0.02857. Build a 1000 by 1400 grid in mu and the log of eta, evaluate the integrated likelihood from log Beta functions and the prior on eta, including the Jacobian of the log scale, and normalise. Compute grid quantiles of mu, eta and the Beta's standard deviation, and each hospital's posterior mean by averaging the conditional mean over the grid. Check mu's quantiles against Stan's within 0.0015, eta's median within 15 per cent, every posterior mean between its raw rate and the mean of mu, and the shrinkage of the spread by more than half. The trap: forgetting the Jacobian, eta itself, when the grid is in the log of eta. For the weight-gain data, parse the y and x matrices from the page's R code, with NA for missing visits, check 427 observations and the counts 8, 33 and 27, and fit the pooled regression, checking minus 4.526386, 0.476334 and 3.611520. The random-coefficient sampler starts from the 68 separate fits and cycles through the four full conditionals: a bivariate normal draw for each woman's coefficients, normal draws for alpha and beta, gamma draws for the two precisions, and an inverse gamma draw for sigma squared. Run 3000 draws after 500 of burn-in and check that the slope's median is within 0.03 of the pooled slope and that sigma is below the pooled residual standard deviation. The printed lines read: mu 0.0599, 0.0714 and 0.0874; eta 49.9, 229.4 and 2759.4; Beta standard deviation 0.0048, 0.0169 and 0.0376; Roosevelt 0.0832845, Harlem 0.0648683, pooled 0.0688926, mean of mu 0.0723238, spreads 0.0299541 and 0.00897594; and alpha minus 3.65992, beta 0.465101, between-woman standard deviations 3.38924 and 0.217395, sigma 1.10311.
+
+Routine ten, sparsity priors. The normal shrinkage is y times v over one plus v. The Laplace posterior mean is a ratio of two quadratures with breakpoints at zero and at y. The horseshoe posterior mean is y times one minus the posterior mean of kappa, computed by quadrature over kappa with the one minus kappa to the minus one half factor handled by the quadrature routine's algebraic weight. Check the horseshoe against a Monte Carlo average over 400,000 half-Cauchy draws at y equal to 0.5, 2 and 6; check that y equal to 8 is barely shrunk and 0.5 is shrunk almost to zero; check that the Laplace mean at 8 is 8 minus the square root of two; and check that kappa from half-Cauchy draws has the Beta of one half and one half distribution. For the normal-gamma, draw two million gamma variances with shape 0.333 and unit total variance, then normals, and check the variance and the excess kurtosis against three over lambda within 15 per cent. The sparse-regression sampler draws beta from its multivariate normal through a Cholesky factor, sigma squared from its inverse gamma, and then the prior-specific scales: for ridge, tau squared and its auxiliary xi; for the lasso, the inverse local variances from an inverse Gaussian, the Wald distribution, and lambda squared from a gamma; for the horseshoe, the local and global scales and their auxiliaries from inverse gammas. The trap, as in section 10: the inverse gamma helper must draw one gamma per coordinate, or the local scales move together and tau drifts to zero. Simulate the script's design, 200 observations of 100 standard-normal covariates with coefficients 1, 2, 3 and zeros and noise 0.1, fit k equal to 10 and 50 under each prior with 1500 draws after 500 of burn-in, and check the three signals within 0.03 and the horseshoe's nulls tighter than ridge's at k equal to 50. The printed lines read: horseshoe 1.06253 at y equal to 2 and 5.65575 at 6; Laplace 0.904472 and 4.58579; normal 1; normal-gamma variance 0.996666, excess kurtosis 8.91747 against the theory 9.00901; and null spreads at k equal to 10 of 0.00548398, 0.00518957 and 0.00313458, and at k equal to 50 of 0.00455048, 0.00454065 and 0.000545924, for ridge, lasso and horseshoe.
+
+Routine eleven, the numbers of the self-test. Check the fraud filter's posterior 0.248, its predictive 0.0395, the two-flag posterior 0.915, and the 0.400 at a 2 per cent fraud rate. Check the Beta of 8 and 32's mean 0.200, median 0.195 and mode 0.184. For the inflation example, check the normal posterior mean 4.4, and the t posterior mean 4.387 by quadrature on a fine grid. Check the Bayes factors 0.75 and 13.5, and the inefficiency factor 19.5 at rho equal to 0.95. The printed line reads: fraud 0.248101, two flags 0.915102, median 0.194969, t mean 4.3874, Bayes factor 0.749441, diffuse Bayes factor 13.5369.
+
+Then: all L03 checks passed.
+
+
+Support part four. Reading route and exercises.
+
+Addresses only. The statements are in the books.
+
+Reading, by section.
+Section 1, Bayes' rule on a discrete space: the ingredients deck, slides 1 to 25; the question zero deck and its R script; Stone, 2013, Figures 1.2 to 1.7 and 1.12; the site page on Bernoulli trials with a discrete prior. Greenberg, section 2.1, printed pages 7 to 11; section 2.2, printed pages 12 to 18; section 3.1.3, printed pages 24 to 25.
+Section 2, conjugate updating: the sequential-Bayes site page; the Bayes-estimator deck, slides 4 and 5. Greenberg, section 2.2, printed pages 15 to 18, with Figure 2.2; section 3.1.3, printed pages 24 to 25; section 3.1.4, printed pages 25 to 27; section 3.2.3, printed pages 32 to 33; and, as a graduate item, section 3.1.2, printed pages 23 to 24. Bolfarine and Sandoval, examples 4.4.1 and 4.4.2, printed pages 65 to 68, and example 5.5.2, printed pages 86 to 87. Tsay, section 12.3.2, results 12.3 to 12.6, printed pages 620 to 621.
+Section 3, the normal model and the physicists: the ingredients deck, slides 26 to 52; the site page on the four physicists. Greenberg, section 3.1.1, printed pages 20 to 21; section 3.2.3, printed pages 32 to 33; section 4.2, printed pages 43 to 44; section 4.3, printed pages 44 to 47; section 4.8, printed page 54. Bolfarine and Sandoval, example 4.4.3, printed pages 68 to 69, and example 5.5.1, printed page 86. Tsay, Result 12.1, printed pages 618 to 619.
+Section 4, Bayes estimators and loss: the Bayes-estimator deck, 16 slides. Greenberg, section 3.2.1, printed pages 29 to 31, and section 3.2.2, printed page 31. Bolfarine and Sandoval, section 4.3, printed pages 61 to 63; section 4.4, printed pages 63 to 70; section 5.5, printed pages 85 to 87; and, as a graduate item, section 4.2, printed pages 60 to 61.
+Section 5, Bayes factors: Greenberg, section 3.2.4, printed pages 33 to 38, with Tables 3.1 and 3.2; section 4.2, printed pages 43 to 44; and, as a graduate item, section 7.1.2, printed pages 95 to 96.
+Section 6, Monte Carlo: the ingredients deck, slides 53 to 56; the site pages on the four physicists, the correlation coefficient and zero-inflated Poisson fishing. Greenberg, chapter 5, printed pages 63 to 75, and section 4.5, printed page 52. Morettin and Singer, appendix B, section B.2, printed pages 456 to 457, and sections B.6.1 and B.6.2, printed pages 467 to 471.
+Section 7, Markov chains and Gibbs: Greenberg, chapter 6, printed pages 76 to 87; section 7.1, printed pages 91 to 95; section 7.3, printed pages 102 to 103. Tsay, sections 12.1 to 12.3, printed pages 614 to 621. Morettin and Singer, section C.5, printed pages 487 to 488.
+Section 8, Metropolis-Hastings and Hamiltonian Monte Carlo: the site pages on Bayesian logistic regression and on the Petrobras stochastic volatility models; the R and Stan examples file; and the Bayesian beta regression page, named only. Greenberg, section 7.2, printed pages 96 to 101, and section 8.2.3, printed pages 126 to 129. Tsay, section 12.4, printed pages 622 to 624, and section 12.7, printed pages 636 to 638.
+Section 9, hierarchical models: the hierarchical Beta-Binomial and hierarchical Gaussian linear model site pages. Greenberg, section 4.5, printed pages 50 to 52; section 4.6, printed pages 52 to 53; section 4.9, printed pages 54 to 56.
+Section 10, sparsity priors: the sparse-priors deck and the sparse-regression simulation. Izbicki and Mendonça, section 3.6, printed pages 42 to 43. ISLP, section 6.2, printed pages 240 to 251. For the horseshoe and the normal-gamma there is no book on disk; the deck reproduces Carvalho, Polson and Scott, 2010, and Griffin and Brown, 2010.
+Background from earlier classes: the first Bayesian example, the exponential prior on the coal data, Class 1, section 4; the change point by profile likelihood, Class 1, section 3; the p-value against the Bayes factor, Class 1, section 8; and the logit by maximum likelihood, Class 2, section 4.
+
+Practice exercises, by number and printed page.
+Greenberg, chapter 2: exercises 2.2 and 2.4, printed page 19. They go with section 2, Gamma-Poisson and Pareto-uniform; exercise 2.1, printed page 19, on coherence, is background for section 1.
+Greenberg, chapter 3: exercises 3.2, 3.3 and 3.4, printed page 39; exercises 3.5 and 3.6, printed page 39; exercises 3.7 and 3.8, printed page 40. Exercises 3.2 and 3.4 go with section 2, the Poisson predictive and sequential Poisson updating; 3.3 with section 3, the normal predictive; 3.5 and 3.6 with section 4, the median and the mode; and 3.7 and 3.8 with section 5, with 3.8, Bayes factors for two Poisson rates, on the class plan.
+Greenberg, chapter 4: exercise 4.5, printed page 58, the marginal likelihood of the normal-inverse-gamma model, for sections 3 and 5; and exercise 4.7, printed page 59, an exchangeable but dependent urn, as background for section 9.
+Greenberg, chapter 5: exercise 5.4, printed page 75, accept-reject for the Beta of 3 and 3, section 6.
+Greenberg, chapter 6: exercise 6.2, printed page 87, a two-state chain, section 7.
+Greenberg, chapter 7: exercise 7.1, printed page 105, and exercise 7.3, printed page 106, the switch-point Gibbs sampler on the coal data, both for section 7; exercise 7.5, printed page 106, and exercise 7.8, printed page 107, for section 8.
+Greenberg, chapter 8: exercise 8.1, printed page 132, a Gibbs regression on birth-weight data, section 9; and exercise 8.8, printed page 132, the logit posterior, section 8.
+Tsay, chapter 12: exercises 12.1, 12.2 and 12.3, printed page 670, for sections 2, 3 and 7; and exercise 12.4, printed page 670, stochastic volatility by Markov chain Monte Carlo, for section 8.
+Bolfarine and Sandoval: exercises 4.3 and 4.5, printed page 71; exercises 4.9 and 4.10, printed page 72; and exercise 5.11, printed page 89. They go with section 4, with 4.10 also for the Pareto prior of section 2, and 5.11 for the symmetric Bayesian interval.
+Morettin and Singer: exercises B.16 and B.19, printed page 478, accept-reject for a truncated gamma and a discrete accept-reject, section 6; and exercise C.5, printed page 489, a chained-data Gibbs sampler, section 7.
+
+
+Support part five. Self-test: twenty-five true or false items.
+
+This part covers the original self-test of the pitfalls note; no textbook exercise is reproduced. Scoring follows the course rule: the true or false score is the maximum of zero and the number correct minus half the number wrong, times the item value; blank items do not count as wrong. Difficulty is marked easy, medium or hard. The numbers are illustrative unless a note is cited. After each statement, pause the player, decide true or false and say why, then resume for the answer.
+
+Block A, Bayes' rule. The setting for items 1 to 5: a Brazilian bank's fraud filter flags 98 per cent of fraudulent card transactions and 3 per cent of legitimate ones. One transaction in a hundred is fraudulent.
+
+Item 1, easy. A flagged transaction is more likely fraudulent than not. Pause.
+Answer: false. By section 1, equations 3 and 4: 0.98 times 0.01, over 0.98 times 0.01 plus 0.03 times 0.99, is 0.0098 over 0.0395, which is 0.248. The filter's 98 per cent is the probability of a flag given fraud, not of fraud given a flag; pitfall one.
+
+Item 2, medium. The probability that a random transaction is flagged is 0.0395. Pause.
+Answer: true. The predictive, section 1 equation 4: 0.0098 plus 0.0297 is 0.0395.
+
+Item 3, medium. If a second, independent filter with the same error rates also flags it, the probability of fraud exceeds 0.9. Pause.
+Answer: true. Each flag multiplies the odds by the likelihood ratio 0.98 over 0.03, which is 32.67. The prior odds are one in 99; after two flags the odds are 32.67 squared over 99, which is 10.78, so the probability is 10.78 over 11.78, which is 0.915. Section 1 equation 9: sequential equals batch.
+
+Item 4, hard. If the fraud rate doubled to 2 per cent, the probability of fraud given one flag would double. Pause.
+Answer: false. The odds double, not the probability: the odds are 0.02 over 0.98, times 32.67, which is 0.667, so the probability is 0.400, up from 0.248. The posterior ratio is the likelihood ratio times the prior ratio, section 1 subsection 6.
+
+Item 5, easy. With the two filters, the posterior depends on which filter is consulted first. Pause.
+Answer: false. With conditionally independent data the joint likelihood is a product, and products commute. Section 1 equation 9; pitfall two.
+
+Block B, conjugate updating and Bayes estimators. The setting for items 6 to 10: a startup models the conversion probability theta of its landing page with a Beta prior with parameters 2 and 8. Of 30 visitors, 6 sign up.
+
+Item 6, easy. The posterior is Beta with parameters 8 and 32, and its mean is a weighted average of the prior mean and the maximum likelihood estimate, with weight 0.25 on the prior. Pause.
+Answer: true. Section 2 equation 4: 2 plus 6, and 8 plus 24. By equation 6, w is 2 plus 8 over 2 plus 8 plus 30, which is 0.25. Both centres equal 0.2 here, 2 over 10 and 6 over 30, so the mean is 8 over 40, which is 0.20.
+
+Item 7, medium. Under absolute-error loss the Bayes estimate is 0.20. Pause.
+Answer: false. Absolute loss gives the median, section 4 equation 8. The Beta of 8 and 32 is right-skewed, so the median, 0.195, is below the mean, 0.200. The mode is 7 over 38, which is 0.184.
+
+Item 8, medium. The probability that the next visitor signs up, given the data, is 0.20. Pause.
+Answer: true. The predictive equals the posterior mean, section 2 equation 11: 8 over 40.
+
+Item 9, hard. Had the startup recorded visitors until the sixth sign-up, which came at visitor 30, its posterior would differ. Pause.
+Answer: false. Inverse sampling multiplies the likelihood by a different constant only; the kernel, theta to the 6 times one minus theta to the 24, and hence the posterior, are unchanged. That is the likelihood principle, Class 1 section 1, subsection 10. Frequentist bias and p-values would change.
+
+Item 10, medium. As the number of visitors grows with the conversion share fixed, the prior's weight in the posterior mean falls like one over n. Pause.
+Answer: true. w is alpha zero plus beta zero over alpha zero plus beta zero plus n, approximately 10 over n. Section 2, equation 6 and subsection 7.
+
+Block C, the normal model and Bayes factors. The setting for items 11 to 15: an analyst's prior for next year's inflation, in per cent, is theta normal with mean 4 and standard deviation 0.5. A survey gives one reading x, normal with mean theta and variance one, and x equals 6.
+
+Item 11, easy. The posterior mean is 4.4 per cent. Pause.
+Answer: true. w is one over one plus 0.25, which is 0.8; by section 3 equation 8, 0.8 times 4 plus 0.2 times 6 is 4.4.
+
+Item 12, medium. Because the reading conflicts with the prior, the posterior standard deviation exceeds the prior standard deviation of 0.5. Pause.
+Answer: false. In the normal-normal model the posterior variance is w tau zero squared, 0.8 times 0.25, which is 0.2, standard deviation 0.447, whatever x is, section 3 equation 8. Conflict does not widen a conjugate normal posterior; it does widen a t-prior posterior, section 3 subsection 6.
+
+Item 13, hard. A Student t prior with 5 degrees of freedom and the same centre and variance would put the posterior mean closer to 6 than the normal prior does. Pause.
+Answer: false. The conflict is 2 over the square root of 1.25, which is 1.79 predictive standard deviations, too mild for the t prior's bounded influence to show. Near its centre a t prior with the same variance is more peaked, so it pulls slightly harder: quadrature gives 4.387 against 4.400. The t posterior overtakes the normal one only for larger conflicts, as the right panel of the four-priors figure shows; pitfall five.
+
+Item 14, hard. Comparing model one, theta equal to 4, with model two, theta normal with mean 4 and standard deviation 0.5, the reading favours the sharp hypothesis, model one. Pause.
+Answer: false. m one is the standard normal density at 2, which is 0.0540; m two is the predictive density, the normal with mean 4 and variance 1.25 evaluated at 6, which is 0.0720. The Bayes factor is 0.75: weak evidence for model two. Section 5, equations 3 and 4.
+
+Item 15, medium. Making model two's prior very diffuse, normal with mean 4 and standard deviation 100, moves the Bayes factor toward model one, even though x equal to 6 is unchanged. Pause.
+Answer: true. m two becomes the normal density with mean 4 and variance 10,001 at 6, about 0.0040, so the Bayes factor is about 13.5: a diffuse prior spreads model two's predictive mass over values never seen. Section 5 subsection 7, the Jeffreys-Lindley effect.
+
+Block D, Monte Carlo and Markov chain Monte Carlo. The setting for items 16 to 21: a team computes posterior summaries by simulation.
+
+Item 16, easy. To halve the Monte Carlo error of an average of independent draws, they need four times as many draws. Pause.
+Answer: true. The numerical standard error is the square root of V over M, section 6 equation 2.
+
+Item 17, medium. An accept-reject sampler with c equal to 2.5 needs on average 2.5 proposals per accepted draw. Pause.
+Answer: true. Each proposal is accepted with probability one over c, section 6 equation 7, so the number of proposals is geometric with mean c.
+
+Item 18, medium. A random-walk Metropolis sampler that accepts 90 per cent of its proposals is mixing well. Pause.
+Answer: false. High acceptance usually means tiny steps: on a standard normal, s equal to 0.1 accepts 96.8 per cent and crawls. Section 8 equation 9; pitfall twelve.
+
+Item 19, hard. In a two-block Gibbs sampler on a bivariate normal posterior with correlation 0.95, each chain's lag-one autocorrelation is about 0.90, and about 20 draws carry the information of one independent draw. Pause.
+Answer: true. The lag-one autocorrelation is rho squared, 0.9025, and the inefficiency factor is one plus 0.9025 over one minus 0.9025, which is 19.5. Section 7, equations 18 and 19.
+
+Item 20, medium. The Metropolis-Hastings acceptance probability requires the posterior's normalising constant. Pause.
+Answer: false. The posterior enters only through f of y over f of x, where the constant cancels. Section 8 equation 4.
+
+Item 21, easy. Gibbs sampling is Metropolis-Hastings with every proposal accepted. Pause.
+Answer: true. With the full conditional as the proposal, alpha equals one. Section 8 equation 10.
+
+Block E, hierarchical and sparsity priors. The setting for items 22 to 25: a regulator compares death rates across hospitals with a Beta-Binomial hierarchy; a data scientist chooses priors for a regression with 200 candidate predictors.
+
+Item 22, medium. In the hierarchical model, a hospital with more cases is pulled more strongly toward the group mean. Pause.
+Answer: false. The weight on the group mean is eta over eta plus n i, section 9 equation 5: more cases, less pull. Harlem, with 35 cases, moves from 0.029 to 0.065; NYP Columbia, with 353, stays at 0.071.
+
+Item 23, hard. The population precision eta does not enter the binomial likelihood of the counts given the p i; the data inform it only through how dispersed the p i appear. Pause.
+Answer: true. f of y given p and eta equals f of y given p: eta is not identified through the likelihood, Greenberg printed page 53 and section 9 subsection 3, and it is learned from the spread of the p i relative to binomial noise.
+
+Item 24, medium. With a Gaussian prior, the ridge estimate is both the posterior mode and the posterior mean. Pause.
+Answer: true. The posterior is normal, so mode equals mean, section 10 equation 2; under a Laplace prior they differ.
+
+Item 25, medium. Under a horseshoe prior, a very large observation is shrunk by roughly a constant amount, as under the lasso. Pause.
+Answer: false. The Laplace prior keeps a constant bias, one over b; the horseshoe's posterior mean of kappa tends to zero, so large observations are left almost unshrunk: 5.66 at y equal to 6, against 4.59. Section 10, subsection 5.
+
+
+Support part six. Glossary.
+
+Prior: the distribution of the unknown before the data, which can be read as data seen earlier.
+Likelihood: the probability of the observed data under each value of the unknown, read as a function of the unknown; it does not sum to one over theta.
+Posterior: the distribution of the unknown given the data, proportional to likelihood times prior.
+Predictive: the probability of the data before they are seen, the likelihood averaged over the prior; it is also the normalising constant of the posterior.
+Forward and inverse probability: from the state of nature to the data, and from the data back to the state.
+Base rate: the prior frequency of a state, which a slightly better likelihood cannot overcome when it is small.
+Sequential updating: using yesterday's posterior as today's prior; with conditionally independent data it equals updating on everything at once.
+Sufficient statistic: a summary of the data, such as the number of successes and trials, through which alone the posterior depends.
+Conjugate prior: a prior whose posterior stays in the same family, with parameters updated by counts.
+Pseudo-data: the reading of a conjugate prior's parameters as observations already seen, such as alpha zero heads and beta zero tails.
+Rule of succession: Laplace's s plus one over n plus two, the predictive probability of a success under a uniform prior.
+Precision: the inverse of a variance; in the normal model, posterior precision is prior precision plus data precision.
+Bounded influence: the property of a heavy-tailed prior whose pull on the posterior vanishes when the data contradict it strongly.
+Quadrature: computing a one-dimensional posterior exactly by evaluating its kernel on a fine grid and normalising.
+Loss function: the cost of reporting a when the truth is theta.
+Bayes estimator: the value that minimises the posterior expected loss: mean, median, mode or quantile, depending on the loss.
+Maximum a posteriori estimate: the posterior mode, the Bayes estimator under zero-one loss.
+Bayes risk: the frequentist risk averaged over the prior, minimised by the Bayes estimator.
+Credible interval: an interval with a stated posterior probability of containing theta, given the observed data.
+Highest posterior density interval: the shortest credible interval, whose endpoints have equal posterior density.
+Marginal likelihood: the likelihood averaged over a model's prior, the evidence for that model.
+Bayes factor: the ratio of two models' marginal likelihoods; posterior odds equal prior odds times the Bayes factor.
+Jeffreys' scale: conventional bands for the log base ten Bayes factor, from weak evidence below one half to decisive support above 2.
+Occam's razor, built in: the marginal likelihood's penalty, about one half log n per parameter, for freedom the data did not need.
+Improper prior: a prior that does not integrate to one; harmless for a posterior, fatal for a Bayes factor.
+Jeffreys-Lindley effect: a very diffuse prior on the bigger model makes its marginal likelihood small and favours the smaller model regardless of fit.
+Bayesian model averaging: weighting each model's predictive by its posterior probability.
+Monte Carlo integration: estimating an expectation by the average of independent draws.
+Numerical standard error: the standard error of a Monte Carlo average, the square root of the variance over the number of draws for independent draws.
+Inverse distribution function method: drawing from F by applying F inverse to a uniform draw.
+Composition: drawing a mixture by first drawing the mixing variable and then the conditional.
+Accept-reject: proposing from a dominating density and accepting with probability f over c times g; the acceptance rate is one over c.
+Importance sampling: reweighting draws from a proposal density by f over h; it needs proposal tails at least as heavy as the target's.
+Sampling importance resampling: resampling proposals with weights proportional to f over g to get approximate draws from f.
+Effective sample size: the square of the sum of the weights over the sum of the squared weights, or the number of draws divided by the inefficiency factor for a chain.
+Markov chain: a process whose next state depends only on the current one.
+Invariant distribution: a distribution that one step of the chain leaves unchanged.
+Ergodic average: a chain average, which converges to the expectation under the invariant distribution.
+Full conditional: the distribution of one block of parameters given all the others and the data.
+Gibbs sampler: drawing each block in turn from its full conditional; its invariant distribution is the joint posterior.
+Burn-in: the initial draws discarded while the chain forgets its starting point.
+Data augmentation: adding latent variables, such as a switch point or latent volatilities, so that the full conditionals become easy.
+Switch point: the last year of the first regime in the coal-mining model, 1891 at the posterior mode.
+Inefficiency factor: one plus twice the sum of a chain's autocorrelations; the number of chain draws worth one independent draw.
+Batch means: a numerical standard error for a chain computed from the variance of means of consecutive batches.
+Reversibility: the balance condition f of x times p of x and y equals f of y times p of y and x, which implies invariance.
+Metropolis-Hastings: a sampler that proposes a move and accepts it with probability the minimum of one and the ratio of f times q in the two directions; otherwise it stays.
+Random-walk kernel: a symmetric proposal centred at the current value, accepted with probability the minimum of one and the density ratio.
+Independence kernel: a proposal that does not depend on the current value, accepted on the ratio of importance weights.
+Tailored kernel: a fat-tailed proposal centred at the posterior mode, scaled by the negative inverse Hessian.
+Hamiltonian Monte Carlo: a G-layer sampler, used by Stan, that follows gradient-driven trajectories before a Metropolis accept or reject.
+Exchangeability: invariance of a joint distribution to permuting the indices; the justification for a common prior across units.
+Hierarchical model: a prior whose parameters have their own prior, so units share information.
+Partial pooling: estimating each unit by a weighted average of its own estimate and the group mean, with weight eta over eta plus n i on the group.
+Shrinkage: pulling an estimate toward a prior or group centre, with weight equal to the prior precision over the total precision.
+Ridge: the posterior mode, and mean, under a Gaussian prior, with penalty sigma squared over tau squared.
+Lasso: the posterior mode under a Laplace prior, with penalty two sigma squared over b; its exact zeros belong to the mode only.
+Scale mixture of normals: a prior in which each coefficient is normal given its own variance, which is itself random.
+Normal-gamma prior: a scale mixture with gamma-distributed variances and excess kurtosis three over lambda.
+Horseshoe: a scale mixture with half-Cauchy local scales, whose shrinkage factor kappa has the U-shaped Beta of one half and one half distribution.
+Shrinkage factor: kappa, equal to one over one plus lambda squared; near one it kills noise, near zero it keeps signals.
+Global-local prior: a prior with one global scale tau for overall sparsity and local scales that let individual coefficients escape.
+Spike-and-slab: a G-layer prior with positive probability on exact zeros, turning variable selection into model comparison.
+
+
+Support part seven. The whole unit in five lines.
+
+One. Bayesian learning is one rule, posterior proportional to likelihood times prior, normalised by the predictive: Diego goes from 0.70 to 0.847 to 0.993, three heads leave the fair coin with 0.0674, and sequential updating equals batch updating.
+
+Two. Conjugate priors add data to pseudo-data, so the posterior mean is a weighted average whose prior weight falls like one over n, 0.357 then 0.315 in Greenberg's Figure 2.2; in the normal model precisions add, physicist A ends at 890 and 17.9, and a heavy-tailed prior gives way under conflict, 1022 against 940.
+
+Three. A point estimate is a decision: quadratic, absolute and zero-one losses give the mean, median and mode, 0.167, 0.148 and 0.100 for the Beta of 2 and 10; and a model is judged by its marginal likelihood, which builds in a penalty of one half log n per parameter, minus 1.200 and plus 0.756 in Table 3.2, but only under proper priors.
+
+Four. When integrals have no closed form, simulate: Monte Carlo errors fall like one over the square root of M; accept-reject accepts at rate one over c; Gibbs and Metropolis-Hastings chains have the posterior as invariant distribution, putting the coal switch at 1891 with probability 0.240, at the price of dependence, an inefficiency factor of 999.5 at rho equal to 0.999, and a random-walk acceptance of 0.445 at s equal to 2.38.
+
+Five. Priors are models: a hierarchy learns how much to pool, taking 13 hospital rates from 2.9 to 13.0 per cent into 5.7 to 8.9 per cent, and sparsity priors give each coefficient its own variance, so the horseshoe estimates an observation of 6 at 5.66 against 4.59 for the Laplace and 3.00 for the normal.
+
+This is the end of the Classes 3 and 4 narration.

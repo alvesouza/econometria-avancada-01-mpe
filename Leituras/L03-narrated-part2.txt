@@ -1,0 +1,586 @@
+Advanced Econometrics, Classes 3 and 4. Introduction to Bayesian learning. Narrated study notes, part 2 of 3.
+
+How to listen. This file continues the Classes 3 and 4 narration. It covers part three of the notes, computing posteriors: section 6, Monte Carlo simulation; section 7, Markov chains and the Gibbs sampler; and section 8, Metropolis-Hastings and Hamiltonian Monte Carlo. Then part four of the notes, priors as models: section 9, hierarchical models and shrinkage; and section 10, sparsity priors. Every formula is spoken in words. Each section opens by naming its sources and page ranges and closes with a spoken checklist. Part 1 covered the map, Bayes' rule, conjugate updating, the normal model, Bayes estimators and Bayes factors. Part 3 holds the support material.
+
+A reminder on scope for this half. The final exam has no code. Expect derivations of full conditional distributions, the arithmetic of acceptance probabilities and numerical standard errors, and the reading of Markov chain Monte Carlo output. Hamiltonian Monte Carlo, the no-U-turn sampler, Rao-Blackwellisation, the Pólya-Gamma logit, spike-and-slab priors, reversible jump and the details of stochastic volatility estimation are G layer: named, not examinable.
+
+
+Part three of the notes, section 6. Monte Carlo: replace an integral by an average of draws, and know its error.
+
+This section covers the ingredients deck, slides 53 to 56, the Monte Carlo toy example that estimates pi; Greenberg chapter 5, printed pages 63 to 75: section 5.1 with equation 5.1, section 5.2, section 5.3 with Algorithms 5.2 to 5.4 and equation 5.2, section 5.4 with Algorithm 5.5, section 5.5 and section 5.6; Greenberg section 4.5, printed page 52; Morettin and Singer appendix B, section B.2, printed pages 456 to 457, and sections B.6.1 and B.6.2, printed pages 467 to 471, equations B.15 to B.17; and three site pages: the four physicists, for sampling importance resampling, the correlation coefficient, and zero-inflated Poisson fishing.
+
+The claim, before the derivations. Every Bayesian summary is an integral: a posterior mean, a probability, a predictive, a marginal likelihood. Monte Carlo writes it as an expectation, draws M independent values and averages. The error falls like one over the square root of M and is measured by the numerical standard error. Hit-or-miss gives an estimate of pi with standard error 0.052 at M equal to 1000, so the deck's 3.196 is one error away from pi. When direct draws are impossible there are four tools: the inverse distribution function for univariate targets; composition for mixtures, since a Student t is a normal with a gamma precision; accept-reject with acceptance probability one over c, which for a Beta of 3 and 3 from uniforms means c equal to 1.875 and 53 per cent acceptance; and importance sampling and sampling importance resampling, which reweight draws from another density. Importance sampling fails silently when the proposal's tails are too thin: Greenberg's own Beta of 2 and 3 example has infinite variance.
+
+The notation. f is the target density, often a posterior known up to a constant. g or h is the proposal, or importance, density we can sample. The number of draws is M in the deck, capital G in Greenberg and n in Morettin and Singer. g bar M is the Monte Carlo average of g of X i. The numerical standard error is the square root of the estimated variance of g of X over M. c is the accept-reject constant, with f at most c times g; it is at least one for normalised f and g. And w i is the importance weight, f of x i over g of x i, non-negative.
+
+Six point one. Integrals that cannot be done by hand. The deck's slides 42 to 43 and 48 to 52. This is the U layer.
+
+The physicist C posterior of section 3 needs the integral of theta times p of x given theta times p of theta with a Student t prior: no closed form. The deck, slide 43: "Bayesian computation was done on limited, unrealistic models until the Monte Carlo revolution, and the computing revolution, of the late 1980's and early 1990's". The idea is the law of large numbers: if we can draw from a distribution, sample averages approximate its expectations.
+
+Six point two. Monte Carlo integration and its error. Slides 53 to 56; Greenberg printed page 63 and section 5.6; Morettin and Singer section B.2. This is the C layer.
+
+For X distributed f and a function g whose absolute value has a finite expectation, equation 1: the expected value of g of X, the integral of g of x times f of x, is approximately g bar M, one over M times the sum from i equal to 1 to M of g of X i, where the X i are independent draws from f.
+
+g bar M is unbiased, converges by the law of large numbers, and has variance equal to the variance of g of X over M. Greenberg's numerical standard error, printed page 73, is equation 2: the square root of the estimated variance of g of X, divided by M.
+
+Probabilities are the case where g is the indicator of an event A: the probability of A is approximately the fraction of draws in A, Greenberg printed page 63.
+
+Worked: hit-or-miss pi, slides 53 to 56. Draw pairs x i and y i uniform on the unit square. The probability that x squared plus y squared is below one is pi over four, the area of a quarter disc, so the estimate of pi is 4 times the fraction of points inside. The indicator is Bernoulli with p equal to pi over 4, which is 0.7854. By equation 2, equation 3: the standard error of the estimate of pi is 4 times the square root of p times one minus p over M, which is 4 times the square root of 0.7854 times 0.2146 over M, which is 1.6422 over the square root of M.
+
+At M equal to 1000: 1.6422 over 31.623, which is 0.0519. The deck's estimate, 3.196 on slide 54, is 3.196 minus 3.1416, over 0.0519, which is 1.05 standard errors high: an ordinary draw. At M equal to 10,000 the standard error is 0.0164; a seeded Python run gives 3.1452.
+
+The accept-reject figure has two panels; both are seeded. The left panel belongs to subsection 5. The right panel shows six running estimates of pi against thousands of draws, slides 55 and 56, all inside a funnel of pi plus or minus two standard errors from equation 3, which narrows from about plus or minus 0.1 at 1000 draws to 0.033 at 10,000.
+
+The right panel is slide 56 with its envelope drawn. Every path wanders, none escapes the plus or minus two over the square root of M funnel for long, and the funnel narrows slowly: four times the draws for half the error.
+
+Six point three. The inverse distribution function method, also called the probability integral transform. Greenberg section 5.1; Morettin and Singer section B.4.
+
+If U is uniform on zero to one and F is a continuous distribution function, then Z equal to the inverse of F at U has distribution function F. Equation 4: the probability that Z is at most z equals the probability that F inverse of U is at most z, which equals the probability that U is at most F of z, which is F of z.
+
+An example, Greenberg printed pages 64 to 65. The density three eighths y squared on zero to two has distribution function y cubed over 8, so Y equals 2 times U to the one third.
+
+Truncation, Greenberg equation 5.1. To draw X from F restricted to the interval from c one to c two, set X equal to F inverse of: F of c one plus U times the difference F of c two minus F of c one. This is how the truncated normals of the Tobit and probit samplers are drawn, Greenberg section 8.2. The method needs the full distribution function and is univariate only.
+
+Six point four. Composition and scale mixtures. Greenberg sections 5.2 and 4.5.
+
+If f of x is the integral of g of x given y times h of y, draw y from h, then x from g given y; the x's are draws from f.
+
+The Student t as a normal scale mixture, Greenberg printed page 52. Let u given lambda be normal with mean zero and variance sigma squared over lambda, and let lambda be Gamma with parameters nu over two and nu over two. Equation 5: the joint density is proportional to lambda to the one half, times e to the minus lambda u squared over two sigma squared, times lambda to the nu over two minus one, times e to the minus nu lambda over two. Collected, that is lambda to the power nu plus one over two, minus one, times the exponential of minus lambda times u squared plus nu sigma squared, over two sigma squared.
+
+Equation 5 is a Gamma kernel in lambda, with shape nu plus one over two and rate u squared plus nu sigma squared over two sigma squared. Integrating lambda out leaves the reciprocal of the rate raised to the shape. Equation 6: f of u is proportional to u squared plus nu sigma squared over two sigma squared, raised to the minus nu plus one over two; which is proportional to one plus u squared over nu sigma squared, raised to the minus nu plus one over two. That is the kernel of the t with nu degrees of freedom, location zero and scale squared sigma squared.
+
+So a t draw is a gamma draw followed by a normal draw. A seeded check with nu equal to 5 and 400,000 draws: variance 1.660, against the theoretical five thirds; and the probability that the absolute value of u exceeds 2.571 is 0.0502, against 0.05. This representation is why Student t errors and priors fit inside Gibbs samplers, section 7 and Greenberg section 8.1.2, and why the horseshoe is a normal with a random scale, section 10.
+
+Six point five. Accept-reject. Greenberg section 5.3; Morettin and Singer section B.6.1.
+
+Algorithm 5.2. Find a density g we can sample and a constant c with f of y at most c times g of y for all y. Step one: draw y from g. Step two: draw u uniform on zero to one. Step three: accept y if u is at most f of y over c times g of y; otherwise return to step one.
+
+Why it works, Greenberg printed page 67. By Bayes' rule, the density of an accepted value is equation 7. h of y given acceptance equals the probability of acceptance given y times g of y, over the integral of the same. That is f of y over c g of y, times g of y, over the integral of the same; which is f of y over c, divided by one over c; which is f of y.
+
+The acceptance probability is the denominator, one over c. Choose c as small as possible. If f is known only up to a constant, f equal to k times r with r at most c times g, then accepting with probability r over c g still yields draws from f; then c need not exceed one.
+
+Worked: a Beta of 3 and 3 from uniforms, Algorithm 5.3. The density f of y equals 30 y squared times one minus y squared, and it peaks at y equal to one half. So c is 30 times one sixteenth, which is 1.875, and the acceptance rate is one over 1.875, which is 0.5333. A proposal y equal to 0.15 has f of 0.15 equal to 30 times 0.0225 times 0.7225, which is 0.4877, and is accepted with probability 0.4877 over 1.875, which is 0.2601. A seeded run of 200,000 gives acceptance 0.5339; the accepted draws have mean 0.500 and variance 0.0357, which is one twenty-eighth.
+
+The left panel of the accept-reject figure shows exactly this: the Beta of 3 and 3 density under the flat line c g of y equal to 1.875, with 600 seeded proposals plotted as points at height u times 1.875. Points under the density are accepted, 52 per cent of them, and points above it are rejected.
+
+Worked: a standard normal from a Laplace proposal, Algorithm 5.4. By symmetry, sample the absolute value of y from the half-normal, f of x equal to the square root of two over pi times e to the minus x squared over two, with proposal g of x equal to e to the minus x for positive x, and attach a random sign. The ratio f over g, the square root of two over pi times e to the x minus x squared over two, is maximised at x equal to one. Equation 8: c is the square root of two over pi times e to the one half, which is the square root of two e over pi, which is 1.3155; and the acceptance rate one over c is 0.7602.
+
+Greenberg's test, equation 5.2, accepts if u is at most e to the power x minus x squared over two minus one half. That is exactly u at most f of x over c g of x, with equation 8. His text says "the probability of acceptance is one over c, 0.6577". But 0.6577, the square root of e over two pi, is the constant that dominates the unnormalised kernel, one over the square root of two pi times e to the minus x squared over two, whose integral over positive x is one half. So the acceptance rate is one half over 0.6577, which is 0.7602, either way. A seeded run of 200,000 accepts 0.7605.
+
+Six point six. Importance sampling. Greenberg section 5.4; Morettin and Singer section B.6.2.
+
+Multiply and divide by a density h we can sample. Equation 9: the expected value under f of g of X is the integral of g of x times f of x over h of x, times h of x; and that is approximately one over G times the sum over i of g of X i times w i, where w i is f of X i over h of X i and the X i are drawn from h.
+
+When f is known only up to a constant, use the self-normalised form, Morettin and Singer equation B.17. Equation 10: theta tilde equals the sum over i of w i times g of X i, divided by the sum of the w i. It is consistent if the support of h covers that of f, Geweke 1989, as cited by Morettin and Singer.
+
+The variance condition, Greenberg printed page 70. The estimator's second moment is the expected value under h of g f over h, squared, which is the integral of g squared f squared over h. It is large "when the tail values of h are very small compared to the tail values of f".
+
+Worked: Greenberg's Algorithm 5.5, and its hidden flaw. The target is the expected value of one over one plus x squared, for x exponential with rate one truncated to zero to one, so f of x is e to the minus x over one minus e to the minus one. The importance density h is the Beta of 2 and 3, h of x equal to 12 x times one minus x squared. The exact value is 0.8302, Greenberg printed page 71; quadrature gives 0.830217. Greenberg reports 0.8268 with numerical standard error 0.0030 from G equal to 10,000. A seeded Python run gives 0.8003 with a computed numerical standard error of 0.0089: three "standard errors" away.
+
+The reason is near x equal to zero. There f of zero times g of zero is 1.582, while h of x is approximately 12 x. So equation 11: the integral from zero to epsilon of g squared f squared over h is approximately the integral from zero to epsilon of 1.582 squared over 12 x, which is infinite.
+
+The estimator has infinite variance. It is still consistent, but its sample standard error means nothing and convergence is erratic. Numerically, each factor of 100 closer to zero adds 1.582 squared times the log of 100 over 12, which is 0.960, to the truncated second moment. A proposal with a positive density at zero, such as the uniform on zero to one or the truncated exponential itself, removes the problem.
+
+Six point seven. Sampling importance resampling, SIR. Morettin and Singer section B.6.2; the physicists, correlation and fishing pages.
+
+Three steps. First, draw x one to x n from g. Second, compute normalised weights: w i equals f of x i over g of x i, divided by the sum over j of f of x j over g of x j. Third, resample from the x i with probabilities w i. The resampled values are approximately draws from f. Morettin and Singer's argument, printed page 470: the resampled distribution function, the sum of the w i over the x i at most a, converges to the integral of f up to a, by the strong law.
+
+With a uniform g on a box, w i is proportional to likelihood times prior: the lecturer's pages use exactly this.
+
+Worked: physicist C, from the site page on the four physicists. Ten to the sixth proposals from the uniform on 600 to 1000; weights equal to the normal density of 850 given theta with standard deviation 40, times the t density with 5 degrees of freedom at theta, location 900 and scale squared 240; and ten to the sixth resampled draws. Seeded Python gives a mean of 891.13 against the quadrature value 891.12. The effective sample size, the square of the sum of the weights over the sum of the squared weights, is 144,275: only one draw in seven carries real weight, because most uniform proposals land where the posterior is negligible.
+
+Six point seven point one. Worked: the correlation coefficient, from the correlation-coefficient site page.
+
+Standardised pairs x i, with components x i one and x i two, n equal to 14, are modelled as bivariate normal with unit variances and correlation rho. Equation 12: the likelihood is one over two pi times the square root of one minus rho squared, to the n, times the exponential of minus one over two times one minus rho squared, times the bracket: the sum of x i one squared plus x i two squared, minus two rho times the sum of x i one times x i two.
+
+The page says it "has no known form, regardless of which prior one uses". The data are the heights and weights of 14 students, the fifteenth, the lecturer, removed as an outlier; the sample correlation is 0.615. The posterior quantiles at 2.5, 50 and 97.5 per cent, under three priors, by the page's resampling and exactly by quadrature on rho.
+
+The uniform prior, density one half: the page gives 0.102, 0.569 and 0.784; exactly, 0.105, 0.567 and 0.784.
+
+What the page actually codes, a prior proportional to one over the square root of one plus rho squared: the page gives 0.081, 0.558 and 0.783; exactly, 0.089, 0.556 and 0.781.
+
+The arc-sine prior as stated, one over pi times one minus rho squared to the minus one half: not run on the page; exactly, 0.130, 0.589 and 0.794.
+
+The page states the arc-sine prior but codes one over the square root of one plus rho squared; its second column is the posterior under that other prior. The true arc-sine prior puts more mass near plus and minus one and moves the posterior up. With 14 observations the prior visibly matters in the lower tail.
+
+Six point seven point two. Worked: zero-inflated Poisson, from the fishing site page.
+
+Fish are caught by groups that brought a camper and children. Some groups never fish, so zeros come from two sources: with probability pi a structural zero, otherwise a Poisson count with rate lambda. Equation 13: the probability that y i equals zero is pi plus one minus pi times e to the minus lambda; the probability that y i equals a positive count is one minus pi times lambda to the y i times e to the minus lambda over y i factorial. The mean of y i is one minus pi times lambda, and its variance is one minus pi times lambda times one plus pi lambda.
+
+The data. The page's frequency table: 24 zeros; then count 1 six times, count 2 twice, count 3 four times, count 4 twice, count 5 three times, and the counts 7, 8, 14 and 16 once each. That is n equal to 45 groups. The text says 42, but the printed estimates need 45. The number of zeros, n zero, is 24; the sum of the y i is 90; y bar is 2; and the sample variance s squared is 12.318.
+
+The maximum likelihood estimates. The log-likelihood is n zero times the log of D, plus n minus n zero times the log of one minus pi minus lambda, plus the sum of the y i times log lambda, where D is pi plus one minus pi times e to the minus lambda. Set the two score equations to zero. The equation for pi gives D equal to n zero times one minus pi times one minus e to the minus lambda, over n minus n zero. Substituting it into the equation for lambda leaves equation 14: lambda over one minus e to the minus lambda equals z bar, the sum of the y i over n minus n zero, which is 90 over 21, which is 4.2857; and pi hat equals one minus y bar over lambda hat.
+
+Its root is lambda hat equal to z bar plus the principal branch of the Lambert W function at minus z bar times e to the minus z bar, which is 4.223; and pi hat is one minus 2 over 4.223, which is 0.526. Equation 14 says the fitted probability of a positive count, one minus pi hat times one minus e to the minus lambda hat, equals the observed share, 21 over 45.
+
+The method of moments. Equate y bar and s squared to the moments of equation 13. Lambda by moments is s squared plus y bar squared over y bar, minus one: 12.318 plus 4, over 2, minus one, which is 7.159. Pi by moments is s squared minus y bar, over s squared plus y bar squared minus y bar: 10.318 over 14.318, which is 0.721. These are the page's values. The two large counts, 14 and 16, inflate s squared and drive the moment estimates. The page's fitted-frequency table shows maximum likelihood fitting the zeros exactly and the method of moments overpredicting them, 32 against 24.
+
+The posterior. Uniform priors on lambda between 1 and 8 and on pi between 0.1 and 0.9, the page's resampling box. On a fine grid the posterior means are 4.266 for lambda and 0.524 for pi, close to the maximum likelihood estimates because the priors are flat over the region the likelihood occupies. The page's posterior predictive intervals for each count come from pushing the resampled draws through equation 13.
+
+Six point eight. Using simulated output. Greenberg section 5.6.
+
+Draws theta one to theta G from a joint posterior give, column by column, draws from each marginal without computing any integral, Greenberg printed page 74. Functions of the draws, such as ratios, products or predicted probabilities, are draws of the function. Quantiles of the sorted draws give credible intervals; kernel-smoothed histograms give densities. Greenberg's illustration: Z equal to X times Y, with X a Beta of 3 and 3 and Y a Beta of 5 and 3, has mean 0.3146, numerical standard error 0.0021, and 95 per cent interval 0.0719 to 0.6279, from G equal to 5000.
+
+Six point nine. Multivariate draws. Greenberg section 5.5. This is the G layer, named only.
+
+X equal to mu plus C transposed Z, with Z a p-variate standard normal and sigma equal to C transposed C, the Cholesky factorisation, gives X p-variate normal with mean mu and covariance sigma. It is used in every Gibbs step that draws a coefficient vector. Accept-reject and importance sampling become hard in many dimensions, because they need a dominating density over the whole support and tails heavy enough everywhere; that is what motivates Markov chain Monte Carlo.
+
+Links. Next come dependent draws from a Markov chain, section 7. Earlier: Monte Carlo for sampling distributions and the bootstrap, Class 1 sections 5 and 2. Practice, statements in the books: Greenberg 5.4, printed page 75, accept-reject for the Beta of 3 and 3; Morettin and Singer B.16, printed page 478, accept-reject for a truncated gamma; and Morettin and Singer B.19, printed page 478, discrete accept-reject.
+
+Checklist for section 6. You should be able to write a posterior summary as an expectation, estimate it by an average, and compute its numerical standard error, including the 0.052 for pi at 1000 draws. You should be able to prove the inverse distribution function method and use it with truncation. You should be able to derive the Student t as a normal with a gamma precision. You should be able to prove that accept-reject works and that its acceptance rate is one over c, with 1.875 and 0.533 for the Beta of 3 and 3, and 0.7602 for the normal from a Laplace. You should be able to state the variance condition of importance sampling and explain why Greenberg's Algorithm 5.5 has infinite variance. And you should be able to describe sampling importance resampling and the effective sample size.
+
+
+Section 7. Gibbs sampling: a Markov chain whose invariant distribution is the posterior.
+
+This section covers Greenberg chapter 6, printed pages 76 to 87, equations 6.1 to 6.9 and theorems 6.1 to 6.7; Greenberg section 7.1, printed pages 91 to 95, with Algorithms 7.1 to 7.3, equations 7.1 to 7.4 and the bivariate-normal example; Greenberg section 7.3, printed pages 102 to 103, on batch means and the relative numerical efficiency; Tsay sections 12.1 to 12.3, printed pages 614 to 621, equations 12.1 to 12.3 and results 12.1 to 12.8; Morettin and Singer section C.5, printed pages 487 to 488, equations C.16 and C.17; the coal-mining data of Jarrett, 1979, kept in the project's agent notes; and the Gibbs code of the hierarchical Gaussian linear model page, used in section 9.
+
+The claim, before the derivations. When a posterior cannot be sampled directly but each full conditional can, draw the blocks one at a time, each from its conditional given the latest values of the others. The draws form a Markov chain whose invariant distribution is the joint posterior; after a burn-in, their histograms are the marginals. On the coal-mining series, with Class 1's prior on both rates, a three-block Gibbs sampler puts the switch at 1891, with posterior probability 0.240 against the exact 0.240, and with posterior means of lambda one equal to 3.106 and of lambda two equal to 0.930. The price is dependence. On a bivariate normal with correlation rho, the chain's lag-h autocorrelation is rho to the two h, so rho equal to 0.999 needs about 1000 draws for the information of one independent draw.
+
+The notation. Capital P, with entries p i j, is the transition matrix: p i j is the probability that X at t plus one equals j given that X at t equals i; its rows sum to one. Pi is the invariant distribution, satisfying pi times P equals pi; it is a probability vector or a density. p of x and y is the transition kernel for a continuous state, a density in y. Theta, with components theta one to theta d, are the parameter blocks, and theta minus j denotes all blocks except theta j. Capital B and capital G are the burn-in length and the number of retained draws. k is the switch point, the last year of the first regime, from 1 to n. Lambda one and lambda two are the Poisson rates before and after the switch. S k, the sum of the y i for i up to k, is the cumulative count. And rho h is the lag-h autocorrelation of a chain, between minus one and one.
+
+Seven point one. Independent draws are a luxury. This is the U layer.
+
+Chapter 5's methods, section 6, need a density we can sample whose shape is close to the target, and that is hard to find in many dimensions. Markov chain Monte Carlo reverses the question. Instead of a distribution that is easy to sample, build a process that is easy to run and that settles into the target. The draws are no longer independent, but averages still converge, Theorem 6.3, and the recipe works for "a great variety of distributions without having to undertake an intensive analysis of the special features of the distribution", Greenberg printed page 76.
+
+Seven point two. Markov chains on a finite state space. Greenberg section 6.1. This is the C layer.
+
+A process X t on the states 1 to s is a homogeneous Markov chain if, equation 1, p i j, the probability that X at t plus one equals j given that X at t equals i, does not depend on t, nor on X at t minus one, t minus two, and earlier.
+
+The n-step transition probabilities are the entries of P to the n, Greenberg equation 6.3. A distribution pi is invariant if, equation 2, pi j equals the sum over i of pi i times p i j, for all j; that is, pi times P equals pi.
+
+Worked, Greenberg equation 6.2, printed page 79. The transition matrix has first row 0.750 and 0.250, and second row 0.125 and 0.875. The first column of equation 2 gives pi one equal to 0.750 pi one plus 0.125 pi two. Substitute pi two equal to one minus pi one. Equation 3: pi one equals 0.750 pi one plus 0.125 times one minus pi one; so 0.375 pi one equals 0.125; so pi is one third and two thirds.
+
+Powers of P, Greenberg printed page 80. P to the 10th has rows 0.339 and 0.661, and 0.330 and 0.670. P to the 20th has both rows equal to 0.333 and 0.667. Every row converges to pi, so after 20 steps the starting state is forgotten to three decimals. The speed is set by the second eigenvalue of P, one minus 0.250 minus 0.125, which is 0.625, Greenberg exercise 6.5: the distance to pi shrinks like 0.625 to the n.
+
+When convergence fails, Greenberg printed pages 78 to 81. A reducible chain, with a block-diagonal P, never leaves the block it starts in, and has many invariant distributions. A periodic chain alternates, and P to the n does not converge. Theorem 6.2: if P is irreducible and aperiodic on a finite space, there is a unique invariant pi, and the absolute difference between the n-step probability p i j and pi j is at most r to the n over nu, with r below one.
+
+Seven point three. General state spaces and the ergodic average. Greenberg sections 6.2 and 6.3.
+
+For continuous states the transition kernel p of x and y replaces p i j, and a density pi is invariant if, Greenberg equation 6.9, equation 4: pi of y equals the integral of pi of x times p of x and y, over x.
+
+An example, Greenberg printed pages 85 to 86. The first-order autoregression y t equals phi y t minus one plus u t, with the absolute value of phi below one and u t normal with mean zero and variance sigma squared, has invariant density normal with mean zero and variance sigma squared over one minus phi squared: the equilibrium distribution of Class 1 section 7. If y t minus one is normal with mean zero and variance v, with v equal to sigma squared over one minus phi squared, then the variance of y t is phi squared v plus sigma squared, which is v.
+
+Theorem 6.3, the ergodic average. For an irreducible chain whose states are positive recurrent, there is a unique invariant pi and, for any starting distribution, equation 5: one over n times the sum from m equal to 1 to n of f of X m converges to the expected value under pi of f of X, whenever the expected absolute value of f of X under pi is finite.
+
+Equation 5 is the law of large numbers that Markov chain Monte Carlo needs: chain averages estimate posterior expectations. Markov chain Monte Carlo turns Markov-chain theory around, Greenberg printed page 84: instead of finding pi for a given P, it starts from the target pi and constructs a kernel with that invariant distribution. Theorems 6.5 and 6.6 then give convergence for pi-irreducible, aperiodic kernels.
+
+Seven point four. The Gibbs algorithm. Greenberg section 7.1.1; Tsay section 12.2.
+
+Algorithm 7.1, with two blocks. Choose a starting value of x two. At iteration g, equation 6: draw x one at iteration g from f of x one given x two at iteration g minus one; then draw x two at iteration g from f of x two given x one at iteration g.
+
+Discard the first B draws, the burn-in, and keep G draws. With d blocks, Algorithm 7.2 and Tsay's three parameters in equation 12.1, each block is drawn from its full conditional given the most recent values of all the others.
+
+Why the target is invariant, Greenberg printed pages 91 to 92. The Gibbs kernel from x, with components x one and x two, to y, with components y one and y two, is p of x and y equal to f of y one given x two, times f of y two given y one. Check equation 4, in three steps. Equation 7. First, the integral of p of x and y times f of x over x is the double integral of f of y one given x two, times f of y two given y one, times f of x one and x two, over x one and x two. Second, integrating x one out of the joint leaves f of y two given y one, times the integral of f of y one given x two times f of x two over x two. Third, by the law of total probability, that integral is f of y one, so the result is f of y two given y one times f of y one, which is f of y.
+
+How to find a full conditional, Greenberg printed page 55. Write the joint posterior, likelihood times prior; keep only the factors that contain the block; and recognise the kernel. Everything else goes into the constant. Conditionally conjugate priors, Greenberg section 4.9, make every kernel standard.
+
+Using the output, Tsay equation 12.3. Point estimates and variances are sample moments of the retained draws; differences, ratios and other functions are computed draw by draw, Tsay printed page 616.
+
+Seven point five. Worked: the normal mean and precision. Greenberg Algorithm 7.3, equations 7.1 and 7.2.
+
+The y i are independent normal with mean mu and variance one over h. The priors are mu normal with mean mu zero and variance one over h zero, and h Gamma with parameters alpha zero over two and delta zero over two, independent; by Greenberg section 4.9, this is not jointly conjugate. Equation 8: the joint posterior of mu and h is proportional to h to the n over two, times the exponential of minus h over two times the sum of y i minus mu squared, times the exponential of minus h zero over two times mu minus mu zero squared, times h to the alpha zero over two minus one, times the exponential of minus delta zero h over two.
+
+h given mu and y. Keep the factors of equation 8 with h. Equation 9: the conditional is proportional to h to the power alpha zero plus n over two, minus one, times the exponential of minus h times delta zero plus the sum of y i minus mu squared, over two. So h given mu and y is Gamma with parameters alpha zero plus n over two, and delta zero plus the sum of y i minus mu squared, over two.
+
+mu given h and y. Keep the factors with mu. This is section 3 equation 5, with data precision h times n and prior precision h zero. Equation 10: mu given h and y is normal with mean h zero mu zero plus h n y bar, over h zero plus h n, and variance one over h zero plus h n.
+
+Alternate equations 9 and 10. On a seeded data set with the design of the lecturer's Stan example one, n equal to 100, y normal with mean 1.6 and standard deviation 0.2, and prior mu normal with mean 1.7 and standard deviation 0.3, 5000 draws after 1000 of burn-in give a posterior mean of mu of 1.6079 against y bar equal to 1.6077, and one over the square root of the posterior mean of h equal to 0.195, the sample standard deviation. The prior on mu is worth h zero over h n, which is one over 0.09, over 100 over 0.04, which is 0.4 per cent of the data.
+
+Seven point six. Worked: the coal-mining switch point. Greenberg equations 7.3 and 7.4, printed pages 93 to 94.
+
+The model. Counts y one to y n, with n equal to 112 years, 1851 to 1962, and a total of 191 disasters. Equation 11: y i is Poisson with rate lambda one for i up to k, and Poisson with rate lambda two for i after k. The priors are lambda j Gamma with parameters alpha zero and beta zero, and k uniform on 1 to n, where k equal to n means no change. Here both rates get Class 1's prior, the Gamma with shape 1 and rate one half, that is, the exponential with rate one half, so the results connect to Class 1 section 4.
+
+The joint posterior. Likelihood times priors, dropping the product of the y i factorials and constants. Equation 12: the posterior of lambda one, lambda two and k is proportional to lambda one to the alpha zero minus one times e to the minus beta zero lambda one, times lambda two to the alpha zero minus one times e to the minus beta zero lambda two, times lambda one to the S k times e to the minus k lambda one, times lambda two to the S n minus S k times e to the minus n minus k, times lambda two.
+
+The full conditionals. Keep the factors of equation 12 with each block. Equation 13: lambda one given k and y is Gamma with parameters alpha zero plus S k and beta zero plus k; and lambda two given k and y is Gamma with parameters alpha zero plus S n minus S k, and beta zero plus n minus k.
+
+Equation 14: the conditional probability of k given lambda one, lambda two and y equals e to the k times lambda two minus lambda one, times lambda one over lambda two to the S k, divided by the sum over k prime from 1 to n of the same expression at k prime. Equation 14 divides equation 12 by the factors free of k, e to the minus n lambda two times lambda two to the S n. Each sweep is two gamma draws and one draw from a discrete distribution on 112 points.
+
+An exact check. The rates can be integrated out of equation 12 with the gamma integral of Class 1 section 4, equation 2, giving the marginal posterior of k in closed form. Equation 15: the posterior of k given y is proportional to gamma of alpha zero plus S k, over beta zero plus k to the power alpha zero plus S k; times gamma of alpha zero plus S n minus S k, over beta zero plus n minus k to the power alpha zero plus S n minus S k.
+
+This is the integrated likelihood of Class 1 section 3, subsection 8, now with a prior. It lets the Gibbs output be checked against the truth. Seven candidate years, each with k, S k, the exact posterior probability, and the conditional posterior means of lambda one and lambda two.
+
+1886: k equal to 36, S k equal to 117, probability 0.0854, rate means 3.233 and 0.980.
+
+1887: k equal to 37, S k equal to 119, probability 0.0995, rate means 3.200 and 0.967.
+
+1889: k equal to 39, S k equal to 123, probability 0.1463, rate means 3.139 and 0.939.
+
+1890: k equal to 40, S k equal to 125, probability 0.1849, rate means 3.111 and 0.924.
+
+1891, the mode: k equal to 41, S k equal to 127, probability 0.2402, rate means 3.084 and 0.909.
+
+1892: k equal to 42, S k equal to 128, probability 0.0945, rate means 3.035 and 0.908.
+
+1896: k equal to 46, S k equal to 134, probability 0.0328, rate means 2.903 and 0.872.
+
+The years 1886 to 1896 hold 98.1 per cent of the posterior mass. At k equal to 41, the conditional posterior mean of lambda one is 128 over 41.5, which is 3.084: Class 1's posterior mean for 1851 to 1891, the same computation. Averaging equation 13 over equation 15 gives the posterior mean of lambda one equal to 3.106, standard deviation 0.289, and of lambda two equal to 0.930, standard deviation 0.117. A Gibbs run of 20,000 sweeps after 1000 of burn-in gives 3.107 and 0.931, and its histogram of k is within total-variation distance 0.010 of equation 15.
+
+The Gibbs switch-point figure has two panels. The left panel is a bar chart of the exact posterior probability of the switch year, equation 15, for 1880 to 1902, peaking at 1891 with 0.24, with secondary mass at 1886 and 1887 and at 1889 and 1890, overlaid with Gibbs relative frequencies from equations 13 and 14, 10,000 seeded sweeps, as dots that sit on the bars. The right panel shows histograms of the Gibbs draws of lambda one, centred near 3.1, and lambda two, centred near 0.93, with the exact marginal densities drawn over them: mixtures of gammas, the sum over k of the posterior of k times the gamma of equation 13. The legend gives the means 3.106 and 0.930.
+
+The switch is located to within a few years but not to one year. The posterior is jagged because a single year's count, such as a 4 in 1886 or a 3 in 1896, can make a candidate split better or worse. The rates are well determined: about 3.1 disasters a year before, 0.93 after, a ratio of about 3.3, as in Class 1 section 3's profile likelihood, 3.098 against 0.901 at 1891.
+
+Profiling against integrating, once more. Class 1 section 3 maximised over lambda one and lambda two for each candidate switch; equation 15 integrates them out against a prior; and the Gibbs sampler does the integration by simulation. Here all three agree on 1891; with a vaguer prior or a shorter series they need not.
+
+Seven point seven. Data augmentation. Tsay section 12.1; Morettin and Singer section C.5. This is the C layer.
+
+A "parameter" can be anything unobserved: a missing value, a latent volatility, a latent utility, a regime indicator, Tsay printed page 615. Adding such variables z to the sampler, Tanner and Wong's data augmentation, often turns an intractable posterior into easy conditionals. Morettin and Singer, equations C.16 and C.17, write the two identities the algorithm iterates. Equation 16: p of theta given y is the integral of p of theta given y and z times p of z given y, over z; and p of z given y is the integral of p of z given theta and y times p of theta given y, over theta.
+
+Drawing z from p of z given theta and y, and then theta from p of theta given y and z, is a two-block Gibbs sampler. The switch point k is such a variable; so are the Student t precisions lambda i of section 6, subsection 4, Greenberg section 8.1.2; the latent utilities of the probit, Greenberg Algorithm 8.3; and the log-volatilities of the stochastic volatility model, section 8, subsection 7.
+
+Seven point eight. Mixing, burn-in and the numerical standard error. Greenberg printed page 94 and section 7.3.
+
+When Gibbs mixes badly, Greenberg printed page 94. Sample X one and X two from a bivariate normal with means zero, unit variances and correlation rho, by Gibbs, with X one given x two normal with mean rho x two and variance one minus rho squared, and X two given x one normal with mean rho x one and variance one minus rho squared. Substitute one conditional into the other. Equation 17: x one at iteration g equals rho times x two at iteration g minus one plus e one; which is rho times the bracket rho x one at g minus one plus e two, plus e one; which is rho squared times x one at g minus one, plus rho e two plus e one.
+
+So the x one chain is a first-order autoregression with coefficient rho squared, and equation 18: its lag-h autocorrelation, rho h, is rho to the two h.
+
+For rho equal to 0.5: the lag-one autocorrelation is 0.25, and its absolute value stays below 0.05 from lag 3, since 0.5 to the sixth is 0.016; that is Greenberg's report. For rho equal to 0.999: the lag-20 autocorrelation is 0.998 to the 20th, which is 0.961, "over 0.900 even at lag 20". With G equal to 5000, the sample mean of x one was 1.084 or minus 0.623 depending on the start, Greenberg printed page 94, against the true zero.
+
+The cost of dependence. The variance of a chain average is the variance of X over G, times one plus two times the sum over h from 1 of rho h. The bracket is the inefficiency factor, also called the autocorrelation time; Greenberg printed page 103 calls its reciprocal the relative numerical efficiency. For a first-order autoregression with coefficient phi it is one plus phi over one minus phi; with phi equal to rho squared, equation 19: the inefficiency factor is one plus rho squared over one minus rho squared. That is 1.67 at rho equal to 0.5; 9.5 at rho equal to 0.9; and 999.5 at rho equal to 0.999.
+
+A chain of G draws carries the information of G over the inefficiency factor independent ones.
+
+The mixing figure has two panels. The left panel shows the autocorrelation of the Gibbs chain for x one against lags 0 to 30, for rho equal to 0.5, which falls to zero by lag 3; 0.9, which decays over about 15 lags; and 0.999, which stays above 0.94 at lag 30. The exact curves, rho to the two h, carry the autocorrelations of seeded Gibbs chains as dots, as in Greenberg's Figure 7.2. The right panel belongs to section 8: the acceptance rate of random-walk Metropolis on a standard normal target.
+
+Remedies. Block the correlated parameters together; Tsay, printed page 617, says "when parameters are highly correlated, it pays to draw them jointly". Reparameterise. And run several chains from dispersed starts.
+
+The numerical standard error by batch means, Greenberg section 7.3. Find a lag j zero at which the absolute estimated autocorrelation is below 0.05, cut the G draws into N equal to G over j zero batches, and use the variance of the batch means. Equation 20: the numerical standard error is the square root of one over N, times one over N minus one, times the sum over the batches b of the squared deviation of the batch mean Z bar b from the overall mean Z bar.
+
+The naive square root of the estimated variance over G understates the error by the factor of the square root of the inefficiency factor.
+
+Burn-in and convergence. There is no theorem giving B, Greenberg printed page 91; diagnostics are informal: trace plots, autocorrelations that die quickly, and agreement across chains started far apart, Tsay printed page 617. Stan reports R hat and the effective number of draws for this purpose; the heart-attack output in section 9 shows an effective number of 766 out of 20,000 draws for eta.
+
+Seven point nine. Beyond this note. This is the G layer, named only and not examinable here.
+
+Rao-Blackwellisation, which estimates a marginal density by averaging the known conditional over the draws, Greenberg printed page 105; Chib's marginal likelihood from Gibbs output, Greenberg section 7.1.2; and multiple switch points and hidden Markov regimes, Carlin and co-authors, 1992, Greenberg printed page 104.
+
+Links. Next comes the case where a full conditional is not standard, section 8. Gibbs for hierarchical models is in section 9, subsection 5, and for sparse regression in section 10, subsection 6. Earlier: the change point by profile likelihood, Class 1 section 3; the exponential prior with rate one half on the same data, Class 1 section 4; and the first-order autoregression's equilibrium, Class 1 section 7. Practice, statements in the books: Greenberg 6.2, printed page 87, a two-state chain; Greenberg 7.1, printed page 105, verifying equations 7.1 and 7.2; Greenberg 7.3, printed page 106, the switch-point Gibbs sampler on the coal data; Tsay 12.2, printed page 670, Gibbs for a regression with autoregressive errors; Tsay 12.3, printed page 670; and Morettin and Singer C.5, printed page 489, a chained-data Gibbs sampler.
+
+Checklist for section 7. You should be able to find the invariant distribution of a two-state chain, one third and two thirds for Greenberg's matrix, and state when convergence fails. You should be able to state the ergodic theorem. You should be able to prove that the Gibbs kernel leaves the joint distribution invariant. You should be able to derive the full conditionals of the normal mean and precision. You should be able to derive the three full conditionals of the coal switch-point model and the closed-form marginal posterior of k, with its mode at 1891. And you should be able to show that a Gibbs chain on a bivariate normal is an autoregression with coefficient rho squared, compute its inefficiency factor, and explain batch-means standard errors.
+
+
+Section 8. Metropolis-Hastings: propose anywhere, accept with the right probability.
+
+This section covers Greenberg section 7.2, printed pages 96 to 101, with equations 7.5 and 7.6, Algorithms 7.4 to 7.6, Theorem 7.2, the Beta of 3 and 4 example and Figure 7.1; Greenberg section 8.2.3, printed pages 126 to 129, with equation 8.10 and Table 8.3; Tsay section 12.4, printed pages 622 to 624, and section 12.7, printed pages 636 to 638, equations 12.20 to 12.23; the site pages on Bayesian logistic regression and on the Petrobras Gaussian and Student t stochastic volatility models; the text file of examples one, two and three in R and Stan; and the Bayesian beta regression page, named only.
+
+The claim, before the derivations. When a full conditional is not a standard distribution, propose a move from any density q of x and y, and accept it with probability alpha of x and y equal to the minimum of one and f of y times q of y and x, over f of x times q of x and y; otherwise stay. This makes the chain reversible with respect to f, so f is invariant, and the unknown normalising constant cancels in the ratio. Gibbs is the special case where the proposal is the full conditional and alpha equals one. The proposal's scale trades acceptance against step size: for a standard normal target and random-walk steps normal with standard deviation s, the acceptance rate is exactly two over pi times the arc tangent of two over s, which is 0.445 at s equal to 2.38. The Bayesian logit is the standard use: a normal prior is not conjugate, a tailored random walk samples it, and the posterior means sit next to the maximum likelihood estimate.
+
+The notation. f is the target density, the posterior, known up to a constant. q of x and y is the proposal density of y given the current x. Alpha of x and y is the acceptance probability, between zero and one. s is the random-walk proposal standard deviation. Beta is the vector of logit coefficients, with K components. P i, the probability that y i equals one, is e to the x i transposed beta, over one plus e to the x i transposed beta. And h t is the volatility in the stochastic volatility model, whose log follows an autoregression.
+
+Eight point one. Accept or stay. This is the U layer.
+
+Gibbs needs every full conditional in a form we can sample. Many models break this at one block: the logit coefficients, a GARCH parameter, a log-volatility. Metropolis-Hastings needs only the ability to evaluate the target up to a constant. It proposes a candidate from a convenient density and then corrects for the mismatch between proposal and target by accepting some moves and rejecting others. Unlike accept-reject, section 6 subsection 5, a rejection does not mean "try again": the chain repeats its current value, so values recur and draws are correlated, Greenberg printed page 97.
+
+Eight point two. Reversibility and the acceptance probability. Greenberg printed pages 96 to 98. This is the C layer.
+
+A kernel p of x and y is reversible with respect to f if, equation 1: f of x times p of x and y equals f of y times p of y and x, for all x and y.
+
+Integrating equation 1 over x gives: the integral of f of x times p of x and y equals f of y times the integral of p of y and x over x, which is f of y. Reversibility implies that f is invariant, section 7 equation 4.
+
+A proposal q is usually not reversible. For some pair, f of x times q of x and y exceeds f of y times q of y and x, so moves from x to y happen too often. Multiply by a factor alpha to restore balance, Greenberg equation 7.5. Equation 2: f of x times alpha of x and y times q of x and y equals f of y times alpha of y and x times q of y and x.
+
+Moves from y to x are too rare, so make them as frequent as possible: set alpha of y and x equal to one. Substitute into equation 2 and solve for alpha of x and y. Equation 3: alpha of x and y equals f of y times q of y and x, over f of x times q of x and y.
+
+Combining both cases gives Greenberg equation 7.6. Equation 4: alpha of x and y equals the minimum of that ratio and one, if f of x times q of x and y is positive, and zero otherwise.
+
+The normalising constant cancels. Only the ratio f of y over f of x enters equation 4, so a posterior known as likelihood times prior is enough, Greenberg printed page 98 and Tsay printed page 622.
+
+Algorithm 7.4. Given x: first, draw Y from q of x and dot; second, draw U uniform on zero to one; if U is at most alpha of x and Y, return Y; otherwise return x. Theorem 7.2, due to Tierney: a pi-irreducible Metropolis kernel is Harris recurrent, so the ergodic theorem, section 7 equation 5, applies.
+
+Eight point three. Two standard kernels. Greenberg printed page 99; Tsay sections 12.4.1 and 12.4.2.
+
+The random walk. y equals x plus u, with u symmetric about zero, so q of x and y equals q of y and x, and equation 4 becomes equation 5: alpha of x and y equals the minimum of f of y over f of x, and one.
+
+This is the original Metropolis algorithm, Tsay section 12.4.1, with a symmetric "jumping distribution": uphill moves are always accepted, and downhill moves with probability equal to the density ratio. Hastings's generalisation, Tsay section 12.4.2, allows an asymmetric q through the correction in equation 4.
+
+The independence kernel. q of x and y equals q of y, so equation 6: alpha of x and y equals the minimum of the ratio f of y over q of y, divided by f of x over q of x, and one.
+
+That is a random walk on the importance ratio f over q; compare section 6 equation 9. Greenberg recommends a tailored kernel: a fat-tailed density, a multivariate t with small degrees of freedom, centred at the posterior mode, with scale equal to the negative inverse Hessian there, printed page 99.
+
+Worked: a Beta of 3 and 4 from uniform proposals, Greenberg Algorithm 7.5. With q equal to one on zero to one and f of x proportional to x squared times one minus x cubed, equation 6 gives equation 7: alpha of the previous value x and the proposal U two equals the minimum of U two squared times one minus U two cubed, over x squared times one minus x cubed, and one.
+
+Greenberg: 5000 draws after 500 of burn-in, acceptance 0.57, sample mean 0.4296 against three sevenths, which is 0.4286. The stationary acceptance rate of an independence sampler with q equal to one is the double integral of the minimum of f of x and f of y over x and y, obtained by averaging equation 6 over x from f and y uniform; for the Beta of 3 and 4 it is 0.5726. A seeded Python run gives acceptance 0.581 and mean 0.4224.
+
+Eight point four. The proposal scale: an exact acceptance curve.
+
+Take the standard normal target and random-walk proposals y equal to x plus u, with u normal with mean zero and standard deviation s. The stationary acceptance rate is the expected value of the minimum of one and r, where r is f of y over f of x and x is drawn from f. Split it. Equation 8: the expected value of the minimum of one and r equals the probability that r is at least one, plus the expected value of r times the indicator that r is below one.
+
+The second term is the double integral of f of y times q of y minus x, times the indicator that f of y is below f of x. Relabelling x and y and using the symmetry of q turns it into the probability that r exceeds one. So the acceptance rate is twice the probability that f of y exceeds f of x, which is twice the probability that the absolute value of x plus u is below the absolute value of x.
+
+Write u equal to s times z, with z standard normal independent of x. The absolute value of x plus s z is below the absolute value of x exactly when z times two x plus s z is negative: the double wedge between the lines z equal to zero and z equal to minus two x over s. That wedge has angle equal to the arc tangent of two over s on each side, and the pair x and z is rotation-invariant, so its probability is two times the arc tangent of two over s, over two pi. Hence equation 9: the acceptance rate at scale s is two over pi times the arc tangent of two over s.
+
+Six values of equation 9. At s equal to 0.1, acceptance 0.968. At 0.5, 0.844. At 1, 0.705. At 2.38, 0.445. At 8, 0.156. At 20, 0.063.
+
+The right panel of the mixing figure in section 7 plots equation 9 against the proposal standard deviation on a log scale, the curve falling from near one to near zero, with seeded runs on it and s equal to 2.38 marked at 0.445. Small s accepts almost everything but crawls, with high autocorrelation, as with rho tending to one in Gibbs. Large s proposes bold moves that are almost always rejected, and the chain sits still. That is Greenberg's warning, printed page 98, in numbers: neither a high nor a low acceptance rate is a goal in itself. The value s equal to 2.38, in one dimension, is the scale that minimises the autocorrelation time of this chain; that result is due to Gelman, Roberts and Gilks, and is G layer. The tailored kernels in subsection 6 use 2.38 squared over K times the inverse Hessian.
+
+Eight point five. Gibbs is Metropolis-Hastings with acceptance one. Greenberg printed pages 100 to 101.
+
+In a block update, propose Y one from the full conditional f of x one given x two. Then equation 4 reads, equation 10: alpha of x one and Y one given x two equals f of Y one and x two times f of x one given x two, over f of x one and x two times f of Y one given x two. Writing each conditional as a joint over f of x two, that is f of Y one and x two times f of x one and x two over f of x two, divided by f of x one and x two times f of Y one and x two over f of x two, which is one.
+
+Every proposal is accepted. This licenses Metropolis-Hastings within Gibbs, Greenberg Algorithm 7.6: Gibbs steps for the blocks with standard conditionals, Metropolis-Hastings steps for the rest, in any order within a sweep. Tsay's Griddy Gibbs, section 12.4.3, is a third option for a univariate nonstandard conditional: evaluate it on a grid, build an approximate inverse distribution function, and draw by section 6 equation 4.
+
+Eight point six. Worked: the Bayesian logit. Greenberg section 8.2.3; the Bayesian logistic regression site page.
+
+The model. The probability that y i equals one is P i, equal to e to the x i transposed beta over one plus e to the x i transposed beta, so the log of P i over one minus P i equals x i transposed beta: the log-odds are linear in the covariates, Greenberg printed page 127. With the likelihood and a normal prior, beta normal with mean beta zero and covariance B zero, equation 11: the posterior of beta is proportional to the product over i of P i to the y i times one minus P i to the one minus y i, times the exponential of minus one half, beta minus beta zero transposed, times the inverse of B zero, times beta minus beta zero. In logs: the sum over i of y i times x i transposed beta, minus the log of one plus e to the x i transposed beta; minus one half of the same quadratic form; plus a constant.
+
+Equation 11 is not a standard form, and latent logistic data do not make it conditionally conjugate, Greenberg exercise 8.8, so Greenberg uses Metropolis-Hastings with a random walk or a tailored independence kernel, printed page 128.
+
+Reading coefficients for a prior, Greenberg printed pages 127 to 128. The derivative of P i with respect to x i k is beta k times P i times one minus P i, largest at P i equal to one half, so the largest effect of covariate k on the probability is beta k over 4. The probit's is 0.4 times beta k, from the standard normal density at zero, 0.3989; so logit coefficients are about 1.6 times probit ones. Greenberg elicits the baseline intercept as the log of one ninth, minus 2.1972, from "a 10 per cent chance of owning a computer" for the baseline household, and reports the posterior probability that beta two is positive as 0.98, and that beta three is positive as 0.88, Table 8.3.
+
+A seeded check, from the Python note, section 8. n equal to 2000 simulated observations with beta equal to minus 1, 0.8 and 0.5; prior normal with mean zero and covariance 100 times the identity; a random walk with covariance 2.38 squared over 3 times the maximum likelihood covariance; 10,000 draws after 1000 of burn-in. The maximum likelihood estimates are minus 1.072, 0.845 and 0.602; the posterior means are minus 1.074, 0.850 and 0.605; the acceptance rate is 0.32.
+
+The site page: 5000 bank clients, a loan on income and education. The generalized linear model fit gives an intercept of minus 11.304, standard error 0.419; income 0.0596, standard error 0.0024; and education, levels 2 or 3 against 1, 4.055, standard error 0.221. The Bayesian fit, by the package UPG, a Gibbs sampler based on Pólya-Gamma data augmentation, which is G layer, gives posterior means of minus 10.82, standard deviation 0.39; 0.06, standard deviation printed as 0.00; and 3.82, standard deviation 0.21; with every 95 per cent interval excluding zero. The posterior means are 4 to 6 per cent smaller in absolute value than the maximum likelihood estimates: minus 10.82 over minus 11.30 is 0.957, and 3.82 over 4.06 is 0.942. The package's default prior shrinks toward zero. The page's payoff is the posterior of a probability: draw by draw, the probability of a loan given income and education is one over one plus e to the minus x transposed beta at draw g, plotted at incomes 145, 170 and 193, the 90, 95 and 99 per cent income quantiles, for both education groups, as in section 6 subsection 8.
+
+Eight point seven. Stochastic volatility by Markov chain Monte Carlo. Tsay section 12.7; the Petrobras page.
+
+Tsay's univariate stochastic volatility model, equations 12.20 and 12.21. Equation 12: r t equals x t transposed beta plus a t; a t equals the square root of h t times epsilon t; and the log of h t equals alpha zero plus alpha one times the log of h t minus one, plus v t; with epsilon t standard normal and v t normal with mean zero and variance sigma v squared, and the absolute value of alpha one below one.
+
+The likelihood, f of R given beta and alpha, equal to the integral of f of R given beta and H times f of H given alpha over H, is an n-dimensional integral. But treating H, the vector h one to h n, as augmented parameters, section 7 subsection 7, gives three blocks. Beta given H is a weighted regression: Result 12.1a after dividing by the square root of h t. Alpha given H is a first-order autoregression regression for the log of h t. And each h t given its neighbours has, Tsay equation 12.23, equation 13: f of h t given everything else is proportional to h t to the minus 1.5, times the exponential of minus r t minus x t transposed beta squared over two h t, minus the log of h t minus mu t squared over two sigma squared.
+
+Here mu t is alpha zero times one minus alpha one, plus alpha one times the sum of the logs of h t plus one and h t minus one, all over one plus alpha one squared; and sigma squared is sigma v squared over one plus alpha one squared. Equation 13 is not standard: Jacquier, Polson and Rossi draw it by Metropolis, and Tsay by Griddy Gibbs.
+
+The Petrobras page, with daily log-returns of PBR since 2019, first compares independent models by maximum likelihood: the Gaussian, with sigma hat equal to 0.0328; and the Student t, with nu hat equal to 3 and scale 0.0193, with much heavier tails. It then fits four stochastic volatility variants with Kastner's package stochvol: Gaussian or t errors, with or without leverage, a correlation rho between epsilon t and the volatility shock u t. The priors are mu normal with mean zero and standard deviation 100; phi plus one over two, Beta with parameters 5 and 1.5; sigma squared, Gamma with parameters one half and one half; rho plus one over two, Beta with parameters 4 and 4; and nu, exponential with rate 0.1. The page plots the posterior median volatility paths. The model and its estimation belong to Class 8; here it is the example of Markov chain Monte Carlo with thousands of latent states.
+
+Eight point eight. Hamiltonian Monte Carlo and Stan, from the text file of examples in R and Stan. This is the G layer, named only and not examinable.
+
+The lecturer's Stan programs state a model and priors and let the software sample. Example one: a normal mean and standard deviation, with mu normal with mean 1.7 and standard deviation 0.3, and sigma half-Cauchy with location zero and scale one. Example two: a regression with standard normal priors on alpha and beta and a half-Cauchy with scale 2.5 on sigma. Example three: a stochastic volatility model with Student t errors on DAX returns, with phi normal with mean 0.8 and standard deviation 0.3 restricted to minus one to one, sigma Gamma with parameters 0.5 and 0.5, nu Gamma with parameters 1 and 0.05, and h one from the stationary distribution.
+
+Stan's sampler is Hamiltonian Monte Carlo, in its no-U-turn version. It treats minus the log posterior as a potential energy, adds a random momentum, and follows the gradient-driven trajectory for many steps before a Metropolis-Hastings accept or reject. Proposals land far from the current point yet are accepted with high probability, which beats random walks in high dimensions. The hierarchical Beta-Binomial of section 9 is fitted this way. The Bayesian beta regression page fits a Beta regression, Lula's vote share on abstention, population size and state dummies, with the betaBayes sampler alongside the maximum likelihood fit. Python equivalents, PyMC and ArviZ, are not installed in this project; the notes write every sampler in NumPy.
+
+Links. Next come Gibbs and Hamiltonian Monte Carlo on hierarchical models, section 9. Earlier: the logit by maximum likelihood, by iteratively reweighted least squares, Class 2 section 4. Practice, statements in the books: Greenberg 7.5, printed page 106, random-walk Metropolis-Hastings for the Laplace and the proposal scale; Greenberg 7.8, printed page 107, Metropolis-Hastings within Gibbs; Greenberg 8.8, printed page 132, the logit posterior; and Tsay 12.4, printed page 670, stochastic volatility by Markov chain Monte Carlo.
+
+Checklist for section 8. You should be able to show that reversibility implies invariance, and derive the Metropolis-Hastings acceptance probability from the balance condition. You should be able to explain why the normalising constant cancels. You should be able to write the random-walk and independence acceptance probabilities, and reproduce the Beta of 3 and 4 example. You should be able to state the acceptance curve two over pi times the arc tangent of two over s, with 0.445 at 2.38, and explain the scale trade-off. You should be able to prove that Gibbs is Metropolis-Hastings with acceptance one. And you should be able to write the Bayesian logit posterior, read beta k over 4 as the largest marginal effect, and explain why posterior means sit near the maximum likelihood estimates.
+
+
+Part four of the notes, section 9. Hierarchical models: estimate each unit by borrowing strength from the others.
+
+This section opens part four of the notes, priors as models. It covers Greenberg section 4.5, printed pages 50 to 52, equations 4.8 and 4.9; section 4.6, printed pages 52 to 53, equations 4.10 to 4.12; and section 4.9, printed pages 54 to 56. It also covers the hierarchical Beta-Binomial site page, on 13 Manhattan hospitals and heart-attack deaths in 2015, with Stan output, after Albert's Bayesian Hierarchical Modeling, section 10.3; and the hierarchical Gaussian linear model site page, on 68 pregnant women's weight gain, with a Gibbs sampler, after Gamerman and Lopes, 2006, example 5.6.
+
+The claim, before the derivations. When units, such as hospitals, women or funds, are similar but not identical, treat their parameters as exchangeable draws from a common distribution whose parameters are themselves estimated. Each unit's posterior mean is then a weighted average of its own estimate and the group mean, with weight eta over eta plus n i on the group: small units are pulled hardest. For 13 Manhattan hospitals the death rates range from 2.9 per cent to 13.0 per cent separately; partially pooled, from 5.7 per cent to 8.9 per cent, around a posterior mean of mu of 7.2 per cent. An exact grid computation reproduces the lecturer's Stan output: a posterior median of mu of 0.0714 against 0.0715. For 68 women's weight-gain curves, the Gibbs sampler of the random-coefficient model separates within-woman noise, sigma about 1.10 kilograms, from between-woman spread, which a pooled regression lumps into one residual standard deviation of 3.61 kilograms.
+
+The notation. y i and n i are the deaths and heart-attack cases at hospital i, for i from 1 to 13. p i is the death probability of hospital i. Mu is the mean of the population of hospital rates. Eta is the precision of that population, a plus b of the Beta, which acts as a prior sample size. w i is the weight on mu in the posterior mean of p i, eta over eta plus n i. y i j and x i j are the weight gain in kilograms and the week of visit j of woman i, for i up to 68 and j up to n i. Alpha i and beta i are woman i's intercept and slope. And alpha, beta, tau alpha and tau beta are the population means and precisions of the coefficients.
+
+Nine point one. Three ways to estimate 13 rates. The hierarchical Beta-Binomial page, section 1. This is the U layer.
+
+The page's data: 13 Manhattan hospitals, 2366 heart-attack cases, 163 deaths. Mount Sinai Roosevelt loses 6 of 46 patients, 13.0 per cent, "more than four times the rate of Harlem Hospital Center at 2.857 per cent", which is 1 of 35. Three analyses.
+
+Complete pooling: one p for all, 163 over 2366, which is 6.89 per cent. It ignores real differences between hospitals.
+
+No pooling: 13 separate binomials. A hospital with 35 cases gets an estimate as noisy as its sample, and nothing learned about the other 12 hospitals is used.
+
+Partial pooling, the hierarchical model: the p i are draws from a common Beta whose mean and spread are estimated. Each estimate leans on the group in proportion to how little data the hospital has.
+
+Nine point two. Exchangeability. Greenberg section 4.5. This is the C layer.
+
+Random variables z one to z n are exchangeable if their joint distribution is unchanged by any permutation of the indices, Greenberg printed page 50. Independent and identically distributed variables are exchangeable, but exchangeable variables need not be independent. Applied to parameters: if nothing but the data distinguishes hospital 3 from hospital 7, the prior should treat p one to p 13 symmetrically, and the natural way is independent draws given hyperparameters, with uncertainty about those hyperparameters making the p i dependent a priori. Greenberg's heteroskedastic regression, equations 4.8 and 4.9, is the same idea for variances: each observation's precision lambda i is a draw from a Gamma with parameters nu over two and nu over two, and marginally the errors are Student t, section 6 equation 6.
+
+Nine point three. The hierarchical model. Greenberg section 4.6.
+
+Greenberg's three levels, equations 4.10 to 4.12. Equation 1: y is distributed f of y given theta; theta is distributed pi of theta given theta zero; and theta zero is distributed pi of theta zero given theta zero zero, with theta zero zero fixed.
+
+Two remarks, Greenberg printed page 53. First, theta zero is not identified by the data: f of y given theta and theta zero equals f of y given theta, so the data inform theta zero only through theta. Second, theta zero can be integrated out: pi of theta given theta zero zero is the integral of pi of theta given theta zero times pi of theta zero given theta zero zero. The hierarchy is a way to build a prior with dependence across units and to compute with it, not a different model.
+
+Nine point four. Worked: the Beta-Binomial for the hospitals. The hierarchical Beta-Binomial page.
+
+The model, from the page's Stan file. Equation 2: y i given p i is binomial with n i trials and probability p i; p i given mu and eta is Beta with parameters mu eta and one minus mu times eta; mu is uniform on zero to one; and the prior density of eta is n one over n one plus eta squared, with n one equal to 10.
+
+This Beta has mean mu and variance mu times one minus mu over eta plus one, so eta acts as a prior sample size: a large eta means the hospitals are nearly identical. The prior on eta is proper, since the integral from zero to infinity of n one over n one plus eta squared is one, with median n one, equal to 10, and a heavy right tail.
+
+Integrate the p i out. For one hospital, Beta-binomial conjugacy, section 2 equation 4, gives the marginal likelihood. Equation 3: p of y i given mu and eta equals n i choose y i, times the Beta function of mu eta plus y i and one minus mu times eta plus n i minus y i, over the Beta function of mu eta and one minus mu times eta.
+
+So the posterior of the two hyperparameters is equation 4: p of mu and eta given y is proportional to n one over n one plus eta squared, times the product over the 13 hospitals of the same ratio of Beta functions.
+
+Equation 4 is two-dimensional. It can be evaluated exactly on a grid, here 1000 by 1400 points in mu and the log of eta, with no Markov chain Monte Carlo at all.
+
+Each hospital, given the hyperparameters. Conjugacy again. Equation 5: p i given mu, eta and y is Beta with parameters mu eta plus y i, and one minus mu times eta plus n i minus y i. Its mean is mu eta plus y i over eta plus n i, which equals w i times mu plus one minus w i times y i over n i, with w i equal to eta over eta plus n i.
+
+The second form splits mu eta plus y i exactly as section 2 equation 6. Averaging equation 5 over equation 4 gives the posterior mean of p i given y.
+
+Stan against the exact grid. The page ran the no-U-turn sampler with 4 chains of 5000 post-warm-up draws, 20,000 in all. Three quantities, each with the 5, 50 and 95 per cent quantiles, first by Stan, from the page's section 6, then by the exact grid.
+
+Mu: Stan gives 0.0595, 0.0715 and 0.0874; the grid gives 0.0599, 0.0714 and 0.0874.
+
+Eta: Stan gives 49.2, 225.7 and 2234; the grid gives 49.9, 229.4 and 2759.
+
+The standard deviation of the Beta, the square root of mu times one minus mu over eta plus one: Stan gives 0.0054, 0.0170 and 0.0381; the grid gives 0.0048, 0.0169 and 0.0376.
+
+The centre agrees to Monte Carlo error. The upper tail of eta does not: Stan reports an effective number of draws of 766 for eta and a posterior standard deviation of 1008 around a mean of 556, so its 95 per cent quantile is noisy, while the grid's is exact. Heavy-tailed hyperparameters are where Markov chain Monte Carlo output needs the most checking.
+
+Shrinkage in numbers, at the posterior median eta of about 229. Six hospitals, each with its raw rate, its number of cases, its weight w i, and its exact posterior mean.
+
+Harlem: 1 over 35, which is 0.0286; 35 cases; weight 0.87; posterior mean 0.0649.
+
+Bellevue: 4 over 129, which is 0.0310; 129 cases; weight 0.64; posterior mean 0.0566.
+
+NYP Lower Manhattan: 4 over 41, which is 0.0976; 41 cases; weight 0.85; posterior mean 0.0765.
+
+NYP Allen: 13 over 105, which is 0.1238; 105 cases; weight 0.69; posterior mean 0.0887.
+
+Mount Sinai Roosevelt: 6 over 46, which is 0.1304; 46 cases; weight 0.83; posterior mean 0.0833.
+
+NYP Columbia: 25 over 353, which is 0.0708; 353 cases; weight 0.39; posterior mean 0.0709.
+
+The 13 separate rates have standard deviation 0.0300; the 13 posterior means, 0.0090. Every posterior mean lies between its own y i over n i and the posterior mean of mu, 0.0723.
+
+The shrinkage figure has two panels. The left panel is equation 5 averaged over the exact posterior of equation 4 for the 13 hospitals, the page's section 8 recomputed. Thirteen lines join each hospital's raw death proportion, in the left column from 0.029 to 0.130, with marker size by number of cases, to its hierarchical posterior mean, in the right column from 0.057 to 0.089, with a dashed line at the posterior mean of mu, 0.0723. Small hospitals move furthest and two lines cross. The right panel belongs to section 10: shrinkage profiles.
+
+Read the left panel as the page's section 8 plot. Large hospitals, the big dots, barely move: NYP Columbia, with 353 cases and a rate already at the centre, stays at 0.071. The small ones move most. Lines cross. Harlem, 1 death in 35, starts below Bellevue, 4 in 129, and ends above it, 0.0649 against 0.0566. And Roosevelt starts above NYP Allen and ends below it, 0.0833 against 0.0887. Ranking hospitals by raw rates and by posterior means does not give the same league table, because a small hospital's extreme rate is mostly noise. The hierarchical model does not decide this by fiat: eta, and hence how much to pool, is estimated from how dispersed the 13 rates are relative to binomial noise.
+
+Nine point five. Worked: the hierarchical Gaussian linear model. The hierarchical Gaussian linear model page.
+
+The data. Weight gain in kilograms of I equal to 68 pregnant women at 5 to 7 prenatal visits, from the UFRJ maternity clinic, Gamerman and Lopes, 2006, example 5.6. 8, 33 and 27 women have 5, 6 and 7 visits, so there are n equal to 427 pairs of x i j and y i j, with x in weeks.
+
+No pooling and full pooling. The page first fits 68 separate regressions, whose intercepts, slopes and residual standard deviations vary widely, and then one pooled regression: fitted y equals minus 4.526 plus 0.476 x, with residual standard deviation 3.612, verified in the Python note, section 9, from the page's own data.
+
+The model, the page's section 5. Equation 6: y i j is normal with mean alpha i plus beta i x i j and variance sigma squared; alpha i is normal with mean alpha and variance one over tau alpha; and beta i is normal with mean beta and variance one over tau beta. Equation 7: alpha is normal with mean zero and variance one over P alpha; beta is normal with mean zero and variance one over P beta; tau alpha and tau beta are Gamma with parameters a and b; and sigma squared is inverse gamma with parameters a and b; with P alpha, P beta, a and b all equal to one.
+
+There are p equal to 5 plus 2 I, which is 141, unknowns. The joint posterior has no closed form, but every full conditional does: "the Gibbs sampler becomes the standard solution".
+
+The full conditionals. Each follows from keeping the factors of equations 6 and 7 that contain the block, section 7 subsection 4. Four of them.
+
+First, alpha i and beta i together: a normal regression of woman i's n i points with prior precision A inverse, the diagonal matrix with tau alpha and tau beta, centred at alpha and beta. By section 3 subsection 7, equation 8: alpha i and beta i given everything else are bivariate normal with mean m i and covariance V i, where V i is the inverse of A inverse plus X i transposed X i over sigma squared, and m i is V i times the bracket A inverse times the vector alpha, beta, plus X i transposed y i over sigma squared. The page's text prints V i without the inverse and X i transposed y i without the factor one over sigma squared; its code has both.
+
+Second, alpha, and likewise beta: the 68 intercepts are 68 "observations" of alpha with precision tau alpha. Equation 9: alpha given everything else is normal with mean tau alpha times the sum of the alpha i, over tau alpha times I plus P alpha, and variance one over tau alpha times I plus P alpha.
+
+Third, tau alpha, and likewise tau beta: tau alpha given everything else is Gamma with parameters a plus I over two, and b plus the sum over i of alpha i minus alpha squared, over two.
+
+Fourth, sigma squared: inverse gamma with parameters a plus n over two, and b plus the double sum over i and j of y i j minus alpha i minus beta i x i j, squared, over two.
+
+The page writes beta i's prior density with one over tau alpha in the joint posterior; it should be one over tau beta.
+
+The results, from a NumPy port with 3000 draws after 500 of burn-in, as posterior medians. Alpha equals minus 3.66; beta equals 0.465 kilograms per week; the between-woman standard deviations are one over the square root of tau alpha, 3.39, and one over the square root of tau beta, 0.217; and the within-woman standard deviation sigma is 1.10. The pooled residual standard deviation, 3.61, mixed two things the hierarchy separates: measurement-to-measurement noise around each woman's line, 1.10, and real differences between women's lines. The page's section 5.6 plots each woman's posterior median coefficients against her least squares ones: points move toward the population line, most for women whose own fit is least certain.
+
+Nine point six. Shrinkage as the common thread. This is the C layer.
+
+Every shrinkage formula in this unit has one form. Equation 10: the estimate for unit i equals w i times the prior or group centre, plus one minus w i times the unit's own estimate, where w i is the prior precision over the prior precision plus the data precision of unit i.
+
+Five places where it appears. The Beta-Bernoulli, section 2 equation 6: the centre is alpha zero over alpha zero plus beta zero, and the weight is alpha zero plus beta zero over alpha zero plus beta zero plus n. The normal measurement, section 3 equation 8: the centre is mu zero, and the weight is sigma squared over sigma squared plus tau zero squared. The hospitals, equation 5: the centre is mu, estimated, and the weight is eta over eta plus n i. The random coefficients, equation 8: the centre is alpha and beta, estimated, and the weight is the matrix V i times A inverse. And ridge, section 10 subsection 2: the centre is zero, and the weight is lambda over d j squared plus lambda, per principal direction.
+
+What the hierarchy adds is that the centre and the weight are learned from the ensemble instead of fixed by the analyst. The sparsity priors of section 10 go one step further and make the weight different for each coefficient.
+
+Links. Before this, section 8: Stan's no-U-turn sampler fitted the hospital model. Next come priors that shrink noise and leave signals alone, section 10. Later: hierarchical models, Tobit and probit in Class 7, with Greenberg sections 8.1 and 8.2 in the Class 7 readings; and random effects and panels in the course's panel rules. Practice, statements in the books: Greenberg 8.1, printed page 132, a Gibbs regression on birth-weight data; and Greenberg 4.7, printed page 59, an exchangeable but dependent urn, as background.
+
+Checklist for section 9. You should be able to define exchangeability and explain why a hierarchy builds a prior with dependence across units. You should be able to write the Beta-Binomial hierarchy, integrate the p i out to get the marginal likelihood with Beta functions, and explain why a two-dimensional posterior can be computed exactly on a grid. You should be able to derive the posterior mean of p i as a weighted average with weight eta over eta plus n i, and explain why lines cross in the shrinkage plot. You should be able to derive the four full conditionals of the random-coefficient model. And you should be able to state the common shrinkage form and fill it in for each model of the unit.
+
+
+Section 10. Sparsity priors: shrink the noise, leave the signals alone.
+
+This section covers the sparse-priors deck, nine image pages: Carvalho, Polson and Scott, 2010, in Biometrika volume 97, section 1.1, Table 1 and Figure 2 on printed page 468, and Table 4 on printed page 477, the Vanguard funds; and Griffin and Brown, 2010, in Bayesian Analysis volume 5, equations 1 to 3, Figure 1, section 5.3 with Table 3, and Figure 7. It also covers the sparse-regression simulation, its PDF and its R script, which uses the bayesreg package for ridge, lasso and horseshoe; Izbicki and Mendonça section 3.6, printed pages 42 to 43; and ISLP section 6.2, printed pages 240 to 251, equations 6.5 and 6.7 and Figure 6.11. For the horseshoe and the normal-gamma, the slides are the only source; there is no book on disk.
+
+The claim, before the derivations. With many coefficients and few of them non-zero, the prior should pull small estimates hard toward zero and leave large ones almost untouched. A normal prior cannot: its posterior mean is y times a constant. That is ridge, which is the posterior mode under a Gaussian prior, as lasso is under a Laplace prior. Scale mixtures of normals give each coefficient its own variance. The horseshoe, with half-Cauchy local scales, puts a Beta prior with parameters one half and one half on the shrinkage factor kappa, equal to one over one plus lambda squared, with mass at both ends: kappa near one kills noise, and kappa near zero keeps signals. With y given theta normal with mean theta and variance one, and tau equal to one, an observation y equal to 6 is estimated at 5.66 under the horseshoe, 4.59 under a Laplace prior of the same variance, and 3 under the normal prior. In the lecturer's simulation, with n equal to 200 and 3 signals among 50 coefficients, the horseshoe's null estimates are about 8 times closer to zero than ridge's, with the signals equally well estimated.
+
+The notation. Beta j is a regression coefficient and theta i a normal mean, both real. Psi j, or lambda j squared, is the coefficient-specific, or local, variance. Tau is the global scale. Kappa i, equal to one over one plus lambda i squared, is the shrinkage factor, with sigma and tau equal to one; it lies between zero and one. C plus of zero and a is the half-Cauchy with scale a. Ga of c and d is the gamma with shape c and rate d, in Griffin and Brown's notation. And lambda, for ridge and lasso, is the penalty weight, non-negative.
+
+Ten point one. The problem with one variance for everyone. This is the U layer.
+
+A normal prior, beta j normal with mean zero and variance v, shrinks every least squares coefficient by the same factor. If v is small enough to silence 97 null coefficients, it also drags the three real ones toward zero; if it is large enough to spare the signals, it lets the noise through. Griffin and Brown, deck page 5: a zero-mean normal prior "performs poorly if there are large differences in the size of regression coefficients". The fix is to let each coefficient carry its own variance, drawn from a distribution with a lot of mass near zero and heavy tails.
+
+Ten point two. Ridge and lasso as posterior modes. Izbicki and Mendonça section 3.6; ISLP printed pages 250 to 251. This is the C layer.
+
+Let y i given x i and beta be normal with mean beta transposed x i and variance sigma squared, with sigma squared known. The log posterior is the log-likelihood plus the log prior. Equation 1: the log posterior of beta equals minus one over two sigma squared times the sum of y i minus beta transposed x i squared, plus the log prior, plus a constant.
+
+The Gaussian prior: beta j independent normal with mean zero and variance tau squared, so the log prior is minus the sum of beta j squared over two tau squared, plus a constant. Multiply equation 1 by minus two sigma squared: maximising the posterior is minimising equation 2, the sum of y i minus beta transposed x i squared, plus sigma squared over tau squared times the sum of beta j squared.
+
+That is the ridge criterion, ISLP equation 6.5, printed page 240, with lambda equal to sigma squared over tau squared. The posterior is normal, so its mode equals its mean.
+
+The Laplace prior: pi of beta j equals one over two b times e to the minus the absolute value of beta j over b, so the log prior is minus the sum of the absolute values of beta j over b, plus a constant. The same step gives equation 3: the sum of y i minus beta transposed x i squared, plus two sigma squared over b times the sum of the absolute values of beta j.
+
+That is the lasso criterion, ISLP equation 6.7, printed page 244, with lambda equal to two sigma squared over b. Izbicki and Mendonça, printed page 42: "under the Bayesian approach, the tuning parameter lambda is defined by the prior distribution"; a tighter prior means a larger lambda, and choosing lambda by cross-validation "is equivalent to choosing the prior that gives the best predictive power". Two cautions. The lasso's zeros are a property of the mode; the posterior mean under a Laplace prior is never exactly zero. And ISLP's Figure 6.11 makes the shapes plain: the Laplace density has a sharp peak at zero, the normal a rounded one.
+
+Ten point three. Scale mixtures of normals. Griffin and Brown section 3; deck pages 5 to 7.
+
+Equation 4: pi of beta j is the integral of the normal density of beta j with mean zero and variance Psi j, against the mixing distribution G of Psi j. Equivalently, beta j given Psi j is normal with mean zero and variance Psi j, and Psi j is drawn from G.
+
+Every such prior has heavier-than-normal tails, unless G is a point mass. Five special cases, each a mixing distribution and the prior it gives on beta j.
+
+A point mass at v gives the normal prior: ridge.
+
+A mixture that puts Psi j at sigma beta squared with probability w, through an indicator z j, and at zero otherwise, gives the spike-and-slab: w times a normal with variance sigma beta squared, plus one minus w times a point mass at zero.
+
+An exponential mixing distribution gives the double exponential: the Bayesian lasso of Park and Casella, 2008.
+
+A gamma with shape lambda and rate one over two gamma squared gives the normal-gamma prior.
+
+And Psi j equal to lambda j squared times tau squared, with lambda j half-Cauchy with scale one, gives the horseshoe.
+
+Equation 4 is the composition idea of section 6, subsection 4: the Student t was the case where Psi is inverse-gamma. It also makes Gibbs sampling easy: given the Psi j, the coefficients are normal.
+
+The normal-gamma moments. With Psi distributed gamma with shape lambda and rate one over two gamma squared, the expected value of Psi is two lambda gamma squared, and its variance is lambda times two gamma squared, squared. By equation 4, equation 5: the variance of beta is the expected value of the conditional variance, which is the expected value of Psi, two lambda gamma squared; and the expected value of beta to the fourth is the expected value of three Psi squared, which is three times the bracket lambda times two gamma squared squared, plus lambda squared times two gamma squared squared.
+
+So the kurtosis, the expected value of beta to the fourth over the variance squared, is three times lambda plus lambda squared, over lambda squared, which is three plus three over lambda: an excess kurtosis of three over lambda, Griffin and Brown's statement. As lambda falls, the prior "places a lot of mass close to zero but at the same time has heavy tails", their Figure 1, which shows variance 2 with lambda equal to 0.1, 0.333 and 1. A simulation check with lambda equal to 0.333 and unit variance gives a sample excess kurtosis of 8.9, against three over 0.333, which is 9.0. Lambda equal to one is the Bayesian lasso.
+
+Ten point four. The horseshoe. Carvalho, Polson and Scott, 2010; deck pages 1 to 2.
+
+For y given theta p-variate normal with mean theta and covariance sigma squared times the identity, equation 6: theta i given lambda i is normal with mean zero and variance lambda i squared; lambda i given tau is half-Cauchy with scale tau; tau given sigma is half-Cauchy with scale sigma; and the prior of sigma squared is proportional to one over sigma squared.
+
+In the paper's words: "Each theta i is mixed over its own lambda i, and each lambda i has a half-Cauchy prior with common scale tau."
+
+The posterior mean as shrinkage. Fix sigma and tau equal to one. Given lambda i, the normal-normal update of section 3 equation 8, with prior variance lambda i squared and data variance one, gives the posterior mean of theta i given y and lambda i equal to one minus kappa i, times y i, with kappa i equal to one over one plus lambda i squared. Average over lambda i given y. Equation 7: the posterior mean of theta i is the integral from zero to one of one minus kappa i, times y i, times the posterior density of kappa i; which is one minus the posterior mean of kappa i, times y i.
+
+The posterior mean of kappa i "can be interpreted as the amount of shrinkage toward zero, a posteriori".
+
+Why "horseshoe". With lambda half-Cauchy with scale one, the density of lambda is two over pi times one plus lambda squared. Change variables to kappa equal to one over one plus lambda squared. Then lambda is the square root of one minus kappa over kappa, and the absolute derivative of lambda with respect to kappa is one half times kappa to the minus three halves times one minus kappa to the minus one half. Substitute, using one plus lambda squared equal to one over kappa. Equation 8: the density of kappa is two over pi, times kappa, times one half kappa to the minus three halves times one minus kappa to the minus one half; which is one over pi times kappa to the minus one half times one minus kappa to the minus one half.
+
+That is the Beta density with parameters one half and one half, U-shaped like a horseshoe. "The left side of the horseshoe, kappa i near zero, yields virtually no shrinkage, and describes signals. The right side, kappa i near one, yields near-total shrinkage and describes noise."
+
+The posterior of kappa. Since y i given kappa i is normal with mean zero and variance one plus lambda i squared, which is one over kappa i, the likelihood is kappa i to the one half times e to the minus kappa i y i squared over two. Multiply by equation 8. Equation 9: the posterior of kappa i is proportional to one minus kappa i to the minus one half, times e to the minus kappa i y i squared over two.
+
+For small absolute y i, equation 9 keeps the pole at kappa equal to one, so the posterior mean of kappa is near one and theta is shrunk hard. For large absolute y i, the exponential kills kappa away from zero and the posterior mean of kappa tends to zero: the signal is left alone.
+
+Other priors through kappa, from Carvalho, Polson and Scott's Table 1 and Figure 2. The double exponential: the density of kappa is proportional to kappa to the minus two times e to the minus one over two kappa, which vanishes at kappa equal to zero, so even large signals keep some shrinkage. The Cauchy: kappa to the minus one half, times one minus kappa to the minus three halves, times e to the minus kappa over two times one minus kappa. Strawderman-Berger: kappa to the minus one half. Normal-Jeffreys: kappa to the minus one times one minus kappa to the minus one, improper at both ends. Only the horseshoe is unbounded at both ends and integrable.
+
+Ten point five. Worked: shrinkage profiles.
+
+y given theta is normal with mean theta and variance one, under three priors with unit variance where defined: the standard normal; the Laplace with b equal to one over the square root of two, whose variance, two b squared, is one; and the horseshoe with tau equal to one and with tau equal to 0.1. Posterior means by quadrature of equations 7 to 9, for three cases.
+
+At y equal to 2: normal, y over 2, which is 1.000; Laplace, 0.904; horseshoe with tau equal to one, 1.063.
+
+At y equal to 6: normal, 3.000; Laplace, 4.586; horseshoe, 5.656.
+
+For large y: normal, y over 2; Laplace, approximately y minus the square root of two; horseshoe, tending to y.
+
+For large y the Laplace prior subtracts a constant, one over b, which is the square root of two, the slope of its log density; so big signals stay biased by 1.41. The horseshoe's bias vanishes.
+
+The right panel of the shrinkage figure plots the posterior mean of theta against y from 0 to 8 under the four priors. The normal-prior line is y over 2. The Laplace curve approaches a line parallel to the 45-degree line, about 1.4 below it. The horseshoe curve with tau equal to one is close to the 45-degree line from y equal to 4. And the horseshoe curve with tau equal to 0.1 stays near zero up to y equal to 2.5, then rises steeply to meet the 45-degree line near y equal to 6.
+
+The comparative static in tau. Shrinking the global scale to 0.1 makes the horseshoe treat every absolute y below 2.5 as noise, with the posterior mean below 10 per cent of y at y equal to one, while still letting y equal to 6 through almost unshrunk. That is the "global-local" design: tau sets how sparse the vector is believed to be, and the lambda i let individual coefficients escape.
+
+Ten point six. Worked: the sparse-regression simulation, from the R script.
+
+The design. n equal to 200; k max equal to 100 standard-normal covariates; sigma equal to 0.1; beta equal to 1, 2, 3, then zeros; and y equal to X beta plus epsilon. Fit with the first k columns, for k equal to 10, 20, 40, 50 and 100, under ridge, lasso and horseshoe priors, with the R package bayesreg, 1000 burn-in and 1000 draws, and box-plot the posterior draws of beta one, beta two and beta three and of the nulls. The PDF's boxplots show the three signals estimated to within about plus or minus 0.01 by all three priors, and the null coefficients spread over roughly plus or minus 0.04 for ridge and lasso, noticeably tighter for the horseshoe, and more so as k grows.
+
+The NumPy port, in the Python note, section 10. bayesreg is R-only, so the three samplers are written out, with no intercept, since the simulated covariates have mean zero. Each is a Gibbs sampler on the scale-mixture representation of equation 4, with beta j given everything else normal with mean zero and variance sigma squared times D j. Equation 10: beta given everything else is k-variate normal with mean A inverse X transposed y and covariance sigma squared times A inverse, where A is X transposed X plus D inverse; and sigma squared given everything else is inverse gamma with parameters n plus k over two, and the residual sum of squares plus beta transposed D inverse beta, over two.
+
+The priors differ only in D and its update. Three cases.
+
+Ridge: D is tau squared times the identity, with tau half-Cauchy with scale one, drawn through the auxiliary-variable form, tau squared given xi inverse gamma with parameters one half and one over xi, and xi inverse gamma with parameters one half and one, after Makalic and Schmidt, 2016.
+
+The Bayesian lasso of Park and Casella: D is the diagonal matrix of the tau j squared; one over tau j squared, given everything else, is inverse Gaussian with mean the square root of lambda squared sigma squared over beta j squared, and shape lambda squared; and lambda squared, given everything else, is Gamma with parameters one plus k and 0.1 plus the sum of the tau j squared over two.
+
+The horseshoe: D is tau squared times the diagonal matrix of the lambda j squared. Lambda j squared, given everything else, is inverse gamma with parameters one and one over nu j plus beta j squared over two tau squared sigma squared. Tau squared is inverse gamma with parameters k plus one over two, and one over xi plus the sum of beta j squared over two sigma squared lambda j squared. Nu j is inverse gamma with parameters one and one plus one over lambda j squared. And xi is inverse gamma with parameters one and one plus one over tau squared.
+
+The results, from 1500 draws after 500 of burn-in, seeded. All three priors put the posterior means of beta one, beta two and beta three within 0.03 of 1, 2 and 3. The median absolute posterior mean over the null coefficients, in two cases. With k equal to 10: ridge 0.0055, lasso 0.0052, horseshoe 0.0031. With k equal to 50: ridge 0.0046, lasso 0.0045, horseshoe 0.00055.
+
+With 47 nulls, the horseshoe's global scale tau learns that the vector is sparse and shrinks the noise eight times harder than ridge, without touching the signals. A coding trap was met on the way: drawing one gamma variate for the whole vector of lambda j squared, instead of one per coordinate, makes the local scales move together, and tau then drifts to zero.
+
+Ten point seven. Worked: reading the two papers' tables. Deck pages 3 and 8 to 9.
+
+The Vanguard mutual funds, Carvalho, Polson and Scott's Table 4, from Carvalho and Scott, 2009. n equal to 86 weekly returns on p equal to 59 funds; out-of-sample prediction with five estimates of the 59 by 59 covariance matrix. Risk relative to Bayesian model averaging, which is set to 1.00. Under squared-error loss: maximum likelihood 10.63; lasso with the AND rule 1.25; lasso with the OR rule 2.12; horseshoe 1.07; model averaging 1.00. Under absolute-error loss: maximum likelihood 3.51; lasso AND 1.22; lasso OR 1.47; horseshoe 1.04; model averaging 1.00.
+
+With p close to n the maximum likelihood estimate is useless, with ten times the risk. The horseshoe, a single continuous prior, comes within 4 to 7 per cent of full model averaging over sparse graphical models and beats both lasso variants.
+
+Near-infrared spectroscopy, Griffin and Brown section 5.3, Table 3. Predict the fat content of 215 meat samples from 100 absorbance channels, with a training, monitoring and test split of 129, 43 and 43. "All data" uses n equal to 172, and "small" a random 60, so that p exceeds n. The test root mean squared error: with all data, normal-gamma 1.94 against lasso 3.54; with the small sample of 60, below p, normal-gamma 2.59 against lasso 3.09.
+
+The posterior median of the shape lambda is 0.020, with 95 per cent interval 0.016 to 0.026: far below the lasso's implicit lambda equal to one, that is, a much spikier, heavier-tailed prior, with excess kurtosis three over 0.02, which is 150. Their Figure 7 shows why: the normal-gamma posterior means are zero almost everywhere, with a few large coefficients around channels 30 to 40, while the lasso's oscillate across all 100 channels.
+
+Ten point eight. Spike-and-slab and model selection. This is the G layer, named only.
+
+The spike-and-slab prior of subsection 3 puts positive probability on exact zeros, so its posterior gives the probability that z j equals one given y, the probability that variable j is in the model. That is variable selection as model comparison, section 5, over two to the k submodels, sampled by Gibbs on the z j or by reversible jump, Greenberg section 8.3, printed page 130. Continuous shrinkage priors, the normal-gamma and the horseshoe, trade exact zeros for much easier computation. Large Bayesian vector autoregressions, in Class 9, use the same priors.
+
+Links. Before this, section 9 had one common weight per group; next comes the unit's formula sheet, in part 3. Earlier: best subset, AIC, BIC and overfitting, Class 1 section 6; and the bias-variance trade-off, Class 2 section 1. Ridge and lasso as frequentist shrinkage belong to the course's classification and validation rules. Reading: Izbicki and Mendonça section 3.6, printed pages 42 to 43; and ISLP section 6.2, printed pages 240 to 251; the slides for the horseshoe and the normal-gamma.
+
+Checklist for section 10. You should be able to show that ridge is the posterior mode under a Gaussian prior, with lambda equal to sigma squared over tau squared, and lasso the mode under a Laplace prior, with lambda equal to two sigma squared over b. You should be able to write a scale mixture of normals and name the mixing distribution for ridge, spike-and-slab, the Bayesian lasso, the normal-gamma and the horseshoe. You should be able to derive the normal-gamma excess kurtosis, three over lambda. You should be able to derive the Beta of one half and one half density of the horseshoe's shrinkage factor, and the posterior of kappa. And you should be able to read the shrinkage profiles, 3.00, 4.59 and 5.66 at y equal to 6, and the simulation's eight-fold tighter nulls.
+
+Recap of part 2. When a posterior integral has no closed form, simulate it: Monte Carlo averages independent draws with an error that falls like one over the square root of M, and the inverse distribution function, composition, accept-reject, importance sampling and resampling produce those draws. When independent draws are out of reach, build a Markov chain whose invariant distribution is the posterior: Gibbs draws each block from its full conditional, as in the coal switch point at 1891; Metropolis-Hastings proposes and accepts with a probability that makes the chain reversible, with the scale trade-off two over pi times the arc tangent of two over s; and dependence costs draws, measured by the inefficiency factor. Finally, priors are models: a hierarchy learns how much to pool, with weight eta over eta plus n i, and sparsity priors give each coefficient its own variance, so the horseshoe kills noise and keeps signals. Part 3 holds the support material.
+
+This is the end of part 2 of the Classes 3 and 4 narration.

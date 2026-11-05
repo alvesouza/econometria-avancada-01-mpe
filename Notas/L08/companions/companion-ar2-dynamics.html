@@ -1,0 +1,353 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>The AR(2) Triangle</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,500;8..60,650&family=Public+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: controls rail on the left; the verdict, then the (φ1, φ2) triangle beside the ACF, then the forecast fan; one column under 860px.
+   Colour roles follow Notas/_figstyle.py: main = the model's point and ACF, good = stationary region and limits, warn = nonstationary, mark = landmarks. */
+:root{
+  --bg:#f3f5f8; --panel:#ffffff; --ink:#14202c; --muted:#5a6578; --line:#d7dde7; --soft:#edf0f5;
+  --main:#1f5f8b; --good:#2f6b4f; --warn:#b4521a; --mark:#8a5fb4; --fan:#1f5f8b22;
+  --focus:#2b63c4;
+  --display:"Source Serif 4", Georgia, "Times New Roman", serif;
+  --body:"Public Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono:"JetBrains Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#10141b; --panel:#171d27; --ink:#e5e9f0; --muted:#9aa5b8; --line:#2a3342; --soft:#1e2532;
+  --main:#6aaee0; --good:#5fbf8f; --warn:#f0954a; --mark:#b896f2; --fan:#6aaee033; --focus:#74a3ff; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#10141b; --panel:#171d27; --ink:#e5e9f0; --muted:#9aa5b8; --line:#2a3342; --soft:#1e2532;
+  --main:#6aaee0; --good:#5fbf8f; --warn:#f0954a; --mark:#b896f2; --fan:#6aaee033; --focus:#74a3ff; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font:15px/1.5 var(--body);margin:0}
+.wrap{max-width:1180px;margin:0 auto;padding-left:max(16px, env(safe-area-inset-left, 0px));padding-right:max(16px, env(safe-area-inset-right, 0px));padding-block:24px 40px}
+header{display:grid;gap:4px;margin-bottom:18px}
+.eyebrow{font:600 12px/1.3 var(--body);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+h1{font:650 clamp(26px,4vw,36px)/1.1 var(--display);margin:0;text-wrap:balance}
+.lede{color:var(--muted);max-width:68ch;margin:0}
+.grid{display:grid;grid-template-columns:320px minmax(0,1fr);gap:20px;align-items:start}
+@media (max-width:860px){.grid{grid-template-columns:minmax(0,1fr)}}
+.rail{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px;display:grid;gap:18px}
+.group{display:grid;gap:12px}
+.group h2{font:600 12px/1.2 var(--body);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:0}
+.ctl{display:grid;gap:4px}
+.ctl .top{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.ctl label{font-weight:600}
+.ctl label i{font-family:var(--display);font-weight:500}
+.ctl output{font:600 14px var(--mono);font-variant-numeric:tabular-nums}
+.ctl p{margin:0;font-size:13px;color:var(--muted)}
+input[type=range]{width:100%;accent-color:var(--ink)}
+input[type=number]{width:100%;font:500 14px var(--mono);font-variant-numeric:tabular-nums;padding:6px 8px;border:1px solid var(--line);border-radius:6px;background:var(--soft);color:var(--ink)}
+input:focus-visible,button:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+.btns{display:flex;flex-wrap:wrap;gap:8px}
+button{font:600 13px var(--body);background:var(--soft);color:var(--ink);border:1px solid var(--line);border-radius:6px;padding:7px 12px;cursor:pointer}
+button:hover{border-color:var(--muted)}
+button[aria-pressed="true"]{border-color:var(--mark);color:var(--mark)}
+main{display:grid;gap:16px;min-width:0}
+.answer{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px 18px;display:grid;gap:6px}
+.answer .lab{font-size:13px;color:var(--muted)}
+.answer .big{font:600 clamp(22px,3.6vw,34px)/1.2 var(--body);font-variant-numeric:tabular-nums;text-wrap:balance}
+.answer .verdict{font:500 16px/1.45 var(--body);max-width:66ch}
+.answer .side{font:13px/1.6 var(--mono);color:var(--muted);font-variant-numeric:tabular-nums}
+.note{font-size:13px;color:var(--muted);max-width:72ch;margin:0}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px 16px;min-width:0}
+.panel h3{font:600 15px/1.3 var(--body);margin:0 0 2px}
+.panel .sub{font-size:13px;color:var(--muted);margin:0 0 8px}
+svg{display:block;width:100%;height:auto;max-width:100%}
+svg text{fill:var(--muted);font:12px var(--body)}
+svg .val{font:600 12px var(--mono);fill:var(--ink)}
+.two{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px}
+@media (max-width:1000px){.two{grid-template-columns:minmax(0,1fr)}}
+.scroll{overflow-x:auto}
+table.ro{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums;min-width:440px}
+table.ro th,table.ro td{padding:5px 6px;border-bottom:1px solid var(--line);font-size:14px;text-align:right;white-space:nowrap}
+table.ro th:first-child,table.ro td:first-child{text-align:left}
+table.ro td{font-family:var(--mono);font-size:13px}
+table.ro td:first-child{font-family:var(--body);font-size:14px}
+footer{margin-top:22px;font-size:13px;color:var(--muted);display:grid;gap:10px}
+footer table{border-collapse:collapse;font-size:12.5px;min-width:760px}
+footer th,footer td{border-bottom:1px solid var(--line);padding:4px 8px;text-align:left;vertical-align:top}
+.k{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:5px;vertical-align:-1px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<div class="wrap">
+<header>
+  <div class="eyebrow">Econometria Avançada · Class 8 · ar-ma.pdf slides 18–22, ar2-forecast.html · Tsay AFTS 3e pp. 40–46, 54–57, 69–71</div>
+  <h1>The AR(2) Triangle</h1>
+  <p class="lede">Two lag coefficients decide whether an AR(2) settles down, oscillates in damped cycles, or explodes. Move φ₁ and φ₂ across the stationarity triangle and watch the ACF and the h-step forecast distribution respond.</p>
+</header>
+
+<div class="grid">
+<aside class="rail" aria-label="Controls">
+  <div class="group">
+    <h2>The model</h2>
+    <div class="ctl"><div class="top"><label for="p1">Lag-1 coefficient <i>φ₁</i></label><output id="o-p1"></output></div>
+      <input id="p1" type="range" min="-2.5" max="2.5" step="0.001">
+      <p>How much of last period's value carries into this period.</p></div>
+    <div class="ctl"><div class="top"><label for="p2">Lag-2 coefficient <i>φ₂</i></label><output id="o-p2"></output></div>
+      <input id="p2" type="range" min="-1.5" max="1.5" step="0.001">
+      <p>The pull of the value two periods back. Negative φ₂ with large φ₁ makes cycles.</p></div>
+    <div class="ctl"><div class="top"><label for="sigma">Shock sd <i>σ</i></label><output id="o-sigma"></output></div>
+      <input id="sigma" type="range" min="0.1" max="5" step="0.1">
+      <p>Size of each period's surprise ε. Scales the variance and the fan, never the verdict.</p></div>
+    <div class="btns" role="group" aria-label="Parameter presets">
+      <button id="pre-a" type="button" aria-pressed="false">Slides (1.75, −0.80)</button>
+      <button id="pre-b" type="button" aria-pressed="false">Slides (0.90, 0.05)</button>
+      <button id="pre-gnp" type="button" aria-pressed="false">GNP factor (0.869, −0.274)</button>
+      <button id="pre-tsay" type="button" aria-pressed="false">Tsay Fig. 2.4(b) (0.6, −0.4)</button>
+    </div>
+  </div>
+  <div class="group">
+    <h2>The forecast origin</h2>
+    <div class="ctl"><div class="top"><label for="yn">Last value <i>yₙ</i></label></div>
+      <input id="yn" type="number" min="-20" max="20" step="any" inputmode="decimal">
+      <p>The observation at the forecast origin (−20 to 20).</p></div>
+    <div class="ctl"><div class="top"><label for="yn1">Previous value <i>yₙ₋₁</i></label></div>
+      <input id="yn1" type="number" min="-20" max="20" step="any" inputmode="decimal">
+      <p>The observation one period earlier. Together they fix the starting slope.</p></div>
+    <div class="ctl"><div class="top"><label for="H">Horizon <i>H</i></label><output id="o-H"></output></div>
+      <input id="H" type="range" min="1" max="100" step="1">
+      <p>How many steps ahead to forecast, in periods.</p></div>
+  </div>
+  <button id="reset" type="button">Reset to defaults</button>
+</aside>
+
+<main>
+  <section class="answer" aria-live="polite">
+    <div class="lab">Verdict from the solutions of 1 − φ₁x − φ₂x² = 0 (stationary when every |x| &gt; 1)</div>
+    <div class="big" id="verdict"></div>
+    <div class="verdict" id="explain"></div>
+    <div class="side" id="side1"></div>
+    <div class="side" id="side2"></div>
+  </section>
+
+  <div class="two">
+    <section class="panel">
+      <h3>Where (φ₁, φ₂) sits</h3>
+      <p class="sub">Green triangle: φ₂ &lt; 1 − φ₁, φ₂ &lt; 1 + φ₁, φ₂ &gt; −1. Below the dashed parabola φ₂ = −φ₁²/4 the roots are complex. Purple dots: the four presets.</p>
+      <svg id="ptri" viewBox="0 0 420 300" role="img" aria-label="Stationarity triangle with the current parameter point"></svg>
+    </section>
+    <section class="panel">
+      <h3>Autocorrelation function</h3>
+      <p class="sub">ρ₁ = φ₁/(1 − φ₂), ρℓ = φ₁ρℓ₋₁ + φ₂ρℓ₋₂ (Tsay eq. 2.13), lags 0–60.</p>
+      <svg id="pacf" viewBox="0 0 420 300" role="img" aria-label="Theoretical autocorrelation function"></svg>
+    </section>
+  </div>
+
+  <section class="panel">
+    <h3>Forecast distribution, h = 1 … H</h3>
+    <p class="sub">Line: E(yₙ₊ₕ | y₁:ₙ). Band: 5%–95%, Var = σ²(ψ₀² + … + ψₕ₋₁²). Green: the stationary mean 0 and its 90% band ±1.645·sd(yₜ). <span id="clip"></span></p>
+    <svg id="pfan" viewBox="0 0 840 300" role="img" aria-label="Forecast mean and 90 percent band against the horizon"></svg>
+  </section>
+
+  <section class="panel">
+    <h3>Forecast mean and variance, as on ar2-forecast.html</h3>
+    <div class="scroll"><table class="ro">
+      <thead><tr><th>Horizon</th><th>E(yₙ₊ₕ)</th><th>V(yₙ₊ₕ)</th><th>5%</th><th>95%</th></tr></thead>
+      <tbody id="tbl"></tbody></table></div>
+    <p class="note" id="tnote"></p>
+  </section>
+</main>
+</div>
+
+<footer>
+  <div><strong>Belongs to:</strong> Class 8 notes, <code>Notas/L08/</code>: L08-01 (AR(2), AR(p), cycles, identification) and L08-02 (forecasting, MA, ARMA).</div>
+  <div><strong>Model:</strong> yₜ = φ₁yₜ₋₁ + φ₂yₜ₋₂ + εₜ, εₜ iid N(0, σ²), mean zero as on ar2-forecast.html. Solutions x of 1 − φ₁x − φ₂x² = 0; stationary iff all |x| &gt; 1 (Tsay p. 45), equivalently the triangle. Complex iff φ₁² + 4φ₂ &lt; 0, with modulus √(−1/φ₂) and average cycle k = 2π / cos⁻¹[φ₁/(2√−φ₂)] (Tsay p. 42). γ₀ = (1 − φ₂)σ² / [(1 + φ₂)((1 − φ₂)² − φ₁²)] (ar-ma.pdf slide 19; ar2-forecast.html prints the braces as a product, its R code divides). Forecasts: E by the recursion E(h) = φ₁E(h−1) + φ₂E(h−2) with E(0) = yₙ, E(−1) = yₙ₋₁ (Tsay p. 56); ψ₀ = 1, ψ₁ = φ₁, ψⱼ = φ₁ψⱼ₋₁ + φ₂ψⱼ₋₂, V(h) = σ²Σⱼ₌₀ʰ⁻¹ψⱼ² (Tsay eq. 2.34, p. 71). Bands use z = 1.645.</div>
+  <div><strong>Edge cases:</strong> |x| = 1 within 10⁻⁹ is reported as a unit root (no finite γ₀, no stationary ACF); |x| &lt; 1 is explosive. φ₂ = 0 leaves the single solution 1/φ₁; φ₁ = φ₂ = 0 is white noise. The mean and variance of the forecasts are always defined; the fan is clipped to the plot when it leaves the frame, and the read-outs are not. Numbers of size 10⁶ or more print in e-notation.</div>
+  <div><strong>Provenance:</strong> <code>Aula/class-08/materials/ar-ma.pdf</code> slides 18–22 (AR(2) moments, stationarity region, the parameter sets (1.75, −0.8) and (0.9, 0.05)); <code>ar2-forecast.html</code> (φ = (1.75, −0.80), σ = 1, yₙ = −5.487150, yₙ₋₁ = −3.508837, 50 steps, limiting sd 7.12069); <code>ar-ma.html</code> and Tsay, <em>Analysis of Financial Time Series</em> 3e, Example 2.1, pp. 42–45 (GNP factor 1 − 0.869B + 0.274B², k = 10.62 quarters); Figure 2.4(b), p. 43 (φ = (0.6, −0.4)); §2.4.4, pp. 54–57; §2.6.5, pp. 69–71.</div>
+  <div class="scroll"><table>
+    <thead><tr><th>Control</th><th>Symbol</th><th>What it is</th><th>Range</th><th>Step</th><th>Default</th><th>Unit</th><th>Source</th><th>What visibly moves</th></tr></thead>
+    <tbody>
+      <tr><td>Lag-1 coefficient</td><td>φ₁</td><td>weight on yₜ₋₁</td><td>−2.5–2.5</td><td>0.001</td><td>1.750</td><td>—</td><td>slides 20–22, ar2-forecast</td><td>point in triangle, ACF, fan, roots</td></tr>
+      <tr><td>Lag-2 coefficient</td><td>φ₂</td><td>weight on yₜ₋₂</td><td>−1.5–1.5</td><td>0.001</td><td>−0.800</td><td>—</td><td>same</td><td>same</td></tr>
+      <tr><td>Shock sd</td><td>σ</td><td>innovation sd</td><td>0.1–5</td><td>0.1</td><td>1.0</td><td>—</td><td>ar2-forecast (sig = 1)</td><td>fan width, γ₀</td></tr>
+      <tr><td>Last value</td><td>yₙ</td><td>forecast origin value</td><td>−20–20</td><td>any (number box)</td><td>−5.48715</td><td>—</td><td>ar2-forecast (−5.487150)</td><td>fan start</td></tr>
+      <tr><td>Previous value</td><td>yₙ₋₁</td><td>one before</td><td>−20–20</td><td>any (number box)</td><td>−3.508837</td><td>—</td><td>ar2-forecast (−3.508837)</td><td>fan start</td></tr>
+      <tr><td>Horizon</td><td>H</td><td>forecast steps</td><td>1–100</td><td>1</td><td>50</td><td>periods</td><td>ar2-forecast (s = 50)</td><td>fan length, read-out at H</td></tr>
+    </tbody></table></div>
+  <div>yₙ and yₙ₋₁ are number boxes rather than sliders so the page's exact origin values can be entered; the four presets set (φ₁, φ₂) exactly.</div>
+</footer>
+
+<script id="model">
+// Pure model: no DOM access. check_companions.py runs this block under node.
+const TOL = 1e-9, Z90 = 1.6448536269514722;
+
+// Solutions of 1 - p1 x - p2 x^2 = 0 (Tsay eq. 2.14).
+function solve(p1, p2){
+  if(p2 === 0) return p1 === 0 ? {kind:"none", mods:[]} : {kind:"single", mods:[Math.abs(1/p1)], xs:[1/p1]};
+  const disc = p1*p1 + 4*p2;
+  if(disc < 0) { const m = Math.sqrt(-1/p2); return {kind:"complex", mods:[m, m], disc}; }
+  const s = Math.sqrt(disc), x1 = (-p1 + s)/(2*p2), x2 = (-p1 - s)/(2*p2);
+  return {kind:"real", mods:[Math.abs(x1), Math.abs(x2)].sort((a,b)=>a-b), xs:[x1, x2], disc};
+}
+
+// p = {p1, p2, sigma, yn, yn1, H}
+function compute(p){
+  const r = solve(p.p1, p.p2);
+  const m = r.mods.length ? Math.min(...r.mods) : Infinity;
+  const status = m > 1 + TOL ? "stationary" : m >= 1 - TOL ? "unit" : "explosive";
+  const k = r.kind === "complex" ? 2*Math.PI/Math.acos(p.p1/(2*Math.sqrt(-p.p2))) : null;
+  let acf = null, g0 = null;
+  if(status === "stationary"){
+    acf = [1, p.p1/(1 - p.p2)];
+    for(let l = 2; l <= 60; l++) acf.push(p.p1*acf[l-1] + p.p2*acf[l-2]);
+    g0 = (1 - p.p2)*p.sigma*p.sigma/((1 + p.p2)*((1 - p.p2)**2 - p.p1*p.p1));
+  }
+  const E = [], V = [], psi = [1, p.p1];
+  let a = p.yn1, b = p.yn, cum = 0;
+  for(let h = 1; h <= p.H; h++){
+    const e = p.p1*b + p.p2*a; a = b; b = e; E.push(e);
+    if(h >= 2) psi.push(p.p1*psi[h-1] + p.p2*psi[h-2]);
+    cum += psi[h-1]**2; V.push(p.sigma*p.sigma*cum);
+  }
+  return {r, m, status, k, acf, g0, E, V};
+}
+
+// 3 dp; e-notation from 1e6 on; never "-0.000".
+const f3 = x => { if(Math.abs(x) >= 1e6) return x.toExponential(3); const s = x.toFixed(3); return s === "-0.000" ? "0.000" : s; };
+// Every number and label the page prints, as the exact string it prints. check_companions.py compares these.
+function readouts(p){
+  const c = compute(p), o = {};
+  const mods = c.r.mods.map(f3);
+  o.kind = {none:"white noise (no roots)", single:"one real root", real:"real roots", complex:"complex roots"}[c.r.kind];
+  o.mods = c.r.kind === "none" ? "—" : c.r.kind === "complex" ? mods[0] : mods.join(" and ");
+  o.charmod = c.r.kind === "none" ? "—" : f3(1/c.m);
+  o.k = c.k === null ? "—" : c.k.toFixed(2);
+  const head = {stationary:"Stationary", unit:"Nonstationary · unit root", explosive:"Explosive"}[c.status];
+  if(c.r.kind === "none") o.verdict = "Stationary · white noise (no roots)";
+  else o.verdict = head + " · " + o.kind + ", modulus " + o.mods + (c.k === null ? "" : " · cycle " + c.k.toFixed(1) + " periods");
+  if(c.status === "stationary"){
+    o.rho1 = f3(c.acf[1]); o.rho2 = f3(c.acf[2]); o.g0 = f3(c.g0); o.sd = f3(Math.sqrt(c.g0));
+  } else {
+    o.rho1 = o.rho2 = "—"; o.g0 = o.sd = c.status === "unit" ? "∞ (unit root)" : "— (explosive)";
+  }
+  for(let h = 1; h <= 4; h++){
+    o["E"+h] = h <= p.H ? f3(c.E[h-1]) : "—"; o["V"+h] = h <= p.H ? f3(c.V[h-1]) : "—";
+    o["lo"+h] = h <= p.H ? f3(c.E[h-1] - Z90*Math.sqrt(c.V[h-1])) : "—";
+    o["hi"+h] = h <= p.H ? f3(c.E[h-1] + Z90*Math.sqrt(c.V[h-1])) : "—";
+  }
+  const eH = c.E[p.H-1], vH = c.V[p.H-1];
+  o.EH = f3(eH); o.VH = f3(vH); o.sdH = f3(Math.sqrt(vH));
+  o.loH = f3(eH - Z90*Math.sqrt(vH)); o.hiH = f3(eH + Z90*Math.sqrt(vH));
+  return o;
+}
+</script>
+
+<script>
+const D = {p1:1.75, p2:-0.8, sigma:1, yn:-5.48715, yn1:-3.508837, H:50};
+const PRE = {"pre-a":[1.75,-0.8], "pre-b":[0.9,0.05], "pre-gnp":[0.869,-0.274], "pre-tsay":[0.6,-0.4]};
+const el = id => document.getElementById(id);
+let lastY = {yn:D.yn, yn1:D.yn1};
+
+function niceTicks(lo, hi, n){
+  const span = hi-lo, step0 = span/n, mag = Math.pow(10, Math.floor(Math.log10(step0)));
+  const step = [1,2,2.5,5,10].map(k=>k*mag).find(s=>s>=step0);
+  const t=[]; for(let v=Math.ceil(lo/step)*step; v<=hi+1e-9; v+=step) t.push(+v.toFixed(10));
+  return t;
+}
+function num(id){ // number boxes: keep the last valid value, clamp to [-20, 20]
+  const v = parseFloat(el(id).value);
+  if(Number.isFinite(v)) lastY[id] = Math.min(20, Math.max(-20, v));
+  return lastY[id];
+}
+function read(){
+  return {p1: parseFloat(el("p1").value), p2: parseFloat(el("p2").value), sigma: parseFloat(el("sigma").value),
+          yn: num("yn"), yn1: num("yn1"), H: parseInt(el("H").value)};
+}
+
+function drawTri(p){
+  const W=420, H=300, L=44, R=12, T=12, B=36, x0=-2.5, x1=2.5, y0=-1.5, y1=1.5;
+  const x = v => L + (v-x0)/(x1-x0)*(W-L-R), y = v => T + (y1-v)/(y1-y0)*(H-T-B);
+  let s = "";
+  [-2,-1,0,1,2].forEach(t=>{ s += `<line x1="${x(t)}" x2="${x(t)}" y1="${T}" y2="${H-B}" stroke="var(--line)"/><text x="${x(t)}" y="${H-B+16}" text-anchor="middle">${t}</text>`; });
+  [-1,0,1].forEach(t=>{ s += `<line x1="${L}" x2="${W-R}" y1="${y(t)}" y2="${y(t)}" stroke="var(--line)"/><text x="${L-6}" y="${y(t)+4}" text-anchor="end">${t}</text>`; });
+  s += `<polygon points="${x(-2)},${y(-1)} ${x(0)},${y(1)} ${x(2)},${y(-1)}" fill="var(--good)" fill-opacity="0.12" stroke="var(--good)" stroke-width="1.6"/>`;
+  let d = ""; for(let i=0;i<=200;i++){ const v = x0 + (x1-x0)*i/200, w = -v*v/4; if(w >= y0) d += (d?"L":"M") + x(v).toFixed(1) + " " + y(w).toFixed(1); }
+  s += `<path d="${d}" fill="none" stroke="var(--muted)" stroke-dasharray="5 4"/>`;
+  s += `<text x="${x(0)}" y="${y(-0.62)}" text-anchor="middle">complex</text><text x="${x(0)}" y="${y(0.35)}" text-anchor="middle">real</text>`;
+  s += `<text x="${(L+W-R)/2}" y="${H-4}" text-anchor="middle">φ₁</text><text x="12" y="${(T+H-B)/2}" text-anchor="middle">φ₂</text>`;
+  Object.values(PRE).forEach(([a,b])=>{ s += `<circle cx="${x(a)}" cy="${y(b)}" r="3.5" fill="var(--mark)"/>`; });
+  const st = compute(p).status, col = st === "stationary" ? "var(--main)" : "var(--warn)";
+  s += `<circle cx="${x(p.p1)}" cy="${y(p.p2)}" r="6" fill="${col}" stroke="var(--panel)" stroke-width="2"/>`;
+  s += `<text class="val" x="${p.p1 > 1.2 ? x(p.p1)-9 : x(p.p1)+9}" y="${y(p.p2)-8}" text-anchor="${p.p1 > 1.2 ? "end" : "start"}">(${p.p1.toFixed(3)}, ${p.p2.toFixed(3)})</text>`;
+  el("ptri").innerHTML = s;
+}
+
+function drawAcf(c){
+  const W=420, H=300, L=44, R=12, T=14, B=36;
+  const x = l => L + l/60*(W-L-R), y = v => T + (1-v)/2*(H-T-B);
+  let s = "";
+  [-1,-0.5,0,0.5,1].forEach(t=>{ s += `<line x1="${L}" x2="${W-R}" y1="${y(t)}" y2="${y(t)}" stroke="var(--line)"/><text x="${L-6}" y="${y(t)+4}" text-anchor="end">${t}</text>`; });
+  [0,10,20,30,40,50,60].forEach(t=>{ s += `<text x="${x(t)}" y="${H-B+16}" text-anchor="middle">${t}</text>`; });
+  s += `<text x="${(L+W-R)/2}" y="${H-4}" text-anchor="middle">lag ℓ</text>`;
+  if(c.acf){
+    c.acf.forEach((v,l)=>{ s += `<line x1="${x(l)}" x2="${x(l)}" y1="${y(0)}" y2="${y(v)}" stroke="var(--main)" stroke-width="3"/>`; });
+  } else {
+    s += `<text class="val" x="${(L+W-R)/2}" y="${y(0.2)}" text-anchor="middle">no stationary ACF</text>`;
+    s += `<text x="${(L+W-R)/2}" y="${y(0.05)}" text-anchor="middle">${c.status === "unit" ? "a root lies on the unit circle" : "a root lies inside the unit circle"}</text>`;
+  }
+  el("pacf").innerHTML = s;
+}
+
+function drawFan(p, c){
+  const W=840, H=300, L=56, R=14, T=14, B=36;
+  const sd = c.V.map(Math.sqrt), lo = c.E.map((e,i)=>e - Z90*sd[i]), hi = c.E.map((e,i)=>e + Z90*sd[i]);
+  const band = c.g0 !== null ? Z90*Math.sqrt(c.g0) : null;
+  let top = Math.max(Math.abs(p.yn), Math.abs(p.yn1), ...lo.map(Math.abs), ...hi.map(Math.abs), band || 0)*1.08;
+  const cap = Math.max(30, 1.3*Math.max(Math.abs(p.yn), Math.abs(p.yn1)), band ? 1.3*band : 0);
+  const clipped = top > cap*1.08; if(clipped) top = cap;
+  const x = h => L + (h+1)/(p.H+1)*(W-L-R), y = v => T + (top - Math.max(-top, Math.min(top, v)))/(2*top)*(H-T-B);
+  let s = "";
+  niceTicks(-top, top, 6).forEach(t=>{ s += `<line x1="${L}" x2="${W-R}" y1="${y(t)}" y2="${y(t)}" stroke="var(--line)"/><text x="${L-6}" y="${y(t)+4}" text-anchor="end">${Math.abs(t) >= 1e6 ? t.toExponential(1) : String(+t.toFixed(3))}</text>`; });
+  niceTicks(0, p.H, 8).forEach(t=>{ s += `<text x="${x(t)}" y="${H-B+16}" text-anchor="middle">${t}</text>`; });
+  s += `<text x="${(L+W-R)/2}" y="${H-4}" text-anchor="middle">horizon h (periods)</text>`;
+  if(band !== null){
+    s += `<rect x="${L}" y="${y(band)}" width="${W-L-R}" height="${y(-band)-y(band)}" fill="var(--good)" fill-opacity="0.08"/>`;
+    [band, 0, -band].forEach(v=>{ s += `<line x1="${L}" x2="${W-R}" y1="${y(v)}" y2="${y(v)}" stroke="var(--good)" stroke-dasharray="${v ? "4 4" : ""}"/>`; });
+  }
+  const hs = c.E.map((_,i)=>i+1);
+  s += `<path d="M${hs.map(h=>x(h).toFixed(1)+" "+y(hi[h-1]).toFixed(1)).join("L")}L${hs.slice().reverse().map(h=>x(h).toFixed(1)+" "+y(lo[h-1]).toFixed(1)).join("L")}Z" fill="var(--fan)" stroke="none"/>`;
+  s += `<path d="M${x(-1)} ${y(p.yn1)}L${x(0)} ${y(p.yn)}${hs.map(h=>"L"+x(h).toFixed(1)+" "+y(c.E[h-1]).toFixed(1)).join("")}" fill="none" stroke="var(--main)" stroke-width="2"/>`;
+  s += `<circle cx="${x(-1)}" cy="${y(p.yn1)}" r="4" fill="var(--ink)"/><circle cx="${x(0)}" cy="${y(p.yn)}" r="4" fill="var(--ink)"/>`;
+  el("pfan").innerHTML = s;
+  el("clip").textContent = clipped ? "Off scale: the fan leaves the frame and is clipped; the table keeps the exact values." : "";
+}
+
+function update(){
+  const p = read(), c = compute(p), o = readouts(p);
+  el("o-p1").textContent = p.p1.toFixed(3); el("o-p2").textContent = p.p2.toFixed(3);
+  el("o-sigma").textContent = p.sigma.toFixed(1); el("o-H").textContent = p.H;
+  Object.entries(PRE).forEach(([id,[a,b]])=>el(id).setAttribute("aria-pressed", String(Math.abs(p.p1-a) < 5e-4 && Math.abs(p.p2-b) < 5e-4)));
+  el("verdict").textContent = o.verdict;
+  el("explain").textContent = c.status === "stationary"
+    ? (c.r.kind === "complex" ? `The forecasts and the ACF swing back and forth around 0 with an average period of ${o.k}, damped because |x| = ${o.mods} > 1.`
+      : c.r.kind === "none" ? "With φ₁ = φ₂ = 0 the series is white noise: every forecast is the mean 0."
+      : `Shocks die out without cycles; the ACF is a mix of exponential decays. The slowest root, |x| = ${f3(c.m)}, sets the pace.`)
+    : c.status === "unit" ? "A solution sits on the unit circle: shocks never die out, the variance has no finite limit, and the forecast variance keeps growing."
+    : `A solution lies inside the unit circle (|x| = ${f3(c.m)}): the series and its forecast variance grow without bound.`;
+  el("side1").textContent = `|x| = ${o.mods} · characteristic root modulus 1/|x| = ${o.charmod} · cycle k = ${o.k}`;
+  el("side2").textContent = `ρ₁ = ${o.rho1} · ρ₂ = ${o.rho2} · γ₀ = ${o.g0} · sd(yₜ) = ${o.sd} · forecast sd at H = ${p.H}: ${o.sdH}`;
+  let rows = [1,2,3,4].map(h=>`<tr><td>h = ${h}</td><td>${o["E"+h]}</td><td>${o["V"+h]}</td><td>${o["lo"+h]}</td><td>${o["hi"+h]}</td></tr>`).join("");
+  rows += `<tr><td>h = H = ${p.H}</td><td>${o.EH}</td><td>${o.VH}</td><td>${o.loH}</td><td>${o.hiH}</td></tr>`;
+  el("tbl").innerHTML = rows;
+  el("tnote").textContent = c.status === "stationary"
+    ? `As h grows the mean returns to 0 and the sd climbs to the stationary sd ${o.sd} (σ = ${p.sigma.toFixed(1)}); 90% band ±${f3(Z90*Math.sqrt(c.g0))}.`
+    : "No stationary limit: the forecast variance does not converge.";
+  drawTri(p); drawAcf(c); drawFan(p, c);
+}
+function setPhi(a, b){ el("p1").value = a; el("p2").value = b; update(); }
+function reset(){
+  el("p1").value = D.p1; el("p2").value = D.p2; el("sigma").value = D.sigma; el("H").value = D.H;
+  el("yn").value = D.yn; el("yn1").value = D.yn1; lastY = {yn:D.yn, yn1:D.yn1}; update();
+}
+["p1","p2","sigma","H","yn","yn1"].forEach(k=>el(k).addEventListener("input", update));
+Object.entries(PRE).forEach(([id,[a,b]])=>el(id).addEventListener("click", ()=>setPhi(a, b)));
+el("reset").addEventListener("click", reset);
+reset();
+</script>

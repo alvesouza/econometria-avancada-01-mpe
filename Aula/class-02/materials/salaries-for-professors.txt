@@ -1,0 +1,94 @@
+# Problem 6, page 479-480 of Jim Albert and Jingchen Hu's (2020) Probability and Bayesian Modeling, 
+# CRC Press, Taylor & Francis Group.
+
+# A sample contains the 2008-09 nine-month academic salary for Assistant Professors, 
+# Associate Professors and Professors in a college in the U.S.  The data were collected 
+# as part of the on-going effort of the college's administration to monitor salary 
+# differences between male and female faculty members.  In addition to the nine-month 
+# salary (in U.S. dollars), information on gender, rank, discipline (A is "theoretical" 
+# and B is "applied"), years since PhD, and years of service were collected.
+
+rm(list = ls())
+
+filename = "https://raw.githubusercontent.com/monika76five/ProbBayes/master/R%20Code/chapter%2012/data/ProfessorSalary.csv"
+#reading Data
+data <- read.csv(file = filename)
+
+n = nrow(data)
+
+attach(data)
+
+salary = salary/1000
+
+par(mfrow=c(1,2))
+boxplot(salary~rank)
+boxplot(salary~sex)
+
+sex.dum = rep(0,n)
+sex.dum[sex=="Male"]=1
+fullprof = rep(0,n)
+fullprof[rank=="Prof"]=1
+
+# Reduced model
+reg1 = lm(salary ~ sex.dum + yrs.service)
+
+summary(reg1)
+
+# Full model
+reg0 = lm(salary ~ sex.dum*yrs.service)
+
+summary(reg0)
+
+# Bayesian inference (Full model)
+y = salary
+X = cbind(1,sex.dum,yrs.service,sex.dum*yrs.service)
+p = ncol(X)
+
+beta.mle = solve(t(X)%*%X)%*%t(X)%*%y
+sig2.mle = mean((y-X%*%beta.mle)^2)
+se.mle = sqrt(sig2.mle*diag(solve(t(X)%*%X)))
+cbind(beta.mle,se.mle)
+
+# Prior information (full model)
+b0       = rep(0,p)
+B0       = diag(1,p)
+nu0      = 1
+sig20    = 0.2
+
+nu0sig20 = nu0*sig20
+iB0      = solve(B0)
+iB0b0    = iB0%*%b0
+
+
+# Posterior summary (full model)
+B1    = solve(iB0+t(X)%*%X)
+tcB1  = t(chol(B1))
+b1    = B1%*%(iB0b0+t(X)%*%y)
+nu1   = nu0 + (n-p)
+sig21 = (nu0sig20 + t(y-X%*%b1)%*%y + t(b0-b1)%*%iB0b0)/nu1
+se.bayes = sqrt(diag(sig21[1,1]*B1))
+
+
+
+# Predictive: full model
+m   = X%*%b0
+V   = sig20*(diag(1,n)+X%*%B0%*%t(X))
+res = t(chol(V))%*%(y-m)
+predictive0 = sum(dt(res,df=nu0,log=TRUE))
+predictive0
+
+
+# Predictive: reduced model - sex.dum + yrs.service
+X1 = X[,1:3]
+p1 = ncol(X1)
+m   = X1%*%b0[1:p1]
+V   = sig20*(diag(1,n)+X1%*%B0[1:p1,1:p1]%*%t(X1))
+res = t(chol(V))%*%(y-m)
+predictive1 = sum(dt(res,df=nu0,log=TRUE))
+predictive1
+
+
+logB10 = predictive1-predictive0
+
+exp(logB10)
+

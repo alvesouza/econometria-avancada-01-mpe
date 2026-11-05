@@ -1,0 +1,311 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>The Prior-Conflict Dial</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,500;8..60,650&family=Public+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: controls rail on the left; the answer, the density panel and the mean-vs-x panel on the right; one column under 860px.
+   Colour roles: blue = normal prior and its posterior, green = Student-t prior and its posterior, ink dashed = likelihood, gold = landmarks. */
+:root{
+  --bg:#f3f5f8; --panel:#ffffff; --ink:#1a2130; --muted:#5a6578; --line:#d7dde7; --soft:#edf0f5;
+  --nrm:#1f5f8b; --stu:#2f7a52; --lik:#1a2130; --mark:#9c7200; --warn:#b3362c;
+  --focus:#2b63c4;
+  --display:"Source Serif 4", Georgia, "Times New Roman", serif;
+  --body:"Public Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono:"JetBrains Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#10141b; --panel:#171d27; --ink:#e5e9f0; --muted:#9aa5b8; --line:#2a3342; --soft:#1e2532;
+  --nrm:#6fb0e0; --stu:#5cc98f; --lik:#e5e9f0; --mark:#e6be4a; --warn:#ff7a6e; --focus:#74a3ff; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#10141b; --panel:#171d27; --ink:#e5e9f0; --muted:#9aa5b8; --line:#2a3342; --soft:#1e2532;
+  --nrm:#6fb0e0; --stu:#5cc98f; --lik:#e5e9f0; --mark:#e6be4a; --warn:#ff7a6e; --focus:#74a3ff; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font:15px/1.5 var(--body);margin:0}
+.wrap{max-width:1180px;margin:0 auto;padding-left:max(16px, env(safe-area-inset-left, 0px));padding-right:max(16px, env(safe-area-inset-right, 0px));padding-block:24px 40px}
+header{display:grid;gap:4px;margin-bottom:18px}
+.eyebrow{font:600 12px/1.3 var(--body);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+h1{font:650 clamp(26px,4vw,36px)/1.1 var(--display);margin:0;text-wrap:balance}
+.lede{color:var(--muted);max-width:68ch;margin:0}
+.grid{display:grid;grid-template-columns:320px minmax(0,1fr);gap:20px;align-items:start}
+@media (max-width:860px){.grid{grid-template-columns:minmax(0,1fr)}}
+.rail{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px;display:grid;gap:18px}
+.group{display:grid;gap:12px}
+.group h2{font:600 12px/1.2 var(--body);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:0}
+.ctl{display:grid;gap:4px}
+.ctl .top{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.ctl label{font-weight:600}
+.ctl label i{font-family:var(--display);font-weight:500}
+.ctl output{font:600 14px var(--mono);font-variant-numeric:tabular-nums}
+.ctl p{margin:0;font-size:13px;color:var(--muted)}
+input[type=range]{width:100%;accent-color:var(--ink)}
+input:focus-visible,button:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+.btns{display:flex;flex-wrap:wrap;gap:8px}
+button{font:600 13px var(--body);background:var(--soft);color:var(--ink);border:1px solid var(--line);border-radius:6px;padding:7px 12px;cursor:pointer}
+button:hover{border-color:var(--muted)}
+main{display:grid;gap:16px;min-width:0}
+.answer{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px 18px;display:grid;gap:6px}
+.answer .lab{font-size:13px;color:var(--muted)}
+.answer .big{font:600 clamp(24px,4.6vw,40px)/1.15 var(--body);font-variant-numeric:tabular-nums;display:flex;flex-wrap:wrap;gap:6px 28px}
+.answer .big span.n{color:var(--nrm)} .answer .big span.t{color:var(--stu)}
+.answer .verdict{font:500 16px/1.45 var(--body);max-width:66ch}
+.answer .side{font:13px/1.6 var(--mono);color:var(--muted);font-variant-numeric:tabular-nums}
+.note{font-size:13px;color:var(--muted);max-width:72ch;margin:0}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px 16px;min-width:0}
+.panel h3{font:600 15px/1.3 var(--body);margin:0 0 2px}
+.panel .sub{font-size:13px;color:var(--muted);margin:0 0 8px}
+svg{display:block;width:100%;height:auto;max-width:100%}
+svg text{fill:var(--muted);font:12px var(--body)}
+svg .val{font:600 12px var(--mono);fill:var(--ink)}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{font-size:13px;border:1px solid var(--line);border-radius:999px;padding:4px 10px;color:var(--muted)}
+.chip.on{border-color:var(--mark);color:var(--mark);font-weight:600}
+.two{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px}
+@media (max-width:1000px){.two{grid-template-columns:minmax(0,1fr)}}
+.scroll{overflow-x:auto}
+table.ro{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums;min-width:440px}
+table.ro th,table.ro td{padding:5px 6px;border-bottom:1px solid var(--line);font-size:14px;text-align:right;white-space:nowrap}
+table.ro th:first-child,table.ro td:first-child{text-align:left}
+table.ro td{font-family:var(--mono);font-size:13px}
+table.ro td:first-child{font-family:var(--body);font-size:14px}
+footer{margin-top:22px;font-size:13px;color:var(--muted);display:grid;gap:10px}
+footer table{border-collapse:collapse;font-size:12.5px;min-width:760px}
+footer th,footer td{border-bottom:1px solid var(--line);padding:4px 8px;text-align:left;vertical-align:top}
+.k{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:5px;vertical-align:-1px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<div class="wrap">
+<header>
+  <div class="eyebrow">Econometria Avançada · Classes 3+4 · aprendizagembayesiana-bayesianingredients.pdf, slides 26–52 · fisicos-ABCD.html</div>
+  <h1>The Prior-Conflict Dial</h1>
+  <p class="lede">One measurement x of a physical quantity θ, two physicists with the same prior mean and the same prior variance. One holds a normal prior, the other a Student-t prior. Move the observation away from the prior mean and watch the normal posterior follow the prior while the t posterior lets the data win.</p>
+</header>
+
+<div class="grid">
+<aside class="rail" aria-label="Controls">
+  <div class="group">
+    <h2>The measurement</h2>
+    <div class="ctl"><div class="top"><label for="x">Observation <i>x</i></label><output id="o-x"></output></div>
+      <input id="x" type="range" min="600" max="1100" step="1">
+      <p>The single reading. Slide 39 observes x = 850.</p></div>
+    <div class="ctl"><div class="top"><label for="sig">Measurement sd <i>σ</i></label><output id="o-sig"></output></div>
+      <input id="sig" type="range" min="5" max="120" step="1">
+      <p>How noisy the instrument is: x | θ ~ N(θ, σ²). Slide 28 uses σ = 40.</p></div>
+  </div>
+  <div class="group">
+    <h2>The physicist's prior</h2>
+    <div class="ctl"><div class="top"><label for="mu0">Prior mean <i>μ₀</i></label><output id="o-mu0"></output></div>
+      <input id="mu0" type="range" min="600" max="1100" step="1">
+      <p>The physicist's best guess for θ before measuring.</p></div>
+    <div class="ctl"><div class="top"><label for="tau0">Prior sd <i>τ₀</i></label><output id="o-tau0"></output></div>
+      <input id="tau0" type="range" min="5" max="200" step="1">
+      <p>How sure the physicist is. Both priors have this standard deviation.</p></div>
+    <div class="ctl"><div class="top"><label for="nu">Student-t df <i>ν</i></label><output id="o-nu"></output></div>
+      <input id="nu" type="range" min="3" max="60" step="1">
+      <p>Tail thickness of the t prior, with its scale set so its variance is τ₀². Large ν makes it normal.</p></div>
+    <div class="btns">
+      <button id="go-a" type="button">Physicist A (900, 20)</button>
+      <button id="go-b" type="button">Physicist B (800, 80)</button>
+      <button id="go-eq" type="button">Set x = μ₀</button>
+    </div>
+  </div>
+  <button id="reset" type="button">Reset to defaults</button>
+</aside>
+
+<main>
+  <section class="answer" aria-live="polite">
+    <div class="lab">Posterior mean E(θ | x) under each prior</div>
+    <div class="big"><span class="n" id="ans-n"></span><span class="t" id="ans-t"></span></div>
+    <div class="verdict" id="verdict"></div>
+    <div class="side" id="side1"></div>
+    <div class="side" id="side2"></div>
+    <div class="chips" id="chips"></div>
+  </section>
+
+  <div class="two">
+    <section class="panel">
+      <h3>Priors, likelihood and posteriors</h3>
+      <p class="sub"><span class="k" style="background:var(--nrm)"></span>normal &nbsp;<span class="k" style="background:var(--stu)"></span>Student-t &nbsp;thin lines: priors; thick: posteriors; dashed: likelihood of θ at the observed x. Gold: the observation.</p>
+      <svg id="pd" viewBox="0 0 420 300" role="img" aria-label="Prior, likelihood and posterior densities over theta"></svg>
+    </section>
+    <section class="panel">
+      <h3>Posterior mean against the observation</h3>
+      <p class="sub">E(θ | x) as x sweeps μ₀ ± 6 predictive sd. The normal line has slope 1 − w; the t curve returns to the 45° line when x is far from μ₀. Gold: current x.</p>
+      <svg id="pm" viewBox="0 0 420 300" role="img" aria-label="Posterior mean against the observation for both priors"></svg>
+    </section>
+  </div>
+
+  <section class="panel">
+    <h3>Read-outs</h3>
+    <p class="sub">Normal: closed form (3)–(5) of L03-03. Student-t: quadrature on a 4001-point grid over min(x, μ₀) − 10·max(σ, τ₀) to max(x, μ₀) + 10·max(σ, τ₀).</p>
+    <div class="scroll"><table class="ro">
+      <thead><tr><th>Prior</th><th>E(θ | x)</th><th>SD(θ | x)</th><th>P(θ &lt; x | x)</th><th>pull toward μ₀</th></tr></thead>
+      <tbody id="tbl"></tbody></table></div>
+    <p class="note" id="tnote"></p>
+  </section>
+</main>
+</div>
+
+<footer>
+  <div><strong>Belongs to:</strong> Classes 3+4 notes, <code>Notas/L03/</code> (L03-03, the normal measurement model and the four physicists).</div>
+  <div><strong>Model:</strong> x | θ ~ N(θ, σ²). Normal prior θ ~ N(μ₀, τ₀²): posterior N(wμ₀ + (1 − w)x, wτ₀²) with w = σ²/(σ² + τ₀²); predictive x ~ N(μ₀, σ² + τ₀²).
+    Student-t prior θ ~ t<sub>ν</sub>(μ₀, s²) with s² = τ₀²(ν − 2)/ν, so V(θ) = τ₀² for both priors (slide 45: t₅(900, 240) has variance 400). Its posterior has no closed form (slide 48) and is computed by quadrature. "Pull toward μ₀" is (x − E(θ | x))/(x − μ₀); for the normal prior it equals w at every x.</div>
+  <div><strong>Provenance:</strong> <code>Aula/class-03-04/materials/aprendizagembayesiana-bayesianingredients.pdf</code>, slides 28 (σ = 40), 31–32 (priors A and B), 35 (predictive), 37–38 (posterior and w), 39–40 (x = 850; A: N(890, 17.9²), B: N(840, 35.7²)), 45 (prior C = t₅(900, 240)), 48–52 (C needs Monte Carlo). <code>fisicos-ABCD.html</code> (σ_B = 80; SIR summaries). Greenberg (2007), <em>Introduction to Bayesian Econometrics</em>, §3.2.3 (pp. 32–33) and Exercise 3.3 (p. 39); Bolfarine &amp; Sandoval (2010), Exemplo 4.4.3 (pp. 68–69). The deck prints prior B as N(800, 40²) on slide 40 and N(800, 1600) on slide 44; its posterior N(840, 35.7²) requires σ_B = 80, the value the R page uses.</div>
+  <div class="scroll"><table>
+    <thead><tr><th>Control</th><th>Symbol</th><th>What it is</th><th>Range</th><th>Step</th><th>Default</th><th>Unit</th><th>Source</th><th>What visibly moves</th></tr></thead>
+    <tbody>
+      <tr><td>Observation</td><td>x</td><td>the measurement</td><td>600–1100</td><td>1</td><td>850</td><td>—</td><td>slide 39</td><td>likelihood, both posteriors, marker</td></tr>
+      <tr><td>Measurement sd</td><td>σ</td><td>sd of x given θ</td><td>5–120</td><td>1</td><td>40</td><td>—</td><td>slide 28</td><td>likelihood width, w</td></tr>
+      <tr><td>Prior mean</td><td>μ₀</td><td>prior best guess</td><td>600–1100</td><td>1</td><td>900</td><td>—</td><td>slide 31</td><td>priors, conflict</td></tr>
+      <tr><td>Prior sd</td><td>τ₀</td><td>prior uncertainty</td><td>5–200</td><td>1</td><td>20</td><td>—</td><td>slide 31</td><td>prior widths, w</td></tr>
+      <tr><td>Student-t df</td><td>ν</td><td>tail thickness of the t prior</td><td>3–60</td><td>1</td><td>5</td><td>—</td><td>slide 45</td><td>t prior and its posterior</td></tr>
+    </tbody></table></div>
+  <div>Buttons set the prior to physicist A (μ₀ = 900, τ₀ = 20) or B (μ₀ = 800, τ₀ = 80), or move x onto μ₀ (no conflict).</div>
+</footer>
+
+<script id="model">
+// Pure model: no DOM access. check_companions.py runs this block under node.
+const LN2PI = Math.log(2*Math.PI);
+// log Gamma by the Lanczos approximation (g = 7, 9 terms), valid for z > 0.
+const LG = [0.99999999999980993, 676.5203681218851, -1259.1392167224028, 771.32342877765313, -176.61502916214059,
+            12.507343278686905, -0.13857109526572012, 9.9843695780195716e-6, 1.5056327351493116e-7];
+function lgamma(z){
+  if(z < 0.5) return Math.log(Math.PI/Math.sin(Math.PI*z)) - lgamma(1-z);
+  z -= 1; let a = LG[0]; const t = z + 7.5;
+  for(let i=1;i<9;i++) a += LG[i]/(z+i);
+  return 0.5*LN2PI + (z+0.5)*Math.log(t) - t + Math.log(a);
+}
+const nlog = (th, mu, v) => -0.5*(LN2PI + Math.log(v)) - (th-mu)*(th-mu)/(2*v);
+function tlog(th, mu, s2, nu){ const z = (th-mu)/Math.sqrt(s2);
+  return lgamma((nu+1)/2) - lgamma(nu/2) - 0.5*Math.log(nu*Math.PI*s2) - (nu+1)/2*Math.log(1 + z*z/nu); }
+
+// Posterior on a grid by the trapezoid rule. kind = "n" or "t". Returns grid, density, mean, sd, P(theta < x).
+function gridPost(p, kind, n){
+  const w = Math.max(p.sig, p.tau0), lo = Math.min(p.x, p.mu0) - 10*w, hi = Math.max(p.x, p.mu0) + 10*w;
+  const h = (hi-lo)/(n-1), s2 = p.tau0*p.tau0*(p.nu-2)/p.nu, th = new Array(n), lp = new Array(n);
+  let mx = -Infinity;
+  for(let i=0;i<n;i++){ th[i] = lo + i*h;
+    lp[i] = (kind === "n" ? nlog(th[i], p.mu0, p.tau0*p.tau0) : tlog(th[i], p.mu0, s2, p.nu)) + nlog(p.x, th[i], p.sig*p.sig);
+    if(lp[i] > mx) mx = lp[i]; }
+  const d = lp.map(v => Math.exp(v - mx));
+  let Z = 0, M = 0, Q = 0;
+  for(let i=1;i<n;i++){ Z += h*(d[i]+d[i-1])/2; M += h*(th[i]*d[i]+th[i-1]*d[i-1])/2; Q += h*(th[i]*th[i]*d[i]+th[i-1]*th[i-1]*d[i-1])/2; }
+  const mean = M/Z, sd = Math.sqrt(Math.max(Q/Z - mean*mean, 0));
+  let cdf = 0, P = 1;
+  for(let i=1;i<n;i++){ const inc = h*(d[i]+d[i-1])/2/Z;
+    if(th[i] >= p.x){ P = cdf + inc*(p.x - th[i-1])/h; break; } cdf += inc; }
+  return {th, dens: d.map(v => v/Z), mean, sd, P};
+}
+
+// p = {x, sig, mu0, tau0, nu}
+function compute(p){
+  const v = p.sig*p.sig + p.tau0*p.tau0, w = p.sig*p.sig/v;
+  const nMean = w*p.mu0 + (1-w)*p.x, nSd = Math.sqrt(w*p.tau0*p.tau0);
+  const gn = gridPost(p, "n", 4001), gt = gridPost(p, "t", 4001);
+  return {w, nMean, nSd, nP: gn.P, tMean: gt.mean, tSd: gt.sd, tP: gt.P, gn, gt,
+    s: Math.sqrt(p.tau0*p.tau0*(p.nu-2)/p.nu), predSd: Math.sqrt(v), z: (p.x - p.mu0)/Math.sqrt(v),
+    tPull: p.x === p.mu0 ? null : (p.x - gt.mean)/(p.x - p.mu0)};
+}
+const fs = (x, d) => { const s = x.toFixed(d); return /^-0\.?0*$/.test(s) ? s.slice(1) : s; };
+// Every number the page prints, as the exact string it prints. check_companions.py compares these.
+function readouts(p){
+  const m = compute(p);
+  return {nMean: fs(m.nMean,1), nSd: fs(m.nSd,1), w: m.w.toFixed(3), nP: m.nP.toFixed(3), tMean: fs(m.tMean,1), tSd: fs(m.tSd,1),
+    tP: m.tP.toFixed(3), tPull: m.tPull === null ? "— (x = μ₀)" : fs(m.tPull,3), s: m.s.toFixed(1), predSd: m.predSd.toFixed(1),
+    z: fs(m.z,2), gap: fs(m.tMean - m.nMean,1)};
+}
+</script>
+
+<script>
+const D = {x:850, sig:40, mu0:900, tau0:20, nu:5};
+const el = id => document.getElementById(id);
+const IDS = ["x","sig","mu0","tau0","nu"];
+function niceTicks(lo, hi, n){
+  const span = hi-lo, step0 = span/n, mag = Math.pow(10, Math.floor(Math.log10(step0)));
+  const step = [1,2,2.5,5,10].map(k=>k*mag).find(s=>s>=step0);
+  const t=[]; for(let v=Math.ceil(lo/step)*step; v<=hi+1e-9; v+=step) t.push(+v.toFixed(10));
+  return t;
+}
+function read(){ const p = {}; IDS.forEach(k => p[k] = parseInt(el(k).value)); return p; }
+function path(xs, ys, X, Y){ return xs.map((v,i)=>(i?"L":"M")+X(v).toFixed(1)+" "+Y(ys[i]).toFixed(1)).join(""); }
+
+function drawD(p, m){
+  const W=420, H=300, L=46, R=12, T=14, B=40, wd = Math.max(p.sig, p.tau0);
+  const lo = Math.min(p.x, p.mu0) - 4*wd, hi = Math.max(p.x, p.mu0) + 4*wd, N = 400;
+  const xs = Array.from({length:N+1}, (_,i)=>lo+(hi-lo)*i/N);
+  const s2 = p.tau0*p.tau0*(p.nu-2)/p.nu;
+  const pn = xs.map(t=>Math.exp(nlog(t,p.mu0,p.tau0*p.tau0))), pt = xs.map(t=>Math.exp(tlog(t,p.mu0,s2,p.nu)));
+  const lk = xs.map(t=>Math.exp(nlog(p.x,t,p.sig*p.sig)));
+  const interp = (g, t) => { const h = g.th[1]-g.th[0], i = Math.floor((t-g.th[0])/h);
+    if(i<0||i>=g.th.length-1) return 0; return g.dens[i] + (g.dens[i+1]-g.dens[i])*(t-g.th[i])/h; };
+  const qn = xs.map(t=>interp(m.gn,t)), qt = xs.map(t=>interp(m.gt,t));
+  const top = Math.max(...pn, ...pt, ...lk, ...qn, ...qt)*1.08;
+  const X = t => L + (t-lo)/(hi-lo)*(W-L-R), Y = v => T + (1 - v/top)*(H-T-B);
+  let s = "";
+  niceTicks(lo, hi, 5).forEach(t=>{ s += `<line x1="${X(t)}" x2="${X(t)}" y1="${T}" y2="${H-B}" stroke="var(--line)"/><text x="${X(t)}" y="${H-B+16}" text-anchor="middle">${t}</text>`; });
+  s += `<line x1="${L}" x2="${W-R}" y1="${H-B}" y2="${H-B}" stroke="var(--muted)"/>`;
+  s += `<text x="${(L+W-R)/2}" y="${H-6}" text-anchor="middle">θ</text><text transform="translate(12 ${(T+H-B)/2}) rotate(-90)" text-anchor="middle">density</text>`;
+  s += `<line x1="${X(p.x)}" x2="${X(p.x)}" y1="${T}" y2="${H-B}" stroke="var(--mark)" stroke-dasharray="4 4"/>`;
+  s += `<path d="${path(xs,lk,X,Y)}" fill="none" stroke="var(--lik)" stroke-dasharray="5 4" stroke-width="1.4"/>`;
+  s += `<path d="${path(xs,pn,X,Y)}" fill="none" stroke="var(--nrm)" stroke-width="1.2" opacity="0.75"/>`;
+  s += `<path d="${path(xs,pt,X,Y)}" fill="none" stroke="var(--stu)" stroke-width="1.2" opacity="0.75"/>`;
+  s += `<path d="${path(xs,qn,X,Y)}" fill="none" stroke="var(--nrm)" stroke-width="2.6"/>`;
+  s += `<path d="${path(xs,qt,X,Y)}" fill="none" stroke="var(--stu)" stroke-width="2.6"/>`;
+  s += `<text class="val" x="${X(p.x)+4}" y="${T+12}">x = ${p.x}</text>`;
+  el("pd").innerHTML = s;
+}
+function drawM(p, m){
+  const W=420, H=300, L=50, R=12, T=14, B=40, sd = m.predSd, lo = p.mu0 - 6*sd, hi = p.mu0 + 6*sd, N = 120;
+  const xs = Array.from({length:N+1}, (_,i)=>lo+(hi-lo)*i/N);
+  const yn = xs.map(x=>m.w*p.mu0 + (1-m.w)*x);
+  const yt = xs.map(x=>gridPost({...p, x}, "t", 801).mean);
+  const X = v => L + (v-lo)/(hi-lo)*(W-L-R), Y = v => T + (hi - v)/(hi-lo)*(H-T-B);
+  let s = "";
+  niceTicks(lo, hi, 5).forEach(t=>{ s += `<line x1="${X(t)}" x2="${X(t)}" y1="${T}" y2="${H-B}" stroke="var(--line)"/><text x="${X(t)}" y="${H-B+16}" text-anchor="middle">${t}</text>`;
+    s += `<line x1="${L}" x2="${W-R}" y1="${Y(t)}" y2="${Y(t)}" stroke="var(--line)"/><text x="${L-5}" y="${Y(t)+4}" text-anchor="end">${t}</text>`; });
+  s += `<text x="${(L+W-R)/2}" y="${H-6}" text-anchor="middle">observation x</text><text transform="translate(11 ${(T+H-B)/2}) rotate(-90)" text-anchor="middle">E(θ | x)</text>`;
+  s += `<path d="M${X(lo)} ${Y(lo)}L${X(hi)} ${Y(hi)}" stroke="var(--muted)" stroke-dasharray="3 4" fill="none"/>`;
+  s += `<line x1="${L}" x2="${W-R}" y1="${Y(p.mu0)}" y2="${Y(p.mu0)}" stroke="var(--muted)" stroke-width="0.8"/>`;
+  s += `<path d="${path(xs,yn,X,Y)}" fill="none" stroke="var(--nrm)" stroke-width="2.2"/>`;
+  s += `<path d="${path(xs,yt,X,Y)}" fill="none" stroke="var(--stu)" stroke-width="2.2"/>`;
+  if(p.x >= lo && p.x <= hi){
+    s += `<line x1="${X(p.x)}" x2="${X(p.x)}" y1="${T}" y2="${H-B}" stroke="var(--mark)" stroke-dasharray="4 4"/>`;
+    s += `<circle cx="${X(p.x)}" cy="${Y(m.nMean)}" r="4.5" fill="var(--nrm)" stroke="var(--panel)" stroke-width="1.5"/>`;
+    s += `<circle cx="${X(p.x)}" cy="${Y(m.tMean)}" r="4.5" fill="var(--stu)" stroke="var(--panel)" stroke-width="1.5"/>`;
+  }
+  s += `<text class="val" x="${L+6}" y="${T+12}">45° line = data only; flat line at μ₀ = prior only</text>`;
+  el("pm").innerHTML = s;
+}
+function update(){
+  const p = read(), m = compute(p), o = readouts(p);
+  IDS.forEach(k => el("o-"+k).textContent = String(p[k]));
+  el("ans-n").textContent = `normal ${o.nMean}`; el("ans-t").textContent = `Student-t ${o.tMean}`;
+  const az = Math.abs(m.z);
+  el("verdict").textContent = p.x === p.mu0 ? `No conflict: x sits on the prior mean, so both posteriors centre on ${p.mu0}.`
+    : az < 1.5 ? `Mild conflict (x is ${o.z} predictive sd from μ₀). The two priors agree in the middle, so the posteriors nearly coincide: they differ by ${o.gap}.`
+    : az < 3 ? `Clear conflict (${o.z} predictive sd). The normal prior still pulls by the fixed share w = ${o.w}; the t prior pulls by ${o.tPull}.`
+    : `Strong conflict (${o.z} predictive sd). The normal posterior stays tied to μ₀ (pull ${o.w}); the t prior gives way and lets the data win (pull ${o.tPull}).`;
+  el("side1").textContent = `Normal: weight on μ₀ w = σ²/(σ²+τ₀²) = ${o.w}; posterior sd ${o.nSd}. Predictive x ~ N(${p.mu0}, ${o.predSd}²).`;
+  el("side2").textContent = `Student-t: t${p.nu}(${p.mu0}, ${o.s}²) has variance τ₀² = ${p.tau0*p.tau0}; posterior sd ${o.tSd}.`;
+  const chips = [[p.x === p.mu0, "x = μ₀: no conflict"], [p.mu0 === 900 && p.tau0 === 20, "physicist A's prior"],
+    [p.mu0 === 800 && p.tau0 === 80, "physicist B's prior"], [az >= 3, "|x − μ₀| ≥ 3 predictive sd"]];
+  el("chips").innerHTML = chips.map(([on,t])=>`<span class="chip${on?" on":""}">${on?"● ":"○ "}${t}</span>`).join("");
+  el("tbl").innerHTML = `<tr><td><span class="k" style="background:var(--nrm)"></span>Normal N(${p.mu0}, ${p.tau0}²)</td><td>${o.nMean}</td><td>${o.nSd}</td><td>${o.nP}</td><td>${o.w}</td></tr>` +
+    `<tr><td><span class="k" style="background:var(--stu)"></span>Student-t t${p.nu}(${p.mu0}, ${o.s}²)</td><td>${o.tMean}</td><td>${o.tSd}</td><td>${o.tP}</td><td>${o.tPull}</td></tr>`;
+  el("tnote").textContent = `x = ${p.x}, σ = ${p.sig}. Conflict (x − μ₀)/√(σ² + τ₀²) = ${o.z}. Defaults reproduce slide 40 (A: 890.0, sd 17.9) and the t₅ prior C of slide 45.`;
+  drawD(p, m); drawM(p, m);
+}
+function setAll(v){ IDS.forEach(k => el(k).value = v[k]); update(); }
+function reset(){ setAll(D); }
+IDS.forEach(k=>el(k).addEventListener("input", update));
+el("go-a").addEventListener("click", ()=>{ el("mu0").value = 900; el("tau0").value = 20; update(); });
+el("go-b").addEventListener("click", ()=>{ el("mu0").value = 800; el("tau0").value = 80; update(); });
+el("go-eq").addEventListener("click", ()=>{ el("x").value = el("mu0").value; update(); });
+el("reset").addEventListener("click", reset);
+reset();
+</script>
+</html>

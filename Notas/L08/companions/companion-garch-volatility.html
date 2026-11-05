@@ -1,0 +1,302 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>The Volatility Dial</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,500;8..60,650&family=Public+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: controls rail on the left; the half-life verdict, then the volatility term structure beside the (α1, β1) moment map; one column under 860px.
+   Colour roles follow Notas/_figstyle.py: main = the forecast path and the point, good = the long-run level and the stationary region, warn = IGARCH/explosive, hi = kurtosis boundaries, mark = presets. */
+:root{
+  --bg:#f3f5f8; --panel:#ffffff; --ink:#14202c; --muted:#5a6578; --line:#d7dde7; --soft:#edf0f5;
+  --main:#1f5f8b; --good:#2f6b4f; --warn:#b4521a; --hi:#8a5fb4; --mark:#9c7200;
+  --focus:#2b63c4;
+  --display:"Source Serif 4", Georgia, "Times New Roman", serif;
+  --body:"Public Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono:"JetBrains Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#10141b; --panel:#171d27; --ink:#e5e9f0; --muted:#9aa5b8; --line:#2a3342; --soft:#1e2532;
+  --main:#6aaee0; --good:#5fbf8f; --warn:#f0954a; --hi:#b896f2; --mark:#e6be4a; --focus:#74a3ff; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#10141b; --panel:#171d27; --ink:#e5e9f0; --muted:#9aa5b8; --line:#2a3342; --soft:#1e2532;
+  --main:#6aaee0; --good:#5fbf8f; --warn:#f0954a; --hi:#b896f2; --mark:#e6be4a; --focus:#74a3ff; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font:15px/1.5 var(--body);margin:0}
+.wrap{max-width:1180px;margin:0 auto;padding-left:max(16px, env(safe-area-inset-left, 0px));padding-right:max(16px, env(safe-area-inset-right, 0px));padding-block:24px 40px}
+header{display:grid;gap:4px;margin-bottom:18px}
+.eyebrow{font:600 12px/1.3 var(--body);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+h1{font:650 clamp(26px,4vw,36px)/1.1 var(--display);margin:0;text-wrap:balance}
+.lede{color:var(--muted);max-width:68ch;margin:0}
+.grid{display:grid;grid-template-columns:320px minmax(0,1fr);gap:20px;align-items:start}
+@media (max-width:860px){.grid{grid-template-columns:minmax(0,1fr)}}
+.rail{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px;display:grid;gap:18px}
+.group{display:grid;gap:12px}
+.group h2{font:600 12px/1.2 var(--body);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:0}
+.ctl{display:grid;gap:4px}
+.ctl .top{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.ctl label{font-weight:600}
+.ctl label i{font-family:var(--display);font-weight:500}
+.ctl output{font:600 14px var(--mono);font-variant-numeric:tabular-nums}
+.ctl p{margin:0;font-size:13px;color:var(--muted)}
+.check{display:flex;gap:8px;align-items:center;font-weight:600}
+input[type=range]{width:100%;accent-color:var(--ink)}
+input[type=range]:disabled{opacity:.4}
+input:focus-visible,button:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+.btns{display:flex;flex-wrap:wrap;gap:8px}
+button{font:600 13px var(--body);background:var(--soft);color:var(--ink);border:1px solid var(--line);border-radius:6px;padding:7px 12px;cursor:pointer}
+button:hover{border-color:var(--muted)}
+button[aria-pressed="true"]{border-color:var(--mark);color:var(--mark)}
+main{display:grid;gap:16px;min-width:0}
+.answer{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px 18px;display:grid;gap:6px}
+.answer .lab{font-size:13px;color:var(--muted)}
+.answer .big{font:600 clamp(24px,4vw,40px)/1.15 var(--body);font-variant-numeric:tabular-nums}
+.answer .verdict{font:500 16px/1.45 var(--body);max-width:66ch}
+.answer .side{font:13px/1.6 var(--mono);color:var(--muted);font-variant-numeric:tabular-nums}
+.note{font-size:13px;color:var(--muted);max-width:72ch;margin:0}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px 16px;min-width:0}
+.panel h3{font:600 15px/1.3 var(--body);margin:0 0 2px}
+.panel .sub{font-size:13px;color:var(--muted);margin:0 0 8px}
+svg{display:block;width:100%;height:auto;max-width:100%}
+svg text{fill:var(--muted);font:12px var(--body)}
+svg .val{font:600 12px var(--mono);fill:var(--ink)}
+.two{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px}
+@media (max-width:1000px){.two{grid-template-columns:minmax(0,1fr)}}
+.scroll{overflow-x:auto}
+table.ro{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums;min-width:440px}
+table.ro th,table.ro td{padding:5px 6px;border-bottom:1px solid var(--line);font-size:14px;text-align:right;white-space:nowrap}
+table.ro th:first-child,table.ro td:first-child{text-align:left}
+table.ro td{font-family:var(--mono);font-size:13px}
+table.ro td:first-child{font-family:var(--body);font-size:14px}
+footer{margin-top:22px;font-size:13px;color:var(--muted);display:grid;gap:10px}
+footer table{border-collapse:collapse;font-size:12.5px;min-width:760px}
+footer th,footer td{border-bottom:1px solid var(--line);padding:4px 8px;text-align:left;vertical-align:top}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<div class="wrap">
+<header>
+  <div class="eyebrow">Econometria Avançada · Class 8 · garchmodeling.html · Tsay AFTS 3e pp. 131–142, 165–166, Table 3.1 p. 138</div>
+  <h1>The Volatility Dial</h1>
+  <p class="lede">A GARCH(1,1) shock to volatility fades at the rate α₁ + β₁. Move the coefficients to see how long a volatility spike lasts, where the forecasts settle, and when the fourth moment stops existing.</p>
+</header>
+
+<div class="grid">
+<aside class="rail" aria-label="Controls">
+  <div class="group">
+    <h2>Volatility equation</h2>
+    <div class="ctl"><div class="top"><label for="a1">ARCH coefficient <i>α₁</i></label><output id="o-a1"></output></div>
+      <input id="a1" type="range" min="0" max="0.5" step="0.0001">
+      <p>How strongly last period's squared shock raises today's variance.</p></div>
+    <div class="ctl"><div class="top"><label for="b1">GARCH coefficient <i>β₁</i></label><output id="o-b1"></output></div>
+      <input id="b1" type="range" min="0" max="0.9999" step="0.0001">
+      <p>How much of last period's variance carries over.</p></div>
+    <div class="ctl"><div class="top"><label for="a0">Constant <i>α₀</i> (%²)</label><output id="o-a0"></output></div>
+      <input id="a0" type="range" min="0.0001" max="5" step="0.0001">
+      <p>The variance floor added each period. Sets the long-run level α₀/(1 − α₁ − β₁).</p></div>
+  </div>
+  <div class="group">
+    <h2>Forecast and tails</h2>
+    <div class="ctl"><div class="top"><label for="s1">1-step volatility <i>σₕ(1)</i> (%)</label><output id="o-s1"></output></div>
+      <input id="s1" type="range" min="0.5" max="20" step="0.01">
+      <p>Tomorrow's conditional sd, known at the forecast origin. The path starts here.</p></div>
+    <div class="ctl"><div class="top"><label for="L">Horizon <i>L</i></label><output id="o-L"></output></div>
+      <input id="L" type="range" min="1" max="500" step="1">
+      <p>The last forecast horizon plotted, in periods.</p></div>
+    <label class="check" for="normal"><input id="normal" type="checkbox"> Normal innovations</label>
+    <div class="ctl"><div class="top"><label for="nu">Student-t degrees of freedom <i>ν</i></label><output id="o-nu"></output></div>
+      <input id="nu" type="range" min="4.1" max="30" step="0.01">
+      <p>Tail weight of the standardized-t shock εₜ. Lower ν, fatter tails. Unchecking Normal turns it on.</p></div>
+  </div>
+  <div class="btns" role="group" aria-label="Fitted models">
+    <button id="pre-tsay" type="button" aria-pressed="false">Tsay Ex. 3.3</button>
+    <button id="pre-ig" type="button" aria-pressed="false">Tsay IGARCH</button>
+    <button id="pre-pbr" type="button" aria-pressed="false">Petrobras normal</button>
+    <button id="pre-pbrt" type="button" aria-pressed="false">Petrobras t</button>
+  </div>
+  <button id="reset" type="button">Reset to defaults</button>
+</aside>
+
+<main>
+  <section class="answer" aria-live="polite">
+    <div class="lab">Half-life of a volatility shock, ln 0.5 / ln(α₁ + β₁)</div>
+    <div class="big" id="answer"></div>
+    <div class="verdict" id="explain"></div>
+    <div class="side" id="side1"></div>
+    <div class="side" id="side2"></div>
+  </section>
+
+  <div class="two">
+    <section class="panel">
+      <h3>Volatility forecasts, ℓ = 1 … L</h3>
+      <p class="sub">σ²ₕ(ℓ) = α₀ + (α₁ + β₁)σ²ₕ(ℓ − 1) (Tsay eq. 3.17; at α₁ + β₁ = 1 the straight line of eq. 3.22). Green dashed: the long-run sd σ∞.</p>
+      <svg id="pterm" viewBox="0 0 420 300" role="img" aria-label="Forecast conditional standard deviation against the horizon"></svg>
+    </section>
+    <section class="panel">
+      <h3>Which moments exist</h3>
+      <p class="sub">Orange: α₁ + β₁ = 1. Blue: finite E(a⁴) with normal shocks, 1 − 2α₁² − (α₁+β₁)² = 0. Purple dashed: the same with t<sub>ν</sub> shocks. Gold dots: the presets.</p>
+      <svg id="pmap" viewBox="0 0 420 300" role="img" aria-label="Alpha-beta plane with the moment boundaries and the current point"></svg>
+    </section>
+  </div>
+
+  <section class="panel">
+    <h3>Forecast path, as in Tsay Table 3.1</h3>
+    <div class="scroll"><table class="ro">
+      <thead><tr><th>Horizon</th><th>1</th><th>2</th><th>3</th><th>4</th><th>5</th><th id="thL">L</th><th>∞</th></tr></thead>
+      <tbody id="tbl"></tbody></table></div>
+    <p class="note" id="tnote"></p>
+  </section>
+</main>
+</div>
+
+<footer>
+  <div><strong>Belongs to:</strong> Class 8 notes, <code>Notas/L08/</code>: L08-06 (ARCH and GARCH: moments, forecasts, IGARCH, kurtosis).</div>
+  <div><strong>Model:</strong> aₜ = σₜεₜ, σ²ₜ = α₀ + α₁a²ₜ₋₁ + β₁σ²ₜ₋₁, εₜ iid N(0,1) or standardized t<sub>ν</sub> (Tsay eqs. 3.14, 3.16, 3.7). Units: σ in % per period, α₀ in %² per period (Tsay's α₀ = 0.000086 is 0.86 %²). Long-run variance σ²∞ = α₀/(1 − α₁ − β₁) when α₁ + β₁ &lt; 1. Forecasts σ²ₕ(ℓ) = α₀ + (α₁+β₁)σ²ₕ(ℓ−1) = σ²∞ + (α₁+β₁)^(ℓ−1)(σ²ₕ(1) − σ²∞) (eq. 3.17, p. 133); IGARCH: σ²ₕ(ℓ) = σ²ₕ(1) + (ℓ − 1)α₀ (eq. 3.22, p. 141). Half-life of the gap σ²ₕ(ℓ) − σ²∞: ln 0.5/ln(α₁+β₁). Excess kurtosis of aₜ (§3.16, pp. 165–166): normal shocks K<sub>a</sub><sup>(g)</sup> = 6α₁²/[1 − 2α₁² − (α₁+β₁)²]; t<sub>ν</sub> shocks K<sub>a</sub> = [6 + (ν+1)K<sub>a</sub><sup>(g)</sup>]/[ν − 4 − K<sub>a</sub><sup>(g)</sup>], which exists when 1 − 2α₁²(ν−1)/(ν−4) − (α₁+β₁)² &gt; 0; the shock's own excess kurtosis is 6/(ν − 4).</div>
+  <div><strong>Edge cases:</strong> α₁ + β₁ within 10⁻⁹ of 1 is IGARCH (no σ∞, half-life ∞); above 1 the variance forecasts explode. α₁ = β₁ = 0 gives constant variance α₀ after one step (half-life 0). When the moment condition fails the page says the fourth moment is infinite. Presets are rounded to the slider steps (α₁, β₁, α₀ to 4 decimals, σₕ(1) to 2, ν to 2). Numbers of size 10⁶ or more print in e-notation.</div>
+  <div><strong>Provenance:</strong> Tsay, <em>Analysis of Financial Time Series</em> 3e, Example 3.3, eq. (3.19), p. 136 (α₀ = 0.000086, α₁ = 0.1216, β₁ = 0.8511, monthly S&amp;P 500 excess returns) and Table 3.1, p. 138 (forecast volatility 0.0536, 0.0537, 0.0537, 0.0538, 0.0538, ∞: 0.0560); IGARCH(1,1), p. 141 (α₀ = 0.000119, β₁ = 0.8059, 1 − β₁ = 0.1941); §3.16, pp. 165–166. Petrobras daily log returns 2000–2021, <code>Aula/class-08/materials/garchmodeling.html</code> (normal: ω = 2.255×10⁻⁵, α₁ = 0.10317, β₁ = 0.87681; Student-t: ω = 1.555×10⁻⁵, α₁ = 0.07429, β₁ = 0.90947, shape 7.04).</div>
+  <div class="scroll"><table>
+    <thead><tr><th>Control</th><th>Symbol</th><th>What it is</th><th>Range</th><th>Step</th><th>Default</th><th>Unit</th><th>Source</th><th>What visibly moves</th></tr></thead>
+    <tbody>
+      <tr><td>ARCH coefficient</td><td>α₁</td><td>reaction to last squared shock</td><td>0–0.5</td><td>0.0001</td><td>0.1216</td><td>—</td><td>T (3.19) p. 136</td><td>point in plane, kurtosis, persistence</td></tr>
+      <tr><td>GARCH coefficient</td><td>β₁</td><td>carry-over of last variance</td><td>0–0.9999</td><td>0.0001</td><td>0.8511</td><td>—</td><td>T (3.19)</td><td>same</td></tr>
+      <tr><td>Constant</td><td>α₀</td><td>variance floor</td><td>0.0001–5</td><td>0.0001</td><td>0.8600</td><td>%² per period</td><td>T (3.19): 0.000086 = 0.86 %²</td><td>σ∞, term-structure level</td></tr>
+      <tr><td>1-step volatility</td><td>σₕ(1)</td><td>forecast at the origin</td><td>0.5–20</td><td>0.01</td><td>5.36</td><td>% per period</td><td>T Table 3.1 p. 138</td><td>term-structure start</td></tr>
+      <tr><td>Innovation tails</td><td>ν (or Normal)</td><td>standardized t df; checkbox Normal</td><td>4.1–30</td><td>0.01</td><td>Normal</td><td>—</td><td>T (3.7), §3.16</td><td>kurtosis read-out, t-boundary curve</td></tr>
+      <tr><td>Horizon</td><td>L</td><td>last forecast horizon plotted</td><td>1–500</td><td>1</td><td>60</td><td>periods</td><td>—</td><td>term-structure length, σₕ(L)</td></tr>
+    </tbody></table></div>
+</footer>
+
+<script id="model">
+// Pure model: no DOM access. check_companions.py runs this block under node.
+const TOL = 1e-9;
+// p = {a0, a1, b1, s1, normal, nu, L}; sigma in %, a0 in %^2.
+function compute(p){
+  const pers = p.a1 + p.b1;
+  const regime = pers < 1 - TOL ? "stationary" : pers <= 1 + TOL ? "igarch" : "explosive";
+  const s2inf = regime === "stationary" ? p.a0/(1 - pers) : null;
+  const n = Math.max(p.L, 5), v = [p.s1*p.s1];
+  for(let l = 2; l <= n; l++) v.push(p.a0 + pers*v[l-2]);
+  const hl = regime !== "stationary" ? null : pers === 0 ? 0 : Math.log(0.5)/Math.log(pers);
+  const condG = 1 - 2*p.a1*p.a1 - pers*pers;
+  const kg = condG > 0 ? 6*p.a1*p.a1/condG : null;
+  let K = 0, cond = condG, ka = kg;
+  if(!p.normal){
+    K = 6/(p.nu - 4);
+    cond = 1 - 2*p.a1*p.a1*(p.nu - 1)/(p.nu - 4) - pers*pers;
+    ka = cond > 0 ? (6 + (p.nu + 1)*kg)/(p.nu - 4 - kg) : null;
+  }
+  return {pers, regime, s2inf, v, hl, condG, kg, K, cond, ka};
+}
+
+const fx = (x, d) => { if(Math.abs(x) >= 1e6) return x.toExponential(3); const s = x.toFixed(d); return /^-0\.?0*$/.test(s) ? s.slice(1) : s; };
+// Every number and label the page prints, as the exact string it prints. check_companions.py compares these.
+function readouts(p){
+  const c = compute(p), o = {};
+  o.pers = c.pers.toFixed(4);
+  o.regime = {stationary:"covariance-stationary", igarch:"IGARCH (unit root in variance)", explosive:"explosive"}[c.regime];
+  o.hl = c.regime === "igarch" ? "∞" : c.regime === "explosive" ? "— (explosive)" : c.hl === 0 ? "0 (no persistence)" : c.hl.toFixed(2);
+  o.answer = (c.regime === "stationary" && c.hl !== 0 ? o.hl + " periods" : o.hl) + " · persistence " + o.pers;
+  o.sinf = c.regime === "stationary" ? fx(Math.sqrt(c.s2inf), 2) : c.regime === "igarch" ? "none (IGARCH)" : "none (explosive)";
+  o.s2inf = c.regime === "stationary" ? fx(c.s2inf, 3) : "—";
+  for(let l = 1; l <= 5; l++) o["s"+l] = fx(Math.sqrt(c.v[l-1]), 3);
+  o.sL = fx(Math.sqrt(c.v[p.L-1]), 3);
+  o.kg = c.kg === null ? "infinite fourth moment" : fx(c.kg, 3);
+  o.ka = c.ka === null ? "infinite fourth moment" : fx(c.ka, 3);
+  o.K = p.normal ? "0 (normal)" : fx(c.K, 3);
+  o.cond = fx(c.cond, 4);
+  return o;
+}
+</script>
+
+<script>
+const D = {a1:0.1216, b1:0.8511, a0:0.86, s1:5.36, normal:true, nu:7.04, L:60};
+const PRE = {
+  "pre-tsay": {a1:0.1216, b1:0.8511, a0:0.86, s1:5.36, normal:true},
+  "pre-ig":   {a1:0.1941, b1:0.8059, a0:1.19, s1:5.36, normal:true},
+  "pre-pbr":  {a1:0.1032, b1:0.8768, a0:0.2255, s1:3.36, normal:true},
+  "pre-pbrt": {a1:0.0743, b1:0.9095, a0:0.1555, s1:3.10, normal:false, nu:7.04},
+};
+const el = id => document.getElementById(id);
+const CTL = ["a1","b1","a0","s1","nu","L"];
+
+function niceTicks(lo, hi, n){
+  const span = hi-lo, step0 = span/n, mag = Math.pow(10, Math.floor(Math.log10(step0)));
+  const step = [1,2,2.5,5,10].map(k=>k*mag).find(s=>s>=step0);
+  const t=[]; for(let v=Math.ceil(lo/step)*step; v<=hi+1e-9*step; v+=step) t.push(+v.toPrecision(12));
+  return t;
+}
+const tk = t => Math.abs(t) >= 1e6 ? t.toExponential(1) : String(t);
+function read(){
+  return {a1: parseFloat(el("a1").value), b1: parseFloat(el("b1").value), a0: parseFloat(el("a0").value),
+          s1: parseFloat(el("s1").value), normal: el("normal").checked, nu: parseFloat(el("nu").value), L: parseInt(el("L").value)};
+}
+
+function drawTerm(p, c){
+  const W=420, H=300, L=56, R=12, T=14, B=36, n = p.L;
+  const sd = c.v.slice(0, n).map(Math.sqrt);
+  const sinf = c.s2inf === null ? null : Math.sqrt(c.s2inf);
+  const top = Math.max(...sd, sinf || 0)*1.12;
+  const x = l => L + (n === 1 ? 0.5 : (l-1)/(n-1))*(W-L-R), y = v => T + (1 - v/top)*(H-T-B);
+  let s = "";
+  niceTicks(0, top, 5).forEach(t=>{ s += `<line x1="${L}" x2="${W-R}" y1="${y(t)}" y2="${y(t)}" stroke="var(--line)"/><text x="${L-6}" y="${y(t)+4}" text-anchor="end">${tk(t)}</text>`; });
+  (n === 1 ? [1] : niceTicks(1, n, 5)).forEach(t=>{ s += `<text x="${x(t)}" y="${H-B+16}" text-anchor="middle">${t}</text>`; });
+  s += `<text x="${(L+W-R)/2}" y="${H-4}" text-anchor="middle">horizon ℓ (periods)</text>`;
+  s += `<text transform="translate(12 ${(T+H-B)/2}) rotate(-90)" text-anchor="middle">σₕ(ℓ), % per period</text>`;
+  if(sinf !== null) s += `<line x1="${L}" x2="${W-R}" y1="${y(sinf)}" y2="${y(sinf)}" stroke="var(--good)" stroke-dasharray="5 4" stroke-width="1.5"/><text class="val" x="${W-R-4}" y="${y(sinf)-6}" text-anchor="end">σ∞ = ${fx(sinf,2)}</text>`;
+  const col = c.regime === "stationary" ? "var(--main)" : "var(--warn)";
+  s += `<path d="${sd.map((v,i)=>(i?"L":"M")+x(i+1).toFixed(1)+" "+y(v).toFixed(1)).join("")}" fill="none" stroke="${col}" stroke-width="2.2"/>`;
+  s += `<circle cx="${x(1)}" cy="${y(sd[0])}" r="4.5" fill="var(--ink)"/>`;
+  el("pterm").innerHTML = s;
+}
+
+function drawMap(p, c){
+  const W=420, H=300, L=44, R=12, T=12, B=36;
+  const x = a => L + a/0.5*(W-L-R), y = b => T + (1 - b)*(H-T-B);
+  let s = "";
+  [0,0.1,0.2,0.3,0.4,0.5].forEach(t=>{ s += `<line x1="${x(t)}" x2="${x(t)}" y1="${T}" y2="${H-B}" stroke="var(--line)"/><text x="${x(t)}" y="${H-B+16}" text-anchor="middle">${t}</text>`; });
+  [0,0.25,0.5,0.75,1].forEach(t=>{ s += `<line x1="${L}" x2="${W-R}" y1="${y(t)}" y2="${y(t)}" stroke="var(--line)"/><text x="${L-6}" y="${y(t)+4}" text-anchor="end">${t}</text>`; });
+  s += `<polygon points="${x(0)},${y(0)} ${x(0)},${y(1)} ${x(0.5)},${y(0.5)} ${x(0.5)},${y(0)}" fill="var(--good)" fill-opacity="0.08"/>`;
+  s += `<line x1="${x(0)}" y1="${y(1)}" x2="${x(0.5)}" y2="${y(0.5)}" stroke="var(--warn)" stroke-width="1.8"/>`;
+  const curve = f => { let d = ""; for(let i=0;i<=300;i++){ const a = 0.5*i/300, q = f(a); if(q >= 0){ const b = -a + Math.sqrt(q); if(b >= 0) d += (d?"L":"M") + x(a).toFixed(1) + " " + y(b).toFixed(1); } } return d; };
+  s += `<path d="${curve(a => 1 - 2*a*a)}" fill="none" stroke="var(--main)" stroke-width="1.8"/>`;
+  if(!p.normal) s += `<path d="${curve(a => 1 - 2*a*a*(p.nu-1)/(p.nu-4))}" fill="none" stroke="var(--hi)" stroke-width="1.8" stroke-dasharray="6 4"/>`;
+  Object.values(PRE).forEach(q=>{ s += `<circle cx="${x(q.a1)}" cy="${y(q.b1)}" r="3.5" fill="var(--mark)"/>`; });
+  s += `<text x="${(L+W-R)/2}" y="${H-4}" text-anchor="middle">α₁</text><text x="12" y="${(T+H-B)/2}" text-anchor="middle">β₁</text>`;
+  const col = c.regime === "stationary" ? "var(--main)" : "var(--warn)";
+  s += `<circle cx="${x(p.a1)}" cy="${y(p.b1)}" r="6" fill="${col}" stroke="var(--panel)" stroke-width="2"/>`;
+  s += `<text class="val" x="${p.a1 > 0.3 ? x(p.a1)-9 : x(p.a1)+9}" y="${y(p.b1) + (p.b1 > 0.9 ? 16 : -8)}" text-anchor="${p.a1 > 0.3 ? "end" : "start"}">(${p.a1.toFixed(4)}, ${p.b1.toFixed(4)})</text>`;
+  el("pmap").innerHTML = s;
+}
+
+function update(){
+  const p = read(), c = compute(p), o = readouts(p);
+  el("o-a1").textContent = p.a1.toFixed(4); el("o-b1").textContent = p.b1.toFixed(4); el("o-a0").textContent = p.a0.toFixed(4);
+  el("o-s1").textContent = p.s1.toFixed(2); el("o-L").textContent = p.L; el("o-nu").textContent = p.normal ? "off" : p.nu.toFixed(2);
+  el("nu").disabled = p.normal;
+  Object.entries(PRE).forEach(([id,q])=>el(id).setAttribute("aria-pressed", String(Math.abs(p.a1-q.a1) < 5e-5 && Math.abs(p.b1-q.b1) < 5e-5 && Math.abs(p.a0-q.a0) < 5e-5)));
+  el("answer").textContent = o.answer;
+  el("explain").textContent = c.regime === "stationary"
+    ? (c.hl === 0 ? `With α₁ = β₁ = 0 the variance is the constant α₀ = ${p.a0.toFixed(4)} %² from the second step on.`
+      : `Covariance-stationary: the gap between the variance forecast and its long-run level σ²∞ halves every ${o.hl} periods, and σₕ(ℓ) settles at σ∞ = ${o.sinf}%.`)
+    : c.regime === "igarch" ? `IGARCH: α₁ + β₁ = 1, so a volatility shock never fades. The variance forecast rises by α₀ = ${p.a0.toFixed(4)} %² per period and there is no long-run level.`
+    : `Explosive: α₁ + β₁ = ${o.pers} > 1, so the variance forecasts grow without bound.`;
+  el("side1").textContent = `regime ${o.regime} · σ∞ = ${o.sinf}${c.regime === "stationary" ? "%" : ""} · σₕ(${p.L}) = ${o.sL}%`;
+  el("side2").textContent = `excess kurtosis of aₜ: ${o.ka} (normal-shock part ${o.kg}; shock's own ${o.K}) · moment condition ${o.cond} ${c.cond > 0 ? "> 0" : "≤ 0"}`;
+  el("thL").textContent = "L = " + p.L;
+  el("tbl").innerHTML = `<tr><td>σₕ(ℓ), %</td><td>${o.s1}</td><td>${o.s2}</td><td>${o.s3}</td><td>${o.s4}</td><td>${o.s5}</td><td>${o.sL}</td><td>${o.sinf}</td></tr>`;
+  el("tnote").textContent = "Tsay Table 3.1 prints 5.36, 5.37, 5.37, 5.38, 5.38 and 5.60 (in %) at the defaults; the rounded inputs match to ±0.01.";
+  drawTerm(p, c); drawMap(p, c);
+}
+function setAll(q){
+  el("a1").value = q.a1; el("b1").value = q.b1; el("a0").value = q.a0; el("s1").value = q.s1;
+  el("normal").checked = q.normal; if(q.nu !== undefined) el("nu").value = q.nu; update();
+}
+function reset(){ el("L").value = D.L; el("nu").value = D.nu; setAll(D); }
+CTL.forEach(k=>el(k).addEventListener("input", update));
+el("normal").addEventListener("change", update);
+Object.entries(PRE).forEach(([id,q])=>el(id).addEventListener("click", ()=>setAll(q)));
+el("reset").addEventListener("click", reset);
+reset();
+</script>

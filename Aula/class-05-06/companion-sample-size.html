@@ -1,0 +1,257 @@
+<title>Bigger Sample, Same Bias</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,500;8..60,650&family=Public+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: controls rail left, the answer then two panels right; one column under 860px.
+   Colour roles follow the class-01 video: green = true causal effect, red = where selection drags the estimate, gold = the live sample. */
+:root{
+  --bg:#f4f6f9; --panel:#ffffff; --ink:#18202d; --muted:#586377; --line:#d8dee8; --soft:#eef1f6;
+  --y1:#2b63c4; --eff:#23864d; --bias:#c63a30; --live:#a87b00; --unobs:#98a2b3; --focus:#2b63c4;
+  --display:"Source Serif 4", Georgia, "Times New Roman", serif;
+  --body:"Public Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono:"JetBrains Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#10141b; --panel:#171d27; --ink:#e5e9f0; --muted:#9aa5b8; --line:#2a3342; --soft:#1e2532;
+  --y1:#74a3ff; --eff:#4fc486; --bias:#ff6e61; --live:#e9c04a; --unobs:#5f6979; --focus:#74a3ff; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#10141b; --panel:#171d27; --ink:#e5e9f0; --muted:#9aa5b8; --line:#2a3342; --soft:#1e2532;
+  --y1:#74a3ff; --eff:#4fc486; --bias:#ff6e61; --live:#e9c04a; --unobs:#5f6979; --focus:#74a3ff; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font:15px/1.5 var(--body);margin:0}
+.wrap{max-width:1180px;margin:0 auto;padding-inline:16px;padding-block:24px 40px}
+header{display:grid;gap:4px;margin-bottom:18px}
+.eyebrow{font:600 12px/1.3 var(--body);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+h1{font:650 clamp(26px,4vw,36px)/1.1 var(--display);margin:0;text-wrap:balance}
+.lede{color:var(--muted);max-width:68ch;margin:0}
+.grid{display:grid;grid-template-columns:320px minmax(0,1fr);gap:20px;align-items:start}
+@media (max-width:860px){.grid{grid-template-columns:minmax(0,1fr)}}
+.rail{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px;display:grid;gap:18px}
+.group{display:grid;gap:12px}
+.group h2{font:600 12px/1.2 var(--body);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:0}
+.ctl{display:grid;gap:4px}
+.ctl .top{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.ctl label{font-weight:600}
+.ctl label i{font-family:var(--display);font-weight:500}
+.ctl output{font:600 14px var(--mono);font-variant-numeric:tabular-nums}
+.ctl p{margin:0;font-size:13px;color:var(--muted)}
+input[type=range]{width:100%;accent-color:var(--ink)}
+input:focus-visible,button:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+.btns{display:flex;flex-wrap:wrap;gap:8px}
+button{font:600 13px var(--body);background:var(--soft);color:var(--ink);border:1px solid var(--line);border-radius:6px;padding:7px 12px;cursor:pointer}
+button:hover{border-color:var(--muted)}
+main{display:grid;gap:16px;min-width:0}
+.answer{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px 18px;display:grid;gap:6px}
+.answer .lab{font-size:13px;color:var(--muted)}
+.answer .big{font:600 clamp(34px,6vw,48px)/1 var(--mono);font-variant-numeric:tabular-nums}
+.answer .verdict{font:500 17px/1.4 var(--display);max-width:62ch}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-top:6px}
+.stat{border-top:1px solid var(--line);padding-top:6px}
+.stat .l{font-size:12px;color:var(--muted)}
+.stat .v{font:600 16px var(--mono);font-variant-numeric:tabular-nums}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px 16px;min-width:0}
+.panel h3{font:600 15px/1.3 var(--body);margin:0 0 2px}
+.panel .sub{font-size:13px;color:var(--muted);margin:0 0 8px}
+svg{display:block;width:100%;height:auto;max-width:100%}
+svg text{fill:var(--muted);font:12px var(--body)}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{font-size:13px;border:1px solid var(--line);border-radius:999px;padding:4px 10px;color:var(--muted)}
+.chip.on{border-color:var(--eff);color:var(--eff);font-weight:600}
+.two{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px}
+@media (max-width:760px){.two{grid-template-columns:minmax(0,1fr)}}
+.k{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:5px;vertical-align:-1px}
+footer{margin-top:22px;font-size:13px;color:var(--muted);display:grid;gap:10px}
+.scroll{overflow-x:auto}
+footer table{border-collapse:collapse;font-size:12.5px;min-width:720px}
+footer th,footer td{border-bottom:1px solid var(--line);padding:4px 8px;text-align:left;vertical-align:top}
+</style>
+
+<div class="wrap">
+<header>
+  <div class="eyebrow">Econometria Avançada · Classes 5+6 · MHE pp. 3–7, 10–12</div>
+  <h1>Bigger Sample, Same Bias</h1>
+  <p class="lede">500 simulated studies, each comparing treated with untreated people. Grow the sample and the confidence intervals shrink. Whether they shrink onto the true effect depends only on how people were assigned.</p>
+</header>
+
+<div class="grid">
+<aside class="rail" aria-label="Controls">
+  <div class="group">
+    <h2>The study</h2>
+    <div class="ctl"><div class="top"><label for="nk">Sample size <i>N</i></label><output id="o-n"></output></div>
+      <input id="nk" type="range" min="0" max="300" step="1">
+      <p>People per study, on a log scale from 10 to 10,000. About half are treated.</p></div>
+  </div>
+  <div class="group">
+    <h2>Who gets treated</h2>
+    <div class="ctl"><div class="top"><label for="lam">Selection on <i>Y</i>₀ <i>λ</i></label><output id="o-lam"></output></div>
+      <input id="lam" type="range" min="-1" max="1" step="0.05">
+      <p>Below 0, the sick seek treatment; above 0, the healthy do; 0 is a coin flip.</p></div>
+  </div>
+  <div class="group">
+    <h2>The world</h2>
+    <div class="ctl"><div class="top"><label for="tau">True effect <i>τ</i></label><output id="o-tau"></output></div>
+      <input id="tau" type="range" min="-3" max="3" step="0.05">
+      <p>The causal effect in health points, the same for everyone here.</p></div>
+    <div class="ctl"><div class="top"><label for="sig">Spread of health <i>σ</i></label><output id="o-sig"></output></div>
+      <input id="sig" type="range" min="0.5" max="3" step="0.1">
+      <p>Standard deviation of <i>Y</i>₀. Scales both the noise and the bias.</p></div>
+  </div>
+  <div class="btns"><button id="redraw" type="button">Redraw samples</button><button id="reset" type="button">Reset to defaults</button></div>
+</aside>
+
+<main>
+  <section class="answer" aria-live="polite">
+    <div class="lab">Share of the 500 95% confidence intervals that contain the true effect</div>
+    <div class="big" id="cov"></div>
+    <div class="verdict" id="verdict"></div>
+    <div class="stats" id="stats"></div>
+    <div class="chips" id="chips"></div>
+  </section>
+  <div class="two">
+    <section class="panel">
+      <h3>500 naive estimates at this <i>N</i></h3>
+      <p class="sub"><span class="k" style="background:var(--eff)"></span>true effect τ &nbsp;<span class="k" style="background:var(--bias)"></span>population naive gap τ + SB</p>
+      <svg id="hist" viewBox="0 0 420 260" role="img" aria-label="Histogram of naive estimates"></svg>
+    </section>
+    <section class="panel">
+      <h3>The interval shrinks around…</h3>
+      <p class="sub">Typical estimate ± 1.96 SE as <i>N</i> grows (exact formula). <span class="k" style="background:var(--live)"></span>this simulation's mean and average interval.</p>
+      <svg id="funnel" viewBox="0 0 420 260" role="img" aria-label="Confidence band versus sample size"></svg>
+    </section>
+  </div>
+</main>
+</div>
+
+<footer>
+  <div><strong>Belongs to:</strong> Classes 5+6 notes (<code>Aula/class-05-06/potential-outcomes.ipynb</code>). The point is MHE's: a bigger sample buys precision, but only the design, an ideal experiment (Ch. 1, pp. 3–7) or random assignment (§2.2, p. 12), removes selection bias. NHIS example: t = 58.9 on a biased gap, p. 10.</div>
+  <div><strong>Data-generating process (illustrative, declared here and not taken from MHE):</strong> the same model as the Selection Bias Decomposer, with π = 0.5 and γ = 0 fixed so the effect is homogeneous (ATT = ATE = τ).
+    <i>Y</i>₀ ~ N(5, σ²); <i>D</i> = 1{λ<i>z</i> + √(1−λ²)ν &gt; 0}; <i>Y</i> = <i>Y</i>₀ + τ<i>D</i>. Population naive gap = τ + 4σλφ(0).
+    Each study draws <i>N</i> people (seeded PRNG, so moving a slider does not reshuffle) and reports the difference in means with an unpooled SE.
+    The band in the right panel uses the exact within-group variance σ²(1 − 0.6366 λ²), where 0.6366 = (φ(0)/0.5)², and SE = 2σ√(v/<i>N</i>).
+    Theoretical coverage = Φ(1.96 − SB/SE) − Φ(−1.96 − SB/SE).</div>
+  <div class="scroll"><table>
+    <thead><tr><th>Control</th><th>Symbol</th><th>Range</th><th>Step</th><th>Default</th><th>Unit</th><th>What visibly moves</th></tr></thead>
+    <tbody>
+      <tr><td>Sample size</td><td><i>N</i></td><td>10 to 10,000 (log)</td><td>300 positions; 10, 100, 1,000 and 10,000 exact</td><td>100</td><td>people</td><td>histogram width; marker in the band; coverage</td></tr>
+      <tr><td>Selection on <i>Y</i>₀</td><td>λ</td><td>−1 to 1</td><td>0.05</td><td>−0.60</td><td>correlation</td><td>red line and band move away from green; coverage</td></tr>
+      <tr><td>True effect</td><td>τ</td><td>−3 to 3</td><td>0.05</td><td>1.00</td><td>points</td><td>both lines shift together; coverage unchanged</td></tr>
+      <tr><td>Spread of health</td><td>σ</td><td>0.5 to 3</td><td>0.1</td><td>2.0</td><td>points</td><td>histogram width and bias size</td></tr>
+    </tbody></table></div>
+</footer>
+
+<script>
+const D = {nk:100, lam:-0.6, tau:1, sig:2};
+const ids = Object.keys(D), el = id => document.getElementById(id);
+const REPS = 500, MU0 = 5, PHI0 = 1/Math.sqrt(2*Math.PI);
+let seed = 20261009;
+
+const Phi = x => { const z=Math.abs(x)/Math.SQRT2, t=1/(1+0.5*z);
+  const r=t*Math.exp(-z*z-1.26551223+t*(1.00002368+t*(0.37409196+t*(0.09678418+t*(-0.18628806+t*(0.27886807+t*(-1.13520398+t*(1.48851587+t*(-0.82215223+t*0.17087277)))))))));
+  return x>=0?1-0.5*r:0.5*r; };
+function mulberry32(a){ return function(){ a|=0; a=a+0x6D2B79F5|0; let t=Math.imul(a^a>>>15,1|a); t=t+Math.imul(t^t>>>7,61|t)^t; return ((t^t>>>14)>>>0)/4294967296; }; }
+const nOf = k => Math.round(Math.pow(10, 1 + k/100));
+const fmt = (x,d=2) => { const v=Math.abs(x)<0.5*Math.pow(10,-d)?0:x; return (v<0?"−":"")+Math.abs(v).toFixed(d); };
+
+function theory(p, N){
+  const SB = 4*p.sig*p.lam*PHI0;            // sigma*lam*phi(0)/(pi(1-pi)) with pi = 0.5
+  const v = 1 - p.lam*p.lam*Math.pow(PHI0/0.5, 2);
+  const SE = 2*p.sig*Math.sqrt(v/N);
+  const cov = Phi(1.96 - SB/SE) - Phi(-1.96 - SB/SE);
+  return {SB, SE, cov, center: p.tau + SB};
+}
+
+function simulate(p, N){
+  const rnd = mulberry32(seed), s = Math.sqrt(Math.max(0,1-p.lam*p.lam));
+  const est = [], ses = []; let hit = 0, dropped = 0;
+  let spare = null;
+  const gauss = () => { if(spare!==null){const g=spare; spare=null; return g;}
+    let u=0; while(u===0) u=rnd(); const v=rnd(), r=Math.sqrt(-2*Math.log(u));
+    spare = r*Math.sin(2*Math.PI*v); return r*Math.cos(2*Math.PI*v); };
+  for(let r=0;r<REPS;r++){
+    let n1=0,n0=0,s1=0,s0=0,q1=0,q0=0;
+    for(let i=0;i<N;i++){
+      const z=gauss(), nu=gauss(), y0=MU0+p.sig*z;
+      if(p.lam*z + s*nu > 0){ const y=y0+p.tau; n1++; s1+=y; q1+=y*y; } else { n0++; s0+=y0; q0+=y0*y0; }
+    }
+    if(n1<2||n0<2){ dropped++; continue; }
+    const m1=s1/n1, m0=s0/n0, v1=(q1-n1*m1*m1)/(n1-1), v0=(q0-n0*m0*m0)/(n0-1);
+    const e=m1-m0, se=Math.sqrt(Math.max(0,v1)/n1+Math.max(0,v0)/n0);
+    est.push(e); ses.push(se); if(Math.abs(e-p.tau) <= 1.96*se) hit++;
+  }
+  const k=est.length, mean=est.reduce((a,b)=>a+b,0)/k;
+  const sd=Math.sqrt(est.reduce((a,b)=>a+(b-mean)*(b-mean),0)/(k-1)), mse=ses.reduce((a,b)=>a+b,0)/k;
+  return {est, mean, sd, mse, cov: hit/k, dropped, k};
+}
+
+function drawHist(p, sim, th){
+  const svg=el("hist"), W=420,H=260,L=36,R=12,T=16,B=40;
+  let lo=Math.min(...sim.est, p.tau, th.center), hi=Math.max(...sim.est, p.tau, th.center);
+  const pad=Math.max(0.2,0.06*(hi-lo)); lo-=pad; hi+=pad;
+  const nb=36, w=(hi-lo)/nb, cnt=new Array(nb).fill(0);
+  sim.est.forEach(e=>{ cnt[Math.min(nb-1,Math.floor((e-lo)/w))]++; });
+  const cmax=Math.max(...cnt)*1.15, x=v=>L+(v-lo)/(hi-lo)*(W-L-R), y=c=>T+(1-c/cmax)*(H-T-B);
+  let s="";
+  const step0=(hi-lo)/5, mag=Math.pow(10,Math.floor(Math.log10(step0))), step=[1,2,2.5,5,10].map(m=>m*mag).find(q=>q>=step0);
+  for(let t=Math.ceil(lo/step)*step;t<=hi+1e-9;t+=step){ s+=`<line x1="${x(t)}" x2="${x(t)}" y1="${T}" y2="${H-B}" stroke="var(--line)"/><text x="${x(t)}" y="${H-B+16}" text-anchor="middle">${fmt(t, step<1?(step<0.1?2:1):0)}</text>`; }
+  cnt.forEach((c,i)=>{ if(c) s+=`<rect x="${x(lo+i*w)+0.5}" y="${y(c)}" width="${Math.max(1,x(lo+(i+1)*w)-x(lo+i*w)-1)}" height="${y(0)-y(c)}" fill="var(--unobs)" opacity="0.75"/>`; });
+  s+=`<line x1="${L}" x2="${W-R}" y1="${y(0)}" y2="${y(0)}" stroke="var(--muted)"/>`;
+  const vline=(v,c,lab,dy)=>`<line x1="${x(v)}" x2="${x(v)}" y1="${T}" y2="${H-B}" stroke="${c}" stroke-width="2.5"/><text x="${Math.min(W-R-4,Math.max(L+4,x(v)))}" y="${T+dy}" text-anchor="${x(v)>W/2?"end":"start"}" style="fill:${c};font-weight:600">${lab}</text>`;
+  s+=vline(p.tau,"var(--eff)",` τ = ${fmt(p.tau)} `,0) + (Math.abs(th.SB)>1e-9 ? vline(th.center,"var(--bias)",` τ+SB = ${fmt(th.center)} `,14) : "");
+  s+=`<text x="${(L+W-R)/2}" y="${H-6}" text-anchor="middle">naive estimate (points)</text>`;
+  svg.innerHTML=s;
+}
+
+function drawFunnel(p, sim, th, N){
+  const svg=el("funnel"), W=420,H=260,L=42,R=12,T=16,B=40;
+  const lx=v=>L+(Math.log10(v)-1)/3*(W-L-R);
+  const t10=theory(p,10);
+  let lo=Math.min(p.tau, th.center-1.96*t10.SE, sim.mean-1.96*sim.mse), hi=Math.max(p.tau, th.center+1.96*t10.SE, sim.mean+1.96*sim.mse);
+  const pad=0.06*(hi-lo); lo-=pad; hi+=pad;
+  const y=v=>T+(1-(v-lo)/(hi-lo))*(H-T-B);
+  let s="", up="", dn="";
+  for(let i=0;i<=200;i++){ const n=Math.pow(10,1+3*i/200), t=theory(p,n);
+    up+=(i?"L":"M")+lx(n).toFixed(1)+" "+y(th.center+1.96*t.SE).toFixed(1);
+    dn=`L${lx(n).toFixed(1)} ${y(th.center-1.96*t.SE).toFixed(1)}`+dn; }
+  [10,100,1000,10000].forEach(n=>{ s+=`<line x1="${lx(n)}" x2="${lx(n)}" y1="${T}" y2="${H-B}" stroke="var(--line)"/><text x="${lx(n)}" y="${H-B+16}" text-anchor="middle">${n.toLocaleString("en-US")}</text>`; });
+  const step0=(hi-lo)/5, mag=Math.pow(10,Math.floor(Math.log10(step0))), step=[1,2,2.5,5,10].map(m=>m*mag).find(q=>q>=step0);
+  for(let t=Math.ceil(lo/step)*step;t<=hi+1e-9;t+=step){ s+=`<text x="${L-6}" y="${y(t)+4}" text-anchor="end">${fmt(t, step<1?1:0)}</text>`; }
+  s+=`<path d="${up+dn.replace(/^L/,"L")}Z" fill="var(--bias)" opacity="0.14"/>`;
+  s+=`<line x1="${L}" x2="${W-R}" y1="${y(th.center)}" y2="${y(th.center)}" stroke="var(--bias)" stroke-width="2" stroke-dasharray="${Math.abs(th.SB)>1e-9?"6 4":"0"}"/>`;
+  s+=`<line x1="${L}" x2="${W-R}" y1="${y(p.tau)}" y2="${y(p.tau)}" stroke="var(--eff)" stroke-width="2.5"/>`;
+  const cx=lx(N);
+  s+=`<line x1="${cx}" x2="${cx}" y1="${y(sim.mean+1.96*sim.mse)}" y2="${y(sim.mean-1.96*sim.mse)}" stroke="var(--live)" stroke-width="3"/>`;
+  s+=`<circle cx="${cx}" cy="${y(sim.mean)}" r="5" fill="var(--live)" stroke="var(--panel)" stroke-width="1.5"/>`;
+  s+=`<text x="${(L+W-R)/2}" y="${H-6}" text-anchor="middle">sample size N (log scale)</text>`;
+  svg.innerHTML=s;
+}
+
+let busy=false, pending=false;
+function update(){
+  if(busy){ pending=true; return; }
+  busy=true;
+  requestAnimationFrame(()=>{
+    const p={}; ids.forEach(k=>p[k]=parseFloat(el(k).value));
+    const N=nOf(p.nk), th=theory(p,N), sim=simulate(p,N);
+    el("o-n").textContent=N.toLocaleString("en-US"); el("o-lam").textContent=fmt(p.lam); el("o-tau").textContent=fmt(p.tau); el("o-sig").textContent=p.sig.toFixed(1);
+    el("cov").textContent=(100*sim.cov).toFixed(1)+"%";
+    const biased=Math.abs(th.SB)>1e-9;
+    el("verdict").innerHTML = !biased
+      ? `Treatment is a coin flip, so the estimates centre on the true effect at any <i>N</i>.` + (N<60 ? ` Coverage sits a little under 95% here only because 1.96 is a large-sample critical value; with about ${Math.round(N/2)} people per group a t critical value would fix it.` : ` About 95% of intervals cover it, as they should.`)
+      : (sim.cov<0.5
+        ? `The estimates are precise and wrong. They pile up around ${fmt(th.center)} while the true effect is ${fmt(p.tau)}. <strong style="color:var(--bias)">More data only tightens the interval around the wrong value.</strong>`
+        : `At this sample size the noise still hides the bias of ${fmt(th.SB)}. Raise <i>N</i> and watch coverage collapse.`);
+    const stats=[["mean estimate",fmt(sim.mean)],["bias (mean − τ)",fmt(sim.mean-p.tau)],["selection bias SB",fmt(th.SB)],["SD of estimates",fmt(sim.sd,3)],["average SE",fmt(sim.mse,3)],["theoretical coverage",(100*th.cov).toFixed(1)+"%"]];
+    if(sim.dropped) stats.push(["studies dropped",`${sim.dropped} (a group had < 2 people)`]);
+    el("stats").innerHTML=stats.map(([l,v])=>`<div class="stat"><div class="l">${l}</div><div class="v">${v}</div></div>`).join("");
+    const chips=[[Math.abs(p.lam)<1e-9,"λ = 0: random assignment, coverage ≈ 95%"],[N===10000,"N = 10,000"],[N===10,"N = 10"]];
+    el("chips").innerHTML=chips.map(([on,t])=>`<span class="chip${on?" on":""}">${on?"● ":"○ "}${t}</span>`).join("");
+    drawHist(p,sim,th); drawFunnel(p,sim,th,N);
+    busy=false; if(pending){ pending=false; update(); }
+  });
+}
+function reset(){ ids.forEach(k=>el(k).value=D[k]); seed=20261009; update(); }
+ids.forEach(k=>el(k).addEventListener("input",update));
+el("reset").addEventListener("click",reset);
+el("redraw").addEventListener("click",()=>{ seed=(seed*1664525+1013904223)>>>0; update(); });
+reset();
+</script>

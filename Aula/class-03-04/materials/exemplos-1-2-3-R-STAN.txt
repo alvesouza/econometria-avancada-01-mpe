@@ -1,0 +1,197 @@
+############################################################################################################
+# EXAMPLE 1 - exemplo1.R
+############################################################################################################
+install.packages("rstan")
+library("rstan")
+options(mc.cores=4)
+
+# Simulating some data
+n     = 100
+y     = rnorm(n,1.6,0.2)
+
+# Running stan code
+model = stan_model("exemplo1.stan")
+
+fit = sampling(model,list(n=n,y=y),iter=200,chains=4)
+
+print(fit)
+
+params = extract(fit)d
+
+par(mfrow=c(2,3))
+ts.plot(params$mu,xlab="Iterations",ylab="mu")
+acf(params$mu,main="")
+hist(params$mu,main="",xlab="sigma")
+
+ts.plot(params$sigma,xlab="Iterations",ylab="mu")
+acf(params$sigma,main="")
+hist(params$sigma,main="",xlab="sigma")
+
+
+############################
+# EXAMPLE 1 - exemplo1.stan
+############################
+data {
+  int n;
+  real y[n];
+}
+
+parameters {
+  real mu;
+  real<lower=0> sigma;
+}
+
+model {
+  for (i in 1:n)
+    y[i] ~ normal(mu,sigma);
+  mu ~ normal(1.7,0.3);
+  sigma ~ cauchy(0,1);
+}
+
+
+
+
+
+
+
+############################################################################################################
+# EXAMPLE 2 - exemplo2.R
+############################################################################################################
+#install.packages("rstan")
+#library("rstan")
+#options(mc.cores=4)
+
+# Simulating some data
+n = 100
+x = rnorm(n)
+y = rnorm(n,1+2*x,1)
+
+# Running stan code
+model = stan_model("exemplo2.stan")
+
+fit = sampling(model,list(n=n,y=y,x=x),iter=200,chains=4)
+
+print(fit)
+
+params = extract(fit)
+
+par(mfrow=c(2,3))
+ts.plot(params$alpha,xlab="Iterations",ylab="alpha")
+ts.plot(params$beta,xlab="Iterations",ylab="beta")
+ts.plot(params$sigma,xlab="Iterations",ylab="sigma")
+#acf(params$alpha,main="")
+#acf(params$beta,main="")
+#acf(params$sigma,main="")
+hist(params$alpha,main="",xlab="alpha")
+hist(params$beta,main="",xlab="beta")
+hist(params$sigma,main="",xlab="sigma")
+
+
+############################
+# EXAMPLE 2 - exemplo2.stan
+############################
+data {
+  int<lower=1> n;
+  real x[n];
+  real y[n];
+}
+
+parameters {
+  real beta;
+  real alpha;
+  real<lower=0> sigma;
+}
+
+model {
+  alpha ~ normal(0,1);
+  beta  ~ normal(0,1);
+  sigma ~ cauchy(0,2.5);
+  for (i in 1:n)
+   y[i] ~ normal(alpha+beta*x[i],sigma);
+}
+
+
+
+
+
+
+
+
+############################################################################################################
+# EXAMPLE 3 - exemplo3.R
+############################################################################################################
+install.packages("rstan")
+install.packages("astsa")
+library("rstan")
+library("astsa")
+options(mc.cores=4)
+
+# Daily closing prices of Germany DAX
+price = as.double(EuStockMarkets[,4])
+y     = diff(log(price))
+y     = y - mean(y)
+n     = length(y)
+
+par(mfrow=c(1,1))
+ts.plot(y,ylab="",main="")
+
+# Running stan code
+M  = 2000
+M0 = M/2
+
+model  = stan_model("exemplo3.stan")
+
+fit    = sampling(model,list(n=n,y=y),iter=M,chains=1)
+
+params = extract(fit)
+
+corr = matrix(sqrt(params$nu/(params$nu-2)),M/2,n)
+
+qstdev = t(apply(exp(params$h/2)*corr,2,quantile,c(0.025,0.5,0.975)))
+
+par(mfrow=c(2,2))
+ts.plot(params$mu,xlab="Draws",ylab=expression(mu),main="Student's t")
+ts.plot(params$phi,xlab="Draws",ylab=expression(phi))
+ts.plot(params$sigma,xlab="Draws",ylab=expression(sigma))
+ts.plot(params$nu,xlab="Iterations",ylab="",main=expression(nu))
+
+#Posterior distribution of time-varying standard deviations
+par(mfrow=c(1,1))
+plot(abs(y),ylim=c(0,max(qstdev,abs(y))),type="h",
+     ylab="Absolute returns and stdev",xlab="Time")
+lines(qstdev[,1],col=3,lwd=3)
+lines(qstdev[,3],col=3,lwd=3)
+lines(qstdev[,2],col=2,lwd=3)
+
+par(mfrow=c(1,1))
+plot(y,type="h",ylab="Returns +/- 2 stdev",xlab="Time")
+lines(2*qstdev[,2],col=3,lwd=3)
+lines(-2*qstdev[,2],col=3,lwd=3)
+
+
+############################
+# EXAMPLE 3 - exemplo3.stan
+############################
+data {
+  int<lower=0> n;   // # time points (equally spaced)
+  vector[n] y;      // mean corrected return at time t
+}
+
+parameters {
+  real mu;                     // mean log volatility
+  real<lower=-1,upper=1> phi;  // persistence of volatility
+  real<lower=0> sigma;         // white noise shock scale
+  real<lower=2> nu;            // degrees of freedom
+  vector[n] h;                 // log volatility at time t
+}
+
+model {
+  phi ~ normal(0.8,0.3);
+  sigma ~ gamma(0.5,0.5);
+  mu ~ normal(0,10);
+  nu ~ gamma(1,0.05);
+  h[1] ~ normal(mu,sigma/sqrt(1-phi*phi));
+  for (t in 2:n)
+    h[t] ~ normal(mu+phi*(h[t-1]-mu),sigma);
+  y ~ student_t(nu, 0, exp(h/2));
+}

@@ -1,0 +1,302 @@
+Advanced Econometrics. Topic narration: Monte Carlo methods for inference. Narrated study notes, part 1 of 3.
+
+How to listen. This is a topic narration: it gathers, in one place, everything the course says about Monte Carlo methods, from Class 1 and from Classes 3 and 4. It comes in three files, each about an hour at normal speed. This first file holds three sections. Section 1, Monte Carlo integration, the law of large numbers, the Monte Carlo standard error and how many replications you need. Section 2, Monte Carlo studies of an estimator's bias, variance and mean squared error, worked on the four estimators of the upper bound of a uniform distribution. Section 3, exact sampling: the inverse distribution function, composition, and accept-reject. The second file holds section 4, importance sampling, its variance, and sampling importance resampling; section 5, Markov chains and stationarity; and section 6, the Gibbs sampler with the coal-mining switch point. The third file holds section 7, Metropolis-Hastings, and section 8, mixing and diagnostics, followed by the support parts: the pitfalls, a spoken formula sheet, a true or false self-test, and the whole topic in five lines.
+
+Every formula is spoken in words. Each section opens by naming its sources and their printed pages, states its claim before the derivations, walks every step, and closes with a spoken checklist. Equations are numbered within each section of this narration, so "equation 3" always means the third equation of the section you are in.
+
+The sources. Four study notes: the Class 1 note on comparing estimators, mean squared error and the bootstrap; and the Classes 3 and 4 notes on Monte Carlo simulation, on Markov chains and the Gibbs sampler, and on Metropolis-Hastings and Hamiltonian Monte Carlo. Behind them, three books, cited at their printed pages. Greenberg, Introduction to Bayesian Econometrics, first edition, chapters 5, 6 and 7, printed pages 63 to 107. Morettin and Singer, Estatística e Ciência de Dados, the preliminary version of April 2021, appendix B, printed pages 453 to 478, and appendix C, section C.5, printed pages 487 to 488. And, where the notes use it, Tsay, Analysis of Financial Time Series, third edition, chapter 12. Bolfarine and Sandoval supply the exact results for the uniform example of section 2.
+
+A word on scope. The course program places Monte Carlo and Markov chain Monte Carlo under Greenberg chapters 5 to 7, explicitly without sequential Monte Carlo, and under Tsay chapter 12. The final exam has no code. Expect derivations: of a Monte Carlo standard error, of an acceptance probability, of a full conditional distribution, and the reading of sampler output. Hamiltonian Monte Carlo, the no-U-turn sampler, Rao-Blackwellisation and sequential Monte Carlo are named only; they are not examinable. The bootstrap, which is Monte Carlo applied to the empirical distribution of one observed sample, has its own narration and is mentioned here in one sentence only.
+
+Section 1. Monte Carlo integration: replace an integral by an average of draws, and know its error.
+
+This section covers the Classes 3 and 4 note on Monte Carlo simulation, its subsections 1 and 2 and its subsection 8; the ingredients deck, slides 53 to 56, the toy example that estimates pi; Greenberg chapter 5, the opening of the chapter on printed page 63 and section 5.6 on printed pages 72 to 74; Greenberg section 7.3, printed page 102, for the definition of the numerical standard error; and Morettin and Singer appendix B, sections B.1 and B.2, printed pages 453 to 457, with equations B.1 and B.2 and Example B.4. The accuracy rule for a Monte Carlo study comes from the Class 1 note, subsection 7.
+
+The claim, before the derivations. Every Bayesian summary, and many frequentist ones, is an integral: a posterior mean, a probability, a predictive density, a marginal likelihood, the bias of an estimator. Monte Carlo writes the integral as an expectation, draws M independent values from the distribution, and averages. The law of large numbers makes the average converge. Its error is the standard deviation of one draw divided by the square root of M, and it is estimated by the numerical standard error. So four times the draws buy half the error. For hit-or-miss pi, the standard error is 1.6422 over the square root of M: 0.0519 at M equal to 1000.
+
+The notation. f is the density we draw from, the target. g is the function whose expectation we want. M is the number of draws in the deck; Greenberg calls it capital G and Morettin and Singer call it n. g bar M is the average of g over the M draws. The numerical standard error, n.s.e. for short in Greenberg, is the square root of the estimated variance of g of X, divided by M, all under the square root.
+
+One point one. Why simulate at all. The Monte Carlo note, subsection 1; the deck, slides 42 to 43. This is the U layer, the understanding layer.
+
+Some integrals cannot be done by hand. The posterior of physicist C in Classes 3 and 4 needs the integral of theta, times the likelihood of the measurement given theta, times a Student t prior on theta. There is no closed form. The deck, slide 43, says it plainly: "Bayesian computation was done on limited, unrealistic models until the Monte Carlo revolution (and the computing revolution) of the late 1980's and early 1990's". The idea that broke the barrier is old and simple: the law of large numbers. If we can draw from a distribution, sample averages of the draws approximate its expectations.
+
+Morettin and Singer, printed page 453, give the same idea with a picture. To find the area of a figure F inside the unit square Q, generate N points uniformly over Q and count the N star that fall on F. The area is approximately N star over N, and the more points we generate, the better the approximation. The problem has nothing random in it, yet a random mechanism solves it. They also recall the name: Monte Carlo is the district of Monaco where casinos operate freely, and the methods appeared during the Second World War in work on the random diffusion of neutrons, with the pioneering papers of Metropolis and Ulam, 1949, Metropolis and coauthors, 1953, and von Neumann, 1951.
+
+Morettin and Singer, printed page 455, sort simulation methods into three families, and the rest of this narration follows that map. First, static simulation: Monte Carlo, accept-reject and weighted resampling, which produce independent draws. That is sections 1 to 4. Second, simulation by imputation: the EM algorithm and data augmentation, which enlarge the data with latent variables. Data augmentation appears in section 6. Third, dynamic simulation: the Gibbs sampler and the Metropolis and Metropolis-Hastings algorithms, Markov chain Monte Carlo, which build a Markov chain whose equilibrium distribution is the one we want to sample. That is sections 5 to 8.
+
+One point two. Monte Carlo integration. The Monte Carlo note, subsection 2; Greenberg printed page 63; Morettin and Singer section B.2, printed page 456. This is the C layer, the core layer.
+
+Greenberg opens chapter 5, printed page 63, by naming the problem: approximate the expected value of g of X, where X has density f, when the integral of g of x times f of x cannot be computed analytically. The expected value itself is the case g of X equal to X. A probability, the probability that X lies between c one and c two, is the case where g is the indicator function of that interval.
+
+Equation 1. For X distributed with density f, and a function g whose absolute value has a finite expectation: the expected value of g of X, which is the integral of g of x times f of x d x, is approximately g bar M, which is one over M times the sum, from i equal to 1 to M, of g of X i, where X 1 to X M are independent draws from f.
+
+Three properties follow, and each is one line.
+
+First, g bar M is unbiased. Its expectation is one over M times the sum of M equal expectations, which is the expected value of g of X itself.
+
+Second, it converges. Morettin and Singer, printed page 456: the strong law of large numbers guarantees that, as n goes to infinity, the average converges to the expected value with probability one. That is why the condition on the absolute value of g matters: the law of large numbers needs a finite mean.
+
+Third, its variance. The draws are independent, so the variance of the sum is the sum of the variances. The variance of g bar M is one over M squared, times M, times the variance of g of X, which is the variance of g of X over M.
+
+Equation 2, Greenberg's numerical standard error, printed page 73: the n.s.e. is the square root of the estimated variance of g of X, divided by M. Greenberg's estimate of the variance, printed page 102, is the usual one: one over G minus one, times the sum of squared deviations of the draws from their mean. Morettin and Singer write the same object as their equation B.2, printed page 456: one over the square root of n, times the square root of the average squared deviation of the h of X i from their mean; and they add that it is of order n to the minus one half. Greenberg's sentence that matters, printed page 73: the numerical standard error "is an estimate of the variation that can be expected in computing the mean of some function of the observations" over different simulations of the same length, and it "can be controlled by varying the simulation sample size G".
+
+Probabilities are the case where g is the indicator of an event A. Then the probability of A is approximately the fraction of draws that fall in A, Greenberg printed page 63. And because an indicator is a Bernoulli variable with success probability p, its variance is p times one minus p, so the numerical standard error of a simulated probability is the square root of p times one minus p, over M.
+
+One point three. Worked: hit-or-miss pi. The deck, slides 53 to 56; the Monte Carlo note, equation 3.
+
+Draw pairs x i and y i, each uniform on zero to one, so the points are uniform on the unit square. The probability that x squared plus y squared is less than one is the area of the quarter disc of radius one inside the square, which is pi over 4. So the fraction of points inside the quarter disc estimates pi over 4, and 4 times that fraction estimates pi.
+
+The indicator of "inside" is Bernoulli with p equal to pi over 4, which is 0.7854; one minus p is 0.2146. By equation 2, and multiplying by the 4 that turns the fraction into pi, equation 3: the standard error of the estimate of pi is 4 times the square root of p times one minus p over M. That is 4 times the square root of 0.7854 times 0.2146 over M. The product 0.7854 times 0.2146 is about 0.1686; its square root is about 0.4106; times 4 it is 1.6422. So the standard error is 1.6422 over the square root of M.
+
+At M equal to 1000, the square root of M is 31.623, and the standard error is 1.6422 over 31.623, which is 0.0519. The deck's estimate, on slide 54, is 3.196. Its distance from pi, 3.196 minus 3.1416, is 0.0544, and 0.0544 over 0.0519 is 1.05. The estimate is 1.05 standard errors high: an ordinary draw, nothing to worry about. At M equal to 10,000 the standard error is 0.0164, and a seeded Python run gives 3.1452.
+
+The figure of the Monte Carlo note, right panel, is slide 56 with its envelope drawn. Six seeded running estimates of pi are plotted against the number of draws, inside a funnel of pi plus or minus two standard errors from equation 3. The funnel narrows from about plus or minus 0.1 at 1000 draws to plus or minus 0.033 at 10,000. Every path wanders; none escapes the funnel for long; and the funnel narrows slowly. Four times the draws for half the error.
+
+One point four. Worked: a quarter of the area of the unit circle, Morettin and Singer Example B.4, printed page 456.
+
+The same number, pi over 4, can be written as an ordinary expectation rather than a hit-or-miss probability. Take h of X equal to the square root of one minus X squared, with X uniform on zero to one. Its expectation is the integral from zero to one of the square root of one minus x squared, which is the area of a quarter of the unit circle, pi over 4, equal to 0.7853982. Morettin and Singer's equation B.3 estimates it by the average of the square root of one minus X i squared over uniform draws. With 1000 uniform values they obtain 0.7880834, and equation B.2 gives a standard error of 0.0069437. The error, 0.7880834 minus 0.7853982, is 0.0027, well under one standard error.
+
+Compare the two estimators of the same quantity at the same M equal to 1000. Hit-or-miss estimates pi over 4 with standard error 0.0519 over 4, which is about 0.013. The average of the curve height estimates it with standard error about 0.0069. Same number of points, same target, about half the error. Using the value of the function, rather than only whether a point falls under it, removes variance. This is the first instance of a theme that returns in section 4: the variance of a Monte Carlo estimator depends on how the integral is written, not only on M.
+
+One point five. How many replications you need. The Monte Carlo note, equation 3; the Class 1 note, subsection 7.
+
+Equation 2 can be turned around. If you want a numerical standard error no larger than some target e, you need M at least equal to the variance of g of X divided by e squared. The square is what makes precision expensive: to divide the error by 10 you need 100 times the draws. For hit-or-miss pi, a standard error of 0.0164 needs 10,000 draws, as computed above; by the arithmetic of equation 3, a standard error of 0.01 needs 1.6422 over 0.01, squared, which is about 27,000 draws. The variance of g of X is not known before the run, so in practice you run a pilot, estimate the variance from it, and then solve for M.
+
+The same logic applies to anything a simulation reports, not only to a mean. The Class 1 note uses it for a Monte Carlo study's standard deviations. The standard deviation of a sample standard deviation computed from N draws is roughly the standard deviation itself divided by the square root of 2 times N minus one. With N equal to 1000 that is one over the square root of 1998, which is about 2.2 per cent of the standard deviation. That is the deck's "accurate to roughly plus or minus 2 per cent" for the simulated standard deviations of section 2. So before you read a simulated table, ask how many replications stand behind it and what that implies for the third decimal.
+
+One point six. Using simulated output. The Monte Carlo note, subsection 8; Greenberg section 5.6, printed pages 72 to 74.
+
+A sample of draws can answer more than a mean. Greenberg, printed page 72: we can graph the histogram or a kernel-smoothed histogram to see the shape of the distribution; we can approximate the distribution of any continuous function of the draws, including moments; and we can approximate quantiles.
+
+Worked: Greenberg's product of two betas. Let Z equal X times Y, with X a Beta of 3 and 3 and Y a Beta of 5 and 3, independent. Greenberg reports that a search turned up no analytic solution for the distribution of Z. So draw X g and Y g, and set Z g equal to their product; the Z g are draws from the target. With G equal to 5000: the sample mean, the estimate of the expected value of Z, is 0.3146. The sample variance is 0.0215. The numerical standard error is the square root of 0.0215 over 5000, which is 0.0021. And the 125th and the 4875th ordered values, the 2.5 and 97.5 per cent points of 5000, give the interval 0.0719 to 0.6279, in which Z lies with probability 0.95.
+
+The remarkable result, Greenberg printed page 74. Suppose the draws are from a joint posterior of a vector theta with components theta one to theta d, arranged as a table with one row per draw and one column per parameter. Each row is a draw from the joint posterior. The marginal posterior of theta one is the integral of the joint posterior over theta two to theta d. So the first column is a sample from the marginal of theta one, the second column from the marginal of theta two, and so on. Drawing from the joint distribution gives samples from every marginal without computing any integral. Greenberg adds that this extends to the Markov chain methods of sections 5 to 8, with one difference: the draws in each column are then not independent. And functions of the draws, ratios, products, predicted probabilities, are draws of the function: compute the function draw by draw.
+
+Recap of section 1. An expectation is approximated by an average of independent draws, equation 1. The average is unbiased, converges by the law of large numbers, and has variance equal to the variance of one draw over M. The numerical standard error is the square root of the estimated variance over M, equation 2. Hit-or-miss pi has standard error 1.6422 over the square root of M, 0.0519 at 1000 draws, and the deck's 3.196 is 1.05 errors high. To reach a target error e, M must be the variance over e squared, so halving the error costs four times the draws.
+
+Checklist for section 1. You should be able to write a posterior summary or a probability as an expectation and estimate it by an average. You should be able to prove that the Monte Carlo average is unbiased and has variance the variance of g over M. You should be able to compute the standard error of hit-or-miss pi, 1.6422 over the square root of M, and judge the deck's 3.196 against it. You should be able to say how many draws a target standard error requires. You should be able to explain why the columns of a table of joint draws are samples from the marginals, and compute Greenberg's n.s.e. of 0.0021 from a variance of 0.0215 and 5000 draws.
+
+Section 2. Monte Carlo studies of estimators: bias, variance and mean squared error, on the four estimators of a uniform bound.
+
+This section covers the Class 1 note on comparing estimators, mean squared error and the bootstrap, subsections 1 to 8; the comparing-estimators slides, slides 1 to 12 and slide 20; the lecturer's handwritten Class 1 notes, pages 1 and 2; and Bolfarine and Sandoval, section 1.1.5 on printed page 3, Definition 1.3.7 and equation 1.3.2 on printed page 6, Example 1.3.8 on printed page 11, Table 1.1 on printed page 12, Example 2.2.5 on printed page 23, and Example 3.1.3 on printed pages 37 to 38.
+
+The claim, before the derivations. A Monte Carlo study is Monte Carlo integration applied to an estimator: fix the true parameter, simulate many samples, compute the estimator on each, and average. The averages approximate the estimator's mean, variance and mean squared error over repeated samples. The criterion is the mean squared error, which is variance plus squared bias, so unbiasedness is one ingredient of a good estimator, not the criterion. For draws from a uniform on zero to theta, the exact mean squared errors rank four candidates, from best to worst: n plus one over n times the maximum, then the maximum, then twice the mean, then the mean, for every n of 3 or more. A simulation with theta equal to 3, n equal to 10 and 1000 replications reproduces the ranking, with mean squared errors of 0.084, 0.149, 0.308 and 2.336 against the exact 0.075, 0.136, 0.300 and 2.325.
+
+The notation. x 1 to x n are independent draws from the uniform on zero to theta, so each lies between zero and theta. x bar is the sample mean. x sub n in parentheses, which we will call simply the maximum, is the largest observation. The four estimators are: theta hat one equal to x bar; theta hat two equal to the maximum; theta hat three equal to two times x bar; and theta hat four equal to n plus one over n, times the maximum. E and V are the mean and the variance over repeated samples, with theta fixed. The bias is the expected value of the estimator minus theta. The mean squared error, written M S E, is the expected value of the squared distance between the estimator and theta; Bolfarine and Sandoval call it EQM, "erro quadrático médio". N is the number of Monte Carlo replications, 1000 in the deck.
+
+Two point one. Why a criterion is needed at all. The Class 1 note, subsection 1. The U layer.
+
+Four reasonable-looking numbers can be computed from one uniform sample, and they disagree. To choose among them, we need a loss that does not reward a property for its own sake. The deck asks, on slide 7: "Is theta hat one equal to x bar a 'natural choice'?" The answer is: not quite. Every x i is at most theta, so x bar estimates the expected value of x, which is theta over 2, not theta. Doubling it removes the bias but doubles the standard deviation. A better route is to look at the likelihood, which points to the maximum.
+
+Two point two. Mean squared error is variance plus squared bias. Bolfarine and Sandoval, Definition 1.3.7 and equation 1.3.2, printed page 6. The C layer.
+
+Equation 1: the mean squared error of theta hat is the expected value of theta hat minus theta, squared.
+
+Step one. Add and subtract the expected value of theta hat inside the square. The quantity inside becomes the sum of two pieces: theta hat minus its expectation, and the expectation minus theta.
+
+Step two. Expand the square. You get three terms: the expected value of theta hat minus its expectation, squared; plus two times the expectation minus theta, times the expected value of theta hat minus its expectation; plus the expectation minus theta, squared. The middle term can take the constant, the expectation minus theta, outside the expected value.
+
+Step three. The middle expected value is the expected value of theta hat minus the expected value of theta hat, which is zero. So the middle term vanishes.
+
+Equation 2, the result: the mean squared error equals the variance of theta hat plus the bias squared. And equation 3: for an unbiased estimator, where the bias is zero, the mean squared error is the variance.
+
+The sentence to keep: an unbiased estimator can lose to a biased one if the bias buys enough variance. Subsection 7 shows a biased multiple of the maximum beating the unbiased one. A small note on the handwriting: the lecturer's handwritten page 2 writes the definition with the expected value of theta inside the square, a slip; equation 1 is the definition, and the second line of that page, variance plus bias squared, is correct.
+
+Two point three. The first two moments of the four estimators. The deck, slides 2 and 3; Bolfarine and Sandoval section 1.1.5, printed page 3, and equations 1.3.14 and 1.3.15, printed page 11.
+
+One uniform draw first. The density is one over theta on the interval from zero to theta, and zero elsewhere. Its support depends on theta, which is what makes this model unusual; Bolfarine and Sandoval, printed page 3, stress exactly that.
+
+Equation 4: the expected value of x is the integral from zero to theta of x times one over theta, which is one over theta times theta squared over 2, which is theta over 2.
+
+Equation 5: the expected value of x squared is the integral from zero to theta of x squared times one over theta, which is one over theta times theta cubed over 3, which is theta squared over 3.
+
+Equation 6: the variance of x is theta squared over 3 minus theta squared over 4, which is theta squared over 12.
+
+The sample mean. By linearity and equation 4, equation 7: the expected value of x bar is one over n times n times theta over 2, which is theta over 2. By independence and equation 6, equation 8: the variance of x bar is one over n squared, times n, times theta squared over 12, which is theta squared over 12 n.
+
+The maximum. The maximum is below a number t exactly when every draw is below t. The draws are independent, so equation 9: the probability that the maximum is at most t is the product of the n probabilities, t over theta each, which is t over theta, raised to the n, for t between zero and theta. Differentiating in t gives equation 10, the density of the maximum: n times the maximum to the power n minus one, over theta to the n. So u, the maximum divided by theta, has density n times u to the n minus one on zero to one. That is the Beta distribution with parameters n and 1: slide 3's "useful fact".
+
+Its moments come from one integral. Equation 11: the expected value of u to the k is the integral from zero to one of u to the k times n u to the n minus one, which is n over n plus k. With k equal to 1 and 2, equation 12: the expected value of u is n over n plus one, and the expected value of u squared is n over n plus 2.
+
+The variance of u, equation 13. It is n over n plus 2, minus n over n plus one, squared. Put both over the common denominator n plus one squared times n plus 2. The numerator is n times n plus one squared, minus n squared times n plus 2. Factor out n: inside the bracket, n squared plus 2 n plus one, minus n squared minus 2 n, leaves one. So the variance of u is n over n plus one squared times n plus 2.
+
+Scaling back by theta, equation 14, Bolfarine and Sandoval equation 1.3.15: the expected value of the maximum is n over n plus one, times theta; and its variance is n theta squared over n plus one squared times n plus 2.
+
+The two unbiased versions. Twice the mean: by equations 7 and 8, its expectation is 2 times theta over 2, which is theta, and its variance is 4 times theta squared over 12 n, which is theta squared over 3 n. The scaled maximum, n plus one over n times the maximum: by equation 14, its expectation is n plus one over n, times n over n plus one, times theta, which is theta. Equation 15, its variance: n plus one over n, squared, times n theta squared over n plus one squared times n plus 2. The n plus one squared cancels, and one n cancels, leaving theta squared over n times n plus 2.
+
+Slide 3's table, now derived, said estimator by estimator. The mean: expectation theta over 2, variance theta squared over 12 n. The maximum: expectation n over n plus one times theta, variance n theta squared over n plus one squared times n plus 2. Twice the mean: expectation theta, variance theta squared over 3 n. The scaled maximum: expectation theta, variance theta squared over n times n plus 2.
+
+Two point four. The four mean squared errors. The deck, slide 4; Bolfarine and Sandoval Example 1.3.8, printed page 11.
+
+The mean. Substituting equations 7 and 8 into equation 2. The bias is theta over 2 minus theta, which is minus theta over 2, and its square is theta squared over 4. Equation 16: the mean squared error is theta squared over 12 n plus theta squared over 4. Over the common denominator 12 n that is theta squared plus 3 n theta squared, over 12 n, which is 1 plus 3 n, over 12 n, times theta squared.
+
+The maximum. Substituting equation 14 into equation 2. The bias is n over n plus one times theta, minus theta, which is minus theta over n plus one. Equation 17: the mean squared error is n theta squared over n plus one squared times n plus 2, plus theta squared over n plus one squared. Over the common denominator n plus one squared times n plus 2, the numerator is n theta squared plus n plus 2 times theta squared, which is 2 times n plus one, times theta squared. Cancel one factor of n plus one, and the result is 2 theta squared over n plus one times n plus 2.
+
+The two unbiased estimators, by equation 3, equation 18: the mean squared error of twice the mean is theta squared over 3 n; that of the scaled maximum is theta squared over n times n plus 2.
+
+Two rates are visible in the formulas. Equation 17 and the second half of equation 18 fall like one over n squared. The first half of equation 18 falls like one over n. And equation 16 does not go to zero at all: it tends to theta squared over 4, the squared bias, theta over 2 squared, that no amount of data removes. Bolfarine and Sandoval, printed page 12: as n goes to infinity, the EQM of theta hat one goes to theta squared over 4.
+
+Two point five. The ranking, proved. The deck, slide 5.
+
+All four mean squared errors are theta squared times a function of n, so the ranking does not depend on theta. Compare them in pairs, after dividing out theta squared.
+
+Comparison a, the scaled maximum against the maximum. By equations 18 and 17, one over n times n plus 2 is less than 2 over n plus one times n plus 2. Multiply both sides by n times n plus one times n plus 2, which is positive. That gives n plus one less than 2 n, which holds exactly when n is greater than one. Equation 19.
+
+Comparison b, the maximum against twice the mean. 2 over n plus one times n plus 2 is less than one over 3 n. Cross-multiply: 6 n is less than n plus one times n plus 2, which is n squared plus 3 n plus 2. Rearranged: n squared minus 3 n plus 2 is positive, which factors as n minus one, times n minus 2, positive. Equation 20. For whole numbers n this holds exactly when n is greater than 2. At n equal to 1 and at n equal to 2 the product is zero, and the two mean squared errors tie.
+
+Comparison c, twice the mean against the mean. One over 3 n is less than 1 plus 3 n over 12 n. Multiply by 12 n: 4 is less than 1 plus 3 n, which holds exactly when n is greater than one. Equation 21.
+
+Chaining equations 19, 20 and 21, equation 22: for n of 3 or more, the mean squared error of the scaled maximum is less than that of the maximum, which is less than that of twice the mean, which is less than that of the mean.
+
+The small cases, in units of theta squared. At n equal to 1, all four equal one third, 0.3333: the mean and the maximum are both the single observation, and twice the mean and the scaled maximum are both twice it. At n equal to 2: the mean 7 over 24, which is 0.2917; the maximum 2 over 12, which is 0.1667; twice the mean one sixth, 0.1667; the scaled maximum one eighth, 0.1250. So the maximum and twice the mean tie at theta squared over 6, as slide 5 says. At n equal to 3: 10 over 36, which is 0.2778; 2 over 20, which is 0.1000; one ninth, 0.1111; and one fifteenth, 0.0667: strict, as in equation 22. At n equal to 10: 31 over 120, which is 0.2583; 2 over 132, which is 0.0152; one thirtieth, 0.0333; and one over 120, which is 0.0083.
+
+Watch the boundary. The handwritten note, page 2, writes "for n of 2 or more" with strict inequalities; the typeset deck's "n of 3 or more" is the right statement, because of the tie at n equal to 2 in equation 20.
+
+And a book erratum the Class 1 note records. Bolfarine and Sandoval Table 1.1, printed page 12, compares the mean and the maximum only. Its column for the mean agrees with equation 16, and its entries for the maximum at n equal to 3 and 5, theta squared over 10 and theta squared over 21, agree with equation 17. But equation 17 gives 2 over 11 times 12, which is theta squared over 66, at n equal to 10, and 2 over 21 times 22, which is theta squared over 231, at n equal to 20, where the book prints theta squared over 662 and over 2312. The book's ratio column should read 0.36, 0.18, 0.059 and 0.017. Its conclusion, that the maximum is better than the mean for every theta and every n greater than one, is unaffected.
+
+Two point six. The likelihood points to the maximum. The deck, slide 8; Bolfarine and Sandoval Examples 2.2.5 and 3.1.3.
+
+Equation 23: the joint density of the sample is the product of n factors, one over theta times the indicator that x i is at most theta. All n indicators equal one exactly when the largest observation is at most theta, so the product is one over theta to the n, times the indicator that the maximum is at most theta. Read as a function of theta, equation 24, the likelihood is one over theta to the n for theta at least the maximum, and zero below it. It is zero to the left of the maximum and strictly decreasing to its right, so equation 25: the maximum likelihood estimator is the maximum, theta hat two.
+
+The score equation does not find it. The derivative of the log-likelihood is minus n over theta, which is never zero. Bolfarine and Sandoval, printed page 36, flag exactly this case: when the maximum is on the boundary, "o máximo é obtido a partir da inspeção da função de verossimilhança"; they work it as Example 3.1.3, with Figure 3.1 on printed page 38. And the factorisation of equation 23 shows that the maximum is sufficient for theta, Example 2.2.5, printed page 23. That is why the two winners in equation 22 are functions of the maximum: the mean uses the whole sample but throws away exactly the information that matters, how close the data come to the edge.
+
+Two point seven. Worked: the Monte Carlo study at theta equal to 3, n equal to 10, and N equal to 1000. The deck, slides 9 to 12; the Class 1 note, equation 26.
+
+The algorithm, slide 9. For each replication j from 1 to N: draw x 1 to x n, independent uniforms on zero to theta; compute the four estimators on that sample. The N values of each estimator approximate its sampling distribution. Their mean estimates the estimator's expectation, so their mean minus theta estimates the bias. Their standard deviation estimates its standard deviation. And equation 26: the simulated mean squared error of estimator k is one over N times the sum over j of the estimate in replication j minus theta, squared. Each is equation 1 of section 1, with the estimator playing the role of g.
+
+The theory at theta equal to 3 and n equal to 10, estimator by estimator, giving the expectation, the standard deviation and the mean squared error.
+
+The mean: expectation 3 over 2, which is 1.500; standard deviation 3 over the square root of 120, which is 0.274; mean squared error 31 over 120 times 9, which is 2.325.
+
+The maximum: expectation 10 over 11 times 3, which is 2.727; standard deviation the square root of 10 times 9, over 121 times 12, which is 0.249; mean squared error 2 times 9 over 11 times 12, which is 0.136.
+
+Twice the mean: expectation 3.000; standard deviation 3 over the square root of 30, which is 0.548; mean squared error 9 over 30, which is 0.300.
+
+The scaled maximum: expectation 3.000; standard deviation 3 over the square root of 120, which is 0.274; mean squared error 9 over 120, which is 0.075.
+
+The deck's Monte Carlo column, slide 12, in the same order. The means: 1.497, 2.717, 2.994 and 2.989. The standard deviations: 0.278, 0.264, 0.555 and 0.290. The mean squared errors: 2.336, 0.149, 0.308 and 0.084.
+
+How close should they be? Section 1 gave the answer. The standard deviation of a sample standard deviation from N draws is roughly the standard deviation over the square root of 2 times N minus one, about 2.2 per cent of it at N equal to 1000: the deck's "accurate to roughly plus or minus 2 per cent". The largest gap is the scaled maximum, 0.290 against 0.274, which is 5.8 per cent, about 2.6 such units. The skewed Beta shape of the maximum makes the maximum-based standard deviations noisier than the normal approximation behind the 2.2 per cent rule suggests. For the means the rule is equation 2 of section 1: the Monte Carlo standard error of a simulated mean is the estimator's standard deviation over the square root of 1000; for the sample mean that is 0.274 over 31.6, under 0.01, so 1.497 against 1.500 is well within it.
+
+Three readings from slide 12.
+
+First, rescaling an estimator rescales its spread. The standard deviation of twice the mean is twice that of the mean, and the standard deviation of the scaled maximum is 1.1 times that of the maximum, because n plus one over n is 1.1 at n equal to 10.
+
+Second, a curiosity. At n equal to 10, 12 n is 120, and n times n plus 2 is also 120. So equations 8 and 15 coincide, and the mean and the scaled maximum have exactly the same standard deviation, 0.274. Same spread, but the mean is centred at 1.5: its mean squared error is 31 times larger, and all of the difference is bias.
+
+Third, the ranking of equation 22 is reproduced by the simulation.
+
+The figure of the Class 1 note shows the four exact mean squared error curves against n from 1 to 50, at theta equal to 3, on a log scale. The top curve, the mean, flattens at theta squared over 4, which is 2.25: the mean converges, but to the wrong number. The other three fall, the two maximum-based curves visibly steeper, slope minus 2 on a log-log reading against minus 1 for twice the mean. All four start together at n equal to 1, and the curves of the maximum and twice the mean touch at n equal to 2: the two ties of subsection 5.
+
+Two point eight. The best multiple of the maximum is biased. The Class 1 note, subsection 8. The G layer, beyond the deck.
+
+Slide 20 says the scaled maximum "wins for n of 3 or more" among the four. Among all multiples c times the maximum, it does not. Expand equation 1 with the estimator c times the maximum, and use equation 12. Equation 27: the mean squared error as a function of c is c squared times the expected value of the maximum squared, minus 2 c theta times the expected value of the maximum, plus theta squared. That is theta squared times the bracket: c squared times n over n plus 2, minus 2 c times n over n plus one, plus one.
+
+Set the derivative in c to zero. Equation 28: 2 c times n over n plus 2, minus 2 times n over n plus one, equals zero, so c star is n plus 2 over n plus one.
+
+Substitute equation 28 into equation 27. Equation 29: the bracket becomes n plus 2 squared over n plus one squared, times n over n plus 2, minus 2 times n plus 2 over n plus one, times n over n plus one, plus one. The first term is n times n plus 2 over n plus one squared; the second is twice that; so the bracket is one minus n times n plus 2 over n plus one squared. The numerator of the difference is n plus one squared minus n squared minus 2 n, which is one. So the minimum mean squared error is theta squared over n plus one squared.
+
+At theta equal to 3 and n equal to 10, that is 9 over 121, which is 0.0744, against 0.075 for the unbiased scaled maximum. The gain is small, but the lesson of equation 2 is exact. The optimal c star, 12 over 11, which is 1.0909, inflates the maximum less than the unbiased 11 over 10 would, accepting a bias of minus theta over n plus one squared in return for lower variance.
+
+One sentence on the bootstrap, which has its own narration: when only one sample is in hand and theta is unknown, the bootstrap runs this same Monte Carlo study on the empirical distribution of the data, and for the maximum it fails, because a resample reproduces the observed maximum with probability tending to 0.632.
+
+Recap of section 2. A Monte Carlo study fixes the truth, simulates N samples, and averages: bias, standard deviation and mean squared error are all Monte Carlo integrals. The mean squared error is variance plus squared bias. For the uniform bound, the maximum is Beta of n and 1 after scaling, which gives every moment; the exact ranking is scaled maximum, maximum, twice the mean, mean, for n of 3 or more, with ties at n equal to 1 and 2. At theta equal to 3, n equal to 10 and N equal to 1000 the simulation reproduces the exact 0.075, 0.136, 0.300 and 2.325 to within its own Monte Carlo error of about 2 per cent on the standard deviations.
+
+Checklist for section 2. You should be able to derive variance plus squared bias in three steps. You should be able to derive the distribution of the maximum and its first two moments from the Beta of n and 1. You should be able to compute the four mean squared errors and prove the ranking, including why it needs n of 3 or more. You should be able to state the Monte Carlo algorithm for an estimator study and judge whether a simulated table agrees with theory, using the 2.2 per cent rule for standard deviations and the standard error of a mean for the means. And you should be able to show that the best multiple of the maximum is n plus 2 over n plus one, with mean squared error theta squared over n plus one squared.
+
+Section 3. Exact sampling: the inverse distribution function, composition, and accept-reject.
+
+This section covers the Monte Carlo note, subsections 3, 4 and 5; Greenberg sections 5.1, 5.2 and 5.3, printed pages 63 to 69, with equation 5.1, Algorithms 5.1 to 5.4 and equation 5.2; Greenberg section 4.5, printed page 52, for the Student t as a mixture; and Morettin and Singer, section B.2 on printed pages 456 to 457 for composition, section B.4 for the inverse distribution function, and section B.6.1, printed pages 467 to 469, with equation B.14 and Example B.15, for accept-reject.
+
+The claim, before the derivations. Section 1 assumed we could draw from f. Three methods make that true for many targets, and all three give independent draws. The inverse distribution function turns a uniform into a draw from any univariate distribution whose distribution function we can invert. Composition draws from a mixture by drawing the mixing variable first; a Student t is a normal whose precision is a gamma draw. Accept-reject draws from a density g that sits under a multiple c of it, and keeps each proposal with probability f over c g; the kept values are exact draws from f, and the acceptance rate is one over c. For a Beta of 3 and 3 from uniforms, c is 1.875 and 53 per cent are accepted; for a standard normal from a Laplace proposal, the acceptance rate is 0.7602.
+
+Three point one. The inverse distribution function method, also called the probability integral transform. Greenberg section 5.1, printed pages 63 to 65; Morettin and Singer section B.4.
+
+The fact. If U is uniform on zero to one and F is a continuous distribution function, then Z equal to F inverse of U has distribution function F.
+
+The proof, equation 1, in three steps. The probability that Z is at most z equals the probability that F of Z is at most F of z, because a distribution function is nondecreasing. That is the probability that U is at most F of z, because U equals F of Z. And for a uniform on zero to one, the probability of being at most a number u is u itself, so this is F of z. Greenberg adds, printed page 64: if F is constant over an interval, evaluate it at the smallest value of that interval.
+
+Greenberg's Algorithm 5.1 is two lines: draw u from the uniform on zero to one; return F inverse of u. Two requirements, printed page 64: the distribution function must be known completely, including its normalising constant, and F inverse must be computable, at least by an accurate approximation. And a limitation: a multivariate random variable cannot be simulated this way, because its distribution function is not one-to-one and therefore not invertible.
+
+Two worked examples, Greenberg printed pages 64 to 65. First, a uniform on a to b: F of z is z minus a, over b minus a, so Z equals a plus b minus a, times U. Second, the density three eighths y squared on zero to two. Its distribution function is the integral from zero to y of three eighths t squared, which is y cubed over 8. Set U equal to y cubed over 8 and solve: Y equals 2 times U to the one third.
+
+Truncation, Greenberg equation 5.1, printed page 65. Suppose we want X from F, but restricted to the interval from c one to c two. The truncated distribution function is F of x minus F of c one, over F of c two minus F of c one. Set it equal to U and solve. Equation 2: X equals F inverse of: F of c one, plus U times the difference F of c two minus F of c one. In words: map the uniform onto the slice of probability between the two cut points, then invert. This is how the truncated normals of the Tobit and probit samplers are drawn, Greenberg section 8.2, because accurate inverse normal and inverse t functions exist in every statistics package. It is also the engine behind Tsay's Griddy Gibbs, in section 7: evaluate a nonstandard univariate conditional on a grid, build an approximate distribution function, and invert it.
+
+Three point two. Composition and scale mixtures. Greenberg section 5.2, printed pages 65 to 66, and section 4.5, printed page 52; Morettin and Singer, printed pages 456 to 457.
+
+The method. If f of x is the integral of g of x given y, times h of y, d y, then draw y from h, and then x from g given that y. The x's are draws from f. Morettin and Singer state it as three steps: generate x star from the marginal of X; with x star fixed, generate y star from the conditional of Y given x star; repeat n times. The pairs are a sample from the joint, and the second coordinates alone are a sample from the marginal of Y. They call the x star values "elementos misturadores", the mixing elements.
+
+Greenberg adds two readings, printed page 66. The joint form: if a joint distribution is convenient to sample, the x coordinates of joint draws are a sample from the marginal of x. And the finite mixture: if f is a sum of k densities f i with probabilities P i that add to one, choose i with probability P i and then draw from f i.
+
+Worked: the Student t as a normal scale mixture, Greenberg printed page 52. Let u given lambda be normal with mean zero and variance sigma squared over lambda, and let lambda be a Gamma with shape nu over 2 and rate nu over 2.
+
+Step one, the joint density. Equation 3: it is proportional to lambda to the one half, times e to the minus lambda u squared over 2 sigma squared, from the normal; times lambda to the nu over 2 minus one, times e to the minus nu lambda over 2, from the gamma.
+
+Step two, collect powers and exponents. The powers of lambda add to nu plus one over 2, minus one. The exponents add to minus lambda times the fraction u squared plus nu sigma squared, over 2 sigma squared.
+
+Step three, recognise the kernel. As a function of lambda, this is a Gamma kernel with shape nu plus one over 2 and rate u squared plus nu sigma squared over 2 sigma squared.
+
+Step four, integrate lambda out. The integral of a Gamma kernel is the gamma function of the shape divided by the rate raised to the shape. The gamma function does not involve u, so equation 4: the density of u is proportional to the rate raised to minus the shape, that is, u squared plus nu sigma squared over 2 sigma squared, raised to the minus nu plus one over 2. Dividing inside by the constant nu over 2 changes only the proportionality constant, so this is proportional to one plus u squared over nu sigma squared, raised to the minus nu plus one over 2.
+
+That is the kernel of a Student t with nu degrees of freedom, location zero and scale squared sigma squared. So a t draw is a gamma draw followed by a normal draw. A seeded check in the Monte Carlo note, with nu equal to 5 and 400,000 draws: the variance is 1.660, against the theoretical five thirds; and the probability that the absolute value of u exceeds 2.571 is 0.0502, against 0.05. This representation is why Student t errors and priors fit inside Gibbs samplers, Greenberg section 8.1.2: the lambdas become extra blocks of the sampler, as section 6 explains under data augmentation.
+
+Three point three. Accept-reject: the algorithm. Greenberg section 5.3, printed pages 66 to 67; Morettin and Singer section B.6.1, printed page 468.
+
+The setting. f is the target. g is a density we can sample, called the proposal, instrumental or majorizing density. c is a constant such that f of y is at most c times g of y for every y in the support of f; c times g is the dominating function, or the envelope. Greenberg warns, printed page 66: the target must be dominated over its entire support, which is often difficult in the multivariate case.
+
+Greenberg's Algorithm 5.2. Step one: generate y from g. Step two: draw u from the uniform on zero to one. Step three: if u is at most f of y over c times g of y, return y as a draw from f; if not, reject it and return to step one. In effect, each proposal is accepted with probability f of y over c g of y. Repeat until you have the number of draws you need.
+
+Morettin and Singer give an equivalent picture, printed page 469: draw x star from g and then a height y star uniform on zero to c times g of x star; accept x star if the point lies under the target, that is, if y star is at most f of x star. The accepted points are uniform under the curve of f, and their horizontal coordinates are draws from f.
+
+Three point four. Why accept-reject works, and the acceptance rate. Greenberg printed page 67; Morettin and Singer, printed page 468, equation B.14.
+
+Greenberg's proof uses Bayes' theorem. Equation 5. The density of a value y given that it was accepted is: the probability of acceptance given y, times g of y, divided by the integral of the same product over all y.
+
+Step one. Given y, acceptance means u at most f of y over c g of y, and for a uniform that probability is f of y over c g of y itself. So the numerator is f of y over c g of y, times g of y, which is f of y over c.
+
+Step two. The denominator is the integral of f of y over c, which is one over c times the integral of f, which is one over c, because f is a density.
+
+Step three. The ratio is f of y over c, divided by one over c, which is f of y. The accepted values have exactly the target distribution.
+
+Morettin and Singer's version works with distribution functions instead of densities. Let p of x be f of x over c g of x, the acceptance probability. The probability that X is at most x and accepted is the integral up to x of p times g; the probability of acceptance is the integral of p times g over everything. Their ratio is the integral up to x of f: the distribution function of the target.
+
+The acceptance rate. The denominator of equation 5 is the overall probability that a proposal is accepted. Equation 6: the acceptance probability is one over c, Morettin and Singer equation B.14. Two consequences.
+
+First, choose c as small as possible: the smallest valid c is the supremum over y of f of y over g of y. Greenberg, printed page 67: rejected values use computer time without adding to the sample. For normalised f and g, c is at least one, because the integral of f cannot exceed c times the integral of g.
+
+Second, the number of tries. Morettin and Singer, printed page 469: the number of iterations N needed for one accepted draw is geometric, with success probability p equal to one over c. The probability that N equals n is one minus p to the n minus one, times p, for n of one or more. So the expected number of tries is one over p, which is exactly c. The constant c is the average cost, in proposals, of one draw from f.
+
+And a feature that matters for posteriors, Greenberg printed page 67. Suppose f is known only up to a constant: f equals k times r, with r known and k unknown. Choose c so that r of y is at most c g of y, and accept with probability r over c g. The accepted values are still draws from f, because the unknown k cancels between the numerator and the denominator of equation 5. In this case c no longer needs to be at least one.
+
+Three point five. Worked: a Beta of 3 and 3 from uniform proposals. Greenberg Algorithm 5.3, printed page 67; the Monte Carlo note, subsection 5.
+
+The target. A Beta of 3 and 3 has density 30 times y squared, times the square of one minus y, on zero to one. The proposal is the uniform on zero to one, so g of y is one. The constant c must be the maximum of f. By symmetry the density peaks at y equal to one half, where y squared times the square of one minus y is one quarter times one quarter, one sixteenth. So c equals 30 over 16, which is 1.875, and the acceptance rate is one over 1.875, which is 0.5333. By the geometric argument, each accepted draw costs on average 1.875 uniform proposals.
+
+One proposal, worked. Take y equal to 0.15. Then y squared is 0.0225, and one minus y, squared, is 0.85 squared, which is 0.7225. So f of 0.15 is 30 times 0.0225 times 0.7225, which is 0.4877. The proposal is accepted with probability 0.4877 over 1.875, which is 0.2601.
+
+Greenberg's reading of his Figure 5.1, printed page 67: the uniform proposal is not a particularly good choice. It generates values uniformly along the axis while the target is far from uniform, so values near zero and one are oversampled by the proposal and are accepted with low probability to compensate.
+
+The seeded check in the Monte Carlo note: a run of 200,000 proposals gives acceptance 0.5339; the accepted draws have mean 0.500 and variance 0.0357, which is one twenty-eighth, the variance of a Beta of 3 and 3. The left panel of the note's accept-reject figure shows exactly this: the Beta of 3 and 3 density under the flat line at 1.875, with 600 seeded proposals plotted as points at height u times 1.875. Points under the density are accepted, 52 per cent of them, and points above it are rejected.
+
+A second case from Morettin and Singer, Example B.15, printed page 469: a Beta of 2 and 2, with density 6 x times one minus x, from uniform proposals. The maximum is 1.5, at x equal to 0.5. So c, which they call A, is 1.5, and the acceptance probability is one over 1.5, which is 0.667. To obtain a sample of 1000 from the target, you must simulate about 1500 uniform values.
+
+Three point six. Worked: a standard normal from a Laplace proposal. Greenberg Algorithm 5.4 and equation 5.2, printed pages 68 to 69; the Monte Carlo note, equation 8.
+
+By symmetry, it is enough to sample the absolute value of y from the half-normal and attach a random sign: Greenberg draws a third uniform and makes the value positive if it is at most one half, negative otherwise. The half-normal density on positive x is the square root of 2 over pi, times e to the minus x squared over 2. The proposal is the exponential, g of x equal to e to the minus x for positive x; with the random sign, that is the Laplace, one half e to the minus the absolute value of y. The exponential itself is drawn by the method of subsection 1: its distribution function is one minus e to the minus x, so x is minus the log of one minus u, or equivalently minus the log of u, since u and one minus u have the same distribution.
+
+Step one, the ratio. f over g is the square root of 2 over pi, times e to the x minus x squared over 2.
+
+Step two, maximise it. The exponent x minus x squared over 2 has derivative one minus x, zero at x equal to one, where the exponent is one half.
+
+Step three, the constant. Equation 7: c is the square root of 2 over pi, times e to the one half, which is the square root of 2 e over pi, which is 1.3155. The acceptance rate, one over c, is 0.7602.
+
+Greenberg's test, his equation 5.2: accept if u is at most e to the power x minus x squared over 2 minus one half. That is exactly u at most f of x over c g of x, with c from equation 7, because dividing the ratio of step one by c leaves e to the x minus x squared over 2, times e to the minus one half.
+
+A discrepancy to know about, and its resolution. Greenberg's text says "the probability of acceptance is one over c, 0.6577". But 0.6577 is the square root of e over 2 pi, which is the constant that dominates the unnormalised kernel, one over the square root of 2 pi times e to the minus x squared over 2, whose integral over positive x is only one half. With an unnormalised target, the acceptance rate is the target's integral divided by c: one half over 0.6577, which is 0.7602. So the rate is 0.7602 either way, and the number 0.6577 is a constant, not an acceptance probability. A seeded run of 200,000 in the Monte Carlo note accepts 0.7605.
+
+Recap of section 3. The inverse distribution function turns a uniform into a draw from any invertible univariate distribution, with truncation by rescaling the uniform onto the slice between F of c one and F of c two. Composition draws a mixture by drawing the mixing variable first; the Student t is a normal with a gamma precision, by integrating the gamma kernel. Accept-reject keeps a proposal from g with probability f over c g; Bayes' theorem shows the kept values have density f; the acceptance rate is one over c and the expected number of tries per draw is c. The Beta of 3 and 3 from uniforms has c equal to 1.875 and acceptance 0.5333; the normal from a Laplace has c equal to 1.3155 and acceptance 0.7602.
+
+Checklist for section 3. You should be able to prove the inverse distribution function method in three lines and derive the truncated version. You should be able to derive Y equal to 2 U to the one third for the density three eighths y squared on zero to two. You should be able to derive the Student t as a normal scale mixture by integrating out the gamma precision. You should be able to prove that accept-reject returns draws from f, derive the acceptance rate one over c, and say why the number of tries is geometric with mean c. You should be able to compute c and the acceptance rate for the Beta of 3 and 3, the Beta of 2 and 2, and the normal from a Laplace, and explain why Greenberg's 0.6577 is not the acceptance rate.
+
+This is the end of part 1. Part 2 continues with importance sampling, Markov chains and the Gibbs sampler.
+

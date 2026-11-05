@@ -1,0 +1,359 @@
+Advanced Econometrics, Class 7. More econometric models. Narrated study notes, part 2 of 3.
+
+How to listen. This file continues the Class 7 narration. It covers part two of the notes, hierarchical models: section 4, hierarchical linear models and partial pooling. And it covers part three of the notes, limited dependent variables: section 5, the Tobit, and section 6, the probit, the ordered probit and the multinomial probit. Every formula is spoken in words. Each section opens by naming its sources and page ranges and closes with a spoken checklist. Part 1 covered the map and the general linear model with non-spherical errors: generalized least squares, Student t errors and first-order autoregressive errors. Part 3 holds the support material.
+
+A reminder of the one result to hold, because every section here reuses it. Theta, given everything else, is normal, with variance the inverse of V zero inverse plus sigma to the minus two X transposed Omega inverse X, and mean that variance times V zero inverse beta zero plus sigma to the minus two X transposed Omega inverse y star. In section 4, beta zero and V zero become a population mean and variance that are themselves estimated. In sections 5 and 6, y star is the data with the hidden part imputed.
+
+
+Part two, section 4. Hierarchical linear models. Partial pooling: every unit's estimate is a precision-weighted compromise with the population.
+
+This section covers HLM slides 3 to 23: the notation; the pooled, individual-effects and random-coefficients models; their full conditionals, slides 7 to 16; the US airline companies, slides 17 to 21; and the eight schools, slide 23. It also covers the hierarchicalmodel page, on pregnant women, with I equal to 68 women and n equal to 427 measurements, from Souza, 1999, and Gamerman and Lopes, 2006, Figure 5.5. From Greenberg, section 4.6, printed pages 52 to 53, and section 9.3, printed pages 144 to 149, equations 9.10 to 9.15, Algorithm 9.3 and Table 9.5. From Morettin and Singer, section 6.4, printed pages 215 to 218, equations 6.27 and 6.28. And from Wooldridge, section 14.2, printed pages 441 to 442, equations 14.7 to 14.11. The numbers are re-run in the Python checks, section 4.
+
+The claim, before the derivations. With N units observed T times there are three models. Pooled: one line for all. Individual effects: one intercept per unit. Random coefficients: one line per unit. Giving the unit parameters a common prior whose mean and variance are themselves estimated, the hierarchical prior, makes each unit's posterior mean a weighted average of its own estimate and the population mean, with weight T V alpha over T V alpha plus sigma squared on its own data. Units with little or noisy data borrow strength from the others, and the data decide how much, through the between-unit variance: V alpha, or tau in the eight schools. Every conditional is normal, inverse gamma or Wishart: a pure Gibbs sampler.
+
+The notation, slide 3. i runs from one to N over units, and t from one to T over occasions; y i t is the response and x i t, k by one, the regressors. y i is the vector y i one up to y i T; X i is T by k with rows x i t transposed; X i equals the column of ones, one sub T, next to X tilde i, which splits the constant from the other regressors X tilde i; y and X stack the units. Beta, equal to alpha and beta tilde, holds the common coefficients; alpha i are the unit intercepts; and beta i, equal to alpha i and beta tilde i, are the unit coefficient vectors. The first-level prior parameters are mu alpha and V alpha for the intercepts, or beta zero and V zero for the coefficient vectors. The second-level priors, the hyperpriors, are: mu alpha normal with mean mu zero and variance V mu; V alpha inverse-gamma with parameters eta zero over two and eta zero sigma zero squared over two; beta zero normal with mean beta zero zero and variance V beta; and V zero inverse Wishart with nu zero degrees of freedom and scale V zero zero inverse. For the eight schools, y i is the estimated effect, sigma i its standard error, theta i the true effect, and mu and tau the population mean and standard deviation, slide 23.
+
+Four point one. Pool, separate, or compromise. The U layer.
+
+Pooling all 427 weight-gain measurements of 68 pregnant women into one regression ignores that some women gain systematically more. Fitting 68 separate lines uses 5 to 7 points per line and produces wild intercepts, from minus 14.4 to 5.2. The hierarchical model says the 68 lines are draws from a population of lines: each woman's line is estimated from her data and from what the other 67 say about the population. Greenberg section 4.6, printed page 52, gives the formal shape: data f of y given theta, prior pi of theta given theta zero, hyperprior pi of theta zero given theta zero zero. He notes that theta zero "is not identified" by itself, since the likelihood does not depend on it, but is introduced "to facilitate computations or modeling".
+
+Four point two. Three models. Slides 4 to 6.
+
+Equation 1, pooled: y i is normal with mean X i beta and variance sigma squared times the identity of size T, with beta equal to alpha and beta tilde.
+
+Equation 2, individual effects: y i is normal with mean one sub T times alpha i plus X tilde i beta tilde, and variance sigma squared times the identity.
+
+Equation 3, random coefficients: y i is normal with mean X i beta i and variance sigma squared times the identity, with beta i equal to alpha i and beta tilde i.
+
+Equation 1 has k mean parameters; equation 2 has N plus k minus one; equation 3 has N times k. Slides 5 and 6 draw them as graphs: in the hierarchical versions an arrow runs from a population node, alpha star, or beta and V beta, into every unit's coefficient.
+
+The pooled conditionals, slides 7 and 8. Stacking, y is normal with mean X beta and variance sigma squared times the identity of size T N, and the conditionals are section 1's equations 7 and 8 with Omega equal to the identity and n equal to T N. V one inverse equals V zero inverse plus sigma to the minus two X transposed X; V one inverse beta one equals V zero inverse beta zero plus sigma to the minus two X transposed y; nu one equals nu zero plus T N; and nu one s one squared equals nu zero s zero squared plus y minus X beta transposed y minus X beta.
+
+Individual effects with a non-hierarchical prior, slides 9 and 10. Stack equation 2 with beta star equal to the vector alpha one up to alpha N, followed by beta tilde, and with the dummy design X star of equation 4. X star has N block rows. Block row i has the column of ones, one sub T, in position i, zeros in the other intercept positions, and X tilde i in the last position. Then it is again the pooled algebra, with X star and with beta star normal with mean beta zero star and variance V zero star.
+
+The slip on slide 9: the last block row of X star ends in X tilde one; it should be X tilde N. With a vague V zero star, this is the frequentist fixed-effects, or dummy-variable, regression, Wooldridge section 14.1a, printed page 438: each alpha i is learned only from unit i.
+
+Four point three. Individual effects with a hierarchical prior. Slides 11 to 13.
+
+The first level: alpha i independent and normal with mean mu alpha and variance V alpha; beta tilde normal with mean beta zero and variance V beta; and sigma squared inverse-gamma with parameters nu zero over two and nu zero s zero squared over two. The second level: mu alpha normal with mean mu zero and variance V mu; V alpha inverse-gamma with parameters eta zero over two and eta zero sigma zero squared over two. Slide 11 prints the V alpha hyperparameters as nu zero and sigma zero squared, and slide 13's update uses eta zero and eta one: the letters differ, not the algebra.
+
+Alpha i given the rest. Write r i equal to y i minus X tilde i beta tilde, so r i equals one sub T times alpha i plus epsilon i. The terms in alpha i are minus one half times the bracket of r i minus one sub T alpha i, transposed, times r i minus one sub T alpha i, over sigma squared, plus alpha i minus mu alpha, squared, over V alpha. Expanded: minus one half times the bracket of alpha i squared times T over sigma squared plus one over V alpha, minus two alpha i times one sub T transposed r i over sigma squared plus mu alpha over V alpha; plus a constant.
+
+So, slide 12, equation 5: alpha i given beta tilde, sigma squared, mu alpha and V alpha is normal with mean mu tilde i alpha and variance V tilde alpha, where V tilde alpha inverse equals V alpha inverse plus sigma to the minus two times T, and V tilde alpha inverse times mu tilde i alpha equals V alpha inverse mu alpha plus sigma to the minus two times one sub T transposed, times y i minus X tilde i beta tilde.
+
+The partial-pooling weight. Divide the mean in equation 5 by the precision, with r bar i equal to one sub T transposed r i over T, the unit's average. Equation 6: mu tilde i alpha equals T over sigma squared times r bar i, plus one over V alpha times mu alpha, all over T over sigma squared plus one over V alpha; which is w times r bar i plus one minus w times mu alpha, where w equals T V alpha over T V alpha plus sigma squared.
+
+Equation 6 is the whole idea. w tends to one, no pooling, the fixed-effects estimate r bar i, when T goes to infinity or V alpha goes to infinity. w tends to zero, complete pooling, everyone gets mu alpha, when V alpha goes to zero or sigma squared is huge. Because V alpha is estimated, the data choose the degree of pooling.
+
+Beta tilde given the intercepts, slide 12. y i minus one sub T alpha i equals X tilde i beta tilde plus epsilon i, for all i: a pooled regression. V tilde beta inverse equals V beta inverse plus sigma to the minus two times the sum over i of X tilde i transposed X tilde i; and V tilde beta inverse beta one equals V beta inverse beta zero plus sigma to the minus two times the sum over i of X tilde i transposed times y i minus one sub T alpha i.
+
+Sigma squared, slide 13: nu one equals nu zero plus T N, and nu one s one squared equals nu zero s zero squared plus the sum over i of the squared norm of y i minus one sub T alpha i minus X tilde i beta tilde.
+
+Mu alpha given the intercepts. The alpha i are N independent draws from a normal with mean mu alpha and variance V alpha: a normal-mean problem. The terms are minus one half times the bracket of the sum over i of alpha i minus mu alpha, squared, over V alpha, plus mu alpha minus mu zero, squared, over V mu. So, equation 7: V tilde mu inverse equals V mu inverse plus V alpha inverse times N, and V tilde mu inverse times mu one equals V mu inverse mu zero plus V alpha inverse times the sum from i equal one to N of alpha i.
+
+The slip on slide 13: it prints sigma to the minus two times N and sigma to the minus two times the sum of the alpha i. The alpha i scatter around mu alpha with variance V alpha, not sigma squared, so the precision is V alpha inverse. Equation 7 says so, and so does the site's own code, whose posterior variance uses the inverse prior variances of the unit coefficients.
+
+V alpha, slide 13: V alpha given the alphas and mu alpha is inverse-gamma with parameters eta one over two and eta one sigma one squared over two, where eta one equals eta zero plus N, and eta one sigma one squared equals eta zero sigma zero squared plus the sum over i of alpha i minus mu alpha, squared. Again the conjugate variance update, with the N intercepts as the "data".
+
+Four point four. Random coefficients. Slides 14 to 16.
+
+The first level: beta i independent and normal with mean beta zero and variance V zero; sigma squared inverse-gamma with parameters eta zero over two and eta zero s zero squared over two. The second level: beta zero normal with mean beta zero zero and variance V beta; V zero inverse Wishart with nu zero degrees of freedom and scale V zero zero inverse. Completing squares exactly as in equations 5 and 7, now with vectors, gives three conditionals.
+
+Equation 8: beta i given sigma squared, beta zero and V zero is normal with mean beta one i and variance V one i, where V one i inverse equals V zero inverse plus sigma to the minus two X i transposed X i, and V one i inverse beta one i equals V zero inverse beta zero plus sigma to the minus two X i transposed y i.
+
+Equation 9: beta zero given all the beta i and V zero is normal with mean beta zero one and variance V tilde beta, where V tilde beta inverse equals V beta inverse plus N times V zero inverse, and V tilde beta inverse beta zero one equals V beta inverse beta zero zero plus V zero inverse times the sum over i of beta i.
+
+Equation 10: V zero inverse given beta zero and all the beta i is Wishart with nu zero plus N degrees of freedom and scale V one one inverse, where V one one equals V zero zero plus the sum over i of beta i minus beta zero, times its transpose.
+
+And sigma squared: eta one equals eta zero plus T N, and eta one s one squared equals eta zero s zero squared plus the sum over i of y i minus X i beta i, transposed, times y i minus X i beta i.
+
+Two slips. Slide 15 prints V zero times beta zero inverse, for V zero inverse beta zero, in equation 8. Slide 16 prints N times V zero, for N times V zero inverse, in equation 9. Equation 10 is the matrix version of the variance update: the scatter of the unit vectors around beta zero updates the Wishart scale. Equation 8 is equation 6 in matrix form: beta one i is a matrix-weighted average of unit i's ordinary least squares estimate, the inverse of X i transposed X i times X i transposed y i, and beta zero.
+
+Greenberg section 9.3 writes the same model as y i equal to X i beta plus W i b i plus u i, with b i given D normal with mean zero and variance D, equation 9.11, printed page 146: "fixed effects" beta and "random effects" b i, in the statistics sense, printed page 145. His sampler, Algorithm 9.3, printed page 148, draws beta with the b i integrated out, using the covariance of y i equal to W i D W i transposed plus h u inverse times the identity, equation 9.15, because beta and the b i are correlated a posteriori: one-block sampling mixes better.
+
+Four point five. The eight schools, computed exactly. Slide 23.
+
+The model. y i given theta i is normal with mean theta i and variance sigma i squared; theta i is normal with mean mu theta and variance sigma theta squared; mu theta is normal with mean zero and variance ten to the sixth; sigma theta is uniform on zero to 100; for i from one to 8, with the sigma i known. Below, mu stands for mu theta and tau for sigma theta.
+
+The data, school by school, the estimate and then its standard error. School A: 28.39, standard error 14.9. School B: 7.94, standard error 10.2. School C: minus 2.75, standard error 16.3. School D: 6.82, standard error 11.0. School E: minus 0.64, standard error 9.4. School F: 0.63, standard error 11.4. School G: 18.01, standard error 10.4. School H: 12.16, standard error 17.6.
+
+The slides fit it in WinBUGS, slides 24 to 26. It needs no Markov chain Monte Carlo: given tau, everything is normal. Four steps.
+
+Step one, integrate out the thetas. y i equals theta i plus e i, with theta i normal with mean mu and variance tau squared, independent of e i, normal with mean zero and variance sigma i squared. So, equation 11: y i given mu and tau is normal with mean mu and variance sigma i squared plus tau squared, independent over i.
+
+Step two, mu given tau. Equation 11 is a normal-mean problem with weights w i equal to one over sigma i squared plus tau squared. With a normal prior with mean zero and variance v zero, equation 12: mu given y and tau is normal with mean mu hat and variance V mu, where V mu inverse equals v zero inverse plus the sum of the w i, and mu hat equals V mu times the sum of w i y i.
+
+Step three, theta i given mu and tau. A normal prior with mean mu and variance tau squared, and one normal observation y i with variance sigma i squared. Equation 13: the expected value of theta i given y, mu and tau equals y i over sigma i squared plus mu over tau squared, all over one over sigma i squared plus one over tau squared; which is one minus B i, times y i, plus B i mu, where the shrinkage factor B i equals sigma i squared over sigma i squared plus tau squared; and the variance is one minus B i, times sigma i squared.
+
+Averaging equation 13 over equation 12, equation 14: the expected value of theta i given y and tau equals one minus B i, times y i, plus B i mu hat; and the variance of theta i given y and tau equals one minus B i, times sigma i squared, plus B i squared times V mu.
+
+Step four, tau. Integrating mu out of equation 11 gives y given tau as an 8-dimensional normal with mean zero and covariance equal to the diagonal matrix of sigma i squared plus tau squared, plus v zero times the matrix of ones. So, equation 15: the posterior of tau given y is proportional to the indicator that tau lies between zero and 100, times that 8-dimensional normal density evaluated at y. It is a one-dimensional density, normalized on a grid.
+
+The numbers, from the Python checks, section 4, and the figure script.
+
+Complete pooling, tau equal to zero: every posterior mean of theta i equals mu hat, the sum of y i over sigma i squared divided by the sum of one over sigma i squared, which is 7.87, with standard deviation the sum of one over sigma i squared raised to the minus one half, which is 4.17.
+
+The posterior of tau has its mode at zero, its median at 5.23, its mean at 6.59, and a 95 per cent interval from 0.24 to 20.87.
+
+School A at tau equal to 5.2, the companion's default. Mu hat is 8.027. B A equals 14.9 squared over 14.9 squared plus 5.2 squared, which is 222.01 over 249.05, which is 0.8914. The conditional mean of theta A is 0.1086 times 28.39 plus 0.8914 times 8.027, which is 3.083 plus 7.155, which is 10.24.
+
+Fully Bayes, with tau integrated out: the posterior mean of theta A is 11.64, from 28.39. School C, at minus 2.75, goes up to 6.35.
+
+The eight-schools figure. The left panel plots the posterior means of the eight school effects, from equation 14, against tau from 0 to 30: all equal 7.87 at tau equal to zero and fan out toward the raw estimates, with school A highlighted and the posterior median of tau, 5.23, marked. The right panel is the marginal posterior density of tau, equation 15, highest at zero and decaying, with the median marked. It is exact; the grid is the only approximation. At the posterior median the paths are still bunched within about 6 to 10: the data say the schools differ little relative to their standard errors, all at least 9.4, against a spread of the y i of about 31. A's raw 28.39 survives only if tau is large, and the right panel puts little mass there. Shrinkage is toward mu hat, not toward zero: C and E move up.
+
+The interactive companion, the Partial-Pooling Dial, lets you move tau, the prior bound A, a data-precision multiplier kappa and the highlighted school, and watch equation 14 along all eight paths, the B i, mu hat, the fully Bayes mean and the posterior of tau: 10.24 for school A at the default.
+
+Four point six. Pregnant women: pooled, individual, hierarchical. The site code.
+
+The data, from the hierarchicalmodel page: weight gains y i j, in kilograms, of I equal to 68 women at 5 to 7 visits, with visit times x i j in weeks; n equal to 427.
+
+Pooled: y i j equals alpha plus beta x i j plus epsilon i j. The site's linear-model printout, reproduced to every digit: y hat equals minus 4.52639 plus 0.47633 x, with standard errors 0.48680 and 0.01897, sigma hat equal to 3.612, and R squared 0.5974.
+
+Individual ordinary least squares, one line per woman: intercepts from minus 14.432 to 5.157, mean minus 4.412, median minus 4.260; slopes from 0.126 to 0.801, mean 0.470, median 0.450; and a mean residual standard deviation of 1.013, against the pooled 3.612. Most of the pooled noise is between-woman heterogeneity, not visit-to-visit noise.
+
+Hierarchical, site section 4. y i j given alpha i and beta i is normal with mean alpha i plus beta i x i j and variance sigma y squared. The pair alpha i, beta i is normal with mean alpha, beta and a diagonal covariance with entries sigma alpha squared and sigma beta squared. Alpha and beta are normal with mean zero and variance 1000 times the identity. All three variances are inverse-gamma with parameters 0.001 and 0.001. That is model 3 with a diagonal V zero, so equation 10 becomes two scalar inverse-gamma updates. The sampler, ported line by line, with 1,000 burn-in draws plus 2,000 draws, seeded, gives these posterior means: alpha minus 4.363; beta 0.4687; sigma y 1.119; sigma alpha 3.210; sigma beta 0.1253. The site prints no table, only plots, so these are this run's numbers.
+
+The pregnancy figure. The left panel shows the individual ordinary least squares intercept and slope pairs of the 68 women, with arrows to their hierarchical posterior means, and the pooled estimate as a star: each arrow is one woman's partial pooling, equation 8. The arrows point inward, longest for the most extreme individual fits, because those rest on 5 to 7 points and are pulled most. The cloud keeps its strong negative tilt: intercept and slope are correlated because visits start at week 7 to 15, far from x equal to zero, so the intercept is an extrapolation. The right panel shows all the weight-gain data with the pooled line and four woman-specific hierarchical lines, for women 1, 17, 23 and 66. The hierarchical lines are far apart, since the sigma alpha spread of 3.2 kilograms is real, but each is anchored on its own points.
+
+The site's "p of y new given x new and the data" is the posterior of the mean line. Its code plots quantiles of alpha i plus beta i x, without adding normal noise with variance sigma y squared. For woman 1 at her unobserved 7th visit, x equal to 40.143, this run gives a median of 17.68 and a 95 per cent band from 15.68 to 19.86. A predictive band for a new measurement would be wider, by roughly plus or minus 1.96 times 1.12.
+
+The weight of equation 6 with these numbers, in a random-intercept reading with T equal to 6: w equals 6 sigma alpha squared over 6 sigma alpha squared plus sigma y squared, which is 6 times 10.30, over 61.83 plus 1.25, which is 0.980. With this much between-woman spread, each woman's own data dominate her intercept.
+
+Four point seven. The airline intercepts. Slides 20 and 21. The U layer.
+
+Slide 20 reports separate regressions for the 6 airlines, with output as the dependent variable and total cost, fuel price and load factor as covariates, and the pooled one. The intercepts are 8.56, 9.54, 8.00, 8.57, 10.65 and 10.91, with standard errors from 0.28 to 0.73, against a pooled 8.08, standard error 0.33. Slide 21 compares, firm by firm, the individual intercept, the individual-effects posterior with a non-hierarchical prior, and the one with the hierarchical prior. The two Bayesian versions sit close together around 8.6 to 9.0 for every firm, while the individual ordinary least squares intercepts spread from 8.0 to 10.9 with wide intervals. With T equal to 15 and only N equal to 6 firms, the estimated between-firm variance is small, and the hierarchical prior pulls hard.
+
+Four point eight. The frequentist neighbours. Part course, part G layer.
+
+The random-intercept model, Morettin and Singer section 6.4, printed pages 215 to 218. Calves are weighed 8 times, in weeks 12 to 26. Model 6.27: y i j equals alpha plus beta times x j minus 12, plus e i j. Model 6.28: y i j equals alpha plus beta times x j minus 12, plus a i, plus e i j, where a i has mean zero and variance sigma a squared and is independent of e i j. Under model 6.28, equation 16: the variance of y i j is sigma a squared plus sigma squared; the covariance of y i j and y i k, for j different from k, is sigma a squared; and the correlation is sigma a squared over sigma a squared plus sigma squared. That is the equicorrelation that Morettin and Singer's draftsman's plot shows, with correlations from 0.84 to 0.99. The point estimates are the same under both models, alpha hat equal to 69.9 and beta hat equal to 4.7, but the standard errors differ: 5.6 against 7.8 for alpha, and 0.1 against 0.4 for beta, smaller under the mixed model. Model 2 with the hierarchical prior is model 6.28, with a i equal to alpha i minus mu alpha.
+
+Random effects in Wooldridge section 14.2, printed pages 441 to 442. The random-effects estimator is ordinary least squares on quasi-demeaned data, y i t minus theta times y bar i, with, equation 17: theta equals one minus the square root of sigma u squared over sigma u squared plus T sigma a squared. That is Wooldridge's equation 14.10.
+
+Theta equal to zero is pooled ordinary least squares, and theta equal to one is fixed effects: the same pooled-to-separate axis as equation 6. With the pregnancy numbers, sigma u equal to sigma y equal to 1.119, sigma a equal to sigma alpha equal to 3.210, and T equal to 6, theta is 0.859, against w equal to 0.980. They are related, not equal: theta is a square-root version, applied to data rather than to estimates. Consistency of random effects requires the unit effect to be uncorrelated with the regressors, Wooldridge equation 14.8: the same assumption the exchangeable prior makes. Greenberg, printed page 148, relaxes it by letting the expected value of b i depend on covariates. Fixed against random effects and the Hausman test are not on this site's schedule; the class plan lists them among the syllabus items not on the site schedule.
+
+Greenberg's panel example, Table 9.5, printed page 149. Vella and Verbeek wages over 8 years, with the intercept and experience as random effects: the union coefficient is 0.090, with a 95 per cent interval from 0.006 to 0.179, smaller than the 0.129 of the single-year regression; the mean experience effect is 0.058, interval 0.038 to 0.078, about 6 per cent per year.
+
+Named only: the dugong nonlinear growth curve and the WinBUGS and R2WinBUGS code, slides 22 to 33. That is a software demonstration, outside the course's Python toolchain.
+
+The links. Section 1's conjugate conditionals are reused at every level. Greenberg exercise 9.2 is the binary panel version, which connects to section 6. Class 1, section 4: the shrinkage of a posterior mean toward the prior mean; equation 13 is the same formula. Classes 5 and 6: differences in differences and panel thinking, the fixed-effects side of subsection 8.
+
+The practice, by number and printed page only. Greenberg 4.6, printed page 59; Greenberg 9.2, printed page 151; Greenberg 9.3, printed page 151; and Wooldridge 14.C5, printed page 454.
+
+Spoken checklist for section 4. You should be able to write the pooled, individual-effects and random-coefficients models and count their mean parameters. You should be able to derive the conditional of alpha i by completing the square, and turn it into the partial-pooling weight T V alpha over T V alpha plus sigma squared, with its two limits. You should be able to derive the conditionals of mu alpha and V alpha, and spot slide 13's slip: the precision is V alpha inverse, not sigma to the minus two. You should be able to write the three random-coefficients conditionals, normal, normal and Wishart, and spot the slips on slides 15 and 16. You should be able to solve the eight schools in four steps and reproduce 7.87 with standard deviation 4.17, B A equal to 0.8914 and 10.24 at tau equal to 5.2, and 11.64 fully Bayes. You should be able to read the pregnancy results: the pooled line minus 4.52639 plus 0.47633 x, sigma alpha 3.21 against sigma y 1.12, and a weight of 0.980. And you should be able to write the random-effects theta, compute 0.859, and state the assumption it shares with the exchangeable prior.
+
+
+Part three, section 5. The Tobit: a regression on a latent y star, seen only above zero. Fill in the hidden part and it is ordinary least squares again.
+
+This section covers LDV slides 4 to 10: the Tobit examples, from Greene printed page 761; the censoring rule; the likelihood; data augmentation; the linear Tobit full conditionals; the truncation-probability example; and the posteriors with and without the censoring. It also covers Greenberg section 8.2.1, printed pages 117 to 122, with the likelihood, equation 8.6, Algorithm 8.2 and the Mroz example in Table 8.1; and Wooldridge section 17.2, printed pages 536 to 543, equations 17.18 to 17.30, Example 17.2 and Tables 17.3 and 17.4; and section 17.4, printed pages 547 to 553, equations 17.36 to 17.41. The numbers are re-run in the Python checks, section 5.
+
+The claim, before the derivations. A corner-solution or censored outcome is y equal to the maximum of zero and y star, with y star equal to x transposed beta plus u, and u normal with mean zero and variance sigma squared. The likelihood mixes densities, for y positive, and probabilities, capital Phi of minus x transposed beta over sigma, for y equal to zero, and it is awkward for Bayes. Data augmentation, Chib 1992, draws the hidden y i star of the zeros from a normal truncated to the interval from minus infinity to zero, after which beta and sigma squared have the plain regression conditionals. The coefficient beta is the effect on the latent mean. The effect on what is observed is the partial derivative of the expected value of y given x with respect to x j, which is beta j times capital Phi of x transposed beta over sigma. And ordinary least squares on the censored data estimates roughly that, not beta: with normal regressors, exactly beta times the probability that y is positive.
+
+The notation. y i star equals x i transposed beta plus u i, with u i normal with mean zero and variance sigma squared: the latent outcome. The observed y i equals y i star times the indicator that y i star is positive, which is the maximum of zero and y i star; slide 5, Greenberg printed page 118, Wooldridge equations 17.18 and 17.19. C is the set of i with y i equal to zero, and k, its size, is the number of zeros, slide 6. z i equals x i transposed beta over sigma. Lowercase phi and capital Phi are the standard normal density and distribution function, and lambda of c, equal to phi of c over capital Phi of c, is the inverse Mills ratio, Wooldridge printed page 538. TN on the interval from a to b, with mean mu and variance sigma squared, is the normal truncated to that interval; slide 8 writes it as a normal on minus infinity to zero.
+
+Five point one. Corner solutions, censoring, truncation. The U layer.
+
+Slide 4 lists Tobin's 1958 durable-goods purchases, hours worked by married women, extramarital affairs, arrests, and vacation spending: many exact zeros, and a continuous spread above zero. Two stories produce the same data, Greenberg printed page 118. Top or bottom coding: the value exists but is reported as the limit; that is true censoring. And corner solutions: the zero is a genuine choice. The Tobit algebra is the same; the interpretation differs. Wooldridge, printed page 539, notes that for corner solutions y star often has no meaning and sigma is not "ancillary". Truncation is different again: observations with y star at or below zero are not in the sample at all, x included, Greenberg printed page 118 and Wooldridge section 17.4b. The slides call the censoring rule "truncation", on slide 5, and the probability that y is zero the "probability of truncation", on slides 9 and 10. Read censoring throughout.
+
+Five point two. The likelihood. Slide 6; Wooldridge equations 17.20 to 17.22.
+
+For y i positive, y i equals y i star, and the density is the normal one. Equation 1: f of y i given x i, beta and sigma equals one over sigma times phi of y i minus x i transposed beta, over sigma, for y i positive.
+
+For y i equal to zero, a probability mass. Equation 2: the probability that y i is zero given x i equals the probability that u i is at most minus x i transposed beta, which is capital Phi of minus x i transposed beta over sigma, which is one minus capital Phi of z i.
+
+Multiply over independent observations. Slide 6 writes the product over positive y i of f, times F of zero raised to the power k, the second factor as if all the zeros had the same x; it is the product over i in C of F of zero given x i. So, equation 3, Greenberg printed page 118: the likelihood of beta and sigma equals the product over i in C of capital Phi of minus x i transposed beta over sigma, times the product over i not in C of one over sigma times phi of y i minus x i transposed beta, over sigma.
+
+Equation 4, Wooldridge's 17.22: the log-likelihood contribution of observation i is the indicator that y i is zero times the log of one minus capital Phi of z i, plus the indicator that y i is positive times the log of one over sigma times phi of y i minus x i transposed beta, over sigma.
+
+With a normal prior on beta and an inverse-gamma prior on sigma squared, equation 3 times the prior is not a standard family, because of the capital Phi factors: "very complex", in Greenberg's words on printed page 118.
+
+Five point three. Data augmentation. Slide 7; Greenberg printed pages 118 to 120.
+
+Add the latent y i star for i in C to the unknowns. Slide 7's "complete likelihood" step: the density of y i given x i and theta is the integral of p of y i given y i star times f of y i star given x i and theta; which equals p of y i given y i star positive, times one minus F of zero, plus p of y i given y i star at most zero, times F of zero. Here p of y i given y i star is the indicator that y i is zero times the indicator that y i star is at most zero, plus the indicator that y i is positive times the indicator that y i equals y i star: given y star, y is known.
+
+Hence the joint posterior of beta, sigma squared and the latent y star of the zeros, Greenberg's equation 8.6, printed page 119. Equation 5: it is proportional to the product over all i of the bracket, the indicator that y i is zero times the indicator that y i star is at most zero, plus the indicator that y i is positive; times the normal density of y star with mean X beta and variance sigma squared times the identity; times the prior of beta and the prior of sigma squared. Here y star has y i star equal to y i for i not in C.
+
+Read off the conditionals.
+
+Beta and sigma squared given y star. Equation 5 is the normal regression likelihood of y star times the priors: the conditionals 8.2 and 8.3 of Greenberg, which are section 1's equations 7 and 8 with Omega equal to the identity, with y star in place of y. Given y star, beta and sigma squared do not depend on y, Greenberg printed page 119.
+
+y i star, for i in C, given beta and sigma squared. The factor in y i star is the indicator that y i star is at most zero, times the normal density with mean x i transposed beta and variance sigma squared. So, equation 6, slide 7: y i star given y i equal to zero, beta and sigma squared is normal with mean x i transposed beta and variance sigma squared, truncated to the interval from minus infinity to zero; and y i star equals y i if y i is positive.
+
+Equation 6 is drawn by the inverse-distribution-function formula, equation 15 of section 3, with a equal to minus infinity and b equal to zero. This is Greenberg's Algorithm 8.2, printed page 120. The marginal posterior of beta and sigma squared is obtained by "ignoring the draws" of the latent y star.
+
+Five point four. The linear Tobit conditionals. Slide 8.
+
+The prior: beta normal with mean beta zero and variance V zero; sigma squared inverse-gamma with parameters nu zero over two and nu zero s zero squared over two. From equation 5, two conditionals.
+
+Equation 7: beta given sigma squared and y star is normal with mean V beta times the sum of V zero inverse beta zero and sigma to the minus two X transposed y star, and variance V beta, where V beta inverse equals V zero inverse plus sigma to the minus two X transposed X.
+
+Equation 8: sigma squared given beta and y star is inverse-gamma with shape nu zero plus n over two, and scale nu zero s zero squared plus y star minus X beta transposed y star minus X beta, over two.
+
+Two slips on slide 8. It prints V beta inverse equal to V zero inverse plus sigma to the minus two times the inverse of X transposed X: the data precision is sigma to the minus two X transposed X, not its inverse. And it prints the mean as V beta times V zero inverse beta zero plus X transposed y star, without the sigma to the minus two on X transposed y star. Equation 7 is Greenberg's step 8.1, printed page 120.
+
+Five point five. What beta means: three conditional means. Wooldridge section 17.2a, printed pages 538 to 539.
+
+The positive part. For z standard normal, the expected value of z given z greater than c is phi of c over one minus capital Phi of c. Then, equation 9, Wooldridge's 17.24: the expected value of y given y positive and x equals x transposed beta plus the expected value of u given u greater than minus x transposed beta; which is x transposed beta plus sigma times phi of minus z over one minus capital Phi of minus z; which is x transposed beta plus sigma lambda of z. This uses phi of minus z equal to phi of z, and one minus capital Phi of minus z equal to capital Phi of z.
+
+The unconditional mean. The expected value of y given x equals the probability that y is positive given x, times the expected value of y given y positive and x, Wooldridge 17.23. Substitute equation 9, and use capital Phi times lambda equal to phi. Equation 10, Wooldridge's 17.25: the expected value of y given x equals capital Phi of z times the bracket x transposed beta plus sigma lambda of z, which is capital Phi of z times x transposed beta plus sigma phi of z.
+
+Partial effects. Use the derivative of lambda of c, which is minus lambda of c times c plus lambda of c, and the partial derivative of z with respect to x j, which is beta j over sigma. Differentiate equation 9. Equation 11, Wooldridge's 17.26: the partial effect on the conditional-on-positive mean equals beta j plus sigma times beta j over sigma times minus lambda of z times z plus lambda of z; which is beta j times the bracket one minus lambda of z times z plus lambda of z.
+
+Differentiate equation 10, using the derivative of phi of z equal to minus z phi of z. Equation 12, Wooldridge's 17.30: the partial effect on the unconditional mean equals beta j over sigma times phi of z times x transposed beta, plus capital Phi of z times beta j, plus sigma times beta j over sigma times minus z phi of z. Since x transposed beta is sigma z, that is beta j over sigma times phi of z times sigma z, plus capital Phi of z beta j, minus beta j z phi of z. The first and third terms cancel, leaving beta j times capital Phi of z.
+
+Both derivatives are checked numerically against equations 9 and 10 in the Python checks, section 5. The bracket in equation 11 lies strictly between zero and one, Wooldridge printed page 539, and capital Phi of z lies between zero and one. So every observable effect is beta shrunk, by a factor that depends on x and on sigma.
+
+The Tobit moments figure. The left panel plots, for beta equal to 2 and sigma equal to 0.5, against x from minus 1.5 to 1.5: the latent mean, 2 x; the Tobit mean, capital Phi of z times 2 x plus 0.5 phi of z, equation 10; and the conditional-on-positive mean, 2 x plus 0.5 lambda of z, equation 9. Far to the right all three means coincide, because almost nobody is censored. Far to the left, the expected value of y given x tends to zero, while the conditional-on-positive mean stays positive: the few who are above zero are those with large u. That is the selection that makes ordinary least squares on the positive subsample biased, subsection 8. The right panel plots slide 9's probability of a zero, equation 13 below, capital Phi of minus 2 a over 2.062, against a, with points at a equal to 0, 0.7 and 1.3, where it is 0.500, 0.249 and 0.104; and one minus that probability, which is the ordinary least squares attenuation factor.
+
+Five point six. Slide 9's example, and what ordinary least squares on censored data estimates.
+
+Slide 9. y i star given x i is normal with mean beta x i and variance sigma squared, and x i is normal with mean a and variance one. So unconditionally y star is normal with mean beta a and variance beta squared plus sigma squared. Equation 13: the probability that y is zero, given a, beta equal to 2 and sigma squared equal to 0.25, is capital Phi of minus 2 a over the square root of 4.25, which is capital Phi of minus 2 a over 2.062.
+
+At a equal to zero: capital Phi of zero, 0.500. At a equal to 0.7: capital Phi of minus 1.4 over 2.062, which is capital Phi of minus 0.679, which is 0.249. At a equal to 1.3: capital Phi of minus 2.6 over 2.062, which is capital Phi of minus 1.261, which is 0.104. Those are the slide's "Prob. trunc." values of 0.5, 0.25 and 0.1, on slide 10.
+
+Slide 10 compares, under a non-informative prior, nu zero equal to zero and V zero inverse equal to zero, the posterior of beta that ignores the censoring, in red, with the zeros treated as data, against the Tobit posterior, in black, centred on the true 2. The red curve is centred well below 2 at a equal to zero, and approaches 2 as censoring falls. How far below?
+
+The claim. With normal x, the population ordinary least squares slope of y on x is beta times the probability that y is positive. This proof is the Stein-lemma attenuation, which the map lists in the G layer: proved, not examinable unless the slides state it.
+
+The proof. The pair x and y star is bivariate normal. Stein's lemma: for jointly normal x and w and a smooth function g, the covariance of x and g of w equals the covariance of x and w times the expected value of g prime of w. Take w equal to y star and g of w equal to the maximum of zero and w, whose derivative is the indicator that w is positive. Equation 14: the covariance of x and y equals the covariance of x and y star times the probability that y star is positive, which is beta times the variance of x times the probability that y is positive. Dividing by the variance of x, the slope is beta times the probability that y is positive.
+
+Slide 9's values: 2 times 0.500 is 1.00; 2 times 0.751 is 1.50; 2 times 0.896 is 1.79. A Monte Carlo with ten to the sixth draws at a equal to 0.7 gives 1.5033 against 1.5029, in the Python checks, section 5. Equation 14 is the population version of Wooldridge's remark that ordinary least squares slopes estimate the partial effect beta j times capital Phi, and must be compared with beta hat j times a scale factor, Wooldridge printed page 539.
+
+The interactive companion, the Censoring Dial, lets you move the covariate mean a, beta, sigma and an evaluation point x zero, and read the probability of a zero, 0.249 at slide 9's a equal to 0.7, the ordinary least squares slope beta times the probability that y is positive, and every term of equations 9 to 12 at x zero.
+
+Five point seven. Wooldridge's Example 17.2: married women's hours. Table 17.3, printed page 541.
+
+The MROZ data: 753 women, 325 with zero hours. Reproduced exactly here by maximum likelihood on equation 4, in the Python checks, section 5. Read variable by variable: ordinary least squares, then the Tobit maximum likelihood estimate with its standard error, and, for two variables, the flat-prior Tobit Gibbs posterior mean and standard deviation.
+
+nwifeinc, other income: ordinary least squares minus 3.45; Tobit minus 8.81, standard error 4.46.
+
+educ, education: ordinary least squares 28.76; Tobit 80.65, standard error 21.58; Gibbs 81.84, standard deviation 21.76.
+
+exper, experience: ordinary least squares 65.67; Tobit 131.56, standard error 17.28.
+
+Experience squared: ordinary least squares minus 0.700; Tobit minus 1.86, standard error 0.54.
+
+age: ordinary least squares minus 30.51; Tobit minus 54.41, standard error 7.42.
+
+kidslt6, children under six: ordinary least squares minus 442.09; Tobit minus 894.02, standard error 111.88; Gibbs minus 902.63, standard deviation 112.86.
+
+kidsge6, children six or older: ordinary least squares minus 32.78; Tobit minus 16.22, standard error 38.64.
+
+The constant: ordinary least squares 1,330.48; Tobit 965.31, standard error 446.44.
+
+Sigma hat: ordinary least squares 750.18; Tobit 1,122.02; Gibbs 1,138.8.
+
+And the Tobit log-likelihood: minus 3,819.09.
+
+The Gibbs column is Algorithm 8.2 with V zero inverse equal to zero and nu zero equal to zero, with 1,000 burn-in draws plus 5,000 draws. The posterior means and standard deviations are within a fraction of a standard error of the maximum likelihood estimates, as a flat-prior posterior should be.
+
+Comparing with ordinary least squares. The Tobit education coefficient is almost three times the ordinary least squares one, but they measure different things. The average-partial-effect scale factor, the average over i of capital Phi of x i transposed beta hat over sigma hat, is 0.589. So the Tobit average partial effect of education is 0.589 times 80.65, which is 47.5 hours, against ordinary least squares 28.8. At the averages, using the square of average experience, the factor is 0.645, Wooldridge printed pages 540 to 541; both are reproduced.
+
+Greenberg's version, Table 8.1, printed page 121. The same data, with covariates children under six, children six or older, age and husband's wage, and informative priors: posterior means of minus 556.4 for young children and minus 191.7 for older children. From the predictive distribution, the probability of zero hours is 0.431 with young children against 0.328 with older children; mean hours are about 214 against 587; and given positive hours, about 1,284 against 1,105, Greenberg printed pages 121 to 122.
+
+Five point eight. Censored and truncated regression. Wooldridge section 17.4, printed pages 547 to 553. Part course, part G layer.
+
+Censored regression, Wooldridge equations 17.36 to 17.39: w i equals the minimum of y i star and c i, with a known, possibly observation-specific censoring point, as with durations or top-coding. The density is one over sigma times phi of w minus x i transposed beta, over sigma, below c i, and the mass at c i is one minus capital Phi of c i minus x i transposed beta, over sigma. That is equation 3 with the inequality reversed. With true censoring, y star is the variable of interest and beta its regression coefficient, unlike a corner solution.
+
+Truncated regression, Wooldridge equations 17.40 and 17.41: the pair x i, y i is seen only if y i is at most c i. The density of the observed y is f of y given x i transposed beta and sigma squared, divided by F of c i given x i transposed beta and sigma squared. There are no point masses, and no information about the excluded units. Ordinary least squares on a truncated sample is biased: with slide 9's design, a equal to 0.7 and beta equal to 2, ordinary least squares on the units with y star positive only gives a slope of 1.902, simulated in the Python checks. The inverse Mills ratio in equation 9 is an omitted regressor correlated with x, Wooldridge printed page 538.
+
+The links. The truncated-normal draw comes from section 3. Section 6 uses the same augmentation with sigma equal to one. Section 2's t errors give the Tobit with Student t errors, Greenberg exercise 8.6. Class 2, section 4: binary outcomes, with partial effects shrunk by a density factor, the logit analogue of equation 12.
+
+The practice, by number and printed page only. Greenberg 8.6, printed page 132; Wooldridge 17.3, printed page 559; Wooldridge 17.C3, printed page 561, with the FRINGE data; and Wooldridge 17.C9, printed page 562, with the APPLE data.
+
+Spoken checklist for section 5. You should be able to distinguish corner solutions, censoring and truncation, and say why the slides' word "truncation" means censoring. You should be able to write the Tobit likelihood, densities for the positives and probabilities for the zeros, and its log-likelihood contribution. You should be able to write the augmented joint posterior, read off the regression conditionals with y star in place of y, and the truncated-normal draw for the zeros, and spot the two slips on slide 8. You should be able to derive Wooldridge's equations 17.24, 17.25, 17.26 and 17.30, and say why every observable effect is beta shrunk. You should be able to compute slide 9's probabilities, 0.500, 0.249 and 0.104, and the ordinary least squares slope beta times the probability that y is positive, 1.00, 1.50 and 1.79. And you should be able to read the Mroz table: 80.65 against 28.76 for education, a scale factor of 0.589, and an average partial effect of 47.5 hours against 28.8.
+
+
+Part three, section 6. The probit, the ordered probit and the multinomial probit: one latent normal regression, three ways of cutting it.
+
+This section covers LDV slides 11 to 15, the ordered probit model and its full conditionals, and the multinomial probit as a seemingly unrelated regression, with its prior and full conditionals; and slide 16, the references, among them Albert and Chib 1993, McCulloch and Rossi 1994, and Keane 1992. It also covers Greenberg sections 8.2.2 and 8.2.3, printed pages 122 to 129, equations 8.7 to 8.10, Algorithm 8.3 and Tables 8.2 and 8.3; section 9.2, printed pages 139 to 144, Algorithm 9.2 and Table 9.4; and section 9.4, printed page 149, with pointers on ordered and multinomial models. From Wooldridge, section 17.1, printed pages 525 to 535, equations 17.2 to 17.7, Example 17.1 and Tables 17.1 and 17.2. And from Morettin and Singer, section 6.5, printed pages 218 to 220, equations 6.29 and 6.30 and the inhibin example. The numbers are re-run in the Python checks, section 6.
+
+The claim, before the derivations. Each model is a normal regression on a latent y star observed only through a cut: its sign, in the binary probit; the interval between cut-points it falls in, in the ordered probit; or which latent utility is largest, in the multinomial probit. Only the cut is seen, so the scale is not identified: sigma is set to one, or the first diagonal entry of the covariance is set to one. The Albert-Chib trick makes all three Gibbs samplers: draw y star from a truncated normal consistent with the observed category, then draw beta by a normal regression on y star. Cut-points get uniform conditionals. The multinomial version is a seemingly unrelated regression in utility differences, with a truncated multivariate normal. Coefficients are not effects: the effect on the probability that y is one is phi of x transposed beta times beta j, which is at most 0.4 times beta j.
+
+The notation. y i star equals x i transposed beta plus u i, with u i standard normal: the latent index. The binary y i is the indicator that y i star is positive, Greenberg 8.8 and 8.9, Wooldridge 17.6. Ordered: y i takes values from one to J, and y i equals j if and only if y i star lies above gamma j minus one and at or below gamma j, with cut-points running from gamma zero equal to minus infinity, through gamma one, up to gamma J equal to plus infinity, in increasing order, slide 11. Multinomial: alternatives zero, one, up to J; U i j is the utility; y i j star equals U i j minus U i zero, which equals x i j transposed beta j plus epsilon i j; y i star is the vector of the y i j star for j from one to J; and epsilon i is J-dimensional normal with mean zero and covariance Omega, slides 13 and 14. Capital Lambda of z, equal to e to the z over one plus e to the z, is the logistic distribution function.
+
+Six point one. The binary probit, and why sigma equals one. Greenberg section 8.2.2, printed pages 122 to 124.
+
+From the latent form, equation 1: the probability that y i is one equals the probability that x i transposed beta plus u i is positive, which is the probability that u i exceeds minus x i transposed beta, which is one minus capital Phi of minus x i transposed beta, which is capital Phi of x i transposed beta. That is Greenberg 8.7 and Wooldridge 17.2 and 17.4.
+
+If instead u i were normal with variance sigma squared, the probability that y i is one would be capital Phi of x i transposed beta over sigma. Only beta over sigma enters, so the pair beta, sigma and the pair c beta, c sigma give the same likelihood for every positive c. In Greenberg's words on printed page 124, "only the sign of y i star determines the observed y i". So set sigma equal to one. The probit is a generalized linear model with link capital Phi, Greenberg printed page 123: a distribution function, because it must map the real line into the interval from zero to one.
+
+Partial effects, Wooldridge 17.7 and Greenberg printed page 124. Equation 2: the partial derivative of the probability that y i is one with respect to x i k equals phi of x i transposed beta times beta k. Its maximum is phi of zero times beta k, which is beta k over the square root of two pi, which is 0.3989 beta k.
+
+For the logit, the derivative of capital Lambda, which is capital Lambda times one minus capital Lambda, peaks at one quarter, Greenberg printed page 127. Equate the maximum effects: 0.4 times the probit beta k equals the logit beta k over 4. So, equation 3, Greenberg printed page 128: the logit beta is approximately 1.6 times the probit beta.
+
+The probit, logit and ordered figure. The left panel plots the probit distribution function capital Phi of z, the logistic distribution function of 1.6 z and of z, and the densities, phi, with peak 0.399, and the logistic density, with peak 0.25. Capital Phi of z and capital Lambda of 1.6 z are almost indistinguishable over the whole range; capital Lambda of z is visibly flatter. The coefficients differ by a scale; the fitted probabilities do not. The right panel plots the ordered-probit category probabilities, for categories one to four, against x transposed beta, with cut-points 0, 1 and 2, from equation 6 below. As x transposed beta grows, the mass moves from category one to category four. The middle categories rise then fall, so a positive beta need not raise the probability that y is two.
+
+Six point two. Albert-Chib data augmentation. Greenberg Algorithm 8.3, printed page 125.
+
+The likelihood contribution given the latent value: p of y i given y i star equals the indicator that y i is zero times the indicator that y i star is at most zero, plus the indicator that y i is one times the indicator that y i star is positive. With beta normal with mean beta zero and variance B zero, equation 4: the joint posterior of beta and y star given y is proportional to the product over i of that bracket, times the n-dimensional normal density of y star with mean X beta and identity covariance, times the K-dimensional normal density of beta with mean beta zero and variance B zero.
+
+The conditionals from equation 4, equation 5. y i star given beta and y i is normal with mean x i transposed beta and variance one, truncated to the interval from minus infinity to zero when y i is zero, and to the interval from zero to infinity when y i is one. And beta given y star is K-dimensional normal with mean beta bar and variance B one, where B one is the inverse of X transposed X plus B zero inverse, and beta bar is B one times the sum of X transposed y star and B zero inverse beta zero.
+
+B one never changes, because sigma squared is one, Greenberg printed page 125. Equation 5 is the Tobit sampler of section 5 with every observation latent and sigma fixed.
+
+Prior elicitation in probabilities. Greenberg printed pages 125 to 126, computer ownership, n equal to 500. The statement "a household with zero wage and no college degree owns a computer with probability 0.10" gives beta zero one equal to capital Phi inverse of 0.10, which is minus 1.2816. "Very likely below 0.3": capital Phi inverse of 0.3 is minus 0.5244, so the prior standard deviation, the square root of B zero one one, is minus 0.5244 plus 1.2816, over 1.96, which is 0.3863, and B zero one one is 0.1492. A wage of 2,000 dollars a week with probability 0.8: minus 1.2816 plus 2 beta zero two equals capital Phi inverse of 0.8, which is 0.8416, so beta zero two is 1.0616. "At least 0.6": capital Phi inverse of 0.6 is 0.2533, so beta two is 0.767, and B zero two two is the square of 1.0616 minus 0.767, over 1.96, which is 0.0225. College raises 0.1 to 0.4: beta zero three equals capital Phi inverse of 0.4 plus 1.2816, which is 1.0283. The posterior, Table 8.2, printed page 126: beta one equal to minus 0.705, standard deviation 0.074; wage 0.879, standard deviation 0.106; college 0.524, standard deviation 0.154. The logit version, printed pages 128 to 129, needs Metropolis-Hastings, since a normal prior is not conditionally conjugate for equation 1 with capital Lambda, and it gives a college coefficient of 0.786, with a posterior probability that beta three is positive of only 0.88.
+
+Worked: Wooldridge's Example 17.1, Table 17.1, printed page 533, labour-force participation in the MROZ data, n equal to 753. Reproduced exactly in the Python checks, section 6. Read variable by variable, probit first, then logit.
+
+nwifeinc: probit minus 0.012; logit minus 0.021.
+
+educ: probit 0.131; logit 0.221.
+
+exper: probit 0.123; logit 0.206.
+
+Experience squared: probit minus 0.0019; logit minus 0.0032.
+
+age: probit minus 0.053; logit minus 0.088.
+
+kidslt6: probit minus 0.868; logit minus 1.443.
+
+kidsge6: probit 0.036; logit 0.060.
+
+The constant: probit 0.270; logit 0.425.
+
+The log-likelihood: probit minus 401.30; logit minus 401.77.
+
+The scale factors at the means: phi of x bar transposed beta hat is 0.391 for the probit, and the logistic density at x bar transposed beta hat is 0.243 for the logit. The ratio is 1.61: rule 3, Wooldridge printed page 534. Averaged over the sample, the factors are 0.301 and 0.179, so the probit average partial effect of education is 0.301 times 0.131, which is 0.039, against the linear probability model's 0.038. 73.4 per cent are correctly predicted, and the pseudo R squared is 0.221. The Albert-Chib sampler of equation 5 with a flat prior returns posterior means within 0.3 standard errors of every maximum likelihood estimate: education 0.132 against 0.131.
+
+Six point three. The ordered probit. Slides 11 and 12.
+
+Probabilities. From the cut rule, equation 6: the probability that y i equals j given x i equals the probability that x i transposed beta plus u i lies above gamma j minus one and at or below gamma j, which is capital Phi of gamma j minus x i transposed beta, minus capital Phi of gamma j minus one minus x i transposed beta, for j from one to J.
+
+Identification. Adding a constant c to the intercept and to every gamma j leaves equation 6 unchanged, so fix gamma one equal to zero when x has an intercept. Slide 11 says "in probit models y i is in the set one, two, and gamma one equals zero": the binary probit is the case J equal to two. The scale is fixed by the variance of u equal to one.
+
+The conditionals, slide 12, with flat priors on beta and on the ordered gammas. Equation 7: y i star given beta, gamma and y i equal to j is normal with mean x i transposed beta and variance one, truncated to the interval from gamma j minus one to gamma j. And beta given y star is normal with mean the inverse of X transposed X times X transposed y star, and variance the inverse of X transposed X.
+
+The cut-point gamma j given everything else. The joint density of y star and gamma contains gamma j only through the indicators that gamma j minus one is below y i star and y i star is at or below gamma j, for y i equal to j; the indicators that gamma j is below y i star and y i star is at or below gamma j plus one, for y i equal to j plus one; and the ordering. These hold if and only if gamma j is at least the largest y i star among those with y i equal to j, gamma j is below the smallest y i star among those with y i equal to j plus one, and gamma j lies between gamma j minus one and gamma j plus one. A flat density restricted to an interval is uniform. Equation 8: gamma j, given the other gammas, beta and y star, is uniform between a lower bound and an upper bound. The lower bound is the larger of gamma j minus one and the largest y i star in category j. The upper bound is the smaller of gamma j plus one and the smallest y i star in category j plus one. The slide writes the bounds as gamma bar j minus one and gamma bar j plus one.
+
+The re-run, in the Python checks, section 6: n equal to 500, x transposed beta equal to 0.5 plus 1.0 x, gamma equal to 0, 1 and 2, J equal to 4, with 2,000 burn-in draws plus 8,000 draws. The posterior means are beta equal to 0.50 and 0.89, gamma two equal to 1.10, and gamma three equal to 2.08. The cut-point chain has a lag-1 autocorrelation of 0.99. With many observations, the interval in equation 8 is squeezed between neighbouring latent values, so each gamma moves very little per sweep. Cowles, 1996, proposed a Metropolis-Hastings fix, which is named only. This is the price of the elegant uniform draw: check the trace of gamma, not just of beta.
+
+Six point four. The multinomial probit as a seemingly unrelated regression. Slides 13 to 15.
+
+The choice rule, slide 13. Individual i picks the alternative with the largest utility. Differencing from alternative zero, y i j star equals U i j minus U i zero, which equals x i j transposed beta j plus epsilon i j. The econometrician sees, equation 9: y i equals zero if and only if the largest y i j star is negative; and y i equals j if and only if y i j star is the largest of the y i star and is at least zero.
+
+Stacking, slide 14. y i star equals X i beta plus epsilon i, where X i is block diagonal with blocks x i one transposed up to x i J transposed, beta stacks beta one up to beta J, and epsilon i is J-dimensional normal with mean zero and covariance Omega. Over individuals, y star equals X beta plus epsilon, with the variance of epsilon equal to the identity of size N Kronecker Omega: a seemingly unrelated regression, GLM3 slides 31 and 32, but latent.
+
+The conditionals, slide 15. Beta is normal, in the seemingly-unrelated-regression generalized least squares form: V one inverse equals V zero inverse plus the sum over i of X i transposed Omega inverse X i, and V one inverse beta one equals V zero inverse beta zero plus the sum over i of X i transposed Omega inverse y i star, GLM3 slide 32. Omega is inverse Wishart, with its scale updated by the sum over i of y i star minus X i beta, times its transpose. And, equation 10: y i star is distributed as the normal with mean X i beta and covariance Omega, times the indicator that the largest of its entries is negative, when y i is zero; and times the indicator that its largest entry is entry j and is at least zero, when y i is j.
+
+That is a truncated multivariate normal, drawn one coordinate at a time from its univariate conditional, which is normal and truncated: below zero if y i is zero; above the maximum of zero and the other coordinates, for the chosen j; and below the chosen coordinate otherwise. It is the same device Greenberg uses for the multivariate probit, his equation 9.9.
+
+Identification. Utilities are defined up to location, hence the differencing, and up to scale: the pair beta, Omega and the pair c beta, c squared Omega imply the same choices, so one variance, say the first diagonal entry of Omega, must be fixed at one. Keane, 1992. McCulloch and Rossi, 1994, sample the unidentified model and normalize afterwards. McCulloch, Polson and Rossi, 2000, impose the first diagonal entry equal to one in the prior. These are slide 16's references, and the identification schemes are G layer: named, not examinable.
+
+The re-run, in the Python checks, section 6: 3 alternatives, n equal to 800, an alternative-specific intercept and slope, and Omega known with its first diagonal entry equal to one. The posterior means are 0.45, 1.10, minus 0.11 and minus 0.71, for the true values 0.3, 1.0, minus 0.2 and minus 0.8. The Omega step is omitted; the code marks it as a deliberate simplification and states the upgrade path.
+
+Six point five. The multivariate probit. Greenberg section 9.2, printed pages 139 to 144. The G layer: its Metropolis-Hastings step is proved or named, not examinable.
+
+J binary decisions by the same individual: y i j is the indicator that y i j star is positive, and u i is J-dimensional normal with mean zero and covariance Sigma. It is a seemingly unrelated regression whose responses are all binary. Only signs are seen, so all J variances are fixed at one and Sigma is a correlation matrix, printed page 141. Its free correlations get a normal prior truncated to positive-definite matrices and a tailored Metropolis-Hastings step, Algorithm 9.2; beta and the y i star are Gibbs draws. The example, Table 9.4, printed page 144: Rubinfeld's 95 voters, with decision one being public school and decision two voting for a school tax. Income raises the probability of voting yes: beta two two equal to 1.113, with a 95 per cent interval from 0.282 to 1.997. Property taxes lower it: beta two three equal to minus 1.437. The correlation sigma one two is 0.085, with an interval from minus 0.302 to 0.455.
+
+Six point six. The logit coefficient as an odds ratio. Morettin and Singer section 6.5, printed pages 218 to 220. The U layer.
+
+Morettin and Singer fit the log of the probability that Y is one given x over the probability that Y is zero given x, equal to alpha plus beta x, equation 6.29, to 32 in vitro fertilization patients, good responders against poor, with x the rise in inhibin B. Alpha hat is minus 2.310, standard error 0.947; beta hat is 0.026, standard error 0.009; the residual deviance is 24.758 on 30 degrees of freedom. Beta hat is the log odds ratio per unit of x: e to the 0.026 is 1.026, so the odds rise 2.6 per cent per unit; and e to the 100 times 0.026, which is e to the 2.6, is 13.5 per 100 units. The probit counterpart of this reading does not exist: probit coefficients have no odds-ratio meaning, only the effect of equation 2.
+
+The links. Section 5 is the same augmentation; section 3 supplies the truncated-normal draw; and Greenberg exercise 9.2 is the binary panel version that connects with section 4. Class 2, section 4: the logit likelihood, iteratively reweighted least squares and odds ratios, the frequentist side of subsection 2.
+
+The practice, by number and printed page only. Greenberg 8.7, printed page 132; Greenberg 9.2, printed page 151; Wooldridge 17.C2, printed page 561, with the LOANAPP data; and Morettin and Singer 6.18, printed page 241, and 6.21, printed page 242.
+
+Spoken checklist for section 6. You should be able to derive the probit probability from the latent form and say why only beta over sigma is identified. You should be able to derive the partial effect phi of x transposed beta times beta k, its maximum 0.3989 beta k, and the 1.6 rule from the logistic peak of one quarter, and confirm it on Mroz: 0.391 over 0.243 is 1.61. You should be able to write the Albert-Chib joint posterior and its two conditionals, and say why B one never changes. You should be able to turn probability statements into prior means and variances, as in Greenberg's computer-ownership example. You should be able to write the ordered-probit probabilities, fix the location by gamma one equal to zero, derive the uniform conditional of a cut-point, and explain the lag-1 autocorrelation of 0.99. You should be able to write the multinomial probit's choice rule, its seemingly-unrelated-regression stacking, its three conditionals, and why one variance must be fixed. And you should be able to read a logit coefficient as an odds ratio: e to the 0.026 is 1.026 per unit, 13.5 per 100 units.
+
+Recap of part 2. Hierarchical models put a prior with an estimated mean and variance on unit coefficients, and every conditional stays normal, inverse gamma or Wishart. Each unit's intercept is a weighted average of its own mean residual and the population mean, with weight T V alpha over T V alpha plus sigma squared; the eight schools pool from a raw 28.39 for school A to 10.24 at tau equal to 5.2 and 11.64 fully Bayes, around a pooled 7.87; the pregnant women have sigma alpha 3.21 against sigma y 1.12, so each woman's data dominate, with a weight of 0.980, and the random-effects theta is 0.859. Limited dependent variables are regressions on a latent y star seen through a cut. The Tobit mixes densities and probabilities; data augmentation draws the zeros' latent values from a truncated normal, and then it is ordinary least squares again; every observable effect is beta shrunk, beta times capital Phi of z for the unconditional mean; slide 9 gives 0.500, 0.249 and 0.104; and Mroz's education coefficient of 80.65 becomes an average partial effect of 47.5 hours. The probit fixes sigma at one; its effects are at most 0.4 times beta; logit coefficients are about 1.6 times probit ones, 1.61 in Mroz; Albert-Chib makes it a Gibbs sampler; ordered-probit cut-points are uniform draws that mix slowly; and the multinomial probit is a latent seemingly unrelated regression with a truncated multivariate normal and one variance fixed. Part 3 holds the support material.
+

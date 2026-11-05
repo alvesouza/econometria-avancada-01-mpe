@@ -1,0 +1,463 @@
+Advanced Econometrics, Class 9. Multivariate time series. Narrated study notes, part 2 of 3: too many parameters, and letting things move.
+
+How to listen. This is the second of three files narrating the study notes for Class 9. Part 1 covered the map, the VAR as a multivariate regression, impulse responses and variance decompositions, and the structural VAR. This file covers two answers to the curse of dimensionality, in section 4, the Bayesian VAR with the Minnesota prior and stochastic search variable selection, and in section 5, factor models and the factor-augmented VAR; and then two ways of letting the model move, in section 6, time-varying parameters, stochastic volatility and the state-space form with the Kalman filter, and in section 7, factor stochastic volatility, DCC and time-varying covariances. Part 3 holds the support material. As before, math is spoken in words and matrices are read row by row; the U layer is intuition, the C layer is examinable, and each G item is flagged out loud. Abbreviations: VAR, vector autoregression; OLS, ordinary least squares; BVAR, Bayesian VAR; SSVS, stochastic search variable selection; FAVAR, factor-augmented VAR; SV, stochastic volatility; TVP, time-varying parameters; RMSFE, root mean squared forecast error; MSFE, mean squared forecast error.
+
+
+Part two, section 4. The Minnesota prior: shrink every equation toward a random walk, tighter for distant lags and other variables, and the posterior is ridge regression in closed form.
+
+This section covers slides 13 to 16, the simulated VAR 2's posterior summaries; slide 22, prior shrinkage, with beta equal to the vec of B transposed; slide 23, the Minnesota prior; slide 24, specifying the prior covariance; slides 25 and 26, other priors and their posteriors; slides 27 to 30, the Kadiyala and Karlsson example and conclusions; and slide 45, dimensionality. From the part 2 deck: slides 3 and 4, why variable selection; slides 5 to 10, the ON and OFF switch and the full conditionals; slides 11 to 13, SSVS, the semi-automatic default, and the prior on Psi; slide 50, Carriero and coauthors; and slides 56 to 58 and 60, Bańbura, Giannone and Reichlin 2010, with their data sets, Table II and Figure 1. And Greenberg section 9.1, pages 134 to 137, for the conditionally conjugate Normal and Wishart algebra.
+
+The claim, before the derivations. The Minnesota prior puts a normal prior with mean beta i zero and covariance V i zero on each equation, centred on a random walk: own first lag one, everything else zero. The prior standard deviation is lambda over k on own lag k, and theta lambda sigma i over k sigma j on variable j's lag k. With Sigma diagonal and known, the posterior is equation-by-equation Gaussian: V i bar equals the inverse of V i zero inverse plus X transposed X over sigma i squared, and beta i bar equals V i bar times V i zero inverse beta i zero plus X transposed y superscript i over sigma i squared. That is a precision-weighted average of the prior centre and OLS. Lambda is the dial: lambda going to zero returns the random walk, and lambda going to infinity returns OLS. Large VARs work because lambda is tightened as the number of variables grows, as Bańbura and coauthors show.
+
+The notation. Beta i holds the coefficients of equation i, the constant and then the lags, row i of mu and B; and beta stacks beta one to beta q, slide 22. Beta i zero and V i zero are the prior mean and the diagonal prior covariance of beta i. Lambda, positive, is the overall tightness. Theta, between zero and one, is the relative tightness of other variables' lags. k is the lag index, from one to p. Sigma i squared is the error variance of equation i, fixed and known, with Sigma diagonal, slide 24. X is the common regressor matrix and y superscript i equation i's response vector. Beta i bar and V i bar are the posterior mean and covariance. And gamma j, zero or one, is the inclusion indicator of coefficient j in SSVS.
+
+Four point one. The intuition: why shrink.
+
+Part 2, slide 3: "VAR flexibility, over-parameterization, poor forecasts. First solution: Minnesota prior of Doan et al. (1984)." The count is in section 1, point eight: Kadiyala and Karlsson's 7-variable VAR 6 has 43 coefficients per equation and 133 observations. OLS is unbiased and useless. A prior that says "most of these are small, and distant lags are smaller" trades a little bias for a lot of variance: the mean squared error trade of Class 1 and the bias and variance logic of Class 2, with the prior as the regulariser.
+
+Four point two. Course layer: the Minnesota prior. Slides 23 and 24.
+
+Litterman's prior, 1980 and 1986, slide 23: beta i is normal with mean beta i zero and covariance V i zero, "with V i zero chosen to center the individual equations around the random walk with drift". Equation 1: y t i equals mu i plus y t minus one, i, plus u t i.
+
+The prior mean. The coefficient on the own first lag is one; all other lag coefficients are zero; the constant gets a flat, very large variance, prior.
+
+The prior variances, slide 24, with V i zero diagonal. Equation 2: the variance of B k of i i, an own lag, is lambda squared over k squared. The variance of B k of i j, for j not equal to i, is theta squared lambda squared over k squared, times sigma i squared over sigma j squared.
+
+Read each factor. Lambda: how far any coefficient may stray from the random walk. One over k squared: "shrinking the number of lags p towards one"; the prior standard deviation falls like one over k. Theta below one: "own lags should explain more of the variation than the lags of other variables". Sigma i squared over sigma j squared: units; B k of i j converts y j into y i, so its scale is sigma i over sigma j.
+
+"Shrinking the diagonal elements of B one toward one, shrinking the remaining coefficients of B one to B p toward zero", slide 23. In practice sigma i squared is replaced by the residual variance of a univariate autoregression of order p for series i, Litterman's convention, which is what "fixed and known" amounts to.
+
+Four point three. Course layer: the closed-form posterior.
+
+The factorisation. With Sigma diagonal, the VAR likelihood, equation 6 of section 1, splits by equation. Equation 3: the density of Y given beta is proportional to the product over i of the exponential of minus one over two sigma i squared, times y superscript i minus X beta i, transposed, times y superscript i minus X beta i. The prior is independent across equations, so the posterior is too: it is the product over i of the posterior of beta i given y superscript i.
+
+One equation. Drop the index i. Equation 4: minus twice the log posterior kernel equals y minus X beta, transposed, times y minus X beta, over sigma squared, plus beta minus beta zero, transposed, times V zero inverse, times beta minus beta zero, plus a constant.
+
+Expand both quadratics and collect powers of beta. Equation 5: beta transposed times X transposed X over sigma squared plus V zero inverse, times beta, minus two beta transposed times X transposed y over sigma squared plus V zero inverse beta zero, plus a constant.
+
+Name V bar inverse equal to X transposed X over sigma squared plus V zero inverse, and beta bar equal to V bar times X transposed y over sigma squared plus V zero inverse beta zero. Then equation 5 is, equation 6: beta minus beta bar, transposed, times V bar inverse, times beta minus beta bar, minus beta bar transposed V bar inverse beta bar, plus a constant. That is a Gaussian kernel in beta.
+
+Equation 7, boxed: beta i given y is normal with mean beta i bar and covariance V i bar, where V i bar is the inverse of V i zero inverse plus X transposed X over sigma i squared, and beta i bar is V i bar times V i zero inverse beta i zero plus X transposed y superscript i over sigma i squared. This is slide 26, the Minnesota row, where gamma i given y is normal.
+
+Substitute X transposed y superscript i equal to X transposed X times beta i hat, from the OLS normal equations, into equation 7. Equation 8: beta i bar equals V i bar times V i zero inverse beta i zero plus X transposed X over sigma i squared times beta i hat. That is a matrix-weighted average of the prior mean and OLS, with weights the two precisions, which sum to V i bar inverse. It is generalised ridge regression: ridge with penalty sigma i squared V i zero inverse, centred at beta i zero instead of zero. Ridge itself belongs to Classes 3 and 4.
+
+The two limits in lambda. By equation 2, V i zero is proportional to lambda squared, entry by entry, except for the constant. As lambda goes to zero, V i zero inverse goes to infinity, V i bar goes to V i zero and then to zero, and beta i bar goes to beta i zero: the random walk of equation 1. As lambda goes to infinity, V i zero inverse goes to zero, V i bar goes to sigma i squared times the inverse of X transposed X, and beta i bar goes to beta i hat: OLS, with the frequentist covariance.
+
+The scalar case shows the weight. Take one regressor with the sum of x t squared equal to s x x, and a normal prior with mean b zero and variance v zero. Equation 9: b bar equals v zero inverse b zero plus s x x over sigma squared times b hat, over v zero inverse plus s x x over sigma squared. That is w b zero plus one minus w, times b hat, with w equal to sigma squared over s x x, over sigma squared over s x x plus v zero, which is the variance of b hat over the variance of b hat plus v zero.
+
+The prior wins in proportion to how noisy OLS is relative to the prior variance. Distant lags, where v zero equals lambda squared over k squared is small, and short samples, where s x x is small, shrink most.
+
+Four point three point one. Worked: the slide-13 VAR 2 with 58 observations.
+
+A seeded simulation, seed 9, with 200 burn-in periods and 60 kept, from slide 13's mu, B one, B two and Sigma; with p equal to 2 that leaves T equal to 58. The univariate autoregression residual variances are 0.266, 0.126 and 0.805, against a true diagonal of 0.26, 0.09 and 0.81. The prior uses theta equal to 0.5, which is illustrative because the slides give no value, and a constant variance of 10 to the 6.
+
+The prior standard deviations for equation 1 at lambda equal to 0.2, by equation 2. Own lag 1, B one of one one: lambda over 1, which is 0.200. Own lag 2, B two of one one: lambda over 2, which is 0.100. B one of one two: theta lambda times sigma one over sigma two, which is 0.5 times 0.2 times the square root of 0.266 over 0.126, which is 0.1 times 1.455, which is 0.145. B one of one three: 0.5 times 0.2 times the square root of 0.266 over 0.805, which is 0.1 times 0.575, which is 0.057.
+
+The posterior means of equation 1, by equation 7, computed in the Python note, section 4. Take four coefficients, in the order B one of one one, B one of one two, B one of one three, and B two of one one.
+The truth, slide 13: 0.7, 0.1, 0.0, minus 0.2.
+The prior mean: 1, 0, 0, 0.
+Lambda equal to 0.05: 0.926, 0.000, minus 0.010, minus 0.018.
+Lambda equal to 0.2: 0.690, 0.055, minus 0.043, minus 0.115.
+Lambda equal to 1: 0.649, 0.284, minus 0.038, minus 0.262.
+OLS, lambda going to infinity: 0.647, 0.379, minus 0.021, minus 0.292.
+
+With 58 observations, OLS puts 0.379 on B one of one two, whose truth is 0.1. At lambda equal to 0.2 the posterior mean is 0.055, closer to the truth than OLS for that coefficient, and the own-lag coefficient, 0.690, is within 0.01 of 0.7. At lambda equal to 0.05 the prior wins everywhere, and the own lag sits at 0.926, near the random walk.
+
+The figure for this section. On the left, the prior standard deviation is plotted against lag k, for own lags, lambda over k, and for other variables' lags, theta lambda over k, at lambda equal to 0.2 and 0.4, with theta equal to 0.5 and equal sigmas. On the right, the posterior means of the four coefficients of equation 1 are plotted against lambda on a log scale, moving from the prior values, 1 and 0, at small lambda, to the OLS values, dotted, at large lambda. The left panel is the prior's shape: standard deviations fall like one over k, and cross-variable lags sit at half the own-lag value. On the right, the transition happens between lambda of about 0.03 and lambda of about 1. Each coefficient leaves its prior value at its own lambda, where its data precision overtakes its prior precision: by equation 9, w equals one half when the variance of b hat equals v zero. The own lags move first, and B one of one two last. Choosing lambda is choosing where on these curves to stand; Bańbura and coauthors choose it by in-sample fit relative to the cross-section, in point six.
+
+Four point four. Course layer: other priors on B and Sigma. Slides 25 and 26.
+
+Kadiyala and Karlsson, 1993 and 1997, extend the Minnesota prior, which fixes Sigma, slide 25. Slide 26 uses Gamma for the coefficient matrix, Z for the regressors, Psi for the error covariance, and m for the number of series. Five priors, each with its posterior.
+
+Minnesota: gamma i is normal, with Psi fixed and diagonal. The posterior of gamma i is normal: equation 7.
+
+Diffuse, or Jeffreys: the prior is proportional to the determinant of Psi to the minus m plus one over two. The posterior of Gamma is matric-variate t, with parameters Z transposed Z, the residual cross-product matrix of the OLS fit, Gamma hat, and T minus k degrees of freedom.
+
+Normal-Wishart: gamma given Psi is normal with covariance Psi Kronecker Omega tilde, and Psi is inverse Wishart. The posterior of Gamma is matric-variate t with T plus alpha degrees of freedom.
+
+Normal-Diffuse: gamma is normal with its own covariance, and the prior on Psi is the diffuse one. There is no closed form; the kernel is on slide 26, and one uses Gibbs sampling.
+
+Extended Natural Conjugate: on slide 26.
+
+The diffuse case, derived, because it is the site's band recipe. Multiply the likelihood, equations 6 and 10 of section 1, by the determinant of Sigma to the minus q plus one over two. Equation 10: the posterior of B and Sigma is proportional to the determinant of Sigma to the minus n plus q plus one over two, times the exponential of minus one half the trace of Sigma inverse S of B hat, times the exponential of minus one half the trace of Sigma inverse times B hat minus B, times X transposed X, times B hat minus B transposed.
+
+For fixed Sigma, the second exponential is the matrix-normal kernel. Equation 11: the vec of B transposed, given Sigma and Y, is normal with mean the vec of B hat transposed and covariance Sigma Kronecker the inverse of X transposed X. Its normalising constant is proportional to the determinant of Sigma to the k over two, with k the number of regressors per equation. Integrating B out of equation 10 leaves the determinant of Sigma to the minus n minus k plus q plus one over two, times the exponential of minus one half the trace of Sigma inverse S of B hat. So, equation 12: Sigma given Y is inverse Wishart with scale S of B hat and n minus k degrees of freedom.
+
+Drawing Sigma from equation 12 and then B from equation 11 is exact posterior simulation. The site's VAR example bands fix Sigma at Sigma hat and draw only from equation 11. Part 2 slides 8 and 9 give the same pair as full conditionals: beta given Sigma and y is normal with mean mu one and covariance V one, with V one inverse equal to V zero inverse plus the sum over t of z tilde t transposed Sigma inverse z tilde t; and Sigma given beta and y is inverse Wishart. Greenberg's SUR Gibbs sampler, Algorithm 9.1, page 137, is the general version with equation-specific regressors.
+
+Why Normal-Wishart cannot be Minnesota. In Psi Kronecker Omega tilde, the prior covariance of equation i's coefficients is psi i i times Omega tilde: the same relative tightness across regressors in every equation. Minnesota's theta below one makes "own" and "other" depend on the equation, which a Kronecker product cannot do, so Normal-Wishart imposes theta equal to one. Kadiyala and Karlsson's verdict, slide 30: "our preferred choice is the Normal-Wishart when the prior beliefs are of the Litterman type", and "for more general prior beliefs the Normal-Diffuse and EN priors are strong alternatives".
+
+The Kadiyala and Karlsson example, slides 27 to 29: Litterman's seven United States series, real GNP growth, inflation, unemployment, M1, investment, the commercial paper rate and the change in business inventories, quarterly from 1948 first quarter to 1981 first quarter, out of sample from 1980 second quarter to 1986 fourth quarter; q equal to 7, p equal to 6, 301 parameters. The RMSE comparison on slide 29 is a figure.
+
+Four point five. Course layer: variable selection, the ON and OFF switch and SSVS. Part 2, slides 5 to 13.
+
+The ON and OFF switch, slides 5 and 6. Write the VAR as a SUR: y t equals z t beta plus u t, with z t equal to the identity of order q Kronecker the row of stacked lags, a q by s matrix, with s equal to q squared p. Switch coefficients with Gamma, the diagonal matrix of indicators gamma one one through gamma q, p q: y t equals z t Gamma beta plus u t, so B i j is zero when gamma i j is zero. "Two to the s VAR models: variable selection equals model selection." The priors, slide 7: beta is normal with mean zero and covariance V zero; the prior on Sigma is proportional to the determinant of Sigma to the minus q plus one over two; and gamma j given the other indicators is Bernoulli with probability pi zero j.
+
+The Gibbs full conditionals, slides 8 to 10. With z tilde t equal to z t Gamma, beta is normal as above and Sigma is inverse Wishart. Equation 13: gamma j given the rest is Bernoulli with probability A j over A j plus B j, where A j is the likelihood with gamma j equal to one times pi zero j, and B j is the likelihood with gamma j equal to zero times one minus pi zero j. The slide prints "gamma j equal to one" inside B j too; it must be gamma j equal to zero.
+
+SSVS, slides 11 and 12; George and McCulloch, 1993 and 1997; Jochmann and coauthors, 2011. Instead of an exact zero, a spike-and-slab prior. Equation 14: beta j given gamma j is a mixture, one minus gamma j times a normal with mean zero and variance tau zero j squared, plus gamma j times a normal with mean zero and variance tau one j squared; and gamma j is Bernoulli with probability q j. Tau zero j squared is small, the "coefficient is virtually zero"; tau one j squared is large, "relatively non-informative". The default semi-automatic choice, George and coauthors 2008, slide 12: tau k j equals c k times the estimated variance of beta j from an unrestricted VAR, with c zero much smaller than c one; Jochmann and coauthors set c zero equal to 0.1 and c one equal to 10.
+
+Here gamma j given beta j needs only the two densities. By Bayes, equation 15: the probability that gamma j equals one given beta j equals q j times the normal density of beta j with variance tau one j squared, over the same quantity plus one minus q j times the normal density with variance tau zero j squared.
+
+Worked. Take q j equal to one half, and read the taus as c zero equal to 0.1 and c one equal to 10 times a coefficient's OLS standard error s j. Write z equal to beta j over s j. With the normal density of beta with standard deviation c s equal to one over c s times the standard normal density of z over c, the s cancels in equation 15. The probability becomes 0.1 times phi of z over 10, over 0.1 times phi of z over 10 plus 10 times phi of 10 z, where phi is the standard normal density.
+
+At z equal to 0.2: 0.1 times phi of 0.02 is 0.1 times 0.39886, which is 0.039886; 10 times phi of 2 is 10 times 0.053991, which is 0.53991. So the probability is 0.039886 over 0.579796, which is 0.069. At z equal to 0.5: 10 times phi of 5 is 10 times 1.4867 times 10 to the minus 6, which is 1.4867 times 10 to the minus 5. So the probability is 0.039844 over 0.039844 plus 0.0000149, which is 0.9996.
+
+The two densities cross where z squared over two times c zero to the minus 2 minus c one to the minus 2 equals the log of c one over c zero. So z star equals the square root of two log of c one over c zero, over c zero to the minus 2 minus c one to the minus 2. That is the square root of two log 100 over 100 minus 0.01, which is the square root of 9.2103 over 99.99, which is 0.3035.
+
+A draw of beta j beyond 0.30 OLS standard errors is classified "in" almost surely. The spike is so narrow that SSVS keeps far more than a t test at 1.96 would. The ratio c one over c zero, not a significance level, sets the threshold.
+
+The prior on Psi, slide 13. With Sigma inverse equal to Psi Psi transposed, Psi lower triangular, the Cholesky root of the precision, put a gamma prior on psi j j squared and a spike-and-slab prior on the off-diagonal psi i j. It is the same idea applied to contemporaneous correlations.
+
+Four point six. Course layer: large BVARs work. Part 2, slides 50 and 56 to 60.
+
+Carriero, Kapetanios and Marcellino, 2009, with q equal to 33 exchange rates against the dollar: the BVAR improves on the random walk for most rates, with gains "typically in the range of 2 to 3 per cent", and "6 to 9 per cent" for euro-dollar and pound-dollar; a trading rule on BVAR forecasts beats the random walk, slide 50.
+
+Bańbura, Giannone and Reichlin, 2010, slides 56 to 60: "When the degree of shrinkage is set in relation to the cross-sectional dimension, the forecasting performance of small monetary VARs can be improved by adding additional macroeconomic variables and sectoral information"; and "Large VARs with shrinkage produce credible impulse responses". The data sets: SMALL, 3 variables; CEE, 7; MEDIUM, 20; and LARGE, 131 Stock and Watson indicators.
+
+Table II, slide 58: MSFE relative to a random walk with drift, 1971 to 2003, at horizon one. Six models, in order: SMALL with 13 lags by OLS; SMALL BVAR; CEE with 13 lags by OLS; CEE with p chosen by BIC; CEE BVAR; and LARGE BVAR.
+Employment: 1.14, 1.14, 7.56, 0.76, 0.67, 0.46.
+The consumer price index: 0.89, 0.89, 5.61, 0.55, 0.52, 0.50.
+The federal funds rate: 1.86, 1.86, 6.39, 1.21, 0.89, 0.75.
+
+Unshrunk OLS with 13 lags in 7 variables forecasts employment with 7.56 times the random walk's MSFE; the BVAR with all 131 variables reaches 0.46. More variables help only with shrinkage. Figure 1, slide 60: the responses to a monetary-policy shock, employment falling and the federal funds rate jumping then decaying, keep their shape from SMALL to LARGE, with the prior on the sum of coefficients, tau equal to 10 lambda, added. The FAVAR comparisons, Table III, are in section 5.
+
+Four point seven. The intuition: Python. Equation 7 is ten lines of NumPy, a Minnesota-posterior function in the figure script, reused in the Python note, section 4. No probabilistic programming library is needed for the Minnesota or diffuse cases: equations 7, 11 and 12 are exact. The Normal-Diffuse prior and SSVS need a Gibbs loop over equations 13 or 15 and the normal and inverse-Wishart conditionals, the same loop structure as Greenberg's Algorithm 9.1.
+
+Practice for this section, by number and printed page only: Greenberg exercise 10.4, page 167, the SUR Gibbs structure of points four and five with autocorrelated errors.
+
+Recap of section 4. The Minnesota prior centres every equation on a random walk, with prior standard deviations lambda over k for own lags and theta lambda sigma i over k sigma j for others. With Sigma diagonal and known, the posterior is Gaussian equation by equation, a precision-weighted average of the prior mean and OLS, that is, generalised ridge; lambda moves it from the random walk to OLS. The diffuse prior gives a normal for B given Sigma and an inverse Wishart for Sigma. Normal-Wishart forces theta equal to one. SSVS with c zero equal to 0.1 and c one equal to 10 includes any coefficient beyond 0.30 standard errors. And large BVARs beat OLS: 0.46 against 7.56 for employment.
+
+Checklist. You should be able to state the Minnesota prior mean and variances and explain each factor. You should be able to derive the posterior by completing the square, and write it as a precision-weighted average of the prior and OLS. You should be able to state the two limits in lambda and the scalar weight w. You should be able to derive the diffuse-prior posterior pair. You should be able to explain why a Kronecker prior covariance forces theta equal to one. And you should be able to compute SSVS inclusion probabilities and the crossing point 0.3035.
+
+Part two, section 5. Factor models: k common factors carry all the cross-correlation, Omega equals beta beta transposed plus Sigma; a FAVAR puts them in a VAR.
+
+This section covers the part 2 deck: slide 14, the Bayesian factor analysis literature; slide 15, the basic model; slide 16, invariance and the block lower triangular beta; slide 17, the number of parameters and the bound on k; slide 18, rank deficiency; slide 19, the ordering of the variables; slide 20, priors; slide 21, full conditionals; slides 22 to 25, the simulation exercise; slides 26 to 29, exchange rates, Lopes and West 2004; slides 30 to 33, parsimonious Bayesian factor analysis, named; slides 34 to 37, the British Cohort Study, named; slides 44 to 49, the spatial dynamic factor model, named; slides 51 to 55, forecasting with many predictors, the FAVAR, and RMSFE; and slide 59, Bańbura and coauthors' Table III. It covers the site's stochastic volatility page, section 3.2, a two-factor analysis on six stocks. And Tsay sections 9.1 and 9.2, pages 468 to 476, equations 9.1 to 9.5.
+
+The claim, before the derivations. In the k-factor model, y t equals beta f t plus epsilon t, the m by m covariance is Omega equal to beta beta transposed plus Sigma, with Sigma diagonal. Common factors explain all the dependence, and m times m plus one over two covariances are described by m times k plus one minus k times k minus one over two parameters. Loadings are defined only up to an orthogonal rotation, so a block-lower-triangular beta is imposed: the same k times k minus one over two count as the SVAR's rotation problem. Given beta and Sigma, the factors have a Gaussian posterior, and the Gibbs sampler cycles through three regressions. A FAVAR adds a few factors, extracted from hundreds of series, as regressors in a small VAR: the second answer, after shrinkage, to the curse of dimensionality.
+
+The notation. y t is the m by one observed vector; the slides also write p for m. f t is the k by one vector of common factors, standard normal, with k less than m. Beta is the m by k loading matrix, block lower triangular with positive beta i i. Sigma, diagonal with entries sigma one squared to sigma m squared, holds the idiosyncratic variances. Omega is the variance of y t. h i squared, the sum over l of beta i l squared over Omega i i, is the communality of series i, between zero and one. V f is the posterior covariance of f t given y t, beta and Sigma. And x t is the r by one large panel of predictors in the FAVAR, with r in the hundreds.
+
+Five point one. Course layer: the basic model. Slide 15, and Tsay equation 9.2, page 469.
+
+"For any specified positive integer k at most m, the standard k-factor model relates each y t to an underlying k-vector of random variables f t, the common factors, via", equation 1: y t given f t is normal with mean beta f t and covariance Sigma; f t is standard normal of dimension k; and Sigma is diagonal.
+
+Equivalently, y t equals beta f t plus epsilon t, with epsilon t normal with covariance Sigma and independent of f t. Then, using the covariance of f t equal to the identity and the covariance of f t and epsilon t equal to zero, equation 2: Omega, the variance of y t, equals beta times the variance of f t times beta transposed, plus the variance of epsilon t, which is beta beta transposed plus Sigma.
+
+Element by element, slide 15, equation 3: the variance of y i t is the sum over l from one to k of beta i l squared, plus sigma i squared; and the covariance of y i t and y j t, for i not equal to j, is the sum over l of beta i l beta j l.
+
+Conditionally on f t, the variance of y i t is sigma i squared and the covariance of y i t and y j t is zero: "Common factors explain all the dependence structure among the m variables." Tsay's general form, equation 9.2, allows a mean alpha and correlated factors, with the covariance of r t equal to beta Sigma f beta transposed plus D. When the factors are observed, such as the market return or macro series, it is a multivariate regression estimated by OLS: Tsay section 9.2, page 470, with xi hat equal to the inverse of G transposed G times G transposed R, and the market model, equation 9.5. That is the same algebra as section 1, point four.
+
+Five point two. Course layer: rotation, identification and the bound on k. Slides 16 to 19.
+
+Invariance. For any orthogonal k by k matrix P, set beta star equal to beta P transposed and f t star equal to P f t. Equation 4: beta star f t star equals beta P transposed P f t, which is beta f t; the variance of f t star is P times the identity times P transposed, which is the identity; and beta star beta star transposed equals beta P transposed P beta transposed, which is beta beta transposed.
+
+The data cannot tell beta and f from beta P transposed and P f: exactly the problem of section 3, equations 6 and 7, now for loadings. "Classical approach: beta transposed Sigma inverse beta equal to the identity, or diagonal. Our approach: beta is a block lower triangular", slide 16. That is, beta i j is zero for j greater than i in the first k rows, and beta i i is positive. That removes k times k minus one over two entries, the dimension of the rotation group, and "provides both identification and, often, useful interpretation": series one loads only on factor one, so factor one is named after series one.
+
+The parameter count, slide 17. Beta has m k entries minus k times k minus one over two zeros; Sigma adds m. Equation 5: m times k plus one, minus k times k minus one over two, against m times m plus one over two in an unrestricted Omega.
+
+A factor model must not have more parameters than Omega has entries. Equation 6: m times m plus one over two, minus m times k plus one, plus k times k minus one over two, is at least zero.
+
+Multiply equation 6 by two and collect powers of k: k squared minus two m plus one times k, plus m squared minus m, is at least zero. The roots are k equal to two m plus one, plus or minus the square root of two m plus one squared minus four times m squared minus m, all over two, which simplifies to two m plus one plus or minus the square root of eight m plus one, over two. And k less than m requires the smaller root. Equation 7: k is at most two m plus one minus the square root of eight m plus one, all over two.
+
+Four cases, slide 17. At m equal to 6: 13 minus 7, over 2, is 3.00, so k max is 3. At m equal to 12: 25 minus 9.849, over 2, is 7.58, so k max is 7. At m equal to 20: 41 minus 12.69, over 2, is 14.15, so k max is 14. At m equal to 50: 101 minus 20.02, over 2, is 40.49, so k max is 40.
+
+At m equal to 6 and k equal to 3: 21 minus 6 times 4 plus 3 is zero, an exact fit with no restriction left on Omega. "Even for small m, the bound will often not matter as relevant k values will not be so large."
+
+Rank deficiency, slide 18, a G-layer item. If beta has rank r less than k, there are matrices Q with beta Q equal to zero and Q transposed Q equal to the identity, and beta beta transposed plus Sigma equals beta plus M Q transposed, times its transpose, plus Sigma minus M M transposed, for orthogonal M. That is a second source of non-identification, tied to uncertainty about k; Frühwirth-Schnatter and Lopes, 2009, use it to search over k, slides 30 to 33.
+
+Ordering, slide 19. Reordering the series, A y t, changes which series define the factors, but an orthonormal P with A beta P lower triangular always exists, so "the order of the variables in y t is irrelevant assuming that k is properly chosen", Lopes and West 2004.
+
+The figure for this section. On the left, the implied one-factor correlation between two series is plotted against the factor log-variance: the correlation rho i j equals beta i beta j h over the square root of beta i squared h plus sigma i squared, times beta j squared h plus sigma j squared, which is equation 3 when the variance of f is h. It is an S-shaped curve rising from zero to its limit. Slide 22's pair, with loadings 0.99 and 0.90 and idiosyncratic variances 0.01 and 0.10, is at 0.939 when the factor variance is one. On the right, the largest admissible number of factors is plotted against the number of series: a step function through the slide's points, 6 to 3, 12 to 7, 20 to 14 and 50 to 40.
+
+How to read it. On the right, the bound grows almost linearly, k max about m minus the square root of 2 m, so it binds only for very small panels. On the left, with the factor variance at one, the static model of equation 1, series one and three of the simulation have correlation 0.939. Letting the factor variance move is the factor stochastic volatility model of section 7, and the curve says what it implies: correlations rise when the common factor is volatile, and collapse toward zero when it is calm.
+
+Five point three. Course layer: priors and full conditionals. Slides 20 and 21.
+
+The priors, slide 20. Free off-diagonal loadings, beta i j, are normal with mean zero and variance C zero. Diagonal loadings, beta i i, are normal with mean zero and variance C zero, truncated to be positive. Sigma i squared is inverse gamma with parameters nu over two and nu s squared over two, with s squared the prior mode. The improper prior proportional to one over sigma i squared is avoided: it "leads to the Bayesian analogue of the so-called Heywood problem", an idiosyncratic variance collapsing to zero.
+
+Factor scores. For one t, the kernel of the posterior of f t given y t, beta and Sigma is the likelihood times the standard normal prior. Equation 8: minus twice its log equals y t minus beta f t, transposed, times Sigma inverse, times y t minus beta f t, plus f t transposed f t, plus a constant. That is f t transposed times the identity plus beta transposed Sigma inverse beta, times f t, minus two f t transposed beta transposed Sigma inverse y t, plus a constant.
+
+Complete the square, as in section 4. Equation 9, boxed, slide 21: f t given y t, beta and Sigma is normal with mean V f beta transposed Sigma inverse y t and covariance V f, where V f is the inverse of the identity plus beta transposed Sigma inverse beta.
+
+The idiosyncratic variances. Given f, series i is a regression with T residuals and residual sum of squares d i, so sigma i squared given the rest is inverse gamma with parameters nu plus T over two and nu s squared plus d i over two.
+
+The loadings. Row i is a Bayesian regression of y i on the factors: beta i is normal with mean M i and covariance C i, with C i inverse equal to C zero inverse times the identity plus sigma i to the minus 2 times f transposed f, and M i equal to C i times C zero inverse mu zero plus sigma i to the minus 2 times f transposed y i. It is truncated to beta i i positive in the first k rows. Cycling equation 9, then the loadings, then the variances, is the Gibbs sampler.
+
+Five point three point one. Worked: slide 22's simulation exercise.
+
+T is 500, m is 5, and k is 2. Beta has rows 0.99, 0; then 0, 0.99; then 0.90, 0; then 0, 0.90; then 0.50, 0.50. Sigma is diagonal with 0.01, 0.05, 0.10, 0.15 and 0.20.
+
+By equation 3: Omega one one is 0.99 squared plus 0.01, which is 0.9901. Omega one three is 0.99 times 0.90, which is 0.891. Omega one five is 0.99 times 0.50, which is 0.495. Omega five five is 0.25 plus 0.25 plus 0.20, which is 0.70. And Omega one two is 0, because series one and two load on different factors. The communalities are 0.990, 0.951, 0.890, 0.844 and 0.714.
+
+The factor-score precision in equation 9. Beta transposed Sigma inverse beta has first diagonal entry 0.99 squared over 0.01, plus 0.90 squared over 0.10, plus 0.5 squared over 0.20, which is 98.01 plus 8.10 plus 1.25, which is 107.36. The off-diagonal entry is 0.5 times 0.5 over 0.20, which is 1.25. The second diagonal entry is 0.99 squared over 0.05, plus 0.90 squared over 0.15, plus 0.5 squared over 0.20, which is 19.60 plus 5.40 plus 1.25, which is 26.25.
+
+Add the identity and invert. The determinant is 108.36 times 27.25 minus 1.25 squared, which is 2951.5. So V f is one over 2951.5 times the matrix with rows 27.25, minus 1.25; and minus 1.25, 108.36. That is the matrix with rows 0.00923, minus 0.00042; and minus 0.00042, 0.03671.
+
+The posterior standard deviations are 0.096 and 0.192. With idiosyncratic variances this small, the factors are almost observed, factor one more precisely, because series one's noise variance, 0.01, is the smallest. The recovered loadings, variances and factors are on slides 23 to 25, as figures.
+
+Five point three point two. Worked: exchange rates. Slides 26 to 28; Lopes and West 2004.
+
+The data are standardised first differences of monthly log exchange rates against the pound, from January 1975 to December 1986, for the United States, Canada, Japan, France, Italy and Germany, with k equal to 2. The posterior means, first ordering, country by country, as loading on factor one, loading on factor two, and idiosyncratic variance.
+United States: 0.99, 0.00, 0.05.
+Canada: 0.95, 0.05, 0.13.
+Japan: 0.46, 0.42, 0.62.
+France: 0.39, 0.91, 0.04.
+Italy: 0.41, 0.77, 0.25.
+Germany: 0.40, 0.77, 0.28.
+
+A check against equation 3: the data are standardised, so the sum of squared loadings plus sigma i squared should be near one. United States: 0.9801 plus 0 plus 0.05, which is 1.030. Japan: 0.2116 plus 0.1764 plus 0.62, which is 1.008. France: 0.1521 plus 0.8281 plus 0.04, which is 1.020.
+
+Factor one is a dollar-bloc factor, the United States and Canada; factor two is a European factor, France, Italy and Germany. The yen loads on both and keeps 62 per cent idiosyncratic. The implied correlation of Italy and Germany, by equation 3, is 0.41 times 0.40 plus 0.77 times 0.77, which is 0.164 plus 0.593, which is 0.757. The second ordering, with Japan second, gives loadings within 0.02 of these: slide 19's ordering result in practice.
+
+The site's stochastic volatility page, section 3.2, runs a two-factor analysis on daily returns of Apple, Microsoft, Amazon, Petrobras, Vale and CSN. The correlations of the two factor scores with the returns are 0.3, 0.3, 0.2, 0.8, 0.9 and 0.9 for the first, and 0.8, 0.9, 0.8, 0.4, 0.4 and 0.3 for the second: a Brazil factor and a United States factor.
+
+Five point four. Course layer: forecasting with many predictors, the FAVAR. Slides 51 to 55.
+
+Korobilis, 2008: "the issue of improving the forecasting performance of VARs when the set of available predictors is inconveniently large", with x t made of r predictors, r in the hundreds, slide 51. Reduce x t to k factors, k much smaller than r, and put them in the VAR, slide 52. Equation 10: y t given its p lags and Theta is normal with mean the sum over i from one to p of B i y t minus i, plus the sum over i from zero to s of A i f t minus i, and covariance Sigma; and x t given f t and Theta is normal with mean beta f t and covariance Omega.
+
+Theta collects B one to B p, A zero to A s, Sigma, beta and Omega. The second block is equation 1 for the big panel. The first is a VAR in the few series of interest augmented by the factors, "closely related to the factor augmented VAR (FAVAR) of Bernanke et al. (2005)". The VAR stays small, a few y's and a few f's, while the information set is hundreds of series. The data, slide 53: Stock and Watson, 2005, 132 United States series from January 1960 to December 2003, covering output, employment, sales, housing, inventories, prices, money, interest rates, exchange rates and more.
+
+Forecast evaluation, slide 54. For series i, horizon h and model j, with y tilde the posterior predictive mean, and forecast origins from December 1982 to December 2003 minus h, N h of them. Equation 11: the RMSFE for series i, horizon h and model j is the square root of one over N h times the sum over the origins of y i, t plus h, minus y tilde i, t plus h, j, squared. It is reported relative to a benchmark, slide 55. The slide prints the sum without the one over N h; in a ratio of two models over the same origins the factor cancels.
+
+The FAVAR against the large BVAR: Bańbura and coauthors, Table III, slide 59, MSFE relative to the random walk, 1971 to 2003, horizon one. Four models, in order: FAVAR with 1 factor, BVAR; FAVAR with 3 factors and 13 lags by OLS; FAVAR with 3 factors, BVAR; and the LARGE BVAR.
+Employment: 0.70, 3.02, 0.65, 0.46.
+The consumer price index: 0.65, 2.39, 0.58, 0.50.
+The federal funds rate: 0.89, 2.40, 0.85, 0.75.
+
+The factors help, 0.65 against the 7-variable CEE BVAR's 0.67 for employment, from section 4. But the shrunk 131-variable BVAR beats the FAVAR at horizon one for all three series, and OLS with 13 lags is again far worse than the random walk. Large TVP-BVARs and fully Bayesian FAVARs, Koop and Korobilis 2012 and Ahmadi and Uhlig 2009, are in section 6.
+
+Five point five. G layer: named only.
+
+Parsimonious Bayesian factor analysis, Frühwirth-Schnatter and Lopes 2009, slides 30 to 33: generalised lower triangular loadings, birth and death of loadings and columns, and inference on k.
+
+The British Cohort Study, Conti, Heckman, Frühwirth-Schnatter, Lopes and Piatek 2011, slides 34 to 37: Bayesian factor analysis on cognitive and health measurements, for 5,105 women and 5,420 men.
+
+Spatial dynamic factor models, Lopes, Salazar and Gamerman 2008, slides 44 to 49: y t is normal with mean beta f t and covariance Sigma, f t is normal with mean Gamma f t minus one and covariance Lambda, and the columns of beta are Gaussian processes over space; applied to sulphur dioxide at United States monitoring stations, for interpolation and forecasting.
+
+Principal components as the non-Bayesian factor extractor, Tsay section 9.4, and Stock and Watson's two-step FAVAR: outside the slides' scope here.
+
+The interactive companion for this section is The Factor-Volatility Dial, the left panel of the figure, live: move the loadings, the idiosyncratic variances and the factor log-variance.
+
+Practice for this section, by number and printed page only: Tsay exercise 9.7, page 503.
+
+Recap of section 5. In a factor model, Omega equals beta beta transposed plus a diagonal Sigma, so common factors carry all the dependence. Loadings are identified only up to rotation; a block-lower-triangular beta removes the k times k minus one over two free directions, and the parameter count bounds k by two m plus one minus the square root of eight m plus one, over two: 3, 7, 14 and 40 for m equal to 6, 12, 20 and 50. The factor scores have a Gaussian posterior with covariance the inverse of the identity plus beta transposed Sigma inverse beta, and Gibbs sampling cycles through scores, loadings and variances. The FAVAR puts a few factors into a small VAR; it helps, but the large BVAR still wins, 0.46 against 0.65 for employment.
+
+Checklist. You should be able to derive Omega equal to beta beta transposed plus Sigma and its elements. You should be able to show the rotation invariance and state the block-lower-triangular fix. You should be able to derive the bound on k from the parameter count and evaluate it. You should be able to derive the factor-score posterior and compute V f for slide 22's design. You should be able to read the exchange-rate loadings and compute an implied correlation. And you should be able to write the FAVAR and the RMSFE, and read Table III.
+
+Part three, section 6. Letting the VAR move: GARCH and SV in the errors, random-walk coefficients, and the Kalman filter that makes them estimable.
+
+This section covers slides 38 and 39, the VAR with GARCH errors, Pelloni and Polasek 2003; slide 40, the VAR with stochastic volatility, Uhlig 1997; and slides 41 to 44, the time-varying-parameter VAR with stochastic volatility, Primiceri 2005, and Nakajima, Kasuya and Watanabe 2011. From the part 2 deck, slide 61, the large TVP-BVAR of Koop and Korobilis 2012. It covers Tsay section 11.1, pages 558 to 563, the local trend model, equations 11.1 to 11.14, Example 11.1 and Theorem 11.1; section 11.1.7, page 571, equation 11.25; and section 11.3.1, pages 577 and 578, the CAPM with time-varying coefficients. And Greenberg section 10.3, pages 161 to 164, time-varying parameters, equations 10.10 and 10.11, and Table 10.3.
+
+The claim, before the derivations. There are three ways to relax a constant VAR, in increasing order of ambition: GARCH in Sigma t, from Pelloni and Polasek; SV in Sigma t, from Uhlig; and random-walk coefficients and random-walk log volatilities in a time-varying recursive structure, Sigma t equal to A t inverse D t A t inverse transposed, from Primiceri. Every time-varying coefficient is a state in a linear state-space model, and the Kalman filter is its exact Gaussian posterior updater: a precision-weighted average of the prediction and the new observation, with gain K t. In the local-level model the gain settles at K star equal to p star over p star plus one, with p star equal to q plus the square root of q squared plus 4 q, all over 2. And one minus K star is the moving-average coefficient of the equivalent ARIMA 0, 1, 1: 0.858 for Tsay's Alcoa volatility, from two different routes.
+
+The notation. Sigma t is the conditional covariance of u t, positive definite. Vech stacks the lower triangle, d equal to q times q plus one over two entries. B t and beta t are the time-varying VAR coefficients, as a matrix and as a stacked vector. A t is the unit-lower-triangular contemporaneous matrix, and alpha t its free entries. D t, diagonal with sigma one t squared to sigma q t squared, holds the structural variances. Q, S and W are the innovation covariances of B t, alpha t and log sigma t. Mu t is the state of the local-level model. Sigma e squared and sigma eta squared are the measurement and state innovation variances. Lowercase q, sigma eta squared over sigma e squared, is the signal-to-noise ratio. Mu t given j and Sigma t given j are the expected value and variance of mu t given the information at j, Tsay's notation. v t, V t and K t are the one-step forecast error, its variance, and the Kalman gain. And delta, between zero and one, is the discount factor.
+
+Six point one. Course layer: the VAR with GARCH errors. Slides 38 and 39.
+
+Pelloni and Polasek, 2003. Equation 1: y t equals the sum over i from one to p of B i y t minus i, plus u t, with u t normal with covariance Sigma t; and the vech of Sigma t equals alpha zero, plus the sum over i from one to r of A i times the vech of Sigma t minus i, plus the sum over i from one to s of Gamma i times the vech of u t minus i u t minus i transposed.
+
+Each A i and Gamma i is d by d, with d equal to q times q plus one over two. For q equal to 3 and r and s equal to 1, the variance equation alone has 6 plus 36 plus 36, which is 78 parameters, and positive definiteness of Sigma t is not guaranteed. This is the full VEC model, whose restricted versions, the diagonal VEC and BEKK, are in Tsay section 10.2, out of scope. Class 9 uses equation 1 only to show why factor and correlation models, section 7, are needed. The application, slide 39: German, United States and United Kingdom quarterly employment shares, 1968 to 1998.
+
+Six point two. Course and G layer: the VAR with stochastic volatility. Slide 40; Uhlig 1997.
+
+Equation 2: y t equals the sum over i of B i y t minus i plus u t, with u t normal with covariance Sigma t. Sigma t inverse equals L t L t transposed. And Sigma t plus one inverse equals L t Theta t L t transposed over lambda, with Theta t matrix-variate Beta with parameters nu plus p q over two and one half.
+
+The precision is multiplied each period by a random matrix-Beta shock and rescaled by lambda. The scalar case, q equal to one, is a G-layer item, derived here to read equation 2. With h t equal to one over sigma t squared and L t equal to the square root of h t, equation 2 is h t plus one equals h t theta t over lambda, with theta t Beta with parameters a and one half, and a equal to nu plus p over two. Since the expected value of theta t is a over a plus one half, equation 3: the expected value of h t plus one given h t equals h t times a over a plus one half, times lambda, which equals h t if and only if lambda equals a over a plus one half, which is nu plus p over nu plus p plus one.
+
+So lambda sets the drift of the precision: at the value in equation 3 the precision is a martingale, a multiplicative random walk. The Beta and Wishart pair is conjugate, which is why Uhlig's model has a closed-form filter: the multiplicative cousin of the discounting of point six.
+
+Six point three. Course layer: the TVP-VAR with SV. Slides 41 to 44; Primiceri 2005.
+
+Equation 4: y t equals the sum over i of B i t y t minus i plus u t, with u t normal with covariance Sigma t, and Sigma t equal to A t inverse D t A t inverse transposed. Equation 5: A t is unit lower triangular, with ones on the diagonal, zeros above, and free entries alpha two one t down to alpha q, q minus one, t below; and D t is diagonal with sigma one t squared to sigma q t squared.
+
+There are three independent random walks, slide 42. Equation 6: B t equals B t minus one plus nu t, with nu t normal with covariance Q; alpha t equals alpha t minus one plus xi t, with xi t normal with covariance S; and log sigma t equals log sigma t minus one plus eta t, with eta t normal with covariance W.
+
+Reading equations 4 and 5. Multiply u t by A t: the covariance of A t u t is A t Sigma t A t transposed, which is D t, diagonal. So A t u t equals D t to the one half times epsilon t, with epsilon t standard normal. That is a recursive SVAR, as in section 3, whose contemporaneous matrix and shock variances drift over time. Ordering still matters, now at every t. The decomposition is Tsay's L G L transposed with L equal to A t inverse and G equal to D t.
+
+Why random walks in log sigma: positivity for free, and log sigma i t squared enters linearly once the model is rewritten, the SV linearisation of Class 8. Each line of equation 6 is a state equation, and conditional on the other two blocks, each block is a linear Gaussian state-space model, or becomes one after the log chi-squared mixture approximation for log sigma t. So the Gibbs sampler draws the whole paths of B, alpha and log sigma with the Kalman filter of point four run forward and sampled backward.
+
+Counting states: q squared p in B t, plus intercepts; q times q minus one over two in alpha t; and q in log sigma t. For Primiceri's three United States variables, inflation, unemployment and the interest rate, with two lags, that is 21 plus 3 plus 3, which is 27 states per period, with intercepts. Slide 43 shows the posterior mean and the 16 and 84 per cent bands of the standard deviations of the residuals of the inflation, unemployment and interest-rate equations: large peaks in the mid-1970s and around 1980, and calm in the 1990s. Slide 44: Nakajima, Kasuya and Watanabe, 2011, apply it to Japan.
+
+Six point four. Course layer: state space and the Kalman filter. Tsay section 11.1, pages 558 to 563.
+
+The local trend, or local level, model, Tsay equations 11.1 and 11.2. Equation 7: y t equals mu t plus e t, with e t normal with variance sigma e squared; and mu t plus one equals mu t plus eta t, with eta t normal with variance sigma eta squared.
+
+Equation 7 is the scalar skeleton of equation 6: an unobserved random walk seen through noise. "Equation (11.1) provides the link between the data y t and the state mu t and is called the observation equation. Equation (11.2) governs the time evolution of the state variable and is the state equation", Tsay page 558.
+
+The derivation of the filter, Tsay pages 561 to 563. Suppose mu t given the information at t minus one is normal with mean mu t given t minus one and variance Sigma t given t minus one. The one-step forecast of y t is mu t given t minus one, so, equation 8: v t, equal to y t minus mu t given t minus one, equals mu t minus mu t given t minus one, plus e t; and V t, its variance given the past, equals Sigma t given t minus one plus sigma e squared.
+
+Equation 9, Tsay equation 11.9: the covariance of mu t and v t given the past is the expected value of mu t minus its prediction, times mu t minus its prediction plus e t, which is Sigma t given t minus one, since e t is independent of mu t.
+
+The pair mu t and v t is jointly normal given the past, and the information at t is the past plus v t. Apply Theorem 11.1: the expected value of x given y is mu x plus Sigma x y Sigma y y inverse times y minus mu y; and the variance of x given y is Sigma x x minus Sigma x y Sigma y y inverse Sigma y x. Take x equal to mu t and y equal to v t.
+
+Equation 10: mu t given t equals mu t given t minus one, plus Sigma t given t minus one over V t times v t, which is mu t given t minus one plus K t v t, with K t equal to Sigma t given t minus one over V t.
+
+Equation 11: Sigma t given t equals Sigma t given t minus one minus Sigma t given t minus one squared over V t, which is Sigma t given t minus one times one minus K t.
+
+Predict with the state equation: mu t plus one given t equals mu t given t, and, equation 12: Sigma t plus one given t equals Sigma t given t plus sigma eta squared, which is Sigma t given t minus one times one minus K t, plus sigma eta squared. These are Tsay equations 11.12 to 11.14.
+
+K t is the regression coefficient of the state on the surprise: the share of each forecast error that moves the state. The likelihood comes free: the v t are independent normals with variances V t, so the log likelihood is minus T over two log two pi, minus one half the sum over t of log V t plus v t squared over V t, Tsay equation 11.25, maximised over sigma e and sigma eta.
+
+Note that equations 11 and 12 do not involve y: the variance and gain path is deterministic.
+
+Six point four point one. The steady state.
+
+If Sigma t given t minus one tends to P, then equation 12 and K equal to P over P plus sigma e squared give the fixed point: P equals P times one minus P over P plus sigma e squared, plus sigma eta squared, which is P sigma e squared over P plus sigma e squared, plus sigma eta squared.
+
+Multiply by P plus sigma e squared: P squared plus P sigma e squared equals P sigma e squared plus sigma eta squared P plus sigma eta squared sigma e squared. So P squared minus sigma eta squared P minus sigma eta squared sigma e squared equals zero.
+
+Divide by sigma e to the fourth, and write p equal to P over sigma e squared and q equal to sigma eta squared over sigma e squared: p squared minus q p minus q equals zero. The positive root, equation 13: p star equals q plus the square root of q squared plus 4 q, all over 2; and K star equals p star over p star plus one.
+
+Comparative statics. As q goes to zero, a nearly constant state, p star is about the square root of q, which goes to zero, and K star goes to zero: the filter averages the whole past. As q goes to infinity, noise-free data, p star is about q, and K star goes to one: the state is the last observation. The derivative of K star with respect to q is positive throughout.
+
+The ARIMA link, Tsay pages 558 and 559. In steady state, equation 10 with mu t plus one given t equal to mu t given t reads, equation 14: mu t plus one given t equals mu t given t minus one plus K star times y t minus mu t given t minus one, which is one minus K star times mu t given t minus one, plus K star y t. That is exponential smoothing with weight K star, which is the forecast function of one minus B, times y t, equal to one minus theta B, times a t, with theta equal to one minus K star. Tsay: the local trend model "is also an ARIMA(0,1,1) model, which is the simple exponential smoothing model of Chapter 2".
+
+Six point four point two. Worked: Tsay Example 11.1, Alcoa realised volatility. Pages 559 and 560.
+
+The data are the log daily realised volatility, 340 days. The ARIMA fit: one minus B, times y t, equals one minus 0.858 B, times a t, with sigma a hat equal to 0.5184, Tsay equation 11.6. The local-trend maximum likelihood estimates: sigma eta hat equals 0.0735 and sigma e hat equals 0.4803.
+
+Route one, the filter's steady state, equation 13. q equals 0.0735 over 0.4803, squared, which is 0.15303 squared, which is 0.023418. Then p star equals 0.023418 plus the square root of 0.023418 squared plus 4 times 0.023418, all over 2. Inside the root: 0.000548 plus 0.093672. The root is 0.306953. So p star is 0.023418 plus 0.306953, over 2, which is 0.165186. And K star is 0.165186 over 1.165186, which is 0.14177; so one minus K star is 0.8582.
+
+Route two, the ARIMA fit: theta hat equals 0.858. The two agree to the third decimal. Tsay checks the converse with equations 11.4 and 11.5: theta sigma a squared equals sigma e squared, and one plus theta squared, times sigma a squared, equals two sigma e squared plus sigma eta squared. So sigma e equals the square root of 0.858 times 0.5184 squared, which is 0.4802. And sigma eta squared equals one plus 0.858 squared, times 0.26874, minus 2 times 0.23058, which is 0.46658 minus 0.46116, which is 0.00542; so sigma eta is 0.0736, "close to the MLE". Measurement noise is 6.5 times the state innovation standard deviation, so only 14 per cent of each day's surprise is believed.
+
+The figure for this section. On the left, the steady-state Kalman gain from equation 13 is plotted against the signal-to-noise ratio q on a log scale, rising from 0 to 1, with the Alcoa point at q equal to 0.0234 and gain 0.142. On the right, the deterministic gain path K t from equations 11 and 12 is plotted over 40 periods, for sigma e equal to 0.4803 and sigma eta equal to 0.0735, from two initial variances, 10 and 0, both converging to 0.1418. On the left, the gain is an S-curve in log q, steepest around q of about one; Alcoa's volatility sits in the flat lower part, where the filter is heavily smoothing. On the right, from a diffuse start the first observation gets almost full weight, K one equal to 10 over 10.23, which is 0.98; from a zero-variance start, none, K one equal to zero. Both paths reach 0.1418 within about 15 days: initialisation matters only at the start, Tsay section 11.1.6.
+
+Six point five. Course layer: time-varying regression coefficients.
+
+The TVP-CAPM, Tsay section 11.3.1, pages 577 and 578. Equation 15: r t equals alpha t plus beta t r M t plus e t; alpha t plus one equals alpha t plus eta t; and beta t plus one equals beta t plus epsilon t. The state s t is alpha t and beta t, the transition matrix is the identity of order two, and the observation row Z t is one and r M t. Time-varying regressors live in the observation matrix, and the Kalman filter of point four runs unchanged with vectors. A TVP-VAR is equation 15 for each equation, with Z t the VAR's lagged y's: the SUR form y t equals z t beta t plus u t of section 4, with beta t a state.
+
+Bayesian TVP regression, Greenberg section 10.3, pages 161 to 164: y t equals x t transposed beta t plus u t; beta t equals beta t minus one plus eta t; u t is normal with variance sigma squared; and eta t is K-variate normal with covariance Omega, Greenberg equations 10.10 and 10.11. Iterate the state equation from a known beta zero. Equation 16: beta t equals beta zero plus the sum over s from one to t of eta s, so the variance of beta t given beta zero is t times Omega.
+
+The prior uncertainty about the coefficient grows linearly with time: the random-walk signature of Class 1, in parameter space. Greenberg stacks beta as beta T down to beta one and writes the transition as H beta equal to beta zero tilde plus eta. That gives a Gaussian prior, beta normal with mean H inverse beta zero tilde and covariance H inverse times the identity of order T Kronecker Omega, times H inverse transposed, and a Gibbs sampler with two steps. Equation 17: beta given y, sigma squared and Omega is normal of dimension T K, with mean beta bar and covariance B one, where B one is the inverse of X transposed X over sigma squared plus H transposed times the identity Kronecker Omega inverse, times H. And Omega inverse given the rest is Wishart of dimension K, with alpha zero plus T degrees of freedom and scale the inverse of S zero inverse plus the sum over t of beta t minus beta t minus one times its transpose.
+
+"This algorithm must be modified for large K T because B one is the inverse of a K T by K T matrix": hence the recursive, Kalman, sampler. Greenberg's Phillips-curve example, Table 10.3: the TVP model's log base 10 marginal likelihood is minus 92.506, and "the AR(1) model has a larger marginal likelihood despite the large variation in the values of beta t". Time variation is not free: it must earn its extra states.
+
+Six point six. Course layer: large TVP-VARs without MCMC. Part 2, slide 61.
+
+Koop and Korobilis, 2012: y t equals z t beta t plus u t, with u t normal with covariance Sigma; beta t equals beta t minus one plus v t, with v t normal with covariance V t; and "the old discount strategy of West and Harrison (1997) to avoid MCMC altogether". Discounting chooses V t so that the prediction step inflates the filtered variance by a fixed factor. The standard West and Harrison form is a G-layer item. Equation 18: P t given t minus one equals P t minus one given t minus one plus V t, and this is set equal to P t minus one given t minus one over delta, so V t equals one over delta minus one, times P t minus one given t minus one.
+
+There is no Q to estimate: one number, delta, replaces a K by K matrix. Information j periods old is down-weighted by about delta to the j, an effective memory of one over one minus delta observations: delta equal to 0.99 gives 100 periods; delta equal to one gives constant coefficients. Ahmadi and Uhlig, 2009, offer a fully Bayesian FAVAR alternative, slide 61.
+
+Practice for this section, by number and printed page only: Greenberg exercise 10.4, page 167.
+
+Recap of section 6. A VAR can move in its covariance, by GARCH, 78 variance parameters for three series, or by Uhlig's SV, where lambda equal to nu plus p over nu plus p plus one makes the precision a martingale; or in everything, as in Primiceri's TVP-VAR with SV, a drifting recursive SVAR with three random walks. Every moving part is a state, and the Kalman filter updates it with gain K t, the regression coefficient of the state on the surprise. The steady-state gain is p star over p star plus one, and one minus it is the ARIMA 0, 1, 1 coefficient: 0.1418 and 0.858 for Alcoa. Random-walk coefficients have variance growing like t times Omega, and discounting replaces Q with a single delta.
+
+Checklist. You should be able to count the parameters of the VAR-GARCH variance equation. You should be able to derive Uhlig's martingale condition in the scalar case. You should be able to write Primiceri's model and explain why it is a drifting recursive SVAR. You should be able to derive the Kalman filter for the local level model from the normal conditioning theorem. You should be able to derive the steady-state gain and its ARIMA link, and reproduce Tsay's 0.1418 and 0.858. And you should be able to state the TVP-regression prior variance t times Omega and the discounting rule.
+
+Part three, section 7. Time-varying covariances: DCC models the correlations directly, factor SV gets them from the factor's volatility.
+
+This section covers the part 2 deck: slide 38, factor stochastic volatility, Pitt and Shephard 1999; slide 39, correlated factor volatilities, Aguilar and West 2000; slide 40, time-varying loadings, Lopes and Carvalho 2007; and slides 41 to 43, daily exchange rates with k equal to 3. It covers the two site pages: the United States and Brazil page, with univariate SV of order one by the stochvol package, rolling correlations, a static factor analysis, and the factor SV sampler on six stocks; and the WTI and S and P 500 page, with SV with leverage and t errors, a one-factor SV model, univariate GARCH 1, 1 with t errors as the first DCC step, the DCC fits in the Tse and Tsui and the Engle versions, and the diagnostics. And it covers Tsay's chapter 10 introduction and section 10.1, pages 506 and 507, equation 10.2; section 10.3.1, page 516, equation 10.7; section 10.4.3, pages 531 and 532; and section 10.6, page 543.
+
+DCC stands for dynamic conditional correlation, and EWMA for the exponentially weighted moving average.
+
+The claim, before the derivations. A k-dimensional conditional covariance has k times k plus one over two moving entries, so every usable model imposes structure. DCC splits Sigma t into D t R t D t: univariate GARCH for D t, then one scalar recursion with two parameters for all the correlations. Factor SV keeps y t equal to beta f t plus epsilon t and lets the factor and idiosyncratic log-variances follow first-order autoregressions. Then Sigma t equals beta H t beta transposed plus the idiosyncratic covariance, and, with one factor, rho i j t equals the sign of beta i beta j over the square root of one plus a i t over h t, times one plus a j t over h t. Correlations rise exactly when the common factor is volatile: a prediction, not a free parameter. On the site's W and T Offshore and S and P 500 data, the DCC correlation shock has a half-life of 7 days in Engle's version and 2 days in Tse and Tsui's, and the S and P GARCH persistence is above one.
+
+The notation. a t is the k by one return innovation, with expected value zero given the past. Sigma t, the covariance of a t given the past, is the conditional covariance, positive definite. D t is the diagonal matrix of conditional standard deviations, the square roots of sigma one one t through sigma k k t. R t, rho t in Tsay, is the conditional correlation matrix, with a unit diagonal. Epsilon t, D t inverse a t, are the standardised innovations. Theta one and theta two are the DCC scalars, non-negative with sum below one. Lambda, between zero and one, is the EWMA decay. f t and beta are the factors and loadings, as in section 5. h t, sigma squared p plus one t, is the factor variance with one factor, and lambda t, its log, the factor log-variance. Sigma i t squared and eta i t, its log, are the idiosyncratic variances and log-variances. And a i t, sigma i t squared over beta i squared, is the idiosyncratic-to-loading ratio, non-negative.
+
+Seven point one. Course layer: the problem. Tsay page 506.
+
+"Multivariate volatility modeling is concerned with the time evolution of Sigma t. The curse of dimensionality quickly becomes a major obstacle in applications because there are k times k plus one over two quantities in Sigma t for a k-dimensional return series. To illustrate, there are 15 conditional variances and covariances in Sigma t for a five-dimensional return series." The full VEC, or VAR-GARCH, of section 6 gives each of them its own equation; everything below is a way not to.
+
+Seven point two. Course layer: the exponentially weighted benchmark. Tsay section 10.1, equation 10.2, page 506.
+
+Equation 1: Sigma hat t equals one minus lambda over one minus lambda to the t minus one, times the sum over j from one to t minus one of lambda to the j minus one times a t minus j a t minus j transposed, with lambda between zero and one.
+
+The weights sum to one, since the sum over j of lambda to the j minus one is one minus lambda to the t minus one, over one minus lambda. For large t, lambda to the t minus one is about zero. Split off the j equal to one term and re-index the rest, with j equal to i plus one. Equation 2: Sigma hat t equals one minus lambda times a t minus one a t minus one transposed, plus lambda times the bracket, one minus lambda times the sum over i of lambda to the i minus one times a t minus one minus i times its transpose. The bracket is Sigma hat t minus one. So Sigma hat t equals one minus lambda times a t minus one a t minus one transposed, plus lambda Sigma hat t minus one.
+
+One parameter for all k times k plus one over two entries, positive definite by construction. It is an IGARCH: no mean reversion, and the persistence is exactly one.
+
+Seven point three. Course layer: correlations separately, Sigma t equals D t R t D t. Tsay equation 10.7, page 516.
+
+Equation 3: Sigma t equals D t R t D t; entry i j is the square root of sigma i i t, times rho i j t, times the square root of sigma j j t. The k variances can be modelled one series at a time, with GARCH or SV from Class 8. What remains is R t: k times k minus one over two correlations, symmetric, with a unit diagonal, positive definite.
+
+Seven point four. Course layer: dynamic conditional correlation. Tsay section 10.4.3, pages 531 and 532.
+
+Tse and Tsui, 2002. Equation 4: R t equals one minus theta one minus theta two, times R bar, plus theta one R t minus one, plus theta two Psi t minus one. R bar is a fixed correlation matrix, often the sample one, and Psi t minus one is the sample correlation of the standardised shocks over the last m days.
+
+Engle, 2002. Equation 5: Q t equals one minus theta one minus theta two, times Q bar, plus theta one epsilon t minus one epsilon t minus one transposed, plus theta two Q t minus one; and R t equals J t Q t J t, with J t the diagonal matrix of q i i t to the minus one half. This is in Tsay's order, with theta one on the news term. J t rescales Q t into a correlation matrix, and theta one plus theta two between zero and one keeps it positive definite. "An obvious drawback of the prior two models is that theta one and theta two are scalar so that all the conditional correlations have the same dynamics", Tsay page 531.
+
+Mean reversion. Write s equal to theta one plus theta two. Take the expectation given the information at t of equation 5 at t plus two: the expected value of Q t plus two equals one minus s times Q bar, plus theta one times the expected value of epsilon t plus one epsilon t plus one transposed, plus theta two Q t plus one. That expected outer product is R t plus one, not Q t plus one; with the usual approximation R t plus one about equal to Q t plus one, equation 6: the expected value of Q t plus two minus Q bar is about s times Q t plus one minus Q bar, and so the expected value of Q t plus h minus Q bar is about s to the h minus one times Q t plus one minus Q bar.
+
+The same algebra is exact for equation 4 in expectation if the expected value of Psi t is about R t, and exact for a GARCH 1, 1 variance: the expected value of sigma squared t plus h minus sigma bar squared equals alpha plus beta, to the h minus one, times sigma squared t plus one minus sigma bar squared, with sigma bar squared equal to omega over one minus alpha minus beta. The half-life is log 0.5 over log s.
+
+Seven point four point one. Worked: W and T Offshore against the S and P 500. The site's time-varying covariance page.
+
+Daily percentage returns, from 5 April 2014 to 4 April 2023, 2,263 observations after dropping missing values. The ticker "WTI" here is W and T Offshore, Incorporated, an oil-and-gas stock, not the crude-oil benchmark.
+
+Step one, univariate GARCH 1, 1 with Student t errors. For W and T Offshore: omega 1.2985, alpha one 0.1061, beta one 0.8432, nu 5.46, and alpha one plus beta one equal to 0.9493. For the S and P 500: omega 0.0203, alpha one 0.1964, beta one 0.8065, nu 5.60, and alpha one plus beta one equal to 1.0029.
+
+For W and T: sigma bar squared is 1.2985 over one minus 0.9493, which is 1.2985 over 0.0507, which is 25.6, a long-run daily standard deviation of 5.06 per cent; the half-life is log 0.5 over log 0.9493, which is 13.3 days. For the S and P, alpha one plus beta one equals 1.0029, above one: no finite unconditional variance, and the fitted variance does not revert; the 2020 crash dominates the sample. With nu about 5.5, the Student t kurtosis, three times nu minus 2 over nu minus 4, is 3 times 3.46 over 1.46, which is 7.1: heavy tails.
+
+Step two, the correlations, fitted on the standardised residuals; MTS prints the two scalars and the t degrees of freedom. Tse and Tsui, the default: first theta 0.7018, second theta 0.0500, nu 6.11; the sum s is 0.7518, and the half-life is 2.43 days. Engle: first theta 0.8704, second theta 0.0381, nu 6.14; the sum s is 0.9085, and the half-life is 7.22 days.
+
+By magnitude, the first printed scalar is the weight on the lagged correlation term, which plays theta two in Tsay's ordering of equation 5, and the second is the weight on the news term. The sum s and the half-life do not depend on the labelling. Engle's correlation shocks persist three times as long as Tse and Tsui's. The diagnostics: the portmanteau Q of m on the standardised residuals has p-values 0.23 and 0.26, but the rank-based test rejects, with 0.0022 and 0.0018, and the robust Q k of m rejects for Engle at 5 per cent, with 0.033: some dependence is left.
+
+The figure for this section shows reversion multipliers from equation 6, using the site's estimates, with dotted lines at the half-lives. On the left, the share of a correlation shock remaining after h trading days, theta one plus theta two to the power h, for Engle's DCC, 0.9085 with a half-life of 7.2 days, and Tse and Tsui's, 0.7518 with a half-life of 2.4 days. On the right, the GARCH variance-shock persistence, alpha plus beta to the h, for W and T Offshore, 0.9493, decaying, and for the S and P 500, 1.0029, rising slightly above one. The left panel says how fast a correlation surprise is forgotten: after two weeks, 10 days, Engle keeps 0.9085 to the 10th, which is 0.38, of it, and Tse and Tsui keep 0.7518 to the 10th, which is 0.06. The right panel shows the S and P variance curve above one and rising: a fitted model that predicts today's volatility shock never fades, which is the IGARCH edge of equation 2.
+
+Seven point five. Course layer: factor stochastic volatility. Part 2, slide 38; Pitt and Shephard 1999.
+
+Equation 7: y t given f t is normal with mean beta f t and covariance Sigma t, and f t is normal with mean zero and covariance H t. Equation 8: Sigma t is diagonal with sigma one t squared to sigma p t squared, and H t is diagonal with sigma p plus one t squared to sigma p plus k t squared. Equation 9: eta i t, the log of sigma i t squared, is normal with mean alpha i plus gamma i eta i, t minus one, and variance xi i squared; and lambda j t, the log of sigma p plus j t squared, is normal with mean mu j plus phi j lambda j, t minus one, and variance tau j squared.
+
+It is the static factor model of section 5 with p plus k univariate SV processes of order one, from Class 8, for the variances. Exactly as there, Omega becomes, equation 10: the variance of y t given H t and Sigma t equals beta H t beta transposed plus Sigma t.
+
+One factor, two series. With h t the scalar H t, by equation 10: the i i entry of the variance is beta i squared h t plus sigma i t squared, and the i j entry is beta i beta j h t. Equation 11: rho i j t equals beta i beta j h t over the square root of beta i squared h t plus sigma i t squared, times beta j squared h t plus sigma j t squared.
+
+Divide numerator and denominator by the absolute value of beta i beta j times h t, and write a i t equal to sigma i t squared over beta i squared. Equation 12: rho i j t equals the sign of beta i beta j over the square root of one plus a i t over h t, times one plus a j t over h t.
+
+Both factors under the root fall as h t rises, so the absolute value of rho i j t is increasing in h t, from zero as h t goes to zero, to one as h t goes to infinity. Correlations go up in turbulent markets because the common factor's variance goes up: the factor SV account of "correlations rise in crises", with no correlation parameter at all.
+
+Worked: slide 22's series one and three, with beta equal to 0.99 and 0.90, and sigma squared equal to 0.01 and 0.10. a one is 0.01 over 0.9801, which is 0.010203; a three is 0.10 over 0.81, which is 0.123457.
+
+At h equal to one: rho equals one over the square root of 1.010203 times 1.123457, which is one over the square root of 1.134920, which is one over 1.065326, which is 0.9387.
+
+At h equal to 0.05, that is lambda t equal to log 0.05, which is minus 3.0: rho equals one over the square root of one plus 0.20406, times one plus 2.46914. That is one over the square root of 1.20406 times 3.46914, which is one over the square root of 4.17706, which is 0.4893.
+
+A twentyfold fall in the factor variance halves the correlation. The curve is the left panel of the figure in section 5.
+
+The interactive companion is again The Factor-Volatility Dial: move the factor log-variance lambda t and watch rho t travel along equation 11; change the loadings and idiosyncratic variances to see which pairs are most sensitive.
+
+Extensions on the slides. Four of them.
+
+Correlated factor volatilities, Aguilar and West 2000, slide 39: lambda t is normal with mean mu plus Phi lambda t minus one and covariance U, with U a full covariance matrix and Phi diagonal with phi one to phi k.
+
+Time-varying loadings, Lopes and Carvalho 2007, slide 40: the d free loadings, d equal to p k minus k times k minus one over two, follow first-order autoregressions, beta i j t normal with mean mu i j plus phi i j beta i j, t minus one, and variance sigma i j squared.
+
+Daily exchange rates, slides 41 to 43: the German mark, the pound, the yen, the French franc, the Canadian dollar and the Spanish peseta against the dollar, from 1 January 1992 to 31 October 1995, with k equal to 3, time-varying loadings and vague priors. Slide 43 plots, per currency, the share of variance due to each factor and to the idiosyncratic term over time.
+
+Tsay section 10.6, "factor-volatility models": pick the first few principal components of a t and model their volatilities, the non-Bayesian route to the same structure.
+
+Parameter counts for k series, with one factor and first-order autoregressive log-variances with three parameters each. The full VEC GARCH 1, 1: d plus 2 d squared parameters, with d equal to k times k plus one over two, growing like k to the fourth. Engle's DCC with GARCH 1, 1 margins: 3 k plus 2, with Q bar estimated by moments, growing like k, plus k squared moments. One-factor factor SV: 3 times k plus 1, plus k loadings, growing like k.
+
+Seven point six. Course layer: the site's two factor SV pages.
+
+Six stocks, United States and Brazil: Apple, Microsoft, Amazon, Petrobras, Vale and CSN, from 1 January 2006 to 24 March 2021, 3,831 demeaned log returns. The univariate SV model of order one, fitted by stochvol: y t equals e to the h t over two times epsilon t; h t equals mu plus phi times h t minus one minus mu, plus sigma eta t. The priors: mu normal with mean zero and standard deviation 100; phi plus one over two, Beta with parameters 5 and 1.5; sigma squared inverse gamma with parameters one half and one half, as printed; and h zero normal with mean mu and variance sigma squared over one minus phi squared. Then 50-day rolling correlations; a static two-factor analysis, giving a Brazil factor and a United States factor, as in section 5; and the factor SV sampler with 2 factors on all six stocks and 1 factor on each country's three.
+
+The correlations between the factor paths. The three-stock United States factor correlates 0.989 with the six-stock model's factor one and 0.073 with its factor two. The three-stock Brazil factor correlates 0.636 with factor one and 0.858 with factor two. The two country-level factors correlate 0.562 with each other. The joint model rediscovers the two country factors, in the opposite order to the static factor analysis, because factor SV identifies factors by the lower-triangular beta, whose first row is Apple. The page then compares factor SV's time-varying correlations with the 50-day rolling ones and the static sample correlation, and the six-, three- and one-dimensional volatility estimates, as figures only.
+
+W and T Offshore and the S and P 500, the page's section 4.1: SV with leverage and t errors for each series; one-factor SV for the pair; posterior densities of the two loadings, between 0.4 and 2.0; factor SV standard deviations against the SV ones; and the factor SV correlation against Engle's DCC correlation on the interval from zero to one, with guides at 0.2, 0.5 and 0.8, as figures only.
+
+Seven point seven. Course layer: DCC and factor SV, side by side. Seven dimensions.
+
+First, the object modelled. DCC models R t directly, equations 4 and 5. Factor SV models H t and Sigma t, and R t is implied by equation 11.
+
+Second, what moves a correlation. In DCC, products of yesterday's standardised shocks. In factor SV, the factor's volatility, and the idiosyncratic ones.
+
+Third, whether all pairs share dynamics. In DCC, yes, through the scalar thetas. In factor SV, no: each pair's sensitivity is set by a i t and a j t.
+
+Fourth, positive definiteness. In DCC, by theta one plus theta two below one and a positive definite Q bar. In factor SV, by construction, equation 10.
+
+Fifth, estimation. DCC uses two-step quasi maximum likelihood. Factor SV uses MCMC.
+
+Sixth, dimension. In DCC, Q bar has k times k minus one over two entries. In factor SV, the count is linear in k.
+
+Seventh, interpretation. DCC is statistical; factor SV is economic, with market or country factors.
+
+Practice for this section, by number and printed page only: Tsay exercises 10.1, 10.2, 10.3, 10.4, 10.5 and 10.6, page 554.
+
+Recap of section 7. A k-dimensional covariance has k times k plus one over two moving entries, so structure is essential. The EWMA uses one parameter and is an IGARCH. DCC models correlations with two scalars after univariate GARCH: half-lives of 7.22 days for Engle and 2.43 for Tse and Tsui on the site's data, where the S and P's GARCH persistence is 1.0029. Factor SV gives the covariance beta H t beta transposed plus Sigma t, and the one-factor correlation rises with the factor variance: 0.939 at h equal to one and 0.489 at h equal to 0.05. On six stocks, factor SV rediscovers a United States and a Brazil factor.
+
+Checklist. You should be able to derive the EWMA recursion and say why it is an IGARCH. You should be able to write the Tse and Tsui and Engle DCC recursions and derive the mean-reversion rate and half-life. You should be able to read the two-step DCC printout, including the S and P persistence above one. You should be able to derive the one-factor SV correlation, show it rises with h t, and evaluate it at h equal to one and 0.05. And you should be able to compare DCC and factor SV on the seven dimensions.
+
+Recap of part 2. With too many parameters, shrink, using the Minnesota prior whose posterior is ridge toward a random walk, or compress, using a few factors that carry the cross-section. When coefficients and volatilities move, treat each as a state and let the Kalman filter update it; its steady-state gain is one minus the ARIMA moving-average coefficient. When only covariances move, DCC models correlations directly with two scalars, while factor SV derives them from the common factor's volatility, which is why correlations rise in crises. Part 3 holds the pitfalls, the spoken formula sheet, the implementation, the reading route, the self-test, the glossary, and the class in five lines.
+

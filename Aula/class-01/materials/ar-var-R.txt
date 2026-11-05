@@ -1,0 +1,67 @@
+
+# Source: https://online.stat.psu.edu/stat510/lesson/11/11.2
+# STAT510: Applied Time Series Analysis
+# PennState - Eberly College of Science
+
+install.packages("vars")  # https://cran.r-project.org/web/packages/vars/index.html
+install.packages("astsa") # https://cran.r-project.org/web/packages/astsa/index.html
+library(vars)
+library(astsa)
+
+# DATASET 1: AR(1) model
+x = cbind(cmort, tempr, part)
+
+plot.ts(x , main = "", xlab = "")
+
+fit.cmor  = sarima(cmort,p=1,d=0,q=0)
+
+fit.tempr = sarima(tempr,p=2,d=0,q=0)
+
+fit.part  = sarima(part,p=1,d=0,q=0)
+
+
+# DATASET 1: VAR(1) model
+fit.var = VAR(x, p=1, type="both")
+
+summary(fit.var)
+
+
+# Data 2: VAR and impulse response function (IRF)
+# prod: measure of labour productivity
+# e: employment
+# rw: real wage
+# U: unemployment rate
+data(Canada)
+
+plot.ts(Canada , main = "", xlab = "")
+
+fit.can = VAR(Canada, p=1,type="both")
+
+fitirf = irf(fit.can,n.ahead=52)
+
+
+names=c("Employment","Productivity","Real wage","Unemployment rate")
+par(mfrow=c(2,2))
+ts.plot(fitirf$irf$e,col=1:4,main=paste("Shock on ",names[1],sep=""),ylab="Response")
+abline(h=0,lty=2)
+ts.plot(fitirf$irf$prod,col=1:4,main=paste("Shock on ",names[2],sep=""),ylab="Response")
+abline(h=0,lty=2)
+ts.plot(fitirf$irf$rw,col=1:4,main=paste("Shock on ",names[3],sep=""),ylab="Response")
+abline(h=0,lty=2)
+legend("topright",legend=names,col=1:4,bty="n",lty=1)
+ts.plot(fitirf$irf$U,col=1:4,main=paste("Shock on ",names[3],sep=""),ylab="Response")
+abline(h=0,lty=2)
+
+
+par(mfrow=c(2,4))
+for (i in 1:4){
+  irf = cbind(fitirf$Lower$e[,i],fitirf$irf$e[,i],fitirf$Upper$e[,i]) 
+  ts.plot(irf,lty=c(2,1,2),ylab=paste("Response of ",names[i],sep=""),main="Shock on Employment")
+  abline(h=0,lty=2)
+}
+for (i in 1:4){
+  irf = cbind(fitirf$Lower$U[,i],fitirf$irf$U[,i],fitirf$Upper$U[,i]) 
+  ts.plot(irf,lty=c(2,1,2),ylab=paste("Response of ",names[i],sep=""),main="Shock on Unemployment rate")
+  abline(h=0,lty=2)
+}
+  

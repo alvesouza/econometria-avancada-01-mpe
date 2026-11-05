@@ -1,0 +1,1564 @@
+% =============================================================================
+% L07 BOOK EXERCISES (Class 7: more econometric models) -- built from the MPE list template
+% (~/.claude/commands/templates/lista-exam.tex).
+%
+% TWO MODES (one source file):
+%   \solucoesfalse  -> blank list (statements only)
+%   \solucoestrue   -> answer key with solutions and rubric
+%
+% Compile (copyable PDF: lmodern + cmap):  pdflatex (2x); check with pdffonts (Type 1 only).
+% Numbers in the solutions are reproduced and asserted by Listas/L07-book-exercises-check.py.
+% =============================================================================
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}   % Type 1 vector fonts (replaces PK bitmaps)
+\usepackage{cmap}      % ToUnicode CMap -> copyable text and accents
+\usepackage[brazil,english]{babel}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage[a4paper,margin=2.2cm]{geometry}
+\usepackage{enumitem}
+\usepackage{fancyhdr}
+\usepackage{comment}
+% One cut file per job: parallel builds in one folder would otherwise share comment.cut and
+% swap solutions. Redefine DefaultCutFileName; overriding CommentCutFile alone is reset by comment.sty.
+\def\DefaultCutFileName{\def\CommentCutFile{\jobname.cut}}
+\usepackage{needspace}
+\usepackage{xcolor}
+\usepackage{microtype}
+\usepackage{booktabs}
+\usepackage{url}
+\usepackage{listings}
+\lstset{language=Python,basicstyle=\ttfamily\scriptsize,columns=fullflexible,keepspaces=true,
+  breaklines=true,frame=single,rulecolor=\color{black!30},backgroundcolor=\color{black!3},
+  commentstyle=\color{black!55},keywordstyle=\bfseries,showstringspaces=false,
+  aboveskip=4pt,belowskip=4pt}
+
+% ====================== CONFIGURATION ======================
+\newif\ifsolucoes
+\solucoesfalse                 % <<<< \solucoestrue for the ANSWER KEY; \solucoesfalse for the LIST
+
+\newcommand{\disciplina}{Econometria Avançada --- MPE (Insper)}
+\newcommand{\listatema}{\textit{L07 --- Class 7: GLS, AR and Student-$t$ errors, hierarchical models, Tobit and probit (book exercises)}}
+\newcommand{\espacoresol}{2.5cm}   % height of the answer space in the blank list
+
+% ====================== MACHINERY ======================
+\ifsolucoes\includecomment{sol}\else\excludecomment{sol}\fi
+
+\pagestyle{fancy}\fancyhf{}
+\lhead{\footnotesize\disciplina}
+\rhead{\footnotesize List L07\ifsolucoes{} --- Solutions and rubric\fi}
+\cfoot{\footnotesize\thepage}
+\renewcommand{\headrulewidth}{0.3pt}
+\setlength{\headheight}{14pt}
+
+\setlist{topsep=2pt,itemsep=2pt}
+\newcounter{questao}
+\numberwithin{equation}{questao}
+
+% Block header (one per book)
+\setlength{\emergencystretch}{2em}
+\newcommand{\bloco}[3]{\bigskip\noindent
+  {\large\bfseries\color{blue!55!black}Block #1 --- #2}\par\noindent\hfill\textit{(#3)}\par
+  \noindent\rule{\linewidth}{0.3pt}\smallskip}
+
+% Question (automatic numbering)
+\newcommand{\questao}[1]{\refstepcounter{questao}\bigskip\needspace{5\baselineskip}\noindent
+  \textbf{Question \thequestao.}~#1\par}
+% Source line of a book question (estilo-avaliacao, "Book questions used in a list")
+\newcommand{\fonte}[1]{\par\noindent{\small\textit{Source:} #1}\par\smallskip}
+\newenvironment{enunciado}{\par\begingroup\small}{\endgroup\par}
+\newenvironment{itens}{\begin{enumerate}[label=(\roman*),leftmargin=2.4em,topsep=1pt,itemsep=1pt]}{\end{enumerate}}
+
+% Notation list that opens every solution (estilo-avaliacao §4, "Equations, notation and layout").
+\newenvironment{notacao}{\par\smallskip\noindent\textbf{Notation.}\begin{itemize}[leftmargin=1.4em,topsep=1pt,itemsep=0pt]\small}{\end{itemize}}
+\allowdisplaybreaks
+
+% Answer space in the blank list
+\newcommand{\resolespaco}{\ifsolucoes\else\par\textit{Solution:}\vspace{\espacoresol}\par\fi}
+
+% Solution step (use inside sol)
+\newcommand{\passo}[2]{\par\smallskip\noindent\textbf{Step --- #1.}~#2}
+\newcommand{\intuicao}[1]{\par\smallskip\noindent\textit{Intuition.}~#1}
+\newcommand{\refbib}[1]{\par\smallskip\noindent{\footnotesize\color{black!60}\textbf{Ref:} #1}}
+% Grading rubric
+\newcommand{\rubrica}[1]{\par\needspace{4\baselineskip}\smallskip\noindent\textbf{Grading rubric.}\begin{itemize}[leftmargin=1.4em,topsep=1pt]#1\end{itemize}}
+
+\newcommand{\var}[1]{\mathit{#1}}
+\newcommand{\E}{\mathrm{E}}
+\newcommand{\TN}{\mathcal{TN}}
+\newcommand{\N}{\mathcal{N}}
+\newcommand{\IG}{\mathcal{IG}}
+\newcommand{\Ga}{\mathcal{G}}
+
+% =============================================================================
+\begin{document}
+\begin{center}
+  {\Large\bfseries \disciplina}\\[2pt]
+  {\large Exercise list: \listatema}\ifsolucoes\\[2pt]\textit{Solutions and rubric}\fi
+\end{center}
+\vspace{2pt}
+
+{\footnotesize\noindent\textbf{Instructions.} Every question is a textbook exercise listed under
+\emph{Practice} for Class 7 in \texttt{Map/class-plan.md}, reproduced verbatim from the book PDF
+with its source line; blocks follow the books in the order the class plan cites them. Text marked
+``Added for reference (not in the exercise)'' is context taken from the cited page of the same book.
+Computer exercises are solved in Python (\texttt{statsmodels}, \texttt{linearmodels}, NumPy/SciPy);
+every number in the answer key is reproduced by \texttt{Listas/L07-book-exercises-check.py}. Data:
+the Wooldridge data sets come from the \texttt{wooldridge} Python package; ``Birth weight II'' is in
+\texttt{Listas/data/babies.data} (provenance in \texttt{Listas/data/README.md}). Show all steps.\par}
+
+% =================================================================================================
+\bloco{1}{Wooldridge, \textit{Introductory Econometrics} (6e)}{Ch.~12, 17, 14}
+
+% ------------------------------------------------------------------------------------------ Q1
+\questao{Wooldridge 12.C2 --- iterated Cochrane--Orcutt and the long-run propensity.}
+\fonte{Wooldridge, J.\,M. (2016), \textit{Introductory Econometrics: A Modern Approach}, 6th ed.,
+Chapter 12, Computer Exercise C2, pp.~397--398, reproduced verbatim.}
+\begin{enunciado}
+\textbf{C2}
+\begin{itens}
+\item Using the data in WAGEPRC, estimate the distributed lag model from Problem 5 in Chapter 11. Use regression (12.14) to test for AR(1) serial correlation.
+\item Reestimate the model using iterated Cochrane-Orcutt estimation. What is your new estimate of the long-run propensity?
+\item Using iterated CO, find the standard error for the LRP. (This requires you to estimate a modified equation.) Determine whether the estimated LRP is statistically different from one at the 5\% level.
+\end{itens}
+\textit{Added for reference (not in the exercise).} Problem 5 in Chapter 11 (p.~366) regresses
+$\var{gprice}$ on $\var{gwage}$, $\var{gwage}_{-1}$, \dots, $\var{gwage}_{-12}$ and a constant, where
+``$\var{gprice} = \Delta\log(\var{price})$ and $\var{gwage} = \Delta\log(\var{wage})$''.
+Regression (12.14), p.~377, is ``$\hat u_t$ on $\hat u_{t-1}$, for all $t = 2,\dots,n$''.
+\end{enunciado}
+\resolespaco
+\begin{sol}
+\begin{notacao}
+\item $\var{gprice}_t$, $\var{gwage}_t$: monthly growth of the price level and of the hourly wage (log differences); $t$ indexes months.
+\item $\alpha_0$: intercept; $\delta_j$ ($j=0,\dots,12$): coefficient on $\var{gwage}_{t-j}$; $\theta\equiv\sum_{j=0}^{12}\delta_j$: long-run propensity (LRP), $\theta\in\mathbb{R}$.
+\item $u_t$: error; $\rho\in(-1,1)$: AR(1) coefficient of $u_t$; $e_t$: serially uncorrelated innovation with variance $\sigma_e^2>0$.
+\item $\hat u_t$: OLS residuals; $\hat\rho$, $\mathrm{se}(\hat\rho)$, $t_{\hat\rho}$: estimate of $\rho$, its standard error and $t$ statistic; $n=273$ usable months (12 lost to lags).
+\item $\tilde z_t\equiv z_t-\rho z_{t-1}$: quasi-difference of any series $z_t$.
+\end{notacao}
+
+\passo{model}{The finite distributed lag model and the error process are
+\begin{align}
+\var{gprice}_t &= \alpha_0+\delta_0\var{gwage}_t+\delta_1\var{gwage}_{t-1}+\dots+\delta_{12}\var{gwage}_{t-12}+u_t, \label{q1:dl}\\
+u_t &= \rho u_{t-1}+e_t. \label{q1:ar1}
+\end{align}
+OLS of \eqref{q1:dl} uses $n=273$ months and gives $\hat\theta_{OLS}=\sum_j\hat\delta_j=1.1719$, the
+estimate of Problem 11.5.}
+
+\passo{(i) test for AR(1)}{Regression (12.14), here with an intercept (allowed by the book, p.~377), is
+\begin{equation}
+\hat u_t = c+\rho\,\hat u_{t-1}+\text{error}_t,\qquad t=2,\dots,n. \label{q1:test}
+\end{equation}
+Estimating \eqref{q1:test} gives $\hat\rho=0.5027$ with $\mathrm{se}(\hat\rho)=0.0524$, so
+\begin{align*}
+t_{\hat\rho} &= \frac{0.502681}{0.052386}\\
+&= 9.596.
+\end{align*}
+The $p$-value is essentially zero: $H_0\colon\rho=0$ is rejected and the usual OLS standard errors of
+\eqref{q1:dl} are invalid. The test assumes strictly exogenous regressors; if $\var{gwage}$ responded
+to past price shocks, the regressors of \eqref{q1:dl} would have to be added to \eqref{q1:test}
+(W eq.~12.18), which does not change the verdict here.}
+
+\passo{(ii) iterated Cochrane--Orcutt}{Lag \eqref{q1:dl} one period, multiply it by $\rho$ and subtract it from \eqref{q1:dl}:
+\begin{equation*}
+\var{gprice}_t-\rho\,\var{gprice}_{t-1}=\alpha_0(1-\rho)+\sum_{j=0}^{12}\delta_j\left(\var{gwage}_{t-j}-\rho\,\var{gwage}_{t-j-1}\right)+\left(u_t-\rho u_{t-1}\right).
+\end{equation*}
+By \eqref{q1:ar1}, $u_t-\rho u_{t-1}=e_t$, so
+\begin{equation}
+\widetilde{\var{gprice}}_t=\alpha_0(1-\rho)+\sum_{j=0}^{12}\delta_j\,\widetilde{\var{gwage}}_{t-j}+e_t,\qquad t=2,\dots,n, \label{q1:co}
+\end{equation}
+which has a serially uncorrelated error. CO drops $t=1$. The iteration: (a) get $\hat\rho$ from the
+residuals of \eqref{q1:dl} by the no-intercept version of \eqref{q1:test}; (b) quasi-difference with
+$\hat\rho$ and run OLS on \eqref{q1:co}; (c) recompute the residuals of \eqref{q1:dl} at the new
+$\hat\delta_j$ and return to (a) until $\hat\rho$ moves by less than $10^{-10}$. It converges to
+$\hat\rho=0.5086$ with
+\begin{center}\small
+\begin{tabular}{lccccccc}
+\toprule
+$j$ & 0 & 1 & 2 & 3 & 4 & 5 & 6\\
+$\hat\delta_j$ & 0.07919 & 0.07261 & 0.02390 & 0.03342 & 0.08010 & 0.11321 & 0.09716\\
+\midrule
+$j$ & 7 & 8 & 9 & 10 & 11 & 12 & \\
+$\hat\delta_j$ & 0.10108 & 0.10634 & 0.16095 & 0.11210 & 0.09954 & 0.03018 & \\
+\bottomrule
+\end{tabular}
+\end{center}
+Summing the table by the definition of $\theta$:
+\begin{align*}
+\hat\theta_{CO} &= 0.07919+0.07261+0.02390+0.03342+0.08010+0.11321+0.09716\\
+&\quad+0.10108+0.10634+0.16095+0.11210+0.09954+0.03018\\
+&= 1.10978.
+\end{align*}
+The new LRP, $1.110$, is below the OLS value $1.172$ and closer to one.}
+
+\passo{(iii) modified equation}{By the definition of $\theta$,
+\begin{equation}
+\delta_0=\theta-\delta_1-\delta_2-\dots-\delta_{12}. \label{q1:d0}
+\end{equation}
+Substituting \eqref{q1:d0} into \eqref{q1:dl}:
+\begin{equation*}
+\var{gprice}_t=\alpha_0+\left(\theta-\delta_1-\dots-\delta_{12}\right)\var{gwage}_t+\delta_1\var{gwage}_{t-1}+\dots+\delta_{12}\var{gwage}_{t-12}+u_t .
+\end{equation*}
+Collecting the terms in each $\delta_j$:
+\begin{equation}
+\var{gprice}_t=\alpha_0+\theta\,\var{gwage}_t+\sum_{j=1}^{12}\delta_j\left(\var{gwage}_{t-j}-\var{gwage}_t\right)+u_t. \label{q1:mod}
+\end{equation}
+Equation \eqref{q1:mod} is a reparametrisation of \eqref{q1:dl}, so iterated CO on it reproduces
+$\hat\rho=0.5086$ and gives $\hat\theta$ as the coefficient on $\var{gwage}_t$, with its standard error:
+$\hat\theta=1.10978$, $\mathrm{se}(\hat\theta)=0.19068$. The test of $H_0\colon\theta=1$ is
+\begin{align*}
+t &= \frac{\hat\theta-1}{\mathrm{se}(\hat\theta)}\\
+&= \frac{1.10978-1}{0.19068}\\
+&= \frac{0.10978}{0.19068}\\
+&= 0.5757 .
+\end{align*}
+The CO regression has $272$ observations and $14$ parameters, so $272-14=258$ df and the 5\% two-sided
+critical value is $1.969$. Since $|0.5757|<1.969$, the LRP is not statistically different from one.}
+
+\passo{code and output}{The FGLS routine (used again in Question~2) and the calls:}
+\begin{lstlisting}
+def fgls_ar1(y, X, prais_winsten, tol=1e-10):
+    b, rho = np.linalg.lstsq(X, y, rcond=None)[0], 0.0
+    while True:
+        u = y - X @ b
+        rho_new = (u[1:] @ u[:-1]) / (u[:-1] @ u[:-1])        # (12.14), no intercept
+        ys, Xs = y[1:] - rho_new*y[:-1], X[1:] - rho_new*X[:-1]
+        if prais_winsten:                                      # keep t = 1, rescaled
+            c = np.sqrt(1 - rho_new**2)
+            ys, Xs = np.r_[c*y[0], ys], np.vstack([c*X[0], Xs])
+        res = sm.OLS(ys, Xs).fit(); b = res.params
+        if abs(rho_new - rho) < tol: return res, rho_new
+        rho = rho_new
+
+d = wd.data("wageprc"); lags = ["gwage"] + [f"gwage_{j}" for j in range(1, 13)]
+d = d[["gprice"] + lags].dropna()
+y, X = d.gprice.to_numpy(), sm.add_constant(d[lags]).to_numpy()
+u = sm.OLS(y, X).fit().resid
+t14 = sm.OLS(u[1:], sm.add_constant(u[:-1])).fit()           # (12.14) with intercept
+co, rho = fgls_ar1(y, X, prais_winsten=False)                # iterated CO
+R = np.r_[0, np.ones(13)]                                    # theta = sum of the deltas
+lrp, se = R @ co.params, np.sqrt(R @ co.cov_params() @ R)
+# output: rho_hat(12.14)=0.5027 se=0.0524 t=9.60 | CO: rho=0.5086 LRP=1.10978 se=0.19068 df=258
+\end{lstlisting}
+\intuicao{Serial correlation leaves OLS consistent here but makes its standard errors wrong; CO
+removes it by quasi-differencing, which also re-weights the data and moves the point estimates a
+little. A long-run pass-through of one means that a permanent 1-point rise in monthly wage growth
+eventually raises monthly price growth one for one, which the data cannot reject.}
+\refbib{W §12.2 (pp.~376--381), §12.3 (pp.~381--387), Ch.~11 Problem 5 (p.~366); §10.2 for the LRP.
+Slides \textit{General linear models} (AR errors).}
+\rubrica{
+\item (i) correct regression \eqref{q1:test}, $\hat\rho\approx0.50$, $t\approx9.6$, rejection: 1.5 pts.
+\item (ii) CO transformation \eqref{q1:co} and iteration explained, LRP $\approx1.11$: 1.5 pts.
+\item (iii) reparametrisation \eqref{q1:mod}, $\mathrm{se}\approx0.19$, $t\approx0.58$, do not reject: 2 pts. Reporting the LRP standard error from OLS instead of CO: max.\ 1 pt in (iii).
+}
+\end{sol}
+
+% ------------------------------------------------------------------------------------------ Q2
+\questao{Wooldridge 12.C10 --- static Phillips curve by Prais--Winsten and Cochrane--Orcutt.}
+\fonte{Wooldridge, J.\,M. (2016), \textit{Introductory Econometrics: A Modern Approach}, 6th ed.,
+Chapter 12, Computer Exercise C10, p.~399, reproduced verbatim.}
+\begin{enunciado}
+\textbf{C10} Use the data in PHILLIPS to answer these questions.
+\begin{itens}
+\item Using the entire data set, estimate the static Phillips curve equation $\var{inf}_t=\beta_0+\beta_1\,\var{unem}_t+u_t$ by OLS and report the results in the usual form.
+\item Obtain the OLS residuals from part (i), $\hat u_t$, and obtain $\rho$ from the regression $\hat u_t$ on $\hat u_{t-1}$. (It is fine to include an intercept in this regression.) Is there strong evidence of serial correlation?
+\item Now estimate the static Phillips curve model by iterative Prais-Winsten. Compare the estimate of $\beta_1$ with that obtained in Table 12.2. Is there much difference in the estimate when the later years are added?
+\item Rather than using Prais-Winsten, use iterative Cochrane-Orcutt. How similar are the final estimates of $\rho$? How similar are the PW and CO estimates of $\beta_1$?
+\end{itens}
+\textit{Added for reference (not in the exercise).} Table 12.2 (p.~386), data through 1996, $n=49$:
+Prais--Winsten $\hat\beta_1=-.716$ $(.313)$, intercept $8.296$ $(2.231)$, $\hat\rho=.781$.
+\end{enunciado}
+\resolespaco
+\begin{sol}
+\begin{notacao}
+\item $\var{inf}_t$: annual CPI inflation (\%); $\var{unem}_t$: civilian unemployment rate (\%); $t=1948,\dots,2003$, $n=56$.
+\item $\beta_0,\beta_1$: intercept and slope of the static Phillips curve; $u_t$: error; $\rho\in(-1,1)$, $e_t$, $\sigma_e^2$: as in Question~1.
+\item $\tilde z_t=z_t-\rho z_{t-1}$ for $t\ge2$; PW: Prais--Winsten; CO: Cochrane--Orcutt.
+\end{notacao}
+
+\passo{(i) OLS}{With all 56 years,
+\begin{equation}
+\widehat{\var{inf}}_t=\underset{(1.548)}{1.054}+\underset{(0.266)}{0.502}\,\var{unem}_t,\qquad n=56,\ R^2=0.062. \label{q2:ols}
+\end{equation}
+The slope is positive (no trade-off) and not significant at 5\% ($t=0.502/0.266=1.89$).}
+
+\passo{(ii) serial correlation}{Regressing $\hat u_t$ on $\hat u_{t-1}$ and a constant gives $\hat\rho=0.5725$, $\mathrm{se}=0.1084$:
+\begin{align*}
+t_{\hat\rho} &= \frac{0.572472}{0.108354}\\
+&= 5.283 .
+\end{align*}
+There is strong evidence of positive AR(1) serial correlation.}
+
+\passo{(iii) iterated Prais--Winsten}{For $t\ge2$ the model is quasi-differenced as in Question~1:
+\begin{equation}
+\widetilde{\var{inf}}_t=(1-\rho)\beta_0+\beta_1\widetilde{\var{unem}}_t+e_t,\qquad t\ge2. \label{q2:qd}
+\end{equation}
+PW keeps $t=1$ by multiplying the original equation by $(1-\rho^2)^{1/2}$:
+\begin{equation}
+(1-\rho^2)^{1/2}\var{inf}_1=(1-\rho^2)^{1/2}\beta_0+\beta_1(1-\rho^2)^{1/2}\var{unem}_1+(1-\rho^2)^{1/2}u_1, \label{q2:first}
+\end{equation}
+whose error has variance $(1-\rho^2)\operatorname{Var}(u_1)=(1-\rho^2)\,\sigma_e^2/(1-\rho^2)=\sigma_e^2$, the
+same as $e_t$ in \eqref{q2:qd}. Iterating OLS on \eqref{q2:qd}--\eqref{q2:first} with $\hat\rho$ updated
+from the residuals (routine of Question~1) gives
+\begin{equation}
+\widehat{\var{inf}}_t=\underset{(2.048)}{7.999}-\underset{(0.290)}{0.714}\,\var{unem}_t,\qquad \hat\rho=0.7885. \label{q2:pw}
+\end{equation}
+Compared with Table 12.2, the difference in slopes is
+\begin{align*}
+\hat\beta_1^{2003}-\hat\beta_1^{1996} &= (-0.714)-(-0.716)\\
+&= 0.002,
+\end{align*}
+negligible relative to the standard error $0.29$: adding 1997--2003 barely changes the PW estimate.
+(Check of the routine: on 1948--1996 it returns $\hat\beta_1=-0.7157$ and $\hat\rho=0.7805$,
+reproducing Table 12.2.)}
+
+\passo{(iv) iterated Cochrane--Orcutt}{Dropping \eqref{q2:first} and iterating \eqref{q2:qd} alone:
+\begin{equation}
+\widehat{\var{inf}}_t=7.287-\underset{(0.294)}{0.664}\,\var{unem}_t,\qquad \hat\rho=0.7820. \label{q2:co}
+\end{equation}
+The final $\hat\rho$ values differ by $0.7885-0.7820=0.0065$, essentially the same. The slopes differ by
+$(-0.664)-(-0.714)=0.050$, about one sixth of a standard error: similar, with PW slightly more
+negative. With $\hat\rho\approx0.79$ the first observation carries much of the information on the
+level of the series, which is why PW and CO can differ in a sample of 56.}
+
+\passo{code}{}
+\begin{lstlisting}
+d = wd.data("phillips"); y, X = d.inf.to_numpy(), sm.add_constant(d.unem).to_numpy()
+ols = sm.OLS(y, X).fit(); u = ols.resid
+t14 = sm.OLS(u[1:], sm.add_constant(u[:-1])).fit()       # rho = 0.5725 (0.1084)
+pw, rho_pw = fgls_ar1(y, X, prais_winsten=True)          # b1 = -0.714 (0.290), rho = 0.7885
+co, rho_co = fgls_ar1(y, X, prais_winsten=False)         # b1 = -0.664 (0.294), rho = 0.7820
+\end{lstlisting}
+\intuicao{OLS in levels finds no trade-off; FGLS with $\hat\rho\approx0.8$ is close to first
+differencing and finds the negative slope. The two estimators weight the data differently, and with
+highly persistent series the change between them says more about levels versus changes than about
+efficiency.}
+\refbib{W §12.3 (pp.~381--387), Example 12.5 and Table 12.2 (p.~386); Example 10.1.}
+\rubrica{
+\item (i) equation in the usual form: 1 pt. (ii) $\hat\rho\approx0.57$, $t\approx5.3$: 1 pt.
+\item (iii) PW with the first-observation weight \eqref{q2:first}, $\hat\beta_1\approx-0.71$, comparison with $-.716$: 1.5 pts.
+\item (iv) CO estimates and both comparisons: 1.5 pts. Using CO in (iii) (dropping $t=1$): max.\ 0.5 pt in (iii).
+}
+\end{sol}
+
+% ------------------------------------------------------------------------------------------ Q3
+\questao{Wooldridge 17.3 --- partial effects in the truncated part of the Tobit model.}
+\fonte{Wooldridge, J.\,M. (2016), \textit{Introductory Econometrics: A Modern Approach}, 6th ed.,
+Chapter 17, Problem 3, p.~559, reproduced verbatim.}
+\begin{enunciado}
+\textbf{3} (Requires calculus)
+\begin{itens}
+\item Suppose in the Tobit model that $x_1=\log(z_1)$, and this is the only place $z_1$ appears in $\mathbf{x}$. Show that
+\begin{equation*}
+\frac{\partial\,\E(y\,|\,y>0,\mathbf{x})}{\partial z_1}=(\beta_1/z_1)\{1-\lambda(\mathbf{x}\boldsymbol\beta/\sigma)[\mathbf{x}\boldsymbol\beta/\sigma+\lambda(\mathbf{x}\boldsymbol\beta/\sigma)]\},\tag{17.52}
+\end{equation*}
+where $\beta_1$ is the coefficient on $\log(z_1)$.
+\item If $x_1=z_1$, and $x_2=z_1^2$, show that
+\begin{equation*}
+\frac{\partial\,\E(y\,|\,y>0,\mathbf{x})}{\partial z_1}=(\beta_1+2\beta_2z_1)\{1-\lambda(\mathbf{x}\boldsymbol\beta/\sigma)[\mathbf{x}\boldsymbol\beta/\sigma+\lambda(\mathbf{x}\boldsymbol\beta/\sigma)]\},
+\end{equation*}
+where $\beta_1$ is the coefficient on $z_1$ and $\beta_2$ is the coefficient on $z_1^2$.
+\end{itens}
+\end{enunciado}
+\resolespaco
+\begin{sol}
+\begin{notacao}
+\item $y^*=\mathbf{x}\boldsymbol\beta+u$, $u\,|\,\mathbf{x}\sim\N(0,\sigma^2)$: latent variable; $y=\max(0,y^*)$: observed outcome; $\sigma>0$.
+\item $\mathbf{x}$: $1\times k$ row of regressors (first element 1); $\boldsymbol\beta$: $k\times1$ coefficients; $z_1>0$: the underlying variable entering $\mathbf{x}$.
+\item $c\equiv\mathbf{x}\boldsymbol\beta/\sigma\in\mathbb{R}$; $\phi$, $\Phi$: standard normal pdf and cdf; $\lambda(c)\equiv\phi(c)/\Phi(c)>0$: inverse Mills ratio.
+\end{notacao}
+
+\passo{conditional mean}{From W eq.~(17.24),
+\begin{equation}
+\E(y\,|\,y>0,\mathbf{x})=\mathbf{x}\boldsymbol\beta+\sigma\lambda(\mathbf{x}\boldsymbol\beta/\sigma). \label{q3:mean}
+\end{equation}}
+
+\passo{derivative of $\lambda$}{The normal density satisfies
+\begin{equation}
+\phi'(c)=-c\,\phi(c). \label{q3:dphi}
+\end{equation}
+By the quotient rule with $\Phi'=\phi$,
+\begin{equation*}
+\lambda'(c)=\frac{\phi'(c)\Phi(c)-\phi(c)\phi(c)}{\Phi(c)^2}.
+\end{equation*}
+Substituting \eqref{q3:dphi}:
+\begin{equation*}
+\lambda'(c)=\frac{\left(-c\,\phi(c)\right)\Phi(c)-\phi(c)^2}{\Phi(c)^2}.
+\end{equation*}
+Splitting the fraction and using $\lambda=\phi/\Phi$:
+\begin{align}
+\lambda'(c)&=-c\,\lambda(c)-\lambda(c)^2\nonumber\\
+&=-\lambda(c)\left[c+\lambda(c)\right]. \label{q3:dlam}
+\end{align}}
+
+\passo{chain rule}{$z_1$ enters \eqref{q3:mean} only through $\mathbf{x}\boldsymbol\beta$. Differentiating \eqref{q3:mean}:
+\begin{equation*}
+\frac{\partial\,\E(y\,|\,y>0,\mathbf{x})}{\partial z_1}=\frac{\partial(\mathbf{x}\boldsymbol\beta)}{\partial z_1}+\sigma\,\lambda'(\mathbf{x}\boldsymbol\beta/\sigma)\,\frac{1}{\sigma}\,\frac{\partial(\mathbf{x}\boldsymbol\beta)}{\partial z_1}.
+\end{equation*}
+Factoring out $\partial(\mathbf{x}\boldsymbol\beta)/\partial z_1$:
+\begin{equation*}
+\frac{\partial\,\E(y\,|\,y>0,\mathbf{x})}{\partial z_1}=\frac{\partial(\mathbf{x}\boldsymbol\beta)}{\partial z_1}\left[1+\lambda'(\mathbf{x}\boldsymbol\beta/\sigma)\right].
+\end{equation*}
+Substituting \eqref{q3:dlam} with $c=\mathbf{x}\boldsymbol\beta/\sigma$:
+\begin{equation}
+\frac{\partial\,\E(y\,|\,y>0,\mathbf{x})}{\partial z_1}=\frac{\partial(\mathbf{x}\boldsymbol\beta)}{\partial z_1}\left\{1-\lambda(\mathbf{x}\boldsymbol\beta/\sigma)\left[\mathbf{x}\boldsymbol\beta/\sigma+\lambda(\mathbf{x}\boldsymbol\beta/\sigma)\right]\right\}. \label{q3:gen}
+\end{equation}}
+
+\passo{(i) $x_1=\log z_1$}{Here $\mathbf{x}\boldsymbol\beta=\beta_0+\beta_1\log z_1+\dots$, so
+\begin{equation}
+\frac{\partial(\mathbf{x}\boldsymbol\beta)}{\partial z_1}=\frac{\beta_1}{z_1}. \label{q3:i}
+\end{equation}
+Substituting \eqref{q3:i} into \eqref{q3:gen} gives exactly (17.52).}
+
+\passo{(ii) $x_1=z_1$, $x_2=z_1^2$}{Here $\mathbf{x}\boldsymbol\beta=\beta_0+\beta_1z_1+\beta_2z_1^2+\dots$, so
+\begin{equation}
+\frac{\partial(\mathbf{x}\boldsymbol\beta)}{\partial z_1}=\beta_1+2\beta_2z_1. \label{q3:ii}
+\end{equation}
+Substituting \eqref{q3:ii} into \eqref{q3:gen} gives the stated expression.}
+
+\intuicao{The braces are the adjustment factor $1+\lambda'(c)\in(0,1)$: for those already at $y>0$,
+a change in $z_1$ moves the conditional mean by less than it moves $y^*$, because part of the effect
+works through who is in the truncated subpopulation. Only the term $\partial(\mathbf{x}\boldsymbol\beta)/\partial z_1$
+depends on how $z_1$ enters the index.}
+\refbib{W §17.2 (pp.~536--543), eqs.~(17.24)--(17.27). Slides \textit{Limited dependent variable models} (Tobit).}
+\rubrica{
+\item Starting point \eqref{q3:mean}: 1 pt. Derivative $\lambda'(c)=-\lambda(c+\lambda)$ shown: 2 pts.
+\item Chain rule \eqref{q3:gen}: 1 pt. Parts (i) and (ii): 0.5 pt each. Asserting $\lambda'$ without derivation: max.\ 1 pt for that step.
+}
+\end{sol}
+
+% ------------------------------------------------------------------------------------------ Q4
+\questao{Wooldridge 17.C2 --- probit and logit for loan approval.}
+\fonte{Wooldridge, J.\,M. (2016), \textit{Introductory Econometrics: A Modern Approach}, 6th ed.,
+Chapter 17, Computer Exercise C2, p.~561, reproduced verbatim.}
+\begin{enunciado}
+\textbf{C2} Use the data in LOANAPP for this exercise; see also Computer Exercise C8 in Chapter 7.
+\begin{itens}
+\item Estimate a probit model of \textit{approve} on \textit{white}. Find the estimated probability of loan approval for both whites and nonwhites. How do these compare with the linear probability estimates?
+\item Now, add the variables \textit{hrat}, \textit{obrat}, \textit{loanprc}, \textit{unem}, \textit{male}, \textit{married}, \textit{dep}, \textit{sch}, \textit{cosign}, \textit{chist}, \textit{pubrec}, \textit{mortlat1}, \textit{mortlat2}, and \textit{vr} to the probit model. Is there statistically significant evidence of discrimination against nonwhites?
+\item Estimate the model from part (ii) by logit. Compare the coefficient on \textit{white} to the probit estimate.
+\item Use equation (17.17) to estimate the sizes of the discrimination effects for probit and logit.
+\end{itens}
+\end{enunciado}
+\resolespaco
+\begin{sol}
+\begin{notacao}
+\item $\var{approve}_i\in\{0,1\}$: mortgage application approved; $\var{white}_i\in\{0,1\}$: applicant is white; $\mathbf{x}_i$: row of regressors including the constant; $i=1,\dots,n$.
+\item $G(\cdot)$: response function, $\Phi$ (probit) or $\Lambda(z)=e^z/(1+e^z)$ (logit); $\boldsymbol\beta$: index coefficients; $\beta_w$: coefficient on $\var{white}$.
+\item APE: average partial effect of switching $\var{white}$ from 0 to 1, W eq.~(17.17) with $c_k=0$.
+\end{notacao}
+
+\passo{(i) probit on \textit{white} only}{The model is
+\begin{equation}
+P(\var{approve}=1\,|\,\var{white})=\Phi(\beta_0+\beta_w\var{white}). \label{q4:p1}
+\end{equation}
+With $n=1{,}989$: $\hat\beta_0=0.546946$, $\hat\beta_w=0.783946$ $(0.0867)$. Substituting into \eqref{q4:p1}:
+\begin{align*}
+\hat P(\var{approve}=1\,|\,\var{white}=1)&=\Phi(0.546946+0.783946)\\
+&=\Phi(1.330892)\\
+&=0.9084,\\
+\hat P(\var{approve}=1\,|\,\var{white}=0)&=\Phi(0.546946)\\
+&=0.7078.
+\end{align*}
+The LPM is $\widehat{\var{approve}}=0.7078+0.2006\,\var{white}$, so its probabilities are $0.7078$ and
+$0.7078+0.2006=0.9084$: identical. With one binary regressor both models are saturated and both
+reproduce the two sample approval rates.}
+
+\passo{(ii) probit with controls}{With the fourteen controls ($n=1{,}971$ complete cases)
+$\hat\beta_w=0.5203$ $(0.0970)$, so
+\begin{align*}
+t &= \frac{0.520253}{0.096959}\\
+&= 5.366 .
+\end{align*}
+Holding the credit and demographic controls fixed, there is strong evidence of discrimination against nonwhites.}
+
+\passo{(iii) logit}{The logit coefficient is $\hat\beta_w=0.9378$ $(0.1729)$, $t=5.42$. The ratio is
+\begin{align*}
+\frac{\hat\beta_w^{logit}}{\hat\beta_w^{probit}}&=\frac{0.937764}{0.520253}\\
+&=1.8025 ,
+\end{align*}
+close to the ratio of the standard deviations of the logistic and normal errors, $\pi/\sqrt3\approx1.81$
+(W's rule of thumb is $\approx1.6$). The $t$ statistics, $5.37$ and $5.42$, tell the same story.}
+
+\passo{(iv) APE by (17.17)}{For each applicant evaluate the fitted probability with $\var{white}=1$ and with $\var{white}=0$, the other regressors at their own values, and average:
+\begin{equation}
+\widehat{\mathrm{APE}}_w=n^{-1}\sum_{i=1}^n\left[G(\mathbf{x}_i^{(1)}\hat{\boldsymbol\beta})-G(\mathbf{x}_i^{(0)}\hat{\boldsymbol\beta})\right], \label{q4:ape}
+\end{equation}
+where $\mathbf{x}_i^{(w)}$ is $\mathbf{x}_i$ with $\var{white}$ set to $w$. Evaluating \eqref{q4:ape}:
+probit $0.1042$, logit $0.1009$ (the LPM with the same controls gives $0.1288$). Being white raises the
+approval probability by about 10 percentage points.}
+
+\passo{code}{}
+\begin{lstlisting}
+d = wd.data("loanapp")
+full = ["white","hrat","obrat","loanprc","unem","male","married","dep","sch",
+        "cosign","chist","pubrec","mortlat1","mortlat2","vr"]
+pr1 = sm.Probit(d.approve, sm.add_constant(d.white)).fit()        # 0.5469, 0.7839
+d2 = d[["approve"] + full].dropna(); X2 = sm.add_constant(d2[full])
+pr2, lg2 = sm.Probit(d2.approve, X2).fit(), sm.Logit(d2.approve, X2).fit()
+for m, G in ((pr2, stats.norm.cdf), (lg2, stats.logistic.cdf)):
+    X1, X0 = X2.assign(white=1), X2.assign(white=0)
+    print(np.mean(G(X1 @ m.params) - G(X0 @ m.params)))           # 0.1042, 0.1009
+\end{lstlisting}
+\intuicao{Probit and logit coefficients live on different scales (error variances $1$ and
+$\pi^2/3$), so only the probabilities and partial effects are comparable, and those agree.}
+\refbib{W §17.1 (pp.~525--536), eq.~(17.17); Computer Exercise 7.C8. Slides \textit{Limited dependent variable models} (probit).}
+\rubrica{
+\item (i) both probabilities and the equality with the LPM, with the reason: 1.5 pts.
+\item (ii) $t\approx5.4$ and conclusion: 1 pt. (iii) scale comparison: 1 pt.
+\item (iv) APE by \eqref{q4:ape} for both models: 1.5 pts. Comparing raw probit/logit coefficients with the LPM coefficient as effects: max.\ 0.5 pt in (iv).
+}
+\end{sol}
+
+% ------------------------------------------------------------------------------------------ Q5
+\questao{Wooldridge 17.C3 --- Tobit model for pension benefits.}
+\fonte{Wooldridge, J.\,M. (2016), \textit{Introductory Econometrics: A Modern Approach}, 6th ed.,
+Chapter 17, Computer Exercise C3, p.~561, reproduced verbatim.}
+\begin{enunciado}
+\textbf{C3} Use the data in FRINGE for this exercise.
+\begin{itens}
+\item For what percentage of the workers in the sample is \textit{pension} equal to zero? What is the range of \textit{pension} for workers with nonzero pension benefits? Why is a Tobit model appropriate for modeling \textit{pension}?
+\item Estimate a Tobit model explaining \textit{pension} in terms of \textit{exper}, \textit{age}, \textit{tenure}, \textit{educ}, \textit{depends}, \textit{married}, \textit{white}, and \textit{male}. Do whites and males have statistically significant higher expected pension benefits?
+\item Use the results from part (ii) to estimate the difference in expected pension benefits for a white male and a nonwhite female, both of whom are 35 years old, are single with no dependents, have 16 years of education, and have 10 years of experience.
+\item Add \textit{union} to the Tobit model and comment on its significance.
+\item Apply the Tobit model from part (iv) but with \textit{peratio}, the pension-earnings ratio, as the dependent variable. (Notice that this is a fraction between zero and one, but, though it often takes on the value zero, it never gets close to being unity. Thus, a Tobit model is fine as an approximation.) Does gender or race have an effect on the pension-earnings ratio?
+\end{itens}
+\end{enunciado}
+\resolespaco
+\begin{sol}
+\begin{notacao}
+\item $\var{pension}_i\ge0$: annual employer pension contribution (dollars); $y_i^*$: latent desired pension; $\mathbf{x}_i$: regressors with constant; $\boldsymbol\beta$, $\sigma>0$: Tobit parameters; $n=616$.
+\item $\phi,\Phi$: standard normal pdf and cdf; $c_i=\mathbf{x}_i\boldsymbol\beta/\sigma$.
+\item $\var{peratio}_i\in[0,1)$: pension-to-earnings ratio.
+\end{notacao}
+
+\passo{(i) the corner at zero}{$172$ of $616$ workers have no pension:
+\begin{align*}
+\frac{172}{616}&=0.27922\\
+&=27.92\% .
+\end{align*}
+Among the 444 with positive benefits the range is $7.28$ to $2{,}880.27$ dollars. The outcome is a corner
+solution: a mass point at zero plus a continuous positive part, which a linear model cannot reproduce
+and the Tobit model is built for.}
+
+\passo{(ii) Tobit}{The model and its log-likelihood (W eq.~17.22) are
+\begin{align}
+y_i^*&=\mathbf{x}_i\boldsymbol\beta+u_i,\quad u_i\,|\,\mathbf{x}_i\sim\N(0,\sigma^2),\qquad \var{pension}_i=\max(0,y_i^*), \label{q5:tobit}\\
+\ell_i(\boldsymbol\beta,\sigma)&=1(y_i=0)\log\left[1-\Phi(\mathbf{x}_i\boldsymbol\beta/\sigma)\right]+1(y_i>0)\log\left[\sigma^{-1}\phi\left((y_i-\mathbf{x}_i\boldsymbol\beta)/\sigma\right)\right]. \label{q5:ll}
+\end{align}
+Maximising $\sum_i\ell_i$ (standard errors from the inverse Hessian):
+\begin{center}\small
+\begin{tabular}{lrrrrrrrrrr}
+\toprule
+ & const & \textit{exper} & \textit{age} & \textit{tenure} & \textit{educ} & \textit{depends} & \textit{married} & \textit{white} & \textit{male} & $\hat\sigma$\\
+\midrule
+$\hat\beta$ & $-1252.43$ & $5.20$ & $-4.64$ & $36.02$ & $93.21$ & $35.28$ & $53.69$ & $144.09$ & $308.15$ & $677.74$\\
+se & $(219.08)$ & $(6.01)$ & $(5.71)$ & $(4.56)$ & $(10.89)$ & $(21.92)$ & $(71.73)$ & $(102.08)$ & $(69.89)$ & $(24.14)$\\
+\bottomrule
+\end{tabular}
+\end{center}
+Log-likelihood $-3672.96$. The $t$ statistics are
+\begin{align*}
+t_{\var{white}}&=\frac{144.085}{102.079}=1.41, &
+t_{\var{male}}&=\frac{308.151}{69.892}=4.41 .
+\end{align*}
+Males have significantly higher expected benefits; whites do not at the 5\% level (two-sided $p\approx0.16$).}
+
+\passo{(iii) difference in expected benefits}{The unconditional mean (W eq.~17.25) is
+\begin{equation}
+\E(y\,|\,\mathbf{x})=\Phi(\mathbf{x}\boldsymbol\beta/\sigma)\,\mathbf{x}\boldsymbol\beta+\sigma\,\phi(\mathbf{x}\boldsymbol\beta/\sigma). \label{q5:Ey}
+\end{equation}
+The statement does not give \textit{tenure}; we set $\var{tenure}=10$ (equal to experience) and say so.
+For the nonwhite female ($\var{white}=\var{male}=0$, $\var{married}=\var{depends}=0$):
+\begin{align*}
+\mathbf{x}\hat{\boldsymbol\beta}_{NF}&=-1252.429081+5.203458(10)-4.638942(35)+36.023852(10)+93.212632(16)\\
+&=488.883 .
+\end{align*}
+For the white male add the two dummy coefficients:
+\begin{align*}
+\mathbf{x}\hat{\boldsymbol\beta}_{WM}&=488.883+144.085454+308.150549\\
+&=941.119 .
+\end{align*}
+Index values: $c_{WM}=941.119/677.738=1.3886$ and $c_{NF}=488.883/677.738=0.7213$, with
+$\Phi(1.388617)=0.917525$, $\phi(1.388617)=0.152123$, $\Phi(0.721345)=0.764651$,
+$\phi(0.721345)=0.307553$. Substituting into \eqref{q5:Ey}:
+\begin{align*}
+\widehat{\E}_{WM}&=(0.917525)(941.119)+(677.738)(0.152123)\\
+&=863.5002+103.0995\\
+&=966.60,\\
+\widehat{\E}_{NF}&=(0.764651)(488.883)+(677.738)(0.307553)\\
+&=373.8249+208.4404\\
+&=582.27 .
+\end{align*}
+The difference is
+\begin{align*}
+\widehat{\E}_{WM}-\widehat{\E}_{NF}&=966.60-582.27\\
+&=384.33\ \text{dollars per year}.
+\end{align*}}
+
+\passo{(iv) adding \textit{union}}{$\hat\beta_{\var{union}}=439.05$ $(62.49)$, $t=439.046/62.488=7.03$: union
+membership raises desired pension contributions strongly and very significantly.}
+
+\passo{(v) pension-earnings ratio}{With $\var{peratio}$ as the dependent variable (same regressors as (iv)):
+$\hat\beta_{\var{white}}=0.0032$ $(0.0066)$, $t=0.003179/0.006566=0.48$; $\hat\beta_{\var{male}}=0.0026$
+$(0.0045)$, $t=0.002594/0.004531=0.57$. Neither race nor gender affects the ratio; $\var{union}$ still does
+($0.0300$, se $0.0042$). The male and white premia in (ii) work through higher earnings, not through a
+higher share of earnings paid as pension.}
+
+\passo{code}{Tobit by ML with SciPy (\texttt{statsmodels} has no Tobit):}
+\begin{lstlisting}
+def tobit(y, X):
+    def ll(t):                                  # (17.22) summed; t = (beta, sigma)
+        b, s = t[:-1], t[-1]; xb = X @ b
+        return np.where(y <= 0, stats.norm.logcdf(-xb/s),
+                        stats.norm.logpdf((y - xb)/s) - np.log(s)).sum()
+    b0 = np.linalg.lstsq(X, y, rcond=None)[0]
+    f = lambda t: -ll(np.r_[t[:-1], np.exp(t[-1])])      # optimise log sigma
+    r = optimize.minimize(f, np.r_[b0, np.log(np.std(y - X @ b0))], method="BFGS")
+    th = np.r_[r.x[:-1], np.exp(r.x[-1])]
+    V = np.linalg.inv(-approx_hess(th, ll))             # ML covariance of (beta, sigma)
+    return th[:-1], th[-1], V, ll(th)
+d = wd.data("fringe"); xs = ["exper","age","tenure","educ","depends","married","white","male"]
+b, s, V, ll = tobit(d.pension.to_numpy(), sm.add_constant(d[xs]).to_numpy())
+\end{lstlisting}
+\intuicao{The Tobit coefficients are effects on the latent desired pension; effects on what is
+actually paid are smaller and depend on $\mathbf{x}$ through $\Phi$ and $\phi$, which is why (iii) has to
+go through \eqref{q5:Ey} rather than add up coefficients.}
+\refbib{W §17.2 (pp.~536--543), eqs.~(17.22), (17.25). Slides \textit{Limited dependent variable models} (Tobit).}
+\rubrica{
+\item (i) 27.9\%, range and corner-solution argument: 1 pt. (ii) table and the two tests: 1.5 pts.
+\item (iii) uses \eqref{q5:Ey} and states the tenure assumption: 1.5 pts; using $\mathbf{x}\hat{\boldsymbol\beta}$ differences ($452.24$) as expected-benefit differences: max.\ 0.5 pt.
+\item (iv)--(v) estimates and conclusions: 1 pt.
+}
+\end{sol}
+
+% ------------------------------------------------------------------------------------------ Q6
+\questao{Wooldridge 17.C9 --- Tobit demand for eco-labeled apples.}
+\fonte{Wooldridge, J.\,M. (2016), \textit{Introductory Econometrics: A Modern Approach}, 6th ed.,
+Chapter 17, Computer Exercise C9, pp.~562--563, reproduced verbatim.}
+\begin{enunciado}
+\textbf{C9} Use the data in APPLE for this exercise. These are telephone survey data attempting to elicit the demand for a (fictional) ``ecologically friendly'' apple. Each family was (randomly) presented with a set of prices for regular apples and the ecolabeled apples. They were asked how many pounds of each kind of apple they would buy.
+\begin{itens}
+\item Of the 660 families in the sample, how many report wanting none of the ecolabeled apples at the set price?
+\item Does the variable \textit{ecolbs} seem to have a continuous distribution over strictly positive values? What implications does your answer have for the suitability of a Tobit model for \textit{ecolbs}?
+\item Estimate a Tobit model for \textit{ecolbs} with \textit{ecoprc}, \textit{regprc}, \textit{faminc}, and \textit{hhsize} as explanatory variables. Which variables are significant at the 1\% level?
+\item Are \textit{faminc} and \textit{hhsize} jointly significant?
+\item Are the signs of the coefficients on the price variables from part (iii) what you expect? Explain.
+\item Let $\beta_1$ be the coefficient on \textit{ecoprc} and let $\beta_2$ be the coefficient on \textit{regprc}. Test the hypothesis $\mathrm{H}_0\colon-\beta_1=\beta_2$ against the two-sided alternative. Report the $p$-value of the test. (You might want to refer to Section 4-4 if your regression package does not easily compute such tests.)
+\item Obtain the estimates of $\E(\var{ecolbs}\,|\,\mathbf{x})$ for all observations in the sample. [See equation (17.25).] Call these $\widehat{\var{ecolbs}}_i$. What are the smallest and largest fitted values?
+\item Compute the squared correlation between $\var{ecolbs}_i$ and $\widehat{\var{ecolbs}}_i$.
+\item Now, estimate a linear model for \textit{ecolbs} using the same explanatory variables from part (iii). Why are the OLS estimates so much smaller than the Tobit estimates? In terms of goodness-of-fit, is the Tobit model better than the linear model?
+\item Evaluate the following statement: ``Because the $R$-squared from the Tobit model is so small, the estimated price effects are probably inconsistent.''
+\end{itens}
+\end{enunciado}
+\resolespaco
+\begin{sol}
+\begin{notacao}
+\item $\var{ecolbs}_i\ge0$: pounds of eco-labeled apples demanded; $\var{ecoprc}_i$, $\var{regprc}_i$: prices of eco-labeled and regular apples (dollars/lb); $\var{faminc}_i$: family income (thousands); $\var{hhsize}_i$: household size; $n=660$.
+\item $\beta_0,\dots,\beta_4$: Tobit index coefficients on (const, \textit{ecoprc}, \textit{regprc}, \textit{faminc}, \textit{hhsize}); $\sigma>0$: latent error s.d.
+\item $\ell_{ur},\ell_r$: unrestricted and restricted log-likelihoods; $LR=2(\ell_{ur}-\ell_r)$.
+\end{notacao}
+
+\passo{(i)}{$248$ of the $660$ families want none of the eco-labeled apples.}
+
+\passo{(ii) distribution of the positive part}{The $412$ positive answers take only $22$ distinct
+values, heaped at round amounts: $2$ lb ($98$ families), $1$ lb ($76$), $3$ lb ($47$), $4/3$ lb ($31$) and $5$
+lb ($30$); these five values hold
+\begin{align*}
+\frac{98+76+47+31+30}{412}&=\frac{282}{412}\\
+&=0.6845
+\end{align*}
+of the positive responses. The positive part is far from continuous, so the Tobit's normal density for
+$y>0$ is at best an approximation; the estimates are still informative about the direction and rough
+size of the effects, but the distributional assumption that makes Tobit consistent is doubtful.}
+
+\passo{(iii) Tobit}{Same model and log-likelihood as \eqref{q5:tobit}--\eqref{q5:ll}:
+\begin{center}\small
+\begin{tabular}{lrrrrrr}
+\toprule
+ & const & \textit{ecoprc} & \textit{regprc} & \textit{faminc} & \textit{hhsize} & $\hat\sigma$\\
+\midrule
+$\hat\beta$ & $1.003$ & $-5.821$ & $5.655$ & $0.0066$ & $0.130$ & $3.441$\\
+se & $(0.668)$ & $(0.886)$ & $(1.065)$ & $(0.0040)$ & $(0.095)$ & $(0.127)$\\
+$t$ & $1.50$ & $-6.57$ & $5.31$ & $1.66$ & $1.37$ & \\
+\bottomrule
+\end{tabular}
+\end{center}
+Log-likelihood $\ell_{ur}=-1266.4422$. Only the two prices are significant at 1\% ($|t|>2.58$).}
+
+\passo{(iv) joint test}{Dropping \textit{faminc} and \textit{hhsize} gives $\ell_r=-1269.0145$, so
+\begin{align*}
+LR&=2\left[(-1266.4422)-(-1269.0145)\right]\\
+&=2(2.5723)\\
+&=5.14,
+\end{align*}
+with $p=P(\chi^2_2>5.14)=0.076$: jointly significant at 10\% but not at 5\%.}
+
+\passo{(v) signs}{$\hat\beta_1<0$: the own price lowers demand (downward-sloping demand). $\hat\beta_2>0$: a
+higher price of regular apples raises demand for the eco-labeled ones (substitutes). Both as expected.}
+
+\passo{(vi) $H_0\colon-\beta_1=\beta_2$}{Rewrite the null as $\theta\equiv\beta_1+\beta_2=0$. Then
+\begin{align*}
+\hat\theta&=(-5.821484)+(5.655171)\\
+&=-0.166313,
+\end{align*}
+with $\mathrm{se}(\hat\theta)=[\widehat{\operatorname{Var}}(\hat\beta_1)+\widehat{\operatorname{Var}}(\hat\beta_2)+2\widehat{\operatorname{Cov}}(\hat\beta_1,\hat\beta_2)]^{1/2}=0.591570$, so
+\begin{align*}
+t&=\frac{-0.166313}{0.591570}\\
+&=-0.2811,
+\end{align*}
+and the two-sided $p$-value is $0.7786$. The null is not rejected: demand depends on the price
+difference $\var{ecoprc}-\var{regprc}$, as if only the relative price mattered.}
+
+\passo{(vii) fitted means}{Evaluating \eqref{q5:Ey} at each $\mathbf{x}_i$ gives $\widehat{\var{ecolbs}}_i$
+between $0.798$ (smallest) and $3.328$ (largest). All are positive, unlike LPM-type fitted values.}
+
+\passo{(viii) fit}{$\operatorname{Corr}(\var{ecolbs}_i,\widehat{\var{ecolbs}}_i)^2=0.0369$.}
+
+\passo{(ix) OLS}{OLS gives
+$\widehat{\var{ecolbs}}=1.630-2.903\,\var{ecoprc}+3.031\,\var{regprc}+0.0028\,\var{faminc}+0.054\,\var{hhsize}$,
+with standard errors $(0.450)$, $(0.588)$, $(0.711)$, $(0.0027)$, $(0.064)$ and $R^2=0.0393$.
+The Tobit $\beta_j$ are effects on the latent $y^*$; the effect on $\E(y\,|\,\mathbf{x})$ is
+$\beta_j\Phi(\mathbf{x}\boldsymbol\beta/\sigma)$, and the sample average of $\Phi(\mathbf{x}_i\hat{\boldsymbol\beta}/\hat\sigma)$ is $0.5484$. Scaling:
+\begin{align*}
+(-5.821484)(0.548383)&=-3.1924, & (5.655171)(0.548383)&=3.1012,
+\end{align*}
+close to the OLS slopes $-2.903$ and $3.031$. On goodness of fit the linear model is marginally better
+($0.0393$ versus $0.0369$), as expected since OLS maximises $R^2$; neither fits well.}
+
+\passo{(x)}{False. Consistency depends on whether the model's assumptions hold (here: the latent
+linear index with normal, homoskedastic errors), not on $R^2$. A low $R^2$ only says that prices and
+income explain little of the variation in demand across families, which is normal with individual
+survey data. (The real threat to consistency is the one in (ii): the positive part is not normal.)}
+
+\passo{code}{}
+\begin{lstlisting}
+d = wd.data("apple"); y = d.ecolbs.to_numpy(); xs = ["ecoprc","regprc","faminc","hhsize"]
+X = sm.add_constant(d[xs]).to_numpy()
+b, s, V, ll = tobit(y, X); br, sr, Vr, llr = tobit(y, X[:, :3])
+LR = 2*(ll - llr)                                          # 5.14, p = 0.076
+g = np.array([0, 1, 1, 0, 0, 0.]); th = g @ np.r_[b, s]; se = np.sqrt(g @ V @ g)
+xb = X @ b; m = stats.norm.cdf(xb/s)*xb + s*stats.norm.pdf(xb/s)   # (17.25)
+print(m.min(), m.max(), np.corrcoef(y, m)[0, 1]**2)       # 0.798 3.328 0.0369
+\end{lstlisting}
+\intuicao{Tobit coefficients overstate effects on observed purchases by the factor $1/\Phi$; once
+rescaled, Tobit and OLS agree on the price responses. Fit statistics do not judge consistency.}
+\refbib{W §17.2 (pp.~536--543), eq.~(17.25); §4-4 for tests of linear combinations.}
+\rubrica{
+\item (i)--(ii) count and heaping argument: 1 pt. (iii)--(v) table, 1\% variables, joint test, signs: 1.5 pts.
+\item (vi) test on $\beta_1+\beta_2$ with the covariance term, $p\approx0.78$: 1 pt; omitting the covariance: max.\ 0.5 pt.
+\item (vii)--(x) fitted range, $R^2$ comparison, scaling argument, statement judged false with reason: 1.5 pts.
+}
+\end{sol}
+
+% ------------------------------------------------------------------------------------------ Q7
+\questao{Wooldridge 14.C5 --- occupation dummies in the fixed effects wage equation.}
+\fonte{Wooldridge, J.\,M. (2016), \textit{Introductory Econometrics: A Modern Approach}, 6th ed.,
+Chapter 14, Computer Exercise C5, p.~454, reproduced verbatim.}
+\begin{enunciado}
+\textbf{C5}
+\begin{itens}
+\item In the wage equation in Example 14.4, explain why dummy variables for occupation might be important omitted variables for estimating the union wage premium.
+\item If every man in the sample stayed in the same occupation from 1981 through 1987, would you need to include the occupation dummies in a fixed effects estimation? Explain.
+\item Using the data in WAGEPAN include eight of the occupation dummy variables in the equation and estimate the equation using fixed effects. Does the coefficient on \textit{union} change by much? What about its statistical significance?
+\end{itens}
+\textit{Added for reference (not in the exercise).} Example 14.4 (p.~443) regresses $\log(\var{wage})$
+on $\var{educ}$, $\var{black}$, $\var{hispan}$, $\var{exper}$, $\var{exper}^2$, $\var{married}$,
+$\var{union}$ and a full set of year dummies; in the fixed effects column of Table 14.2 only
+$\var{exper}^2$ $(-.0052)$, $\var{married}$ $(.047)$ and $\var{union}$ $(.080$, se $.019)$ remain.
+\end{enunciado}
+\resolespaco
+\begin{sol}
+\begin{notacao}
+\item $\log(\var{wage}_{it})$: log hourly wage of man $i=1,\dots,545$ in year $t=1980,\dots,1987$ ($T=8$, $4{,}360$ observations).
+\item $\var{union}_{it},\var{married}_{it}\in\{0,1\}$; $\var{exper}^2_{it}$; $d81_t,\dots,d87_t$: year dummies; $\var{occ}j_{it}$: occupation dummies, $j=2,\dots,9$ (occupation 1 is the base).
+\item $a_i$: time-constant unobserved effect; $u_{it}$: idiosyncratic error; $\beta_u$: union premium; $\boldsymbol\gamma$: occupation coefficients; $\ddot z_{it}=z_{it}-\bar z_i$: time-demeaned variable.
+\end{notacao}
+
+\passo{(i) omitted occupation}{The FE model of Example 14.4 is
+\begin{equation}
+\log(\var{wage}_{it})=\beta_1\var{exper}^2_{it}+\beta_2\var{married}_{it}+\beta_u\var{union}_{it}+\textstyle\sum_{s=81}^{87}\delta_s d_{s,t}+\sum_{j=2}^{9}\gamma_j\var{occ}j_{it}+a_i+u_{it}, \label{q7:fe}
+\end{equation}
+estimated in Table 14.2 with $\boldsymbol\gamma=\mathbf0$ imposed. Occupation affects wages directly
+(occupational pay differences) and is correlated with union status (unionisation rates differ across
+occupations: craft and operative jobs versus managerial and professional ones). If occupation
+changes over time for a given man, it is not absorbed by $a_i$, and omitting it biases $\hat\beta_u$
+in the usual omitted-variable direction: $\operatorname{sign}(\gamma)\times\operatorname{sign}(\text{correlation of union with occupation})$.}
+
+\passo{(ii) time-constant occupation}{The within transformation subtracts the time mean of \eqref{q7:fe}:
+\begin{equation}
+\log(\var{wage}_{it})-\overline{\log(\var{wage})}_i=\beta_u(\var{union}_{it}-\overline{\var{union}}_i)+\dots+\textstyle\sum_j\gamma_j(\var{occ}j_{it}-\overline{\var{occ}j}_i)+(a_i-a_i)+(u_{it}-\bar u_i). \label{q7:within}
+\end{equation}
+If every man kept his occupation, $\var{occ}j_{it}=\overline{\var{occ}j}_i$ for all $t$ and the
+occupation terms in \eqref{q7:within} vanish, exactly like $a_i$: occupation would be part of the fixed
+effect, FE would already control for it, and the dummies could not even be estimated. No need to include them.}
+
+\passo{(iii) FE with eight occupation dummies}{In WAGEPAN occupation does change: $88.8\%$ of the men
+switch occupation at least once, so the dummies are identified. Estimating \eqref{q7:fe} by FE:
+\begin{center}\small
+\begin{tabular}{lcc}
+\toprule
+ & Table 14.2 FE (no occupation) & FE with $\var{occ}2$--$\var{occ}9$\\
+\midrule
+$\var{union}$ & $0.0800$ $(0.0193)$ & $0.0804$ $(0.0194)$\\
+$\var{married}$ & $0.0467$ $(0.0183)$ & $0.0459$ $(0.0183)$\\
+\bottomrule
+\end{tabular}
+\end{center}
+The union coefficient barely moves ($0.0804-0.0800=0.0004$); its $t$ statistic is
+$0.080381/0.019401=4.14$, still highly significant (a cluster-robust standard error, $0.0225$, does not
+change this). The eight occupation dummies are jointly insignificant: $F=1.21$, $p=0.29$. Once $a_i$ is
+removed, occupational switches carry little independent wage information and are not what drives the
+union premium.}
+
+\passo{code}{}
+\begin{lstlisting}
+d = wd.data("wagepan").set_index(["nr", "year"])
+yrs = [f"d8{j}" for j in range(1, 8)]; occ = [f"occ{j}" for j in range(2, 10)]
+base = ["expersq", "married", "union"] + yrs
+fe0 = PanelOLS(d.lwage, d[base], entity_effects=True).fit()        # union 0.0800 (0.0193)
+fe1 = PanelOLS(d.lwage, d[base + occ], entity_effects=True).fit()  # union 0.0804 (0.0194)
+\end{lstlisting}
+\intuicao{FE removes everything constant within a man; an omitted variable can bias FE only through
+its within-person variation, and here that variation is unrelated to union status.}
+\refbib{W §14.1--14.2 (pp.~435--445), Example 14.4 and Table 14.2 (pp.~443--444). Slides
+\textit{Hierarchical linear models} (fixed vs random effects, the frequentist neighbour).}
+\rubrica{
+\item (i) both channels (wage effect and correlation with union) stated: 1.5 pts.
+\item (ii) within transformation removes time-constant occupation: 1.5 pts.
+\item (iii) estimate, comparison and significance: 2 pts. Claiming FE removes occupation even when it changes over time: max.\ 0.5 pt in (i).
+}
+\end{sol}
+
+% =================================================================================================
+\bloco{2}{Greenberg, \textit{Introduction to Bayesian Econometrics} (1e)}{Ch.~4, 8, 9}
+
+% ------------------------------------------------------------------------------------------ Q8
+\questao{Greenberg 8.3 --- birth weight with Student-$t$ errors; marginal likelihoods.}
+\fonte{Greenberg, E. (2007), \textit{Introduction to Bayesian Econometrics}, 1st ed., Chapter 8,
+Exercise 8.3, p.~132, reproduced verbatim (Exercise 8.1, to which it refers, reproduced verbatim from the same page).}
+\begin{enunciado}
+\textbf{8.3} Repeat Exercise 8.1 for errors distributed as Student-$t$ with five degrees of freedom. Compute marginal likelihoods and compare the models.
+
+\smallskip
+\textbf{8.1} Download the data in ``Birth weight II'' from the StatLabs Web site, \url{www.stat.berkeley.edu/users/statlabs/labs.html}. The variables are birth weight (ounces, 999 unknown), gestation (length of pregnancy in days, 999 unknown), parity (0 = firstborn, 9 is unknown), age (mother's age in years), height (mother's height in inches), weight (mother's prepregnancy weight in pounds), smoke (0 not now, 1 yes now, 9 = unknown).
+
+Specify a linear regression, where the response variable is birth weight, and the covariates are a constant and the remaining variables in the data set. Eliminate observations for which you do not have complete information on the variables. Specify prior distributions for the coefficients and the variance (or precision). Summarize the results for the dummy variable for smoking. Does smoking by the mother appear to affect the baby's birth weight?
+\end{enunciado}
+\resolespaco
+\begin{sol}
+\begin{notacao}
+\item $y_i$: birth weight (oz); $\mathbf{x}_i$: $K=7$ covariates (constant, gestation, parity, age, height, weight, smoke); $n=1{,}174$ complete cases (62 of the $1{,}236$ records have a missing code; the data file also uses 99 for unknown age and height).
+\item $\boldsymbol\beta\in\mathbb{R}^K$: coefficients, $\beta_{s}$ the one on smoke; $\sigma^2>0$: error variance (scale, in the $t$ model); $\lambda_i>0$: latent precision weights; $\nu=5$: degrees of freedom.
+\item Priors: $\boldsymbol\beta\sim\N_K(\boldsymbol\beta_0,B_0)$, $\sigma^2\sim\IG(\alpha_0/2,\delta_0/2)$; $f(y)$: marginal likelihood; $\boldsymbol\theta^*=(\boldsymbol\beta^*,\sigma^{2*})$: posterior means.
+\end{notacao}
+
+\passo{models and priors}{Model N (Exercise 8.1) and model T (Exercise 8.3, Greenberg eq.~8.4):
+\begin{align}
+\text{N:}\quad & y_i\,|\,\boldsymbol\beta,\sigma^2\sim\N(\mathbf{x}_i'\boldsymbol\beta,\sigma^2), \label{q8:N}\\
+\text{T:}\quad & y_i\,|\,\boldsymbol\beta,\sigma^2,\lambda_i\sim\N(\mathbf{x}_i'\boldsymbol\beta,\lambda_i^{-1}\sigma^2),\quad \lambda_i\sim\Ga(\nu/2,\nu/2),\quad\nu=5. \label{q8:T}
+\end{align}
+Same priors in both: $\boldsymbol\beta_0=\mathbf0$, $B_0=\operatorname{diag}(100^2,10^2,\dots,10^2)$ (a slope of
+$\pm20$ oz per unit is at the edge of plausibility), $\alpha_0=6$, $\delta_0=1024$, so
+\begin{align*}
+\E(\sigma^2)&=\frac{\delta_0/2}{\alpha_0/2-1}\\
+&=\frac{512}{2}\\
+&=256,
+\end{align*}
+a prior error s.d.\ of about 16 oz. Both priors are proper, as marginal likelihoods require.}
+
+\passo{samplers}{Model N: Gibbs with $\boldsymbol\beta\,|\,\sigma^2,y\sim\N_K(\bar{\boldsymbol\beta},B_1)$,
+$B_1=(\sigma^{-2}X'X+B_0^{-1})^{-1}$, $\bar{\boldsymbol\beta}=B_1(\sigma^{-2}X'y+B_0^{-1}\boldsymbol\beta_0)$, and
+$\sigma^2\,|\,\boldsymbol\beta,y\sim\IG(\alpha_1/2,\delta_1/2)$, $\alpha_1=\alpha_0+n$,
+$\delta_1=\delta_0+(y-X\boldsymbol\beta)'(y-X\boldsymbol\beta)$ (Greenberg eqs.~8.2--8.3). Model T: the three blocks
+\eqref{q9:beta}, \eqref{q9:sig}, \eqref{q9:lam} derived in Question~9. Each run: 1{,}000 burn-in and 10{,}000
+kept draws, seeds 830 (N) and 835 (T).}
+
+\passo{results for smoking}{
+\begin{center}\small
+\begin{tabular}{lcccc}
+\toprule
+ & posterior mean of $\beta_s$ & s.d. & 95\% interval & $P(\beta_s<0\,|\,y)$\\
+\midrule
+OLS (reference) & $-8.401$ & $(0.954)$ & & \\
+Model N & $-8.31$ & $0.95$ & $[-10.19,\,-6.47]$ & $1.000$\\
+Model T ($\nu=5$) & $-8.57$ & $0.93$ & $[-10.36,\,-6.73]$ & $1.000$\\
+\bottomrule
+\end{tabular}
+\end{center}
+In both models a smoking mother lowers expected birth weight by about $8.3$--$8.6$ oz (roughly 240 g),
+holding gestation and the mother's characteristics fixed; the 95\% intervals exclude zero by a wide
+margin. Smoking does appear to reduce birth weight.}
+
+\passo{marginal likelihoods (Chib)}{For either model, Bayes' theorem evaluated at $\boldsymbol\theta^*$ gives the identity
+\begin{equation}
+\log f(y)=\log f(y\,|\,\boldsymbol\beta^*,\sigma^{2*})+\log\pi(\boldsymbol\beta^*)+\log\pi(\sigma^{2*})-\log\pi(\boldsymbol\beta^*\,|\,y)-\log\pi(\sigma^{2*}\,|\,\boldsymbol\beta^*,y). \label{q8:chib}
+\end{equation}
+In model T, $f(y\,|\,\boldsymbol\beta,\sigma^2)$ is the product of Student-$t$ densities with location
+$\mathbf{x}_i'\boldsymbol\beta$, scale $\sigma^2$ and $\nu=5$ (the $\lambda_i$ integrated out, Greenberg p.~116).
+The ordinate $\pi(\boldsymbol\beta^*\,|\,y)$ is the average over the main run (every 10th draw) of the
+normal density \eqref{q9:beta} at $\boldsymbol\beta^*$; $\pi(\sigma^{2*}\,|\,\boldsymbol\beta^*,y)$ is the average of
+the inverse-gamma density \eqref{q9:sig} over a reduced run of 5{,}000 draws with $\boldsymbol\beta$ fixed at
+$\boldsymbol\beta^*$ (exact in model N). Substituting the pieces into \eqref{q8:chib}:
+\begin{align*}
+\log f(y\,|\,N)&=(-4904.767)+(-31.685)-(2.493)\\
+&=-4938.945,\\
+\log f(y\,|\,T)&=(-4909.344)+(-31.231)-(2.594)\\
+&=-4943.169,
+\end{align*}
+where the three terms are the log-likelihood, the log prior and the log posterior ordinate. In base 10
+(Greenberg's convention), dividing by $\ln10=2.302585$:
+$\log_{10}f(y\,|\,N)=-2144.957$ and $\log_{10}f(y\,|\,T)=-2146.791$. The log Bayes factor is
+\begin{align*}
+\log_{10}B_{TN}&=(-2146.791)-(-2144.957)\\
+&=-1.834,
+\end{align*}
+so $B_{NT}=10^{1.834}\approx68$: decisive evidence for the Gaussian model.}
+
+\passo{comparison}{Unlike Greenberg's wage example (Bayes factor $4.83$ for the $t$ model, p.~116),
+birth weights given the covariates have nearly normal tails: the excess kurtosis of the OLS
+residuals is $0.41$, against $6$ for a $t_5$. The $t_5$ likelihood spreads probability into tails the
+data do not use, and the marginal likelihood penalises it. Inference on smoking is robust to the choice.}
+
+\passo{code}{Gibbs sampler for both models ($\nu=$\texttt{None} gives model N):}
+\begin{lstlisting}
+def gibbs_reg(y, X, b0, B0, a0, d0, nu, G, burn, rng):
+    n, K = X.shape; B0i = np.linalg.inv(B0)
+    beta = np.linalg.lstsq(X, y, rcond=None)[0]; s2 = np.var(y - X @ beta); lam = np.ones(n)
+    for g in range(G + burn):
+        XL = X * lam[:, None]
+        B1 = np.linalg.inv(XL.T @ X / s2 + B0i)                       # beta block (9.4)
+        beta = rng.multivariate_normal(B1 @ (XL.T @ y / s2 + B0i @ b0), B1)
+        e = y - X @ beta
+        s2 = 1 / rng.gamma((a0 + n) / 2, 2 / (d0 + (lam * e) @ e))     # sigma2 block (9.5)
+        if nu is not None:
+            lam = rng.gamma((nu + 1) / 2, 2 / (nu + e**2 / s2))        # lambda block (9.6)
+        ...                                                            # store after burn-in
+\end{lstlisting}
+\intuicao{The Student-$t$ model buys robustness to outliers by giving each observation its own
+precision; when the data have no outliers that flexibility is pure cost, and the marginal likelihood,
+which averages the likelihood over the prior, charges for it.}
+\refbib{Greenberg §8.1.1--8.1.2 (pp.~111--117), Chib's method p.~116; §4.5 (pp.~50--53).
+Slides \textit{General linear models} (Student-$t$ errors as scale mixtures).}
+\rubrica{
+\item Data cleaning (all missing codes) and proper priors stated: 1 pt.
+\item Correct samplers for N and T: 1.5 pts. Summary of $\beta_s$ and conclusion: 1 pt.
+\item Marginal likelihoods by a valid method and comparison: 1.5 pts. Using an improper prior with marginal likelihoods: max.\ 0.5 pt for that part.
+}
+\end{sol}
+
+% ------------------------------------------------------------------------------------------ Q9
+\questao{Greenberg 8.5 --- Gibbs algorithm for regression with Student-$t$ errors.}
+\fonte{Greenberg, E. (2007), \textit{Introduction to Bayesian Econometrics}, 1st ed., Chapter 8,
+Exercise 8.5, p.~132, reproduced verbatim.}
+\begin{enunciado}
+\textbf{8.5} Write out an algorithm to sample for $\beta$, $\sigma^2$, and $\lambda$ for the linear regression model with Student-$t$ errors of Section 8.1.2.
+\end{enunciado}
+\resolespaco
+\begin{sol}
+\begin{notacao}
+\item $y=(y_1,\dots,y_n)'$, $X$: $n\times K$ with rows $\mathbf{x}_i'$; $\boldsymbol\beta\in\mathbb{R}^K$; $\sigma^2>0$; $\boldsymbol\lambda=(\lambda_1,\dots,\lambda_n)$, $\lambda_i>0$; $\Lambda=\operatorname{diag}(\lambda_i)$; $\nu>0$ known.
+\item $\Ga(a,b)$: gamma with density $\propto x^{a-1}e^{-bx}$; $\IG(a,b)$: density $\propto x^{-(a+1)}e^{-b/x}$.
+\item Priors: $\boldsymbol\beta\sim\N_K(\boldsymbol\beta_0,B_0)$, $\sigma^2\sim\IG(\alpha_0/2,\delta_0/2)$ (Greenberg eq.~8.1); $e_i\equiv y_i-\mathbf{x}_i'\boldsymbol\beta$.
+\end{notacao}
+
+\passo{model and posterior kernel}{Greenberg eq.~(8.4):
+\begin{equation}
+y_i\,|\,\boldsymbol\beta,\sigma^2,\lambda_i\sim\N(\mathbf{x}_i'\boldsymbol\beta,\lambda_i^{-1}\sigma^2),\qquad\lambda_i\sim\Ga(\nu/2,\nu/2). \label{q9:model}
+\end{equation}
+Likelihood times priors, with the $\lambda_i$ kept as parameters:
+\begin{equation}
+\pi(\boldsymbol\beta,\sigma^2,\boldsymbol\lambda\,|\,y)\propto\prod_{i=1}^n\left(\frac{\lambda_i}{\sigma^2}\right)^{1/2}\!e^{-\frac{\lambda_ie_i^2}{2\sigma^2}}\;\prod_{i=1}^n\lambda_i^{\nu/2-1}e^{-\frac{\nu\lambda_i}{2}}\;e^{-\frac12(\boldsymbol\beta-\boldsymbol\beta_0)'B_0^{-1}(\boldsymbol\beta-\boldsymbol\beta_0)}\;(\sigma^2)^{-\frac{\alpha_0}{2}-1}e^{-\frac{\delta_0}{2\sigma^2}}. \label{q9:post}
+\end{equation}
+The weighted sum of squares is a quadratic form:
+\begin{equation}
+\sum_{i=1}^n\lambda_ie_i^2=(y-X\boldsymbol\beta)'\Lambda(y-X\boldsymbol\beta). \label{q9:quad}
+\end{equation}}
+
+\passo{$\boldsymbol\beta$ block}{Keeping the factors of \eqref{q9:post} that contain $\boldsymbol\beta$ and using \eqref{q9:quad}:
+\begin{equation*}
+\pi(\boldsymbol\beta\,|\,\cdot)\propto\exp\left\{-\tfrac12\left[\sigma^{-2}(y-X\boldsymbol\beta)'\Lambda(y-X\boldsymbol\beta)+(\boldsymbol\beta-\boldsymbol\beta_0)'B_0^{-1}(\boldsymbol\beta-\boldsymbol\beta_0)\right]\right\}.
+\end{equation*}
+Expanding and keeping terms in $\boldsymbol\beta$:
+\begin{equation*}
+\pi(\boldsymbol\beta\,|\,\cdot)\propto\exp\left\{-\tfrac12\left[\boldsymbol\beta'(\sigma^{-2}X'\Lambda X+B_0^{-1})\boldsymbol\beta-2\boldsymbol\beta'(\sigma^{-2}X'\Lambda y+B_0^{-1}\boldsymbol\beta_0)\right]\right\}.
+\end{equation*}
+Completing the square:
+\begin{equation}
+\boldsymbol\beta\,|\,y,\boldsymbol\lambda,\sigma^2\sim\N_K(\bar{\boldsymbol\beta},B_1),\quad B_1=(\sigma^{-2}X'\Lambda X+B_0^{-1})^{-1},\quad\bar{\boldsymbol\beta}=B_1(\sigma^{-2}X'\Lambda y+B_0^{-1}\boldsymbol\beta_0). \label{q9:beta}
+\end{equation}}
+
+\passo{$\sigma^2$ block}{The factors of \eqref{q9:post} with $\sigma^2$, using \eqref{q9:quad}:
+\begin{equation*}
+\pi(\sigma^2\,|\,\cdot)\propto(\sigma^2)^{-n/2}(\sigma^2)^{-\alpha_0/2-1}\exp\left\{-\frac{\delta_0+(y-X\boldsymbol\beta)'\Lambda(y-X\boldsymbol\beta)}{2\sigma^2}\right\}.
+\end{equation*}
+Collecting exponents:
+\begin{equation}
+\sigma^2\,|\,y,\boldsymbol\beta,\boldsymbol\lambda\sim\IG(\alpha_1/2,\delta_1/2),\quad\alpha_1=\alpha_0+n,\quad\delta_1=\delta_0+(y-X\boldsymbol\beta)'\Lambda(y-X\boldsymbol\beta). \label{q9:sig}
+\end{equation}}
+
+\passo{$\lambda_i$ block}{The factors of \eqref{q9:post} with $\lambda_i$:
+\begin{equation*}
+\pi(\lambda_i\,|\,\cdot)\propto\lambda_i^{1/2}\lambda_i^{\nu/2-1}\exp\left\{-\frac{\lambda_i}{2}\left[\nu+\sigma^{-2}e_i^2\right]\right\}.
+\end{equation*}
+Collecting exponents, the $\lambda_i$ are conditionally independent with
+\begin{equation}
+\lambda_i\,|\,y,\boldsymbol\beta,\sigma^2\sim\Ga(\nu_1/2,\nu_{2i}/2),\quad\nu_1=\nu+1,\quad\nu_{2i}=\nu+\sigma^{-2}(y_i-\mathbf{x}_i'\boldsymbol\beta)^2. \label{q9:lam}
+\end{equation}}
+
+\passo{algorithm}{Choose $\sigma^{2(0)}$ and $\boldsymbol\lambda^{(0)}=\mathbf1$. At iteration $g=1,\dots,G+B$:
+\begin{enumerate}[label=(\alph*),leftmargin=2em]
+\item draw $\boldsymbol\beta^{(g)}$ from \eqref{q9:beta} with $\boldsymbol\lambda^{(g-1)}$, $\sigma^{2(g-1)}$;
+\item draw $\sigma^{2(g)}$ from \eqref{q9:sig} with $\boldsymbol\beta^{(g)}$, $\boldsymbol\lambda^{(g-1)}$;
+\item for $i=1,\dots,n$ draw $\lambda_i^{(g)}$ from \eqref{q9:lam} with $\boldsymbol\beta^{(g)}$, $\sigma^{2(g)}$.
+\end{enumerate}
+Discard the first $B$ iterations. Reporting only the $(\boldsymbol\beta,\sigma^2)$ draws integrates the $\lambda_i$
+out. This is the sampler used in Question~8 (\texttt{gibbs\_reg}).}
+
+\intuicao{From \eqref{q9:lam}, $\E(\lambda_i\,|\,\cdot)=(\nu+1)/(\nu+e_i^2/\sigma^2)$: an observation with a large
+standardised residual gets a small weight in \eqref{q9:beta}, so the sampler is a randomised
+iteratively reweighted least squares that discounts outliers. As $\nu\to\infty$ all weights tend to
+one and the Gaussian sampler is recovered.}
+\refbib{Greenberg §8.1.2 (pp.~114--116); §4.5 (pp.~50--53), the scale-mixture representation. Slides \textit{General linear models}.}
+\rubrica{
+\item Posterior kernel \eqref{q9:post}: 1 pt. Each of the three conditionals with its parameters: 1 pt each.
+\item Algorithm with the order of updates and marginalisation over $\boldsymbol\lambda$: 1 pt. Conditionals stated without derivation: max.\ half of their points.
+}
+\end{sol}
+
+% ------------------------------------------------------------------------------------------ Q10
+\questao{Greenberg 4.6 --- i.i.d.\ implies exchangeable.}
+\fonte{Greenberg, E. (2007), \textit{Introduction to Bayesian Econometrics}, 1st ed., Chapter 4,
+Exercise 4.6, p.~59, reproduced verbatim.}
+\begin{enunciado}
+\textbf{4.6} Show that i.i.d. variables are exchangeable.
+\end{enunciado}
+\resolespaco
+\begin{sol}
+\begin{notacao}
+\item $z_1,z_2,\dots$: random variables; $f(z_1,\dots,z_n)$: their joint density (or probability function); $g$: the common marginal density.
+\item $\pi$: a permutation of $\{1,\dots,n\}$; $n\ge1$ arbitrary.
+\item Definition (Greenberg §4.5, p.~50): $z_1,\dots,z_n$ are finitely exchangeable if $f(z_1,\dots,z_n)$ is invariant to permutations of the indices; exchangeability requires this for all $n$.
+\end{notacao}
+
+\passo{joint density of i.i.d.\ variables}{Independence factors the joint density and identical distribution gives every factor the same form:
+\begin{equation}
+f(z_1,\dots,z_n)=\prod_{i=1}^n g(z_i). \label{q10:iid}
+\end{equation}}
+
+\passo{permute}{For any permutation $\pi$, applying \eqref{q10:iid} to the permuted vector:
+\begin{equation*}
+f(z_{\pi(1)},\dots,z_{\pi(n)})=\prod_{i=1}^n g(z_{\pi(i)}).
+\end{equation*}
+As $i$ runs over $\{1,\dots,n\}$, $\pi(i)$ runs over the same set once each, and multiplication is commutative, so
+\begin{equation*}
+\prod_{i=1}^n g(z_{\pi(i)})=\prod_{j=1}^n g(z_j).
+\end{equation*}
+Using \eqref{q10:iid} again:
+\begin{equation}
+f(z_{\pi(1)},\dots,z_{\pi(n)})=f(z_1,\dots,z_n). \label{q10:exch}
+\end{equation}}
+
+\passo{all $n$}{Equation \eqref{q10:exch} holds for every $n$ and every $\pi$, because any finite subset of an
+i.i.d.\ sequence is itself i.i.d. Hence i.i.d.\ variables are exchangeable. Without densities the
+same argument applies to $P(z_1\in A_1,\dots,z_n\in A_n)=\prod_iP(z_1\in A_i)$, which is symmetric in the
+sets $A_i$.}
+
+\passo{the converse fails}{Exchangeable does not imply independent. Example (Greenberg's
+heteroskedasticity prior, §4.5): let $\lambda\sim\Ga(\nu/2,\nu/2)$ and, given $\lambda$, $z_i\overset{iid}{\sim}\N(0,\lambda^{-1})$.
+The joint density $\int\prod_ig(z_i\,|\,\lambda)\,\pi(\lambda)\,d\lambda$ is symmetric, but $z_1^2$ and $z_2^2$ are
+positively correlated through the common $\lambda$ (Exercise 4.7 gives a finite urn example).}
+
+\intuicao{Exchangeability says the labels carry no information; i.i.d.\ is the special case in which
+the observations also carry no information about each other. De Finetti's theorem says exchangeable
+sequences are mixtures of i.i.d.\ ones, which is what justifies a prior over the common parameter.}
+\refbib{Greenberg §4.5 (pp.~50--53). Slides \textit{Hierarchical linear models} (exchangeable group effects).}
+\rubrica{
+\item Factorisation \eqref{q10:iid}: 2 pts. Permutation argument \eqref{q10:exch}: 2 pts. ``For all $n$'' and a remark on the converse: 1 pt.
+}
+\end{sol}
+
+% ------------------------------------------------------------------------------------------ Q11
+\questao{Greenberg 9.2 --- binary panel data (random-effects probit).}
+\fonte{Greenberg, E. (2007), \textit{Introduction to Bayesian Econometrics}, 1st ed., Chapter 9,
+Exercise 9.2, p.~151, reproduced verbatim.}
+\begin{enunciado}
+\textbf{9.2} Explain how to analyze a panel data set where the response variable is binary, that is, $y_{it}\in\{0,1\}$, the latent data are determined by $y_{it}^*=x_{it}'\beta+w_{it}'b_i+u_{it}$, and the remainder of the specification is given in (9.11). (Note: Chib and Carlin (1999) provide several algorithms for this model.)
+
+\smallskip
+\textit{Added for reference (not in the exercise).} Equation (9.11), p.~146: $y_i=X_i\beta+W_ib_i+u_i$,
+$u_i\,|\,h_u\sim N_T(0,h_u^{-1}I_T)$, $\beta\sim N_{K_1}(\beta_0,B_0)$, $h_u\sim G(\alpha_0/2,\delta_0/2)$,
+$b_i\,|\,D\sim N_{K_2}(0,D)$, $D^{-1}\sim W_{K_2}(\nu_0,D_0)$.
+\end{enunciado}
+\resolespaco
+\begin{sol}
+\begin{notacao}
+\item $i=1,\dots,n$ units, $t=1,\dots,T$ periods; $y_{it}\in\{0,1\}$ observed; $y_{it}^*$ latent; $y_i^*=(y_{i1}^*,\dots,y_{iT}^*)'$.
+\item $X_i$ ($T\times K_1$), $W_i$ ($T\times K_2$): rows $x_{it}'$, $w_{it}'$; $\boldsymbol\beta$: common (``fixed'') effects; $b_i$: unit-specific (``random'') effects; $D$: their covariance; $h_u$: precision of $u_{it}$.
+\item $W_{K}(\nu,R)$: Wishart; $\TN_{A}(m,s^2)$: normal truncated to the set $A$.
+\end{notacao}
+
+\passo{model and identification}{The binary panel model is
+\begin{equation}
+y_{it}^*=x_{it}'\boldsymbol\beta+w_{it}'b_i+u_{it},\qquad y_{it}=1(y_{it}^*>0), \label{q11:model}
+\end{equation}
+with the rest of (9.11). Only the sign of $y_{it}^*$ is observed, so multiplying \eqref{q11:model} by any
+$c>0$ leaves the data unchanged: $(\boldsymbol\beta,b_i,h_u)$ are identified only up to scale. As in the
+binary probit (Greenberg §8.2.2) set $h_u=1$, i.e.\ $u_i\sim N_T(0,I_T)$, and drop the $h_u$ prior and step.}
+
+\passo{posterior with latent data}{Following Albert and Chib, add $y^*$ to the parameters. Each observation contributes
+$p(y_{it}\,|\,y_{it}^*)=1(y_{it}=0)1(y_{it}^*\le0)+1(y_{it}=1)1(y_{it}^*>0)$, so
+\begin{equation}
+\pi(\boldsymbol\beta,b,D,y^*\,|\,y)\propto\prod_{i=1}^n\Big[\prod_{t=1}^Tp(y_{it}\,|\,y_{it}^*)\Big]N_T(y_i^*\,|\,X_i\boldsymbol\beta+W_ib_i,I_T)\,N_{K_2}(b_i\,|\,0,D)\;\pi(\boldsymbol\beta)\,\pi(D^{-1}). \label{q11:post}
+\end{equation}
+Given $y^*$ this is the Gaussian panel model (9.11) with $h_u=1$, so its conditionals (9.13)--(9.15) apply with $y^*$ in place of $y$.}
+
+\passo{full conditionals}{From \eqref{q11:post}:
+\begin{enumerate}[label=(\alph*),leftmargin=2em]
+\item latent data, independently over $(i,t)$:
+\begin{equation}
+y_{it}^*\,|\,\boldsymbol\beta,b_i,y_{it}\sim\begin{cases}\TN_{(-\infty,0]}(x_{it}'\boldsymbol\beta+w_{it}'b_i,\,1), & y_{it}=0,\\ \TN_{(0,\infty)}(x_{it}'\boldsymbol\beta+w_{it}'b_i,\,1), & y_{it}=1;\end{cases} \label{q11:ystar}
+\end{equation}
+\item $\boldsymbol\beta$ with the $b_i$ integrated out: $y_i^*\,|\,\boldsymbol\beta,D\sim N_T(X_i\boldsymbol\beta,B_{1i})$, $B_{1i}=W_iDW_i'+I_T$, hence
+\begin{equation}
+\boldsymbol\beta\,|\,y^*,D\sim N_{K_1}(\bar{\boldsymbol\beta},B_1),\quad B_1=\Big(\sum_iX_i'B_{1i}^{-1}X_i+B_0^{-1}\Big)^{-1},\quad\bar{\boldsymbol\beta}=B_1\Big(\sum_iX_i'B_{1i}^{-1}y_i^*+B_0^{-1}\boldsymbol\beta_0\Big); \label{q11:beta}
+\end{equation}
+\item random effects, independently over $i$:
+\begin{equation}
+b_i\,|\,y^*,\boldsymbol\beta,D\sim N_{K_2}(\bar b_i,D_{1i}),\quad D_{1i}=(W_i'W_i+D^{-1})^{-1},\quad\bar b_i=D_{1i}W_i'(y_i^*-X_i\boldsymbol\beta); \label{q11:b}
+\end{equation}
+\item covariance of the random effects:
+\begin{equation}
+D^{-1}\,|\,b\sim W_{K_2}\Big(\nu_0+n,\ \big[D_0^{-1}+\textstyle\sum_ib_ib_i'\big]^{-1}\Big). \label{q11:D}
+\end{equation}
+\end{enumerate}}
+
+\passo{algorithm}{Start from $\boldsymbol\beta^{(0)}$, $b^{(0)}=\mathbf0$, $D^{(0)}$. At iteration $g$: draw $y^{*(g)}$ from
+\eqref{q11:ystar}; draw $\boldsymbol\beta^{(g)}$ from \eqref{q11:beta} and then $b_i^{(g)}$ from \eqref{q11:b} (one block
+$\pi(\boldsymbol\beta,b\,|\,y^*,D)=\pi(\boldsymbol\beta\,|\,y^*,D)\prod_i\pi(b_i\,|\,y^*,\boldsymbol\beta,D)$, as in Algorithm 9.3, to
+avoid the slow mixing caused by the correlation between $\boldsymbol\beta$ and the $b_i$); draw $D^{-1(g)}$ from
+\eqref{q11:D}. Discard a burn-in. Chib and Carlin also sample $y_i^*$ with $b_i$ integrated out, from a
+truncated $N_T(X_i\boldsymbol\beta,B_{1i})$, which mixes faster still.}
+
+\passo{interpretation}{Averaging over $b_i\sim N(0,D)$, the response probability is
+\begin{equation}
+P(y_{it}=1\,|\,x_{it},w_{it})=\Phi\!\left(\frac{x_{it}'\boldsymbol\beta}{\sqrt{1+w_{it}'Dw_{it}}}\right), \label{q11:pa}
+\end{equation}
+so population-averaged effects are the $\boldsymbol\beta$ attenuated by $\sqrt{1+w'Dw}$: the unit-specific and the
+population-averaged readings of $\boldsymbol\beta$ differ, unlike in the linear panel model.}
+
+\intuicao{The latent $y^*$ turn the binary panel into the Gaussian panel of §9.3, so every step of
+Algorithm 9.3 survives except that the error precision is fixed for identification and one
+truncated-normal step is added.}
+\refbib{Greenberg §9.3 (pp.~144--149), Algorithm 9.3; §8.2.2 (pp.~122--126), Algorithm 8.3. Slides \textit{Hierarchical linear models}; \textit{Limited dependent variable models}.}
+\rubrica{
+\item Latent-data formulation and $h_u=1$ with the reason: 1.5 pts.
+\item Conditionals \eqref{q11:ystar}--\eqref{q11:D}: 2.5 pts. Algorithm and blocking: 1 pt. Sampling $h_u$ as in the continuous model: max.\ 1 pt for the identification part.
+}
+\end{sol}
+
+% ------------------------------------------------------------------------------------------ Q12
+\questao{Greenberg 9.3 --- panel model with Student-$t$ errors and random effects.}
+\fonte{Greenberg, E. (2007), \textit{Introduction to Bayesian Econometrics}, 1st ed., Chapter 9,
+Exercise 9.3, pp.~151--152, reproduced verbatim.}
+\begin{enunciado}
+\textbf{9.3} The basic panel data model of Equation (9.11) can be modified to specify Student-$t$ errors for either or both of $u_i$ and $b_i$. To do so for both, make the following changes and additions to those equations:
+\begin{align*}
+u_i\,|\,h_u,\lambda_i&\sim N_T(0,(\lambda_ih_u)^{-1}I_T),\\
+\lambda_i&\sim G(\nu_l/2,\nu_l/2),\\
+b_i\,|\,D,\eta_i&\sim N_{K_2}(0,\eta_i^{-1}D),\\
+\eta_i&\sim G(\nu_h/2,\nu_h/2).
+\end{align*}
+Show that, in the modified model,
+\begin{equation*}
+u_i\,|\,h_u\sim t_T(\nu_l,0,I_T)\quad\text{and}\quad b_i\,|\,D\sim t_{K_2}(\nu_h,0,D).
+\end{equation*}
+Develop an algorithm to sample from $\pi(\beta,h_u,D\,|\,y)$.
+\end{enunciado}
+\resolespaco
+\begin{sol}
+\begin{notacao}
+\item As in Question~11, plus $\lambda_i,\eta_i>0$: unit-level mixing variables for $u_i$ and $b_i$; $\nu_l,\nu_h>0$ known degrees of freedom.
+\item $t_p(\nu,\mu,\Sigma)$: $p$-variate Student-$t$ with density $\dfrac{\Gamma(\frac{\nu+p}{2})}{\Gamma(\frac\nu2)(\nu\pi)^{p/2}|\Sigma|^{1/2}}\left[1+\frac{(z-\mu)'\Sigma^{-1}(z-\mu)}{\nu}\right]^{-\frac{\nu+p}{2}}$.
+\item $\tilde y_i\equiv y_i-X_i\boldsymbol\beta$; $e_i\equiv y_i-X_i\boldsymbol\beta-W_ib_i$.
+\end{notacao}
+
+\passo{marginal of $u_i$}{Integrate $\lambda_i$ out of the product of the two densities:
+\begin{equation*}
+f(u_i\,|\,h_u)=\int_0^\infty\left(\frac{\lambda_ih_u}{2\pi}\right)^{T/2}e^{-\frac{\lambda_ih_u\,u_i'u_i}{2}}\;\frac{(\nu_l/2)^{\nu_l/2}}{\Gamma(\nu_l/2)}\lambda_i^{\nu_l/2-1}e^{-\frac{\nu_l\lambda_i}{2}}\,d\lambda_i .
+\end{equation*}
+Collecting the powers of $\lambda_i$ and the exponents:
+\begin{equation}
+f(u_i\,|\,h_u)=\frac{h_u^{T/2}(\nu_l/2)^{\nu_l/2}}{(2\pi)^{T/2}\Gamma(\nu_l/2)}\int_0^\infty\lambda_i^{\frac{\nu_l+T}{2}-1}e^{-\lambda_i\frac{\nu_l+h_uu_i'u_i}{2}}\,d\lambda_i . \label{q12:int}
+\end{equation}
+The gamma integral is $\int_0^\infty\lambda^{a-1}e^{-b\lambda}d\lambda=\Gamma(a)b^{-a}$; here $a=(\nu_l+T)/2$ and $b=(\nu_l+h_uu_i'u_i)/2$. Substituting into \eqref{q12:int}:
+\begin{equation*}
+f(u_i\,|\,h_u)=\frac{h_u^{T/2}(\nu_l/2)^{\nu_l/2}}{(2\pi)^{T/2}\Gamma(\nu_l/2)}\;\Gamma\!\left(\tfrac{\nu_l+T}{2}\right)\left(\frac{\nu_l+h_uu_i'u_i}{2}\right)^{-\frac{\nu_l+T}{2}}.
+\end{equation*}
+Factor $\left(\frac{\nu_l}{2}\right)^{-\frac{\nu_l+T}{2}}$ out of the last bracket; since $(2\pi)^{-T/2}(\nu_l/2)^{\nu_l/2}(\nu_l/2)^{-(\nu_l+T)/2}=(\nu_l\pi)^{-T/2}$,
+\begin{equation}
+f(u_i\,|\,h_u)=\frac{\Gamma(\frac{\nu_l+T}{2})}{\Gamma(\frac{\nu_l}{2})(\nu_l\pi)^{T/2}}\,h_u^{T/2}\left[1+\frac{h_u\,u_i'u_i}{\nu_l}\right]^{-\frac{\nu_l+T}{2}}. \label{q12:tu}
+\end{equation}
+Comparing \eqref{q12:tu} with the $t_T$ density, $\Sigma=h_u^{-1}I_T$ (so $|\Sigma|^{-1/2}=h_u^{T/2}$): $u_i\,|\,h_u\sim t_T(\nu_l,0,h_u^{-1}I_T)$, which is the stated $t_T(\nu_l,0,I_T)$ when the scale is normalised, $h_u=1$; for general $h_u$ the scale matrix is $h_u^{-1}I_T$.}
+
+\passo{marginal of $b_i$}{The same steps with $T\to K_2$, $\lambda_i\to\eta_i$, $\nu_l\to\nu_h$ and $h_uu_i'u_i\to b_i'D^{-1}b_i$ (the normal density now has $|\eta_i^{-1}D|^{-1/2}=\eta_i^{K_2/2}|D|^{-1/2}$) give
+\begin{equation}
+f(b_i\,|\,D)=\frac{\Gamma(\frac{\nu_h+K_2}{2})}{\Gamma(\frac{\nu_h}{2})(\nu_h\pi)^{K_2/2}|D|^{1/2}}\left[1+\frac{b_i'D^{-1}b_i}{\nu_h}\right]^{-\frac{\nu_h+K_2}{2}}, \label{q12:tb}
+\end{equation}
+that is, $b_i\,|\,D\sim t_{K_2}(\nu_h,0,D)$.}
+
+\passo{conditionals}{Keep $(\lambda_i,\eta_i)$ in the sampler. Given them, the model is (9.11) with unit-specific
+precisions, so the derivations of (9.12)--(9.15) go through with these changes:
+\begin{align}
+\boldsymbol\beta\,|\,y,h_u,D,\boldsymbol\lambda,\boldsymbol\eta&\sim N_{K_1}(\bar{\boldsymbol\beta},B_1),\quad B_{1i}=\eta_i^{-1}W_iDW_i'+(\lambda_ih_u)^{-1}I_T,\nonumber\\
+&\qquad B_1=\Big(\sum_iX_i'B_{1i}^{-1}X_i+B_0^{-1}\Big)^{-1},\ \bar{\boldsymbol\beta}=B_1\Big(\sum_iX_i'B_{1i}^{-1}y_i+B_0^{-1}\boldsymbol\beta_0\Big); \label{q12:beta}\\
+b_i\,|\,y,\boldsymbol\beta,h_u,D,\lambda_i,\eta_i&\sim N_{K_2}(\bar b_i,D_{1i}),\ D_{1i}=(\lambda_ih_uW_i'W_i+\eta_iD^{-1})^{-1},\ \bar b_i=D_{1i}\lambda_ih_uW_i'\tilde y_i; \label{q12:b}\\
+h_u\,|\,y,\boldsymbol\beta,b,\boldsymbol\lambda&\sim G\Big(\tfrac{\alpha_0+nT}{2},\ \tfrac{\delta_0+\sum_i\lambda_ie_i'e_i}{2}\Big); \label{q12:h}\\
+D^{-1}\,|\,b,\boldsymbol\eta&\sim W_{K_2}\Big(\nu_0+n,\ \big[D_0^{-1}+\textstyle\sum_i\eta_ib_ib_i'\big]^{-1}\Big); \label{q12:D}\\
+\lambda_i\,|\,y,\boldsymbol\beta,b_i,h_u&\sim G\Big(\tfrac{\nu_l+T}{2},\ \tfrac{\nu_l+h_ue_i'e_i}{2}\Big); \label{q12:lam}\\
+\eta_i\,|\,b_i,D&\sim G\Big(\tfrac{\nu_h+K_2}{2},\ \tfrac{\nu_h+b_i'D^{-1}b_i}{2}\Big). \label{q12:eta}
+\end{align}
+Each line is obtained by keeping the factors of the joint posterior that contain the parameter: for
+example, $\lambda_i$ appears in $\lambda_i^{T/2}e^{-\lambda_ih_ue_i'e_i/2}$ (likelihood) and
+$\lambda_i^{\nu_l/2-1}e^{-\nu_l\lambda_i/2}$ (prior), whose product is the kernel of \eqref{q12:lam}; $\eta_i$
+appears in $\eta_i^{K_2/2}e^{-\eta_ib_i'D^{-1}b_i/2}$ and its gamma prior, giving \eqref{q12:eta}.}
+
+\passo{algorithm}{Initialise $\boldsymbol\lambda=\boldsymbol\eta=\mathbf1$, $h_u$, $D$. At iteration $g$: (a) $\boldsymbol\beta$ from
+\eqref{q12:beta}; (b) each $b_i$ from \eqref{q12:b}; (c) $h_u$ from \eqref{q12:h}; (d) $D^{-1}$ from \eqref{q12:D};
+(e) each $\lambda_i$ from \eqref{q12:lam}; (f) each $\eta_i$ from \eqref{q12:eta}. After burn-in, the draws of
+$(\boldsymbol\beta,h_u,D)$ are a sample from $\pi(\boldsymbol\beta,h_u,D\,|\,y)$; ignoring the draws of $b,\boldsymbol\lambda,\boldsymbol\eta$
+integrates them out. Setting all $\eta_i=1$ (or $\lambda_i=1$) gives $t$ errors for only one of the two components.}
+
+\intuicao{$\lambda_i$ down-weights units whose whole residual vector is large (outlying units), and
+$\eta_i$ lets a few units have unusually large random effects without inflating $D$ for everyone:
+robust partial pooling.}
+\refbib{Greenberg §9.3 (pp.~144--149), eqs.~(9.11)--(9.15); §8.1.2 (pp.~114--116). Slides \textit{Hierarchical linear models}.}
+\rubrica{
+\item Gamma integral and the $t_T$ form \eqref{q12:tu}, with the scale remark: 1.5 pts. Same for $b_i$: 1 pt.
+\item Conditionals \eqref{q12:beta}--\eqref{q12:eta}: 2 pts. Algorithm: 0.5 pt. Forgetting $\lambda_i$ in the $h_u$ step or $\eta_i$ in the $D$ step: $-0.5$ pt each.
+}
+\end{sol}
+
+% ------------------------------------------------------------------------------------------ Q13
+\questao{Greenberg 8.6 --- Gibbs algorithm for the Tobit model with Student-$t$ errors.}
+\fonte{Greenberg, E. (2007), \textit{Introduction to Bayesian Econometrics}, 1st ed., Chapter 8,
+Exercise 8.6, p.~132, reproduced verbatim.}
+\begin{enunciado}
+\textbf{8.6} Write out an algorithm to sample for $\beta$, $\sigma^2$, $y_{Ci}^*$, and $\lambda$ for the Tobit model of Section 8.2.1 with Student-$t$ errors.
+\end{enunciado}
+\resolespaco
+\begin{sol}
+\begin{notacao}
+\item $y_i\ge0$ observed; $y_i^*$ latent; $C=\{i:y_i=0\}$ censored set; $y_{Ci}^*$, $i\in C$: latent values to be sampled; $y^*$: vector with $y_i^*=y_{Ci}^*$ for $i\in C$ and $y_i^*=y_i$ otherwise.
+\item $\boldsymbol\beta$, $\sigma^2$, $\lambda_i$, $\Lambda$, $\nu$, priors $(\boldsymbol\beta_0,B_0,\alpha_0,\delta_0)$: as in Question~9.
+\end{notacao}
+
+\passo{model}{Greenberg §8.2.1 with $t$ errors:
+\begin{equation}
+y_i=y_i^*1(y_i^*>0),\qquad y_i^*\,|\,\boldsymbol\beta,\sigma^2,\lambda_i\sim\N(\mathbf{x}_i'\boldsymbol\beta,\lambda_i^{-1}\sigma^2),\qquad\lambda_i\sim\Ga(\nu/2,\nu/2). \label{q13:model}
+\end{equation}}
+
+\passo{posterior with latent data}{Each observation contributes $1(y_i=0)1(y_{Ci}^*\le0)+1(y_i>0)$ times the normal density of $y_i^*$, so
+\begin{equation}
+\pi(\boldsymbol\beta,\sigma^2,y_C^*,\boldsymbol\lambda\,|\,y)\propto\prod_{i=1}^n\left[1(y_i=0)1(y_{Ci}^*\le0)+1(y_i>0)\right]\N(y_i^*\,|\,\mathbf{x}_i'\boldsymbol\beta,\lambda_i^{-1}\sigma^2)\,\Ga(\lambda_i\,|\,\tfrac\nu2,\tfrac\nu2)\;\pi(\boldsymbol\beta)\pi(\sigma^2). \label{q13:post}
+\end{equation}
+Given $y^*$, \eqref{q13:post} is the posterior \eqref{q9:post} of Question~9 with $y^*$ in place of $y$.}
+
+\passo{conditionals}{Hence, from \eqref{q9:beta}--\eqref{q9:lam} with $y\to y^*$, and from the indicator in \eqref{q13:post}:
+\begin{align}
+\boldsymbol\beta\,|\,\cdot&\sim\N_K\big(B_1(\sigma^{-2}X'\Lambda y^*+B_0^{-1}\boldsymbol\beta_0),\ B_1\big),\quad B_1=(\sigma^{-2}X'\Lambda X+B_0^{-1})^{-1}; \label{q13:beta}\\
+\sigma^2\,|\,\cdot&\sim\IG\Big(\tfrac{\alpha_0+n}{2},\ \tfrac{\delta_0+(y^*-X\boldsymbol\beta)'\Lambda(y^*-X\boldsymbol\beta)}{2}\Big); \label{q13:sig}\\
+\lambda_i\,|\,\cdot&\sim\Ga\Big(\tfrac{\nu+1}{2},\ \tfrac{\nu+\sigma^{-2}(y_i^*-\mathbf{x}_i'\boldsymbol\beta)^2}{2}\Big),\quad i=1,\dots,n; \label{q13:lam}\\
+y_{Ci}^*\,|\,\cdot&\sim\TN_{(-\infty,0]}(\mathbf{x}_i'\boldsymbol\beta,\ \lambda_i^{-1}\sigma^2),\quad i\in C. \label{q13:yc}
+\end{align}
+Note that $\lambda_i$ is drawn for every $i$, censored or not, using $y_i^*$.}
+
+\passo{algorithm}{Initialise $y_{Ci}^*=0$, $\boldsymbol\lambda=\mathbf1$, $\sigma^2$. At iteration $g$: draw $\boldsymbol\beta^{(g)}$ from \eqref{q13:beta};
+$\sigma^{2(g)}$ from \eqref{q13:sig}; $\boldsymbol\lambda^{(g)}$ from \eqref{q13:lam}; $y_C^{*(g)}$ from \eqref{q13:yc} by the inverse-cdf
+method (Greenberg eq.~5.1): with $p_i=\Phi(-\mathbf{x}_i'\boldsymbol\beta\sqrt{\lambda_i}/\sigma)$ and $U_i\sim\mathcal{U}(0,p_i)$, set
+$y_{Ci}^*=\mathbf{x}_i'\boldsymbol\beta+\sigma\lambda_i^{-1/2}\Phi^{-1}(U_i)$. Discard a burn-in and keep $(\boldsymbol\beta,\sigma^2)$.}
+
+\passo{illustration (Mroz data, Greenberg's priors)}{Hours worked by 753 married women ($325$ at zero),
+covariates constant, $1(\text{kids}<6)$, $1(\text{kids}\ge6)$, age, husband's wage; priors of p.~121
+($\beta_0=(2000,-500,-300,-50,-50)$, variances $400^2$ and $2000$, $\alpha_0=28$, $\delta_0=39{,}200{,}000$);
+6{,}000 kept draws after 1{,}000 burn-in. Posterior means:
+\begin{center}\small
+\begin{tabular}{lrrrrrr}
+\toprule
+ & $\beta_1$ & $\beta_2$ & $\beta_3$ & $\beta_4$ & $\beta_5$ & $\sigma$\\
+\midrule
+Table 8.1 (Gaussian, book) & $2079.3$ & $-556.4$ & $-191.7$ & $-27.2$ & $-29.7$ & $1293.2$\\
+Gaussian, our run ($\lambda_i\equiv1$) & $2052.4$ & $-560.0$ & $-296.7$ & $-27.7$ & $-32.4$ & $1297.7$\\
+Student-$t$, $\nu=5$ & $2105.7$ & $-567.7$ & $-293.7$ & $-28.6$ & $-30.8$ & $1191.6$\\
+\bottomrule
+\end{tabular}
+\end{center}
+The Gaussian run reproduces Table 8.1 except $\beta_3$; Greenberg's exact coding of the older-children
+variable is not given, and the tight prior (s.d.\ $44.7$) makes $\beta_3$ sensitive to it. Moving to
+$t_5$ errors changes the coefficients little and lowers the scale $\sigma$, since the $\lambda_i$ absorb
+the large residuals.}
+
+\begin{lstlisting}
+for g in range(G + burn):
+    XL = X * lam[:, None]; B1 = np.linalg.inv(XL.T @ X / s2 + B0i)
+    beta = rng.multivariate_normal(B1 @ (XL.T @ ystar / s2 + B0i @ b0), B1)    # (13.3)
+    e = ystar - X @ beta
+    s2 = 1 / rng.gamma((a0 + n) / 2, 2 / (d0 + (lam * e) @ e))                 # (13.4)
+    lam = rng.gamma((nu + 1) / 2, 2 / (nu + e**2 / s2))                        # (13.5)
+    ystar[C] = tn_draw(rng, X[C] @ beta, np.sqrt(s2 / lam[C]), -np.inf, 0.0)   # (13.6)
+\end{lstlisting}
+\intuicao{Data augmentation turns the censored likelihood into a regression on completed data; the
+$t$ extension adds one gamma step and makes every step a weighted version of the Gaussian one.}
+\refbib{Greenberg §8.2.1 (pp.~117--122), Algorithm 8.2, Table 8.1; §8.1.2 (pp.~114--116). Slides \textit{Limited dependent variable models} (Bayesian Tobit).}
+\rubrica{
+\item Latent-data posterior \eqref{q13:post}: 1 pt. Conditionals \eqref{q13:beta}--\eqref{q13:yc}: 3 pts (truncation bound and variance $\lambda_i^{-1}\sigma^2$ in \eqref{q13:yc} required).
+\item Algorithm with a valid truncated-normal draw: 1 pt. Updating $\lambda_i$ only for uncensored $i$: $-1$ pt.
+}
+\end{sol}
+
+% ------------------------------------------------------------------------------------------ Q14
+\questao{Greenberg 8.7 --- Gibbs algorithm for binary data with Student-$t$ errors.}
+\fonte{Greenberg, E. (2007), \textit{Introduction to Bayesian Econometrics}, 1st ed., Chapter 8,
+Exercise 8.7, p.~132, reproduced verbatim.}
+\begin{enunciado}
+\textbf{8.7} Write out an algorithm to sample for $\beta$, $y^*$, and $\lambda$ for the binary data model with Student-$t$ errors of Section 8.2.2.
+\end{enunciado}
+\resolespaco
+\begin{sol}
+\begin{notacao}
+\item $y_i\in\{0,1\}$; $y_i^*$ latent; $\boldsymbol\beta\sim\N_K(\boldsymbol\beta_0,B_0)$; $\lambda_i$, $\Lambda$, $\nu$ as before; the error scale is fixed at one for identification (Greenberg p.~124).
+\item $F_\nu$: cdf of the standard Student-$t$ with $\nu$ df.
+\end{notacao}
+
+\passo{model}{Greenberg p.~125:
+\begin{equation}
+y_i^*=\mathbf{x}_i'\boldsymbol\beta+u_i,\quad u_i\,|\,\lambda_i\sim\N(0,\lambda_i^{-1}),\quad\lambda_i\sim\Ga(\nu/2,\nu/2),\qquad y_i=1(y_i^*>0). \label{q14:model}
+\end{equation}
+Integrating $\lambda_i$ out (as in Question~12 with $T=1$, $h_u=1$), $u_i\sim t_\nu$, so $P(y_i=1)=F_\nu(\mathbf{x}_i'\boldsymbol\beta)$: a $t$-link (robit) model.}
+
+\passo{posterior with latent data}{
+\begin{multline}
+\pi(\boldsymbol\beta,y^*,\boldsymbol\lambda\,|\,y)\propto\prod_{i=1}^n\left[1(y_i=0)1(y_i^*\le0)+1(y_i=1)1(y_i^*>0)\right]\\
+\times\N(y_i^*\,|\,\mathbf{x}_i'\boldsymbol\beta,\lambda_i^{-1})\,\Ga(\lambda_i\,|\,\tfrac\nu2,\tfrac\nu2)\;\N_K(\boldsymbol\beta\,|\,\boldsymbol\beta_0,B_0). \label{q14:post}
+\end{multline}}
+
+\passo{conditionals}{From \eqref{q14:post}, by the same completing-the-square and gamma-kernel steps as in Question~9 with $\sigma^2=1$:
+\begin{align}
+y_i^*\,|\,\boldsymbol\beta,\lambda_i,y_i&\sim\begin{cases}\TN_{(-\infty,0]}(\mathbf{x}_i'\boldsymbol\beta,\lambda_i^{-1}), & y_i=0,\\ \TN_{(0,\infty)}(\mathbf{x}_i'\boldsymbol\beta,\lambda_i^{-1}), & y_i=1;\end{cases} \label{q14:ystar}\\
+\lambda_i\,|\,\boldsymbol\beta,y_i^*&\sim\Ga\Big(\tfrac{\nu+1}{2},\ \tfrac{\nu+(y_i^*-\mathbf{x}_i'\boldsymbol\beta)^2}{2}\Big); \label{q14:lam}\\
+\boldsymbol\beta\,|\,y^*,\boldsymbol\lambda&\sim\N_K(\bar{\boldsymbol\beta},B_1),\quad B_1=(X'\Lambda X+B_0^{-1})^{-1},\quad\bar{\boldsymbol\beta}=B_1(X'\Lambda y^*+B_0^{-1}\boldsymbol\beta_0). \label{q14:beta}
+\end{align}
+Unlike Algorithm 8.3, $B_1$ must be recomputed at every iteration because $\Lambda$ changes.}
+
+\passo{algorithm}{Choose $\boldsymbol\beta^{(0)}$, $\boldsymbol\lambda^{(0)}=\mathbf1$. At iteration $g$: draw $y_i^{*(g)}$ from \eqref{q14:ystar}
+given $\boldsymbol\beta^{(g-1)},\lambda_i^{(g-1)}$; draw $\lambda_i^{(g)}$ from \eqref{q14:lam} given $\boldsymbol\beta^{(g-1)},y_i^{*(g)}$; draw
+$\boldsymbol\beta^{(g)}$ from \eqref{q14:beta} given $y^{*(g)},\boldsymbol\lambda^{(g)}$. Discard a burn-in.}
+
+\passo{illustration (Mroz labour-force participation)}{$y_i=\var{inlf}_i$, covariates constant,
+$\var{educ}$, $\var{kidslt6}$, $\var{age}$; prior $\boldsymbol\beta\sim\N(\mathbf0,10I)$; $\nu=5$; 6{,}000 kept draws.
+Posterior means (s.d.): $0.331$ $(0.448)$, $0.137$ $(0.025)$, $-0.957$ $(0.128)$, $-0.037$ $(0.007)$; probit ML:
+$0.321$, $0.123$, $-0.867$, $-0.034$. The $t_5$-link slopes are about $10\%$ larger, matching the larger spread of
+the $t_5$ distribution in its centre; fitted probabilities are nearly the same.}
+
+\begin{lstlisting}
+lo, hi = np.where(y == 1, 0.0, -np.inf), np.where(y == 1, np.inf, 0.0)
+for g in range(G + burn):
+    ystar = tn_draw(rng, X @ beta, 1/np.sqrt(lam), lo, hi)            # (14.3)
+    e = ystar - X @ beta
+    lam = rng.gamma((nu + 1)/2, 2/(nu + e**2))                        # (14.4)
+    XL = X * lam[:, None]; B1 = np.linalg.inv(XL.T @ X + B0i)
+    beta = rng.multivariate_normal(B1 @ (XL.T @ ystar + B0i @ b0), B1)  # (14.5)
+\end{lstlisting}
+\intuicao{A heavy-tailed link makes the fit less sensitive to observations whose outcome is very
+unlikely given $\mathbf{x}$ (``surprising'' zeros or ones), which the probit would chase by distorting
+$\boldsymbol\beta$.}
+\refbib{Greenberg §8.2.2 (pp.~122--126), Algorithm 8.3; §8.1.2. Slides \textit{Limited dependent variable models} (probit, data augmentation).}
+\rubrica{
+\item Model and why the scale is fixed: 1 pt. Conditionals \eqref{q14:ystar}--\eqref{q14:beta}: 3 pts. Algorithm order: 1 pt.
+\item Keeping $B_1$ fixed across iterations as in the Gaussian probit: $-1$ pt.
+}
+\end{sol}
+
+% =================================================================================================
+\bloco{3}{Morettin \& Singer, \textit{Estatística e Ciência de Dados} (2021)}{Ch.~6}
+
+% ------------------------------------------------------------------------------------------ Q15
+\questao{Morettin \& Singer 6.18 --- odds ratios in a logistic regression (statement in Portuguese).}
+\fonte{Morettin, P.\,A. and Singer, J.\,M. (2021), \textit{Estatística e Ciência de Dados} (versão
+preliminar, abril 2021), Capítulo 6, Exercício 18, pp.~241--242, reproduced verbatim.}
+\begin{enunciado}
+\begin{otherlanguage}{brazil}
+\textbf{18)} Para estudar a associação entre gênero (1=Masc, 0=Fem) e idade (anos) e a preferência (1=sim, 0=não) pelo refrigerante Kcola, o seguinte modelo de regressão logística foi ajustado aos dados de 50 crianças escolhidas ao acaso:
+\begin{equation*}
+\log\left\{\frac{\pi_i(x_i,w_i)}{1-\pi_i(x_i,w_i)}\right\}=\alpha+\beta x_i+\gamma(w_i-5),
+\end{equation*}
+em que $x_i$ ($w_i$) representa o gênero (idade) da $i$-ésima criança e $\pi_i(x_i,w_i)$ a probabilidade de uma criança do gênero $x_i$ e idade $w_i$ preferir Kcola. As seguintes estimativas para os parâmetros foram obtidas:
+\begin{center}
+\begin{tabular}{cccc}
+\toprule
+Parâmetro & Estimativa & Erro padrão & Valor p\\
+\midrule
+$\alpha$ & 0,69 & 0,12 & $<0{,}01$\\
+$\beta$ & 0,33 & 0,10 & $<0{,}01$\\
+$\gamma$ & -0,03 & 0,005 & $<0{,}01$\\
+\bottomrule
+\end{tabular}
+\end{center}
+\begin{enumerate}[label=\alph*),leftmargin=2.4em,topsep=1pt,itemsep=1pt]
+\item Interprete os parâmetros do modelo por intermédio de chances e razões de chances.
+\item Com as informações acima, estime a razão de chances de preferência por Kcola correspondente à comparação de crianças do mesmo gênero com 10 e 15 anos.
+\item Construa intervalos de confiança (com coeficiente de confiança aproximado de 95\%) para $\exp(\beta)$ e $\exp(\gamma)$ e traduza o resultado em linguagem não técnica.
+\item Estime a probabilidade de meninos com 15 anos preferirem Kcola.
+\end{enumerate}
+\end{otherlanguage}
+\end{enunciado}
+\resolespaco
+\begin{sol}
+\begin{notacao}
+\item $x_i\in\{0,1\}$: gender (1 = boy); $w_i>0$: age in years; $\pi_i\in(0,1)$: probability of preferring Kcola.
+\item $\alpha$: log-odds for a girl aged 5; $\beta$: log odds ratio boy vs girl at equal age; $\gamma$: log odds ratio per extra year at equal gender.
+\item $\mathrm{odds}=\pi/(1-\pi)$; $\mathrm{OR}$: odds ratio; $z_{0.975}=1.96$.
+\end{notacao}
+
+\passo{model}{The fitted model is
+\begin{equation}
+\log\frac{\pi(x,w)}{1-\pi(x,w)}=\alpha+\beta x+\gamma(w-5), \label{q15:logit}
+\end{equation}
+so for two children differing only in $x$ or only in $w$ the difference of the log-odds is a single parameter.}
+
+\passo{a) interpretation}{For a girl aged 5 ($x=0$, $w=5$) \eqref{q15:logit} gives log-odds $\alpha$:
+\begin{align*}
+\mathrm{odds}&=e^{0.69}=1.9937, & \pi&=\frac{1.9937}{1+1.9937}=0.6660.
+\end{align*}
+Boy versus girl of the same age: subtracting \eqref{q15:logit} at $x=0$ from \eqref{q15:logit} at $x=1$ leaves $\beta$, so
+\begin{equation*}
+\mathrm{OR}_{\text{boy/girl}}=e^{0.33}=1.3910 :
+\end{equation*}
+boys have $39\%$ higher odds of preferring Kcola than girls of the same age. One extra year at the same gender:
+\begin{equation*}
+\mathrm{OR}_{+1\text{ year}}=e^{-0.03}=0.9704 ,
+\end{equation*}
+the odds fall by about $3\%$ per year of age (by $1-e^{-0.15}=1-0.8607=13.9\%$ per five years).}
+
+\passo{b) ages 10 vs 15}{Subtracting \eqref{q15:logit} at $w=15$ from \eqref{q15:logit} at $w=10$ (same $x$):
+\begin{align*}
+\log\mathrm{OR}_{10/15}&=\gamma(10-5)-\gamma(15-5)\\
+&=\gamma(-5)\\
+&=(-0.03)(-5)\\
+&=0.15 .
+\end{align*}
+Hence $\mathrm{OR}_{10/15}=e^{0.15}=1.1618$: a 10-year-old has about $16\%$ higher odds than a 15-year-old of the
+same gender (equivalently $\mathrm{OR}_{15/10}=0.8607$).}
+
+\passo{c) confidence intervals}{Wald intervals on the log scale, then exponentiated:
+\begin{align*}
+\beta:&\quad 0.33\pm1.96(0.10)=(0.134,\ 0.526)\ \Rightarrow\ \exp:\ (e^{0.134},e^{0.526})=(1.1434,\ 1.6922),\\
+\gamma:&\quad -0.03\pm1.96(0.005)=(-0.0398,\ -0.0202)\ \Rightarrow\ \exp:\ (e^{-0.0398},e^{-0.0202})=(0.9610,\ 0.9800).
+\end{align*}
+In plain words: with about 95\% confidence, boys have between 14\% and 69\% higher odds of preferring
+Kcola than girls of the same age, and each additional year of age lowers the odds by between 2\% and
+4\%. Both intervals exclude 1, so both effects are real but modest.}
+
+\passo{d) boys aged 15}{With $x=1$, $w=15$ in \eqref{q15:logit}:
+\begin{align*}
+\eta&=0.69+0.33(1)+(-0.03)(15-5)\\
+&=0.69+0.33-0.30\\
+&=0.72,\\
+\hat\pi&=\frac{e^{0.72}}{1+e^{0.72}}=\frac{2.0544}{3.0544}=0.6726 .
+\end{align*}}
+\intuicao{In a logistic regression each coefficient is a log odds ratio, constant across the other
+covariates; probabilities, by contrast, need the whole linear predictor, as in d).}
+\refbib{Morettin \& Singer §6.5 (Regressão logística), pp.~218--223; Greenberg §8.2.3 (logit). Slides \textit{Limited dependent variable models}.}
+\rubrica{
+\item a) the three readings via odds/OR: 1.5 pts. b) $e^{0.15}$ (or its inverse) with the direction stated: 1 pt.
+\item c) both intervals exponentiated and in plain words: 1.5 pts; exponentiating the standard error itself: max.\ 0.5 pt. d) $0.67$: 1 pt; forgetting the centring at 5 years: max.\ 0.5 pt.
+}
+\end{sol}
+
+% ------------------------------------------------------------------------------------------ Q16
+\questao{Morettin \& Singer 6.21 --- diabetes duration and retinopathy (statement in Portuguese).}
+\fonte{Morettin, P.\,A. and Singer, J.\,M. (2021), \textit{Estatística e Ciência de Dados} (versão
+preliminar, abril 2021), Capítulo 6, Exercício 21 and Tabela 6.17, p.~242, reproduced verbatim.}
+\begin{enunciado}
+\begin{otherlanguage}{brazil}
+\textbf{21)} Os dados da Tabela 6.17 contem dados de uma investigação cujo objetivo era estudar a relação entre a duração de diabete e a ocorrência de retinopatia (uma moléstia dos olhos). Ajuste um modelo de regressão logística para avaliar a intensidade dessa relação.
+
+\textbf{Sugestão}: Considere o ponto médio de cada intervalo como valor da variável explicativa.
+\begin{center}
+\textbf{Tabela 6.17:} Frequências de retinopatia\\[2pt]
+\begin{tabular}{ccc}
+\toprule
+Duração da & \multicolumn{2}{c}{Retinopatia}\\
+\cmidrule(lr){2-3}
+Diabete (anos) & Sim & Não\\
+\midrule
+0 - 2 & 17 & 215\\
+3 - 5 & 26 & 218\\
+6 - 8 & 39 & 137\\
+9 - 11 & 27 & 62\\
+12 - 14 & 35 & 36\\
+15 - 17 & 37 & 16\\
+18 - 20 & 26 & 13\\
+21 - 23 & 23 & 15\\
+\bottomrule
+\end{tabular}
+\end{center}
+\end{otherlanguage}
+\end{enunciado}
+\resolespaco
+\begin{sol}
+\begin{notacao}
+\item $k=1,\dots,8$: duration classes; $x_k\in\{1,4,7,10,13,16,19,22\}$: class midpoint (years); $m_k$: patients in class $k$; $s_k$: patients with retinopathy; $N=942$.
+\item $\pi(x)\in(0,1)$: probability of retinopathy at duration $x$; $\alpha$, $\beta$: logistic intercept and slope.
+\item $D$: residual deviance; $\mathrm{OR}_c=e^{c\beta}$: odds ratio for $c$ more years.
+\end{notacao}
+
+\passo{model and likelihood}{With the suggested midpoints, $s_k\sim\mathrm{Bin}(m_k,\pi(x_k))$ independently and
+\begin{equation}
+\log\frac{\pi(x_k)}{1-\pi(x_k)}=\alpha+\beta x_k, \label{q16:logit}
+\end{equation}
+with log-likelihood $\ell(\alpha,\beta)=\sum_k[s_k\log\pi(x_k)+(m_k-s_k)\log(1-\pi(x_k))]$, maximised by IRLS (\texttt{statsmodels} GLM, binomial family).}
+
+\passo{estimates}{
+\begin{equation}
+\widehat{\operatorname{logit}}\,\pi(x)=\underset{(0.1578)}{-2.6294}+\underset{(0.0146)}{0.1802}\,x,\qquad z_{\hat\beta}=12.38 . \label{q16:fit}
+\end{equation}
+The slope is highly significant; the likelihood-ratio statistic against the constant-only model is
+$200.66-13.83=186.83$ on 1 df.}
+
+\passo{intensity of the relation}{Odds ratios from \eqref{q16:fit}:
+\begin{align*}
+\mathrm{OR}_1&=e^{0.180213}=1.1975, & \mathrm{OR}_5&=e^{5(0.180213)}=e^{0.901065}=2.4622 .
+\end{align*}
+Each extra year of diabetes multiplies the odds of retinopathy by about $1.20$ ($+20\%$); five years multiply
+them by about $2.5$. The 95\% interval for $\mathrm{OR}_1$:
+\begin{align*}
+0.180213\pm1.96(0.014562)&=(0.15167,\ 0.20875),\\
+(e^{0.15167},\ e^{0.20875})&=(1.1638,\ 1.2321).
+\end{align*}
+Fitted probabilities: at $x=1$, $\hat\pi=1/(1+e^{2.449148})=0.0795$ (observed $17/232=0.0733$); at $x=22$,
+$\hat\pi=1/(1+e^{-1.335319})=0.7917$ (observed $23/38=0.6053$).}
+
+\passo{fit check}{The residual deviance is $D=13.83$ on $8-2=6$ df, $p=0.032$ (Pearson $X^2=14.82$): some lack of
+fit, coming mainly from the last classes, where the observed proportions level off below the logistic
+curve. The linear-logit model captures the strong monotone relation, but a quadratic term or a log
+duration would fit the plateau better.}
+
+\passo{code}{}
+\begin{lstlisting}
+mid = np.array([1, 4, 7, 10, 13, 16, 19, 22.])
+yes = np.array([17, 26, 39, 27, 35, 37, 26, 23]); no = np.array([215, 218, 137, 62, 36, 16, 13, 15])
+m = sm.GLM(np.c_[yes, no], sm.add_constant(mid), family=sm.families.Binomial()).fit()
+print(m.params, m.bse, np.exp(m.params[1]), m.deviance)   # -2.6294 0.1802 | 0.1578 0.0146 | 1.1975 | 13.83
+\end{lstlisting}
+\intuicao{Grouped binary data are binomial counts; the logistic slope is a constant log odds ratio per
+year, which reads the ``intensity'' of the association directly, and the deviance tells whether one
+slope is enough.}
+\refbib{Morettin \& Singer §6.5 (Regressão logística), pp.~218--223. Slides \textit{Limited dependent variable models}.}
+\rubrica{
+\item Binomial model with midpoints \eqref{q16:logit}: 1.5 pts. Estimates and odds ratios with interval: 2 pts.
+\item Fit assessment (deviance or fitted vs observed): 1.5 pts. Fitting a linear regression to the proportions: max.\ 1.5 pts overall.
+}
+\end{sol}
+
+\end{document}

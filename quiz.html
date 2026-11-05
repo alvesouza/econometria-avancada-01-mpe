@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quiz</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+<style>
+:root {
+  --bg: #1a1a2e;
+  --bg-card: #16213e;
+  --bg-card-hover: #1a2744;
+  --text: #e0e0e0;
+  --text-muted: #8892a4;
+  --accent: #4fc3f7;
+  --accent-dim: #2a6a8a;
+  --correct: #66bb6a;
+  --correct-bg: rgba(102,187,106,0.12);
+  --wrong: #ef5350;
+  --wrong-bg: rgba(239,83,80,0.12);
+  --border: #2a3a5c;
+  --option-bg: #1e2d4a;
+  --option-hover: #253a5e;
+  --progress-bg: #0f1a30;
+  --tag-colors: #4fc3f7 #ab47bc #ff7043 #66bb6a #ffa726 #ec407a #26c6da;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family:'Segoe UI',system-ui,-apple-system,sans-serif; background:var(--bg); color:var(--text); min-height:100vh; }
+.container { max-width:800px; margin:0 auto; padding:1.5rem; }
+h1 { text-align:center; margin-bottom:.5rem; font-size:1.6rem; color:var(--accent); }
+.subtitle { text-align:center; color:var(--text-muted); margin-bottom:1.5rem; font-size:.9rem; }
+
+/* File picker */
+.picker { background:var(--bg-card); border:2px dashed var(--border); border-radius:12px; padding:2.5rem; text-align:center; cursor:pointer; transition:border-color .2s; margin-bottom:1.5rem; }
+.picker:hover { border-color:var(--accent); }
+.picker input { display:none; }
+.picker p { color:var(--text-muted); margin-top:.5rem; font-size:.85rem; }
+
+/* Progress */
+.progress-wrap { background:var(--progress-bg); border-radius:8px; height:8px; margin-bottom:1.5rem; overflow:hidden; }
+.progress-bar { height:100%; background:linear-gradient(90deg,var(--accent),#ab47bc); border-radius:8px; transition:width .4s ease; }
+.progress-text { text-align:center; color:var(--text-muted); font-size:.85rem; margin-bottom:1rem; }
+
+/* Question card */
+.card { background:var(--bg-card); border-radius:12px; padding:1.5rem; margin-bottom:1.2rem; border:1px solid var(--border); }
+.card-header { display:flex; align-items:center; gap:.6rem; margin-bottom:1rem; flex-wrap:wrap; }
+.badge { padding:.2rem .7rem; border-radius:20px; font-size:.75rem; font-weight:600; color:#fff; }
+.q-number { color:var(--text-muted); font-size:.85rem; }
+.q-text { font-size:1.05rem; line-height:1.6; margin-bottom:1.2rem; }
+.problem-stem { background:rgba(79,195,247,0.06); border-left:3px solid var(--accent); padding:.8rem 1rem; border-radius:0 8px 8px 0; margin-bottom:1rem; line-height:1.6; }
+
+/* Options */
+.options { display:flex; flex-direction:column; gap:.5rem; }
+.option { display:flex; align-items:flex-start; gap:.7rem; padding:.75rem 1rem; background:var(--option-bg); border:1px solid transparent; border-radius:8px; cursor:pointer; transition:all .15s; line-height:1.5; }
+.option:hover:not(.disabled) { background:var(--option-hover); border-color:var(--accent-dim); }
+.option.disabled { cursor:default; }
+.option .letter { flex-shrink:0; width:28px; height:28px; display:flex; align-items:center; justify-content:center; border-radius:50%; background:var(--border); font-weight:700; font-size:.85rem; }
+.option.selected .letter { background:var(--accent); color:var(--bg); }
+.option.correct { border-color:var(--correct); background:var(--correct-bg); }
+.option.correct .letter { background:var(--correct); color:#fff; }
+.option.wrong { border-color:var(--wrong); background:var(--wrong-bg); }
+.option.wrong .letter { background:var(--wrong); color:#fff; }
+
+/* Explanation */
+.explanation { margin-top:1rem; padding:1rem; background:rgba(79,195,247,0.06); border-radius:8px; border-left:3px solid var(--accent); display:none; line-height:1.6; font-size:.95rem; }
+.explanation.show { display:block; }
+.explanation .ref { color:var(--text-muted); font-size:.85rem; margin-top:.5rem; font-style:italic; }
+
+/* Navigation */
+.nav { display:flex; justify-content:space-between; margin-top:1rem; }
+.btn { padding:.6rem 1.4rem; border:none; border-radius:8px; font-size:.9rem; cursor:pointer; font-weight:600; transition:opacity .15s; }
+.btn:hover { opacity:.85; }
+.btn-primary { background:var(--accent); color:var(--bg); }
+.btn-secondary { background:var(--border); color:var(--text); }
+
+/* Dashboard */
+.dashboard { display:none; }
+.dashboard.show { display:block; }
+.score-ring { width:140px; height:140px; margin:1rem auto; position:relative; }
+.score-ring svg { transform:rotate(-90deg); }
+.score-ring .value { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); font-size:1.8rem; font-weight:700; }
+.topic-bar { margin:.4rem 0; }
+.topic-bar .label { display:flex; justify-content:space-between; font-size:.85rem; margin-bottom:.2rem; }
+.topic-bar .bar { height:10px; background:var(--progress-bg); border-radius:5px; overflow:hidden; }
+.topic-bar .bar .fill { height:100%; border-radius:5px; transition:width .6s; }
+.wrong-list { margin-top:1.5rem; }
+.wrong-list .card { border-left:3px solid var(--wrong); }
+.export-btn { margin-top:1rem; text-align:center; }
+
+.hidden { display:none; }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>Quiz</h1>
+  <p class="subtitle">Selecione um arquivo .md para começar &bull; <code>python -m http.server</code></p>
+
+  <div class="picker" id="picker">
+    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><polyline points="9 15 12 12 15 15"/></svg>
+    <p>Clique ou arraste um arquivo .md de quiz</p>
+    <input type="file" id="fileInput" accept=".md">
+  </div>
+
+  <script type="text/quiz" id="embeddedQuiz"></script>
+  <script type="text/quiz-state" id="embeddedState"></script>
+
+  <div id="quizArea" class="hidden">
+    <div class="progress-text" id="progressText"></div>
+    <div class="progress-wrap"><div class="progress-bar" id="progressBar"></div></div>
+    <div id="questionContainer"></div>
+    <div class="nav">
+      <button class="btn btn-secondary" id="prevBtn" onclick="navigate(-1)">← Anterior</button>
+      <button class="btn btn-secondary" onclick="exportStandaloneHTML()" title="Exportar como HTML independente" style="font-size:.8rem;padding:.5rem .8rem;">💾 HTML</button>
+      <button class="btn btn-primary" id="nextBtn" onclick="navigate(1)">Próxima →</button>
+    </div>
+  </div>
+
+  <div class="dashboard" id="dashboard">
+    <h2 style="text-align:center;margin-bottom:1rem;">Resultado Final</h2>
+    <div class="score-ring" id="scoreRing"></div>
+    <div id="topicBars"></div>
+    <div class="wrong-list" id="wrongList"></div>
+    <div class="export-btn">
+      <button class="btn btn-primary" onclick="exportResults()">📋 Copiar resultado (JSON)</button>
+      <button class="btn btn-secondary" onclick="exportStandaloneHTML()" style="margin-left:.5rem;">💾 Exportar HTML</button>
+      <button class="btn btn-secondary" onclick="restart()" style="margin-left:.5rem;">↻ Reiniciar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const LETTERS = 'ABCDEFGHIJ';
+const TAG_COLORS = ['#4fc3f7','#ab47bc','#ff7043','#66bb6a','#ffa726','#ec407a','#26c6da','#78909c'];
+let quiz = { title:'', tags:{}, questions:[] };
+let state = { current:0, answers:{} };
+let storageKey = '';
+
+let quizMdSource = '';
+
+const picker = document.getElementById('picker');
+const fileInput = document.getElementById('fileInput');
+picker.addEventListener('click', () => fileInput.click());
+picker.addEventListener('dragover', e => { e.preventDefault(); picker.style.borderColor='var(--accent)'; });
+picker.addEventListener('dragleave', () => { picker.style.borderColor=''; });
+picker.addEventListener('drop', e => { e.preventDefault(); picker.style.borderColor=''; if(e.dataTransfer.files[0]) loadFile(e.dataTransfer.files[0]); });
+fileInput.addEventListener('change', e => { if(e.target.files[0]) loadFile(e.target.files[0]); });
+
+function loadFile(file) {
+  storageKey = 'quiz_' + file.name;
+  const reader = new FileReader();
+  reader.onload = e => { quizMdSource = e.target.result; parseQuiz(quizMdSource); startQuiz(); };
+  reader.readAsText(file);
+}
+
+(function autoStart() {
+  const embedded = document.getElementById('embeddedQuiz');
+  const embeddedState = document.getElementById('embeddedState');
+  if (embedded && embedded.textContent.trim()) {
+    quizMdSource = embedded.textContent;
+    storageKey = 'quiz_embedded_' + quizMdSource.length;
+    parseQuiz(quizMdSource);
+    if (embeddedState && embeddedState.textContent.trim()) {
+      try { const s = JSON.parse(embeddedState.textContent); if (s.answers) state = s; } catch(e) {}
+    }
+    startQuiz();
+  }
+})();
+
+function parseQuiz(md) {
+  quiz = { title:'Quiz', tags:{}, questions:[] };
+  const fmMatch = md.match(/^---\s*\n([\s\S]*?)\n---/);
+  if (fmMatch) {
+    const fm = fmMatch[1];
+    const titleM = fm.match(/quiz:\s*"([^"]+)"/);
+    if (titleM) quiz.title = titleM[1];
+    const tagsBlock = fm.match(/tags:\s*\n((?:\s+\S.*(?:\n|$))*)/);
+    if (tagsBlock) {
+      for (const line of tagsBlock[1].split('\n')) {
+        const m = line.match(/^\s+(\S+):\s*"([^"]+)"/);
+        if (m) quiz.tags[m[1]] = m[2];
+      }
+    }
+  }
+
+  const body = fmMatch ? md.slice(fmMatch[0].length) : md;
+  let currentTag = '';
+  let currentProblem = null;
+  const lines = body.split('\n');
+  let i = 0;
+
+  while (i < lines.length) {
+    const line = lines[i];
+
+    if (line.match(/^##\s+(\S+)/)) {
+      currentTag = line.match(/^##\s+(\S+)/)[1];
+      currentProblem = null;
+      i++; continue;
+    }
+
+    if (line.match(/^P:\s*/)) {
+      let stem = line.replace(/^P:\s*/, '').trim();
+      i++;
+      while (i < lines.length && !lines[i].match(/^[QP]:\s/) && !lines[i].match(/^##\s/) && !lines[i].match(/^---/)) {
+        if (lines[i].trim()) stem += (stem ? '\n' : '') + lines[i];
+        i++;
+      }
+      currentProblem = stem || null;
+      continue;
+    }
+
+    if (line.match(/^Q:\s*/)) {
+      let qText = line.replace(/^Q:\s*/, '');
+      i++;
+      while (i < lines.length && !lines[i].match(/^-\s/) && !lines[i].match(/^<!--/) && lines[i].trim()) {
+        qText += ' ' + lines[i].trim();
+        i++;
+      }
+
+      const options = [];
+      while (i < lines.length && lines[i].match(/^-\s/)) {
+        options.push(lines[i].replace(/^-\s+/, ''));
+        i++;
+      }
+
+      let correct = 0;
+      if (i < lines.length && lines[i].match(/^<!--\s*/)) {
+        const enc = lines[i].match(/<!--\s*(\S+)\s*-->/);
+        if (enc) {
+          try { const decoded = atob(enc[1]); const m = decoded.match(/ans:(\d+)/); if(m) correct = parseInt(m[1]); } catch(e) {}
+        }
+        i++;
+      }
+
+      let explanation = '', ref = '', similar = '';
+      while (i < lines.length && lines[i].match(/^>\s/)) {
+        const content = lines[i].replace(/^>\s*/, '');
+        if (content.match(/^Ref:\s/)) ref = content.replace(/^Ref:\s*/, '');
+        else if (content.match(/^Similar:\s/)) similar = content.replace(/^Similar:\s*/, '');
+        else explanation += (explanation ? ' ' : '') + content;
+        i++;
+      }
+
+      quiz.questions.push({ tag: currentTag, problem: currentProblem, text: qText, options, correct, explanation, ref, similar });
+      continue;
+    }
+    i++;
+  }
+}
+
+function startQuiz() {
+  const saved = localStorage.getItem(storageKey);
+  if (saved) {
+    try { state = JSON.parse(saved); } catch(e) { state = { current:0, answers:{} }; }
+  } else {
+    state = { current:0, answers:{} };
+  }
+  document.getElementById('picker').classList.add('hidden');
+  document.getElementById('quizArea').classList.remove('hidden');
+  document.querySelector('h1').textContent = quiz.title;
+  render();
+}
+
+function save() { localStorage.setItem(storageKey, JSON.stringify(state)); }
+
+function render() {
+  const total = quiz.questions.length;
+  const answered = Object.keys(state.answers).length;
+  document.getElementById('progressText').textContent = `Questão ${state.current+1} de ${total} (${answered} respondidas)`;
+  document.getElementById('progressBar').style.width = `${(answered/total)*100}%`;
+  document.getElementById('prevBtn').disabled = state.current === 0;
+
+  const isLast = state.current === total - 1;
+  const allDone = answered === total;
+  const nextBtn = document.getElementById('nextBtn');
+  if (isLast && allDone) { nextBtn.textContent = 'Ver Resultado →'; nextBtn.onclick = showDashboard; }
+  else { nextBtn.textContent = 'Próxima →'; nextBtn.onclick = () => navigate(1); }
+
+  const q = quiz.questions[state.current];
+  const tagColor = TAG_COLORS[Object.keys(quiz.tags).indexOf(q.tag) % TAG_COLORS.length] || TAG_COLORS[0];
+  const tagLabel = quiz.tags[q.tag] || q.tag;
+  const userAns = state.answers[state.current];
+  const isAnswered = userAns !== undefined;
+
+  let html = '<div class="card">';
+  html += `<div class="card-header"><span class="badge" style="background:${tagColor}">${tagLabel}</span><span class="q-number">#${state.current+1}</span></div>`;
+  if (q.problem) html += `<div class="problem-stem">${q.problem}</div>`;
+  html += `<div class="q-text">${q.text}</div>`;
+  html += '<div class="options">';
+  q.options.forEach((opt, idx) => {
+    let cls = 'option';
+    if (isAnswered) {
+      cls += ' disabled';
+      if (idx === q.correct) cls += ' correct';
+      if (idx === userAns && userAns !== q.correct) cls += ' wrong';
+    } else if (userAns === idx) {
+      cls += ' selected';
+    }
+    html += `<div class="${cls}" onclick="selectOption(${idx})"><span class="letter">${LETTERS[idx]}</span><span>${opt}</span></div>`;
+  });
+  html += '</div>';
+
+  let expHtml = q.explanation;
+  if (q.ref) expHtml += `<div class="ref">📚 ${q.ref}</div>`;
+  if (q.similar) expHtml += `<div class="ref">🔗 ${q.similar}</div>`;
+  html += `<div class="explanation ${isAnswered ? 'show' : ''}">${expHtml}</div>`;
+  html += '</div>';
+
+  document.getElementById('questionContainer').innerHTML = html;
+  renderMath();
+}
+
+function selectOption(idx) {
+  if (state.answers[state.current] !== undefined) return;
+  state.answers[state.current] = idx;
+  save();
+  render();
+}
+
+function navigate(dir) {
+  state.current = Math.max(0, Math.min(quiz.questions.length - 1, state.current + dir));
+  save();
+  render();
+}
+
+function renderMath() {
+  renderMathInElement(document.getElementById('questionContainer'), {
+    delimiters: [
+      {left: '$$', right: '$$', display: true},
+      {left: '$', right: '$', display: false},
+      {left: '\\[', right: '\\]', display: true},
+      {left: '\\(', right: '\\)', display: false}
+    ],
+    throwOnError: false
+  });
+}
+
+function showDashboard() {
+  document.getElementById('quizArea').classList.add('hidden');
+  const dash = document.getElementById('dashboard');
+  dash.classList.add('show');
+
+  const total = quiz.questions.length;
+  let correctCount = 0;
+  const topicStats = {};
+  const wrongQs = [];
+
+  quiz.questions.forEach((q, i) => {
+    const tag = q.tag;
+    if (!topicStats[tag]) topicStats[tag] = { total:0, correct:0 };
+    topicStats[tag].total++;
+    if (state.answers[i] === q.correct) { correctCount++; topicStats[tag].correct++; }
+    else { wrongQs.push({ index:i, question:q, userAnswer:state.answers[i] }); }
+  });
+
+  const pct = Math.round((correctCount / total) * 100);
+  const circumference = 2 * Math.PI * 54;
+  const offset = circumference - (pct / 100) * circumference;
+  const color = pct >= 70 ? 'var(--correct)' : pct >= 50 ? 'var(--accent)' : 'var(--wrong)';
+
+  document.getElementById('scoreRing').innerHTML = `
+    <svg width="140" height="140"><circle cx="70" cy="70" r="54" stroke="var(--progress-bg)" stroke-width="12" fill="none"/>
+    <circle cx="70" cy="70" r="54" stroke="${color}" stroke-width="12" fill="none" stroke-dasharray="${circumference}" stroke-dashoffset="${offset}" stroke-linecap="round"/></svg>
+    <div class="value" style="color:${color}">${pct}%</div>`;
+
+  let barsHtml = '<h3 style="margin:1.5rem 0 .8rem">Por Tópico</h3>';
+  Object.entries(topicStats).forEach(([tag, s], idx) => {
+    const tagLabel = quiz.tags[tag] || tag;
+    const tagPct = Math.round((s.correct / s.total) * 100);
+    const c = TAG_COLORS[Object.keys(quiz.tags).indexOf(tag) % TAG_COLORS.length] || TAG_COLORS[0];
+    barsHtml += `<div class="topic-bar"><div class="label"><span>${tagLabel}</span><span>${s.correct}/${s.total} (${tagPct}%)</span></div><div class="bar"><div class="fill" style="width:${tagPct}%;background:${c}"></div></div></div>`;
+  });
+  document.getElementById('topicBars').innerHTML = barsHtml;
+
+  let wrongHtml = '';
+  if (wrongQs.length) {
+    wrongHtml = '<h3 style="margin-bottom:.8rem">Questões Erradas</h3>';
+    wrongQs.forEach(w => {
+      wrongHtml += `<div class="card"><strong>#${w.index+1}</strong> — ${w.question.text}<br><span style="color:var(--wrong)">Sua resposta: ${LETTERS[w.userAnswer]}</span> · <span style="color:var(--correct)">Correta: ${LETTERS[w.question.correct]}</span><br><small style="color:var(--text-muted)">${w.question.explanation}</small></div>`;
+    });
+  }
+  document.getElementById('wrongList').innerHTML = wrongHtml;
+  renderMathInElement(dash, { delimiters: [{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}], throwOnError:false });
+}
+
+function exportResults() {
+  const results = {
+    quiz: quiz.title,
+    date: new Date().toISOString(),
+    total: quiz.questions.length,
+    correct: quiz.questions.filter((q,i) => state.answers[i] === q.correct).length,
+    byTopic: {},
+    wrong: []
+  };
+  quiz.questions.forEach((q, i) => {
+    const tag = quiz.tags[q.tag] || q.tag;
+    if (!results.byTopic[tag]) results.byTopic[tag] = { total:0, correct:0 };
+    results.byTopic[tag].total++;
+    if (state.answers[i] === q.correct) results.byTopic[tag].correct++;
+    else results.wrong.push({ q: i+1, topic: tag, text: q.text, your: LETTERS[state.answers[i]], correct: LETTERS[q.correct] });
+  });
+  navigator.clipboard.writeText(JSON.stringify(results, null, 2)).then(() => alert('Resultado copiado!'));
+}
+
+function restart() {
+  localStorage.removeItem(storageKey);
+  state = { current:0, answers:{} };
+  document.getElementById('dashboard').classList.remove('show');
+  document.getElementById('picker').classList.remove('hidden');
+  document.querySelector('h1').textContent = 'Quiz';
+}
+
+function exportStandaloneHTML() {
+  if (!quizMdSource) { alert('Nenhum quiz carregado.'); return; }
+  const html = document.documentElement.outerHTML;
+  const doc = new DOMParser().parseFromString(html, 'text/html');
+  const eq = doc.getElementById('embeddedQuiz');
+  if (eq) eq.textContent = '\n' + quizMdSource + '\n';
+  const es = doc.getElementById('embeddedState');
+  if (es) es.textContent = '\n' + JSON.stringify(state) + '\n';
+  const pickerEl = doc.getElementById('picker');
+  if (pickerEl) pickerEl.classList.add('hidden');
+  const blob = new Blob(['<!DOCTYPE html>\n' + doc.documentElement.outerHTML], {type:'text/html'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = (quiz.title || 'quiz').replace(/[^a-zA-Z0-9À-ÿ\s-]/g,'').replace(/\s+/g,'-').toLowerCase() + '.html';
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+</script>
+</body>
+</html>

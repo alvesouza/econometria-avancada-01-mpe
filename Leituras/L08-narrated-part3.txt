@@ -1,0 +1,599 @@
+Advanced Econometrics, Class 8. Univariate time series. Narrated study notes, part 3 of 3: the support material.
+
+How to listen. This file holds the support parts of the Class 8 narration, where audio beats reading. Seven parts, in order. First, the pitfalls: twenty-two confusions, each said as "the error is, the correction is", with the minimal counterexample, followed by the distinctions that cost most points. Second, the spoken formula sheet, built for active recall: you hear a prompt, pause the player, say the result aloud, then hear the answer. Third, the implementation: the reference Python routines described as sequences of steps, never read as code. Fourth, the reading route and the exercises, as addresses only. Fifth, a thirty-item true or false self-test, with a pause cue before each answer. Sixth, a glossary. Seventh, the whole class in five lines, the piece worth replaying.
+
+A reminder on scope. The final exam has no code. Expect derivations, such as moments of autoregressions and moving averages, autocorrelations, forecast-error variances, the Dickey-Fuller ratio, GARCH moments and forecasts, and conjugate posteriors, and the reading of printed output, such as an augmented Dickey-Fuller table, an arima fit, or a garchFit summary.
+
+
+Support part one. The pitfalls.
+
+This part covers the pitfalls note, part one: the confusions this material produces. Every number here is asserted in the Python checks or in the figure script.
+
+Pitfall one. A coefficient above one against a nonstationary process.
+The error: saying "phi one is 1.75, above one, so the second-order autoregression explodes."
+The counterexample: the slides' pair, 1.75 and minus 0.80. Phi two, minus 0.80, is below one minus 1.75, which is minus 0.75; it is below one plus 1.75; and it is above minus one. So the point is inside the triangle. Both solutions of one minus 1.75 x plus 0.8 x squared equal to zero have modulus 1.118, above one, and gamma zero, 50.7 sigma squared, is finite.
+The correction: stationarity is a property of the roots, not of any single coefficient, as with the vector autoregression coefficient of 1.1 in Class 1. Section 1, subsection 5.
+
+Pitfall two. Characteristic roots against solutions of the characteristic equation.
+The error: mixing "the roots must lie outside the unit circle" with "inside".
+The resolution: Tsay calls the inverses of the solutions of one minus phi one x minus phi two x squared equal to zero the characteristic roots. Stationarity needs the solutions outside the unit circle, absolute value of x above one, and the characteristic roots inside, absolute value of omega below one. For 1.75 and minus 0.80: the solutions have modulus 1.118, the characteristic roots 0.894.
+The correction: same statement, two languages; say which one you use.
+
+Pitfall three. Complex roots against oscillating data.
+The error: saying "a smooth, highly persistent autocorrelation means real roots."
+The counterexample: the pair 1.75 and minus 0.80 has rho one equal to 0.972 and a smooth autocorrelation, yet the roots are complex, since 1.75 squared plus four times minus 0.80 is minus 0.1375, negative. The cycle has length 30.1 and shows only as a dip to rho 15 equal to minus 0.187. The near-unit real root of the pair 0.90 and 0.05 gives an autocorrelation that never turns negative.
+The correction: compute the discriminant; do not read the root type off the smoothness of the plot. See the triangle figure.
+
+Pitfall four. Autocorrelation cut-off against partial autocorrelation cut-off.
+The error: saying "the autocorrelation dies at lag 2, so fit a second-order autoregression."
+The resolution: a cut-off in the autocorrelation identifies a moving average; a cut-off in the partial autocorrelation identifies an autoregression. The second-order autoregression with 0.6 and minus 0.4 has an autocorrelation of damped waves and a partial autocorrelation of 0.4286, minus 0.4, then exactly zero. The moving average with theta 0.6 has an autocorrelation of minus 0.441, then zero, and a decaying partial autocorrelation. An ARMA cuts off in neither.
+The correction: autocorrelation cut-off means moving average; partial autocorrelation cut-off means autoregression. Section 2, subsection 8.
+
+Pitfall five. A moving average of order one with an absolute rho one of 0.6.
+The error: matching any lag-1 autocorrelation with a moving average of order one.
+The counterexample: the absolute value of rho one is the absolute value of theta one over one plus theta one squared, which is at most one half, with equality at the absolute value of theta one equal to one. A sample rho one hat of 0.6 with nothing after it is not a moving average of order one. And theta equal to 0.5 and theta equal to 2 give the same rho one, minus 0.4.
+The correction: respect the one-half bound, and report only the invertible solution, the absolute value of theta below one.
+
+Pitfall six. Sign conventions in printed moving-average coefficients.
+The error: plugging R's ma1 equal to minus 0.3864 into Tsay's one minus theta B as theta equal to minus 0.3864.
+The resolution: Tsay writes a sub t minus theta a sub t minus one; R, the forecast package and statsmodels print the coefficient of plus a sub t minus one. R's minus 0.3864 is Tsay's theta equal to plus 0.3864.
+The correction: convert the sign before using Tsay's formulas. Only with the right conversion does the AirPassengers rho one, minus 0.336, come out with its correct sign. Sections 2 and 5.
+
+Pitfall seven. A long-horizon forecast interval against the forecast of a stationary series.
+The error: saying "forecast uncertainty always grows without bound."
+The counterexample: for the stationary second-order autoregression, the forecast-error variance, sigma squared times the sum of squared psi weights, tends to gamma zero, a standard deviation of 7.12 for the ar2-forecast model. For the random walk, the variance is ell sigma squared and goes to infinity.
+The correction: bounded against unbounded is exactly the stationary against unit-root distinction. Section 2, equation 28, against section 3, equation 6, and the left panel of the unit-root figure.
+
+Pitfall eight. Failing to reject a unit root against accepting it.
+The error: saying "the augmented Dickey-Fuller p-value is 0.45, so GDP has a unit root."
+The counterexample: Wooldridge's Example 18.2. For Treasury bills, t equal to minus 2.46 does not reject rho equal to one, but a standard t test of rho equal to 0.9 does not reject either. Both cannot be accepted. With n equal to 35, Wooldridge's Example 18.4, rho hat equal to 0.79 still fails to reject: the test has low power near one.
+The correction: say "the unit root cannot be rejected", never "the series has a unit root". Section 3, subsection 6.3.
+
+Pitfall nine. Normal critical values for a Dickey-Fuller statistic.
+The error: rejecting phi equal to one when the t ratio is below minus 1.645.
+The counterexample: the seeded Monte Carlo with T equal to 250. Under a true unit root the Dickey-Fuller t ratio has a 5 per cent quantile of minus 2.87; Wooldridge gives minus 2.86. Using minus 1.645 rejects a true unit root 46.5 per cent of the time.
+The correction: use the Dickey-Fuller tables, minus 2.86 with a constant and minus 3.41 with a trend. Section 3, subsection 5.5.
+
+Pitfall ten. Same test name, different regressions.
+The error: saying "Tsay reports an augmented Dickey-Fuller statistic of minus 1.701 for GDP, but the site page prints minus 0.370, so one is wrong."
+The resolution: the adf.test function of the tseries package always includes a constant and a trend; Tsay's and the deck's runs use a constant only, minus 1.701 and minus 1.61.
+The correction: different deterministic terms, different null distributions, same conclusion, no rejection. Ask which deterministic terms, how many lags, which table. Section 3, subsection 7.
+
+Pitfall eleven. Trend-stationary against random walk with drift.
+The error: saying "both trend upward, so detrending and differencing are interchangeable."
+The counterexample: the random walk with drift has variance t sigma squared and permanent shocks; the trend-stationary model has a constant variance and transitory shocks. At 120 months, with the 3M calibration, the plus or minus two standard deviation band is plus or minus 1.40 against plus or minus 0.29.
+The correction: detrending a random walk leaves a nonstationary residual; differencing a trend-stationary series creates a non-invertible moving-average unit root. Difference the first, detrend the second. Section 3, equations 9 and 11.
+
+Pitfall twelve. A significant regression between two trending series.
+The error: reading t equal to 5 and an R squared of 0.9 between two price levels as a relation.
+The counterexample: Granger and Newbold, and Wooldridge section 18.3. With two independent random walks and n equal to 50, the nominal 5 per cent t test rejects 66 per cent of the time; our Monte Carlo also gives 66 per cent; and 84.7 per cent at n equal to 250. Under the null the error is itself a random walk.
+The correction: difference integrated series before regressing them, unless they are cointegrated, which is not on the class schedule.
+
+Pitfall thirteen. Long memory against a unit root.
+The error: saying "a slowly decaying autocorrelation means a unit root."
+The counterexample: the fractionally integrated model with d equal to 0.4 is stationary, yet rho 100 is 0.267, while a first-order autoregression with the same rho one, two thirds, has rho 100 of about ten to the minus 18.
+The correction: a unit root gives sample autocorrelations near one at all fixed lags; long memory gives small autocorrelations that decay hyperbolically, like k to the two d minus one. Section 4.
+
+Pitfall fourteen. Multiplicative against additive seasonal moving average.
+The error: saying "the airline model is just a moving average with lags 1 and 12."
+The counterexample: one minus theta B, times one minus capital Theta B to the 12, adds the term theta capital Theta B to the 13. So rho 11 and rho 13 are nonzero, both equal to rho one times rho 12, 0.147 for AirPassengers. The non-multiplicative one minus theta B minus capital Theta B to the 12 has rho 13 equal to zero.
+The correction: same two parameters, different autocorrelation; look for the symmetric shoulders at s minus one and s plus one. Section 5, equations 12 to 14.
+
+Pitfall fifteen. Uncorrelated against independent returns.
+The error: saying "Ljung-Box on returns does not reject, so returns are iid."
+The counterexample: IBM, with Q of 30 equal to 38.2, p-value 0.14, on returns, and 182.1 on squares; Intel, with Q of 12 equal to 18.26, p-value 0.11, on returns, and 89.85 on a sub t squared.
+The correction: serially uncorrelated and conditionally heteroskedastic is exactly an ARCH process. Test the squares too. Class 1, and section 6, subsection 2.1.
+
+Pitfall sixteen. Conditional against unconditional variance, and kurtosis.
+The error: saying "Gaussian innovations imply Gaussian returns."
+The counterexample: the ARCH of order one with alpha one equal to 0.356 and standard normal innovations has unconditional kurtosis 4.23; Tsay's GARCH of order one and one has 6.65.
+The correction: conditionally normal, unconditionally fat-tailed. Section 6, equations 12 and 25.
+
+Pitfall seventeen. Persistence against the size of the ARCH coefficient.
+The error: saying "alpha one equal to 0.12 is small, so volatility shocks die fast."
+The counterexample: the decay rate is alpha one plus beta one, 0.9727, with a half-life of 25 months; for Petrobras, 0.980 and 34 days.
+The correction: alpha one sets the immediate reaction; beta one carries it. Section 6, equations 28 and 29.
+
+Pitfall eighteen. IGARCH against a very persistent GARCH.
+The error: saying "alpha one plus beta one equal to 0.98 is basically IGARCH."
+The resolution: at 0.98 the forecasts still revert to the long-run variance, with a half-life of 34 days; at exactly one there is no long-run variance and forecasts rise linearly, by alpha zero per step.
+The correction: a Bayesian reports the posterior probability that alpha one plus beta exceeds one, 0.0034 for Petrobras 2007 to 2013, instead of guessing. Section 6, equations 31 and 32, and section 9.
+
+Pitfall nineteen. The printed gamma1 of garchFit with leverage.
+The error: reading the glossary page's formula, sigma t squared equals omega plus alpha epsilon squared plus gamma epsilon squared times the indicator that epsilon is negative, plus beta sigma squared, with its printed numbers.
+The counterexample: with alpha 0.0923, gamma 0.2084 and beta 0.8818, the literal reading has persistence alpha plus gamma over two plus beta, which is 1.078, above one. fGarch fits the APARCH form, alpha times the absolute value of a minus gamma a, squared: bad news 0.1348, good news 0.0579, persistence 0.978.
+The correction: map the APARCH gamma into GJR coefficients before reading asymmetry or persistence. Section 7, equations 4 to 7.
+
+Pitfall twenty. Heavier-tailed innovations against a smaller ARCH effect.
+The error: saying "the Student t fit has a smaller alpha one, so less volatility clustering."
+The resolution: under normal errors the model inflates alpha one to manufacture the tails; with Student t errors part of the kurtosis comes from epsilon. Intel goes from 0.356 to 0.285; Petrobras from 0.103 to 0.074.
+The correction: total kurtosis rises, to 12.55 for the Petrobras GARCH with Student t. Tsay printed page 126 and section 7, subsection 6.
+
+Pitfall twenty-one. Observation-driven against parameter-driven volatility.
+The error: saying "stochastic volatility is GARCH with a log."
+The resolution: in GARCH, sigma t squared is a known function of past data; in stochastic volatility it has its own shock, so the likelihood integrates over the whole volatility path and needs Markov chain Monte Carlo.
+The correction: that extra shock is why the stochastic volatility fit needs fewer tail degrees of freedom: for Petrobras, nu of 12 against 7 for GARCH with Student t. Section 8, subsections 1 and 5.
+
+Pitfall twenty-two. A posterior p-value.
+The error: reading the GARCH11-SVar1 page's "Pr greater than absolute t", equal to 1.9987, for mu in the stochastic volatility table as a probability.
+The resolution: it is two times one minus the normal distribution function at t, with t negative: not a probability.
+The correction: posterior summaries answer the probability that mu is below zero given the data directly; frequentist labels on Markov chain Monte Carlo output mislead. Section 8, subsection 9, and section 9, subsection 8.
+
+The distinctions that cost most points, from part three of the pitfalls note. Eleven pairs, each with a one-line test. Solutions against characteristic roots: outside against inside the unit circle; say which. Autocorrelation against partial autocorrelation cut-off: moving average against autoregression. Bounded against growing forecast variance: stationary against unit root. Failing to reject against accepting: Dickey-Fuller power is low near one. Dickey-Fuller against normal critical values: minus 2.86 against minus 1.645 at 5 per cent. Hyperbolic against geometric decay: long memory against ARMA. Multiplicative against additive seasonal moving average: rho s plus one equal to rho one times rho s, against zero. Conditional against unconditional kurtosis: GARCH turns normal shocks into fat tails. Alpha one against alpha one plus beta one: reaction against persistence. The printed gamma1 against GJR's gamma: the APARCH form in fGarch. GARCH against stochastic volatility: observation-driven against parameter-driven.
+
+
+Support part two. The spoken formula sheet.
+
+This part covers the formulas note. How to use it: after each prompt, pause the player, say the formula out loud, then resume and hear the answer. The equation numbers are those of each section note.
+
+First, the exam specification, mapped. The site describes Class 8 as an "Introduction to univariate time series econometrics", in five items. Item one, "Autoregressive moving average models", is settled in section 1, on the second-order autoregression, the autoregression of order p, cycles, the partial autocorrelation and AIC and BIC; and section 2, on forecasts, moving averages, ARMA and identification. Item two, "Unit root econometrics", is section 3, on the random walk, drift, trend-stationarity, ARIMA, the Dickey-Fuller tests and spurious regression; and section 4, on fractional integration. Item three, "Seasonal models", is section 5. Item four, "ARCH slash GARCH and related models", is section 6, on ARCH, GARCH and IGARCH; section 7, on GJR, threshold GARCH, APARCH, EGARCH, GARCH in mean and non-Gaussian errors; and section 9, on Bayesian GARCH. Item five, "Stochastic volatility models", is section 8.
+
+The goals of the class plan, item by item. Identification of autoregressive, moving-average and ARMA models: section 1, subsections 8 and 9, and section 2, subsections 5 and 8. Their estimation: section 1, subsection 10, conditional least squares; section 2, subsection 6, conditional against exact likelihood; and Class 1 for least squares as maximum likelihood in the first-order autoregression. Their h-step forecasts: section 2, subsections 2, 3, 7 and 9. Business cycles from complex autoregressive roots: section 1, subsections 4 to 6. The random walk, drift and unit-root tests: section 3, subsections 1 to 7. Long memory: section 4. Seasonal airline models: section 5, subsections 3 to 6. ARCH, GARCH and variants: sections 6 and 7. Stochastic volatility, Gaussian and Student t: section 8, subsections 2 to 8. GARCH of order one and one against stochastic volatility: section 8, subsections 4.2 and 9, and the right panel of the news-impact figure. Bayesian GARCH: section 9.
+
+The final exam, 30 per cent of the grade, has no code: derivations of autoregressive, moving-average and ARMA moments, forecast means and variances, ARCH and GARCH moments and forecasts, conjugate updates, and the reading of printed arima, garchFit, adf.test and bayesGARCH output.
+
+Now the results, section by section.
+
+Section 1, the second-order autoregression, the autoregression of order p, the partial autocorrelation and the criteria.
+
+Prompt: the mean of a second-order autoregression, equation 2. Pause. Answer: mu equals phi zero over one minus phi one minus phi two, provided phi one plus phi two is not one.
+
+Prompt: the moment equations and Yule-Walker, equations 4 and 6, Tsay 2.13. Pause. Answer: gamma ell equals phi one gamma ell minus one plus phi two gamma ell minus two, and rho ell equals phi one rho ell minus one plus phi two rho ell minus two, for ell greater than zero.
+
+Prompt: the first two autocorrelations, equations 7 and 8. Pause. Answer: rho one equals phi one over one minus phi two; rho two equals phi one squared over one minus phi two, plus phi two.
+
+Prompt: the variance, equation 9. Pause. Answer: gamma zero equals one minus phi two times sigma squared, over one plus phi two times the bracket one minus phi two squared minus phi one squared.
+
+Prompt: the characteristic equation and the stationarity condition, equations 10 and 11, Tsay 2.14. Pause. Answer: one minus phi one x minus phi two x squared equals zero; stationary if and only if both solutions have absolute value above one.
+
+Prompt: the triangle, equations 15 to 18. Pause. Answer: phi two less than one minus phi one, phi two less than one plus phi one, and phi two greater than minus one.
+
+Prompt: complex roots and the cycle length, equations 13 and 14. Pause. Answer: complex if and only if phi one squared plus four phi two is negative; k equals two pi over the inverse cosine of phi one over twice the square root of minus phi two.
+
+Prompt: the autoregression of order p, equations 21 and 22. Pause. Answer: stationary if and only if all solutions of one minus phi one x minus, and so on, minus phi p x to the p equal to zero exceed one in modulus; the autocorrelation obeys the same polynomial.
+
+Prompt: the partial autocorrelation, equation 23 and subsection 8. Pause. Answer: phi hat ell comma ell is the last coefficient of the autoregression of order ell; for an autoregression of order p, phi hat p comma p tends to phi p, phi hat ell comma ell tends to zero for ell above p, with variance about one over T.
+
+Prompt: AIC and BIC, equations 24 and 25, Tsay 2.16. Pause. Answer: AIC is minus two over T times the log-likelihood plus two over T times the number of parameters; for a Gaussian autoregression of order ell, AIC is the log of sigma tilde ell squared plus two ell over T, and BIC is the log of sigma tilde ell squared plus ell times the log of T over T.
+
+Section 2, forecasts, moving averages and ARMA.
+
+Prompt: the optimal forecast, equations 1 and 2. Pause. Answer: the ell-step forecast is the conditional expectation of r sub h plus ell given F sub h; it minimises the conditional mean squared error.
+
+Prompt: the autoregressive forecast recursion and the two-step error, equations 3 to 6. Pause. Answer: the ell-step forecast is phi zero plus the sum of phi i times the forecast at ell minus i, with observed values for non-positive horizons; the two-step error is a sub h plus two plus phi one a sub h plus one.
+
+Prompt: the second-order autoregression's two-step and three-step forecasts, equations 7 to 10. Pause. Answer: the two-step mean is phi one squared plus phi two, times y sub n, plus phi one phi two y sub n minus one; the two-step variance is one plus phi one squared times sigma squared; the three-step variance is one plus phi one squared plus the square of phi one squared plus phi two, all times sigma squared.
+
+Prompt: the moving average of order q, equations 15 and 16. Pause. Answer: r sub t equals c zero plus a sub t minus the sum of theta i a sub t minus i, in Tsay's sign; the mean is c zero, the variance is one plus the sum of theta i squared, times sigma squared; it is always stationary.
+
+Prompt: the moving-average autocorrelations, equations 17 and 18. Pause. Answer: for order one, rho one equals minus theta one over one plus theta one squared, with absolute value at most one half; for order two, rho one equals minus theta one plus theta one theta two, over one plus theta one squared plus theta two squared, and rho two equals minus theta two over the same denominator; zero beyond q.
+
+Prompt: invertibility, equation 19. Pause. Answer: the moving average of order one is invertible if and only if the absolute value of theta one is below one; theta and one over theta give the same autocorrelation.
+
+Prompt: moving-average forecasts, equation 20. Pause. Answer: for order one, the one-step forecast is c zero minus theta one a sub h, and every forecast from two steps on is c zero.
+
+Prompt: the ARMA of order one and one, equations 21 to 25. Pause. Answer: gamma zero equals one minus two phi one theta one plus theta one squared, over one minus phi one squared, times sigma squared; rho one equals phi one minus theta one, times one minus phi one theta one, over one minus two phi one theta one plus theta one squared; and rho ell equals phi one rho ell minus one from lag 2.
+
+Prompt: the forecast-error variance, equations 26 to 28, Tsay 2.34. Pause. Answer: one plus psi one squared plus, and so on, plus psi ell minus one squared, times sigma squared, tending to gamma zero.
+
+Prompt: the identification rules, subsection 8. Pause. Answer: an autoregression of order p has a partial autocorrelation that cuts off at p; a moving average of order q has an autocorrelation that cuts off at q; an ARMA cuts off in neither, so use the extended autocorrelation or the criteria.
+
+Section 3, unit roots.
+
+Prompt: the random walk's forecast, error and variance, equations 1 to 6. Pause. Answer: the forecast is p sub h at every horizon; the error is the sum of the next ell shocks; the variance is ell sigma squared; all psi weights are one.
+
+Prompt: the random walk with drift, equations 7 to 10. Pause. Answer: p sub t equals p zero plus mu t plus the sum of the shocks; the mean is p zero plus mu t, the standard deviation sigma times the square root of t; the crossover is t star equal to sigma over mu, squared.
+
+Prompt: the trend-stationary model, equation 11. Pause. Answer: p sub t equals beta zero plus beta one t plus a stationary r sub t; the mean is beta zero plus beta one t, and the variance is constant.
+
+Prompt: the meaning of the constant, subsection 3. Pause. Answer: in a moving average, the mean; in a stationary autoregression or ARMA, phi zero equals mu times one minus the sum of the phi i; in a random walk with drift, the slope.
+
+Prompt: ARIMA of orders p, 1 and q, equations 12 and 13. Pause. Answer: one minus B times y sub t is a stationary, invertible ARMA of orders p and q.
+
+Prompt: the Dickey-Fuller test, equations 14 to 21. Pause. Answer: regress p sub t on p sub t minus one, with or without a constant; null phi one equal to one against below one; the t ratio is the sum of p sub t minus one e sub t over sigma e hat times the square root of the sum of p sub t minus one squared, with a non-normal law.
+
+Prompt: the augmented regression for a third-order autoregression, equations 22 to 29. Pause. Answer: delta x sub t equals c sub t plus beta x sub t minus one plus the sum of phi i tilde delta x sub t minus i plus e sub t, with beta equal to phi one plus phi two plus phi three minus one, phi one tilde equal to minus phi two plus phi three, and phi two tilde equal to minus phi three; a unit root if and only if the phi i sum to one.
+
+Prompt: the critical values, Wooldridge Tables 18.2 and 18.3. Pause. Answer: without a trend, minus 3.43, minus 3.12, minus 2.86 and minus 2.57 at 1, 2.5, 5 and 10 per cent; with a trend, minus 3.96, minus 3.66, minus 3.41 and minus 3.12.
+
+Prompt: spurious regression, equation 30. Pause. Answer: regressing one independent random walk on another leaves a random-walk residual; the t statistic diverges and the R squared stays random.
+
+Section 4, long memory.
+
+Prompt: the fractional difference, equations 1 to 3. Pause. Answer: one minus B to the d times x sub t equals a sub t, with d between minus one half and one half; one minus B to the d equals one minus d B minus d times one minus d over two B squared, and so on.
+
+Prompt: the two representations, equations 4 to 6. Pause. Answer: psi k equals k plus d minus one factorial over k factorial times d minus one factorial, stationary if d is below one half; pi k equals k minus d minus one factorial over k factorial times minus d minus one factorial, invertible if d is above minus one half.
+
+Prompt: the autocorrelation, equations 7 to 11. Pause. Answer: rho k is the product over j from one to k of j minus one plus d over j minus d; rho one equals d over one minus d; and rho k behaves like minus d factorial over d minus one factorial times k to the two d minus one.
+
+Prompt: the partial autocorrelation and the spectrum, subsection 4. Pause. Answer: phi k comma k equals d over k minus d; the spectrum behaves like omega to the minus two d as omega goes to zero.
+
+Section 5, seasonal models.
+
+Prompt: the seasonal difference, equations 1 to 3. Pause. Answer: delta s x sub t is one minus B to the s times x sub t; delta s delta x sub t equals x sub t minus x sub t minus one minus x sub t minus s plus x sub t minus s minus one.
+
+Prompt: the airline model, equations 4 and 5, Tsay 2.41. Pause. Answer: one minus B to the s, times one minus B, times x sub t, equals one minus theta B, times one minus capital Theta B to the s, times a sub t.
+
+Prompt: its autocovariances, equations 6 to 10. Pause. Answer: gamma zero equals one plus theta squared times one plus capital Theta squared times sigma squared; gamma one equals minus theta times one plus capital Theta squared times sigma squared; gamma s equals minus capital Theta times one plus theta squared times sigma squared; and gamma s minus one and gamma s plus one equal theta capital Theta sigma squared.
+
+Prompt: its autocorrelation, equations 11 and 12. Pause. Answer: rho one equals minus theta over one plus theta squared; rho s equals minus capital Theta over one plus capital Theta squared; rho s minus one and rho s plus one equal rho one times rho s; all others zero.
+
+Prompt: the non-multiplicative model, equations 13 and 14. Pause. Answer: w sub t equals one minus theta B minus capital Theta B to the s, times a sub t; rho s plus one is zero.
+
+Prompt: seasonal ARIMA, equations 15 to 18. Pause. Answer: the seasonal and regular autoregressive polynomials times the seasonal and regular differences of x sub t equal a constant plus the seasonal and regular moving-average polynomials times a sub t; the model with all orders one at period 12 is a constrained ARMA of orders 26 and 13.
+
+Prompt: deterministic seasonality, equation 19. Pause. Answer: capital Theta equal to one cancels the seasonal difference, leaving a fixed period-s pattern: use seasonal dummies.
+
+Section 6, ARCH and GARCH.
+
+Prompt: the structure of a volatility model, equations 1 to 3. Pause. Answer: r sub t equals mu sub t plus a sub t, and sigma t squared is the conditional variance of a sub t given F sub t minus one.
+
+Prompt: the ARCH tests, equations 4 and 5. Pause. Answer: Engle's test regresses a sub t squared on m of its lags and tests them jointly; McLeod-Li applies Ljung-Box to a sub t squared.
+
+Prompt: the ARCH model of order m, equation 6, Tsay 3.5. Pause. Answer: a sub t equals sigma sub t epsilon sub t, with sigma t squared equal to alpha zero plus the sum of alpha i a sub t minus i squared.
+
+Prompt: the ARCH of order one's moments, equations 7 to 12. Pause. Answer: the mean is zero; the variance is alpha zero over one minus alpha one; m four is three alpha zero squared times one plus alpha one, over one minus alpha one times one minus three alpha one squared; the kurtosis is three times one minus alpha one squared over one minus three alpha one squared, above 3, and needs alpha one squared below one third.
+
+Prompt: the likelihoods, equations 14 to 17. Pause. Answer: Gaussian, minus one half the sum of the log of sigma t squared plus a sub t squared over sigma t squared, plus a constant; Student t, the standardized density of Tsay 3.7 and the log-likelihood of Tsay 3.8.
+
+Prompt: the GARCH of orders m and s and its ARMA form, equations 20 and 21, Tsay 3.15. Pause. Answer: sigma t squared equals alpha zero plus the sum of alpha i a sub t minus i squared plus the sum of beta j sigma t minus j squared; with eta sub t equal to a sub t squared minus sigma t squared, a sub t squared is an ARMA with autoregressive coefficients alpha i plus beta i and moving-average coefficients beta j.
+
+Prompt: the unconditional variance, equation 22. Pause. Answer: alpha zero over one minus the sum of alpha i plus beta i.
+
+Prompt: the GARCH of order one and one's Gaussian excess kurtosis, equations 24 and 25. Pause. Answer: six alpha one squared over one minus two alpha one squared minus alpha one plus beta one, squared.
+
+Prompt: the GARCH of order one and one's forecasts, equations 26 to 28, Tsay 3.17. Pause. Answer: the ell-step forecast equals alpha zero plus alpha one plus beta one times the forecast at ell minus one; equivalently, sigma infinity squared plus alpha one plus beta one to the ell minus one, times the one-step forecast minus sigma infinity squared.
+
+Prompt: the half-life, equation 29. Pause. Answer: the log of 0.5 over the log of alpha one plus beta one.
+
+Prompt: IGARCH and RiskMetrics, equations 31 to 33, Tsay 3.22. Pause. Answer: with alpha one plus beta one equal to one, the ell-step forecast is the one-step forecast plus ell minus one times alpha zero; with alpha zero equal to zero as well, it is RiskMetrics' exponential smoothing.
+
+Prompt: ARCH in a regression, equation 34, Wooldridge 12.50. Pause. Answer: u sub t squared equals a zero plus a one u sub t minus one squared plus v sub t; ordinary least squares stays consistent, and weighted least squares or maximum likelihood is more efficient.
+
+Section 7, asymmetry and tails.
+
+Prompt: the news-impact curve, equation 1. Pause. Answer: sigma t squared as a function of the previous shock, at sigma t minus one equal to sigma infinity; for GARCH, alpha zero plus alpha one sigma infinity squared epsilon squared plus beta one sigma infinity squared, a symmetric parabola.
+
+Prompt: GJR, equation 2, Tsay 3.34. Pause. Answer: sigma t squared equals alpha zero plus alpha one plus gamma one N sub t minus one, times a sub t minus one squared, plus beta one sigma t minus one squared, with N the indicator of a negative shock.
+
+Prompt: APARCH, equations 4 and 5. Pause. Answer: sigma t to the delta equals omega plus alpha times the absolute value of a sub t minus one minus gamma a sub t minus one, raised to the delta, plus beta sigma t minus one to the delta; it is what fGarch fits with leverage set to true.
+
+Prompt: the mapping at delta equal to 2, equations 6 and 7. Pause. Answer: good news alpha times one minus gamma squared; bad news alpha times one plus gamma squared; the indicator coefficient four alpha gamma; and sigma infinity squared equals omega over one minus alpha times one plus gamma squared minus beta.
+
+Prompt: EGARCH, equations 8 to 14, Tsay 3.24 and 3.25. Pause. Answer: g of epsilon equals theta epsilon plus gamma times the absolute value of epsilon minus its mean, which is the square root of two over pi for the normal; the log of sigma t squared is an ARMA in g; and in rugarch's form the bad over good ratio is e to the minus two alpha c.
+
+Prompt: GARCH in mean, equation 15, Tsay 3.23. Pause. Answer: r sub t equals mu plus c sigma t squared plus a sub t.
+
+Prompt: Tiao's kurtosis formula, equations 16 and 17. Pause. Answer: K sub a equals K plus the Gaussian excess kurtosis plus five sixths of their product, over one minus one sixth of their product; for the Student t, K is 6 over nu minus 4, and K sub a equals 6 plus nu plus one times the Gaussian excess kurtosis, over nu minus 4 minus the Gaussian excess kurtosis.
+
+Section 8, stochastic volatility.
+
+Prompt: the model in both notations, equations 1 and 2, Tsay 3.40. Pause. Answer: a sub t equals sigma sub t epsilon sub t, and the log of sigma t squared equals alpha zero plus alpha one log sigma t minus one squared plus v sub t; in stochvol, y sub t equals e to the h sub t over two times epsilon sub t, and h sub t plus one equals mu plus phi times h sub t minus mu plus sigma u sub t.
+
+Prompt: the law of the log variance, equations 3 and 4. Pause. Answer: normal with mean mu h equal to alpha zero over one minus alpha one and variance sigma h squared equal to sigma v squared over one minus alpha one squared; lag-i covariance alpha one to the i sigma h squared.
+
+Prompt: the moments, equations 5 to 7. Pause. Answer: the expected value of a squared is e to the mu h plus sigma h squared over two; the expected value of a to the fourth is three e to the two mu h plus two sigma h squared; the kurtosis is three e to the sigma h squared.
+
+Prompt: the autocorrelation of a squared, equations 8 and 9. Pause. Answer: e to the sigma h squared alpha one to the i, minus one, over three e to the sigma h squared minus one.
+
+Prompt: the likelihood, equation 10. Pause. Answer: the density of R given theta is the integral of the density of R given H times the density of H given theta, over H: n-dimensional.
+
+Prompt: the linearisation, equation 11. Pause. Answer: the log of a sub t squared equals the log of sigma t squared plus the log of epsilon sub t squared, with mean minus 1.2704 and variance pi squared over two for the last term.
+
+Prompt: the Gibbs sampler, equations 12 to 21. Pause. Answer: beta given H is a weighted regression; h sub t given its neighbours has the density of Tsay 12.23, with mu sub t equal to alpha zero times one minus alpha one plus alpha one times the sum of the neighbouring log h's, over one plus alpha one squared, and variance sigma v squared over one plus alpha one squared; alpha given H is an autoregressive regression; and sigma v squared given H is an inverted chi-squared.
+
+Section 9, Bayesian GARCH.
+
+Prompt: the M0 update, equations 1 to 5. Pause. Answer: with an inverse-gamma prior with parameters a and b and normal returns with mean zero, the posterior is inverse gamma with a plus n over two and b plus half the sum of squared returns; the posterior mean is a weighted average with prior weight a minus one over a minus one plus n over two.
+
+Prompt: the M1 Gibbs conditionals, equations 6 to 8. Pause. Answer: mu given sigma squared is normal with a precision-weighted mean; sigma squared given mu is inverse gamma.
+
+Prompt: M2, equations 9 to 11. Pause. Answer: a Bayesian regression of y sub t on y sub t minus one, with normal and inverse-gamma conditionals.
+
+Prompt: M3, equations 12 to 15. Pause. Answer: r sub t is Student t with scale squared varrho h sub t, varrho equal to nu minus two over nu, so the conditional variance is h sub t; truncated-normal priors on alpha and beta; and the prior of nu is lambda e to the minus lambda times nu minus delta, for nu above delta.
+
+Prompt: the scale mixture, equation 16. Pause. Answer: r sub t given varpi sub t is normal with variance varpi sub t varrho h sub t, and varpi sub t is inverse gamma with nu over two and nu over two.
+
+Prompt: Bayesian stationarity, equation 17. Pause. Answer: the posterior probability that alpha one plus beta exceeds one, read off the draws as the share of draws above one.
+
+Now the numbers and worked cases, for recall.
+
+Section 1. Prompt: the pair 1.75 and minus 0.80. Pause. Answer: complex, discriminant minus 0.1375, solution modulus 1.118, cycle 30.09; rho one 0.9722, rho two 0.9014, minimum rho 15 equal to minus 0.1866; gamma zero 50.704 sigma squared, standard deviation 7.1207.
+
+Prompt: the pair 0.90 and 0.05. Pause. Answer: real solutions 1.0499 and minus 19.05; rho one 0.9474; gamma zero 9.7812, standard deviation 3.1275.
+
+Prompt: the GNP third-order autoregression. Pause. Answer: the factors one plus 0.521 B and one minus 0.869 B plus 0.274 B squared; discriminant minus 0.341; cycle 10.62 quarters, 10.656 from R's roots; phi zero equal to 0.6150 times 0.0077, which is 0.0047355.
+
+Prompt: Tsay's Figure 2.4 b, the pair 0.6 and minus 0.4. Pause. Answer: discriminant minus 1.24, cycle 5.84; partial autocorrelation 0.4286, minus 0.4, then zero.
+
+Prompt: the partial autocorrelation bands and Table 2.1. Pause. Answer: one over the square root of 996 is 0.0317; the GNP band is plus or minus 0.151; AIC picks order 9 at minus 5.849, BIC order 1 at minus 5.833, with order 3 at minus 5.831.
+
+Section 2. Prompt: the ar2-forecast numbers. Pause. Answer: means minus 6.7954, minus 7.5023, minus 7.6927 and minus 7.4603; variances 1, 4.0625, 9.1814 and 15.7318; psi weights 1, 1.75, 2.2625 and 2.5594; standard deviation at 50 steps 7.1206, tending to 7.12069; 90 per cent limits plus or minus 11.71.
+
+Prompt: the moving average of order one. Pause. Answer: theta 0.6 gives rho one minus 0.4412; theta 0.5 and theta 2 both give minus 0.4; the bound one half is reached at absolute theta equal to one.
+
+Prompt: the ARMA of order one and one with 0.8 and 0.4. Pause. Answer: gamma zero 1.4444, rho one 0.5231, rho two 0.4185; psi weights 1, 0.4, 0.32 and 0.256.
+
+Section 3. Prompt: 3M's drift. Pause. Answer: mu 0.0103 with standard error 0.002318, t equal to 4.44, sigma 0.0637, crossover 38.2 months.
+
+Prompt: the Dickey-Fuller Monte Carlo. Pause. Answer: with T equal to 250 and seed 2026, quantiles minus 3.45, minus 3.16, minus 2.87 and minus 2.58; minus 1.645 rejects a true unit root 46.5 per cent of the time.
+
+Prompt: Wooldridge's three examples. Pause. Answer: Treasury bills t equal to minus 2.46, rho hat 0.909, not rejected; inflation minus 3.01, rejected at 5 per cent; GDP with a trend minus 2.41, not rejected.
+
+Prompt: the GDP and S and P 500 statistics. Pause. Answer: GDP: Tsay minus 1.701, p-value 0.4297, with beta hat 0.9992; R and the slides minus 1.61, p-value 0.45; the site's tseries run minus 0.370, p-value 0.987. S and P 500: minus 1.998, p-value 0.602; the site with k equal to 2, minus 2.018, p-value 0.571; the differences minus 37.5, p-value 0.01 or less.
+
+Prompt: spurious regression. Pause. Answer: 66.2 per cent false rejections at n equal to 50, and 84.7 per cent at 250.
+
+Section 4. Prompt: d equal to 0.25 and d equal to 0.4. Pause. Answer: for 0.25, rho one to three are 0.3333, 0.2381 and 0.1948, and phi two comma two is 0.1429; for 0.4, rho one is two thirds and rho 100 is 0.2673, against two thirds to the 100th, about 2.5 times ten to the minus 18, with a log-log slope of minus 0.2.
+
+Section 5. Prompt: Johnson and Johnson. Pause. Answer: theta 0.678 and capital Theta 0.314 with s equal to 4; sigma hat 0.089, Q of 12 equal to 10.0, p-value 0.44; rho one minus 0.4645, rho four minus 0.2858, rho three and rho five 0.1328.
+
+Prompt: Decile 1. Pause. Answer: by exact likelihood, seasonal autoregressive 0.951 and moving average 0.997, which cancel; January dummy 0.1253, standard error 0.0115, intercept 0.0029, R squared 0.2016.
+
+Prompt: AirPassengers. Pause. Answer: n equal to 96, minus 0.3941 and minus 0.6129, BIC minus 284.27; n equal to 108, minus 0.3864 and minus 0.5885, BIC minus 336.93, best of 16; n equal to 144, minus 0.4018 and minus 0.5569, AIC minus 483.4; rho one minus 0.3362, rho 12 minus 0.4371, rho 11 and rho 13 0.1470; out of sample, root mean squared error 36.6 against 63.3.
+
+Section 6. Prompt: Intel. Pause. Answer: Q of 12 equal to 18.26, p-value 0.11, on returns; 89.85 on squares; Lagrange multiplier 53.62; the ARCH of order one with alpha zero 0.0111 and alpha one 0.356; unconditional standard deviation 0.1313, Tsay prints 0.1315; kurtosis 4.227.
+
+Prompt: Tsay's Example 3.3. Pause. Answer: 0.000086, 0.1216 and 0.8511; persistence 0.9727, Tsay prints 0.9772; long-run variance 0.003150, standard deviation 0.0561; half-life 25.04 months; kurtosis 6.654; Table 3.1 from 0.0536 to 0.0560.
+
+Prompt: Tsay's IGARCH and the two-pass estimate. Pause. Answer: IGARCH 0.000119, 0.1941 and 0.8059, with forecasts rising by 0.000119 per step; two-pass alpha one hat 0.9583 minus 0.8456, which is 0.1127.
+
+Prompt: Petrobras. Pause. Answer: 2000 to 2021: the ARCH of order one has standard deviation 0.0333; GARCH 2.255 times ten to the minus five, 0.10317 and 0.87681, persistence 0.97997, standard deviation 0.03356, half-life 34.3 days, excess kurtosis 3.48; likelihood ratio 958.8. 2000 to 2025: Gaussian persistence 0.97982; Student t persistence 0.98694 with nu 6.23.
+
+Section 7. Prompt: Petrobras GJR, threshold GARCH and EGARCH. Pause. Answer: GJR in APARCH form with delta 2: good 0.05787, bad 0.13483, indicator 0.07696, persistence 0.97813, literal reading 1.078. Threshold GARCH with delta 1: bad 0.12976, good 0.06306, ratio 2.06. EGARCH: alpha minus 0.05549, gamma 0.18138, beta 0.97741; bad over good ratio 1.117 at one sigma and 1.249 at two.
+
+Prompt: the expected absolute value of epsilon, the kurtosis split and GARCH in mean. Pause. Answer: the square root of two over pi, 0.7979, and 0.7595 for the standardized Student t with 7.04 degrees of freedom; Petrobras Student t: dynamics 1.563, innovations 1.972, total excess 12.55; GARCH in mean c equal to 1.09, standard error 0.818, t equal to 1.33.
+
+Prompt: the AIC ladder. Pause. Answer: GARCH at minus 22297.4, up to the skew t best at minus 22585.7.
+
+Section 8. Prompt: Tsay's Example 12.3. Pause. Answer: posterior means 0.409, 0.454, 0.837 and 0.086; mu h 2.785, sigma h squared 0.2872; expected a squared 18.71 per cent squared, standard deviation 4.33 per cent; kurtosis 3.998; lag-1 correlation 0.0906.
+
+Prompt: Petrobras stochastic volatility with Student t, and the S and P 500 iid fits. Pause. Answer: mu minus 0.419, phi 0.9842, sigma 0.1388, nu 12.13; sigma h squared 0.6146; Gaussian-epsilon kurtosis 5.547; lag-1 correlation of squares 0.1828 against GARCH's 0.2037. S and P 500: Gaussian sigma hat 0.012729; Student t scale 0.005922 with nu hat 2.
+
+Section 9. Prompt: the priors and posterior probability. Pause. Answer: M0 prior inverse gamma with 5 and four times 0.0006617694: mean 0.0006617694, standard deviation 0.000382; prior weight with n equal to 1760, 4 over 884, 0.45 per cent. Standard deviation of mu 0.006627; of alpha 0.01849; of beta 0.00993. M3: posterior probability 0.0034; prior expected nu, delta plus one over lambda, 102.
+
+Prompt: Bayes against maximum likelihood on standardized Petrobras returns. Pause. Answer: persistence 0.97905 against 0.98370; half-life 32.7 against 42.2 days.
+
+
+Support part three. The implementation, described.
+
+This part covers the Python note, which presents the runnable script Notas, L08, L08 python checks. The script uses numpy, scipy and statsmodels, with no R, no arch package and no PyMC, and checks every computation with an assertion against the number printed in the deck, the site page or the book. It runs in about one minute, prints one "ok" line per section, and ends with "ALL L08 CHECKS PASSED", which was the output of the run on October 27th, 2026. The code is not read here; each routine is described by its inputs, its steps, and the trap that breaks it.
+
+What is reused rather than rewritten. The figure script supplies the model functions: the second-order autoregression's autocorrelation and variance, the cycle length, the psi weights, the autocorrelation of a linear process, the partial autocorrelation by the Durbin-Levinson recursion, and the fractionally integrated autocorrelation. It is imported for its functions only; its build step, which would redraw the eight figures, is not called. The companion check script supplies the exact read-out functions of the AR(2) Triangle and the Volatility Dial, and sections 1 and 6 check that the pages' defaults print the numbers derived here. And statsmodels provides an independent path for every hand formula: its exact ARMA autocorrelation, its partial autocorrelation, its augmented Dickey-Fuller test, its seasonal ARIMA routine, and ordinary least squares.
+
+What had to be written. The arch package and PyMC are not installed, so the GARCH likelihoods, normal and standardized Student t, their maximisation, the GARCH simulator, and the random-walk Metropolis sampler for the Bayesian GARCH with Student t errors are written in NumPy and SciPy. The variance recursion is one call to a linear filter. The stochastic volatility part uses simulation and closed forms only; a full stochastic volatility Gibbs sampler, section 8, subsection 6, is described in the notes but not coded.
+
+The conventions. A helper called near passes when a computed value matches a printed one to a stated tolerance, by default half a unit in the third decimal. Monte Carlo checks are seeded and allow about four standard errors. Formulas use Tsay's moving-average sign; statsmodels and R print the opposite sign.
+
+Routine one, the second-order autoregression, the autoregression of order p, the partial autocorrelation and the criteria. Compute the solutions of the characteristic equation at five points: a stationary complex pair, a stationary real pair, the GNP factor, a unit-root edge, and an explosive complex pair. At each, the root-modulus verdict must agree with the triangle conditions, and the sign of the discriminant must agree with whether the roots are complex. Check the autocorrelation recursion for the pair 1.75 and minus 0.80, its 0.9722, 0.9014 and trough of minus 0.1866 at lag 15, against statsmodels' exact autocorrelation; the standard deviation 7.12069; and the cycle lengths 30.09 and 5.836. For GNP, find the roots from the four-decimal coefficients and check them against R's printed roots, then check that R's printed roots give 10.65638 and that Tsay's rounded factor gives 10.62, and check the intercept 0.0047355 and the product of the two factors. The trap: R used more digits than the printed coefficients, so the root check needs a tolerance of five ten-thousandths. Then compute the partial autocorrelation by Durbin-Levinson on the exact autocorrelation, check it against statsmodels, and confirm that it is 0.4286, minus 0.4 and then zero for the pair 0.6 and minus 0.4; simulate a long seeded series of 10,000 and check that the sample partial autocorrelation lies within four over the square root of T of the theory. Check the bands 0.0317 and 0.151, that Table 2.1's criteria pick order 9 for AIC and order 1 for BIC, and that the companion's default read-out prints 0.972, 0.901, 7.121 and 30.09.
+
+Routine two, forecasts, moving averages and ARMA. Run the forecast recursion from the ar2-forecast page's last two observations for 50 steps, and compare the first four means with the closed forms of equations 7 to 10 and with the page's minus 6.7954, minus 7.5023, minus 7.6927 and minus 7.4603. Accumulate the squared psi weights for the variances, 1, 4.0625, 9.1814 and 15.7318, and check the standard deviation at 50 steps, 7.1206, and the limit 7.12069. Rerun the page's Monte Carlo with 10,000 seeded paths and check that, at horizon 50, the mean is within Monte Carlo error of zero and the standard deviation close to 7.12. For the moving average of order one, check minus 0.4412 at theta 0.6, the equality of theta 0.5 and theta 2, and, on a fine grid of theta, that the largest absolute rho one is exactly one half, reached at the absolute value of theta equal to one. For the ARMA of order one and one with 0.8 and 0.4, check gamma zero 1.4444, rho one 0.5231, rho two, and the psi weights 1, 0.4, 0.32 and 0.256 against statsmodels. The trap: statsmodels' moving-average polynomial uses the plus sign, so Tsay's theta enters with a minus.
+
+Routine three, unit roots, Dickey-Fuller and spurious regression. Simulate 20,000 driftless random walks of length 250 with seed 2026, the same seed as the figure, run the regression of the difference on a constant and the lagged level for each, and keep the t ratio of the lagged level. Its 1, 2.5, 5 and 10 per cent quantiles must match Wooldridge's Table 18.2 to within 0.06, and the share below minus 1.645 must be 0.465. Then check, on one simulated random walk, that statsmodels' augmented Dickey-Fuller statistic with no lags equals the hand t ratio, and that the walk is not rejected while a stationary autoregression with coefficient 0.5 is. For spurious regression, simulate 10,000 pairs of independent random walks of length 50, regress one on the other, and check that the two-sided 5 per cent t test rejects about 66.2 per cent of the time. Check the 3M drift numbers, 4.44 and 38.2 months; check the telescoping identity behind the Dickey-Fuller numerator exactly, on one path; and check that the probability that a chi-squared with one degree of freedom falls below one is 0.683.
+
+Routine four, long memory. For d equal to 0.1, 0.25, 0.4 and minus 0.25, compute the autocorrelation by the product recursion and by the gamma-function form, in logs, and check that they agree to nine digits. The trap: for negative d, gamma of d is negative, so the sign has to be carried separately before taking logs. Check that rho one equals d over one minus d, and that Durbin-Levinson applied to this autocorrelation recovers the partial autocorrelation d over k minus d. Check 0.3333, 0.2381 and 0.1948 for d equal to 0.25; rho 100 equal to 0.2673 for d equal to 0.4, with the asymptotic law within 1 per cent; two thirds to the 100th below 3 times ten to the minus 18; and the first four coefficients of one minus B to the 0.25 against the generalised binomial coefficients.
+
+Routine five, seasonal models. Embed the 144 AirPassengers counts printed on the seasonal deck's slide 17 and check their number and their sum, 40,363. Take logs. Fit the airline model with statsmodels' seasonal ARIMA routine on the first 96, 108 and 144 months, and check the coefficients against the deck's and page's to two thousandths and the criteria to two hundredths, including the log-likelihood 148.76 and the AIC minus 483.39. Fit all sixteen models on 108 months and check that BIC picks the airline model. Forecast 36 months from the 108-month fit, exponentiate, and compute the root mean squared error, 36.6; fit the regression of the log on a constant, a trend and eleven month dummies on the same 108 months, forecast and exponentiate, and compute 63.3. For the airline autocorrelation, expand the moving-average polynomial for Johnson and Johnson and for AirPassengers and check, against statsmodels' autocorrelation, the four nonzero values, the product rule, and exact zeros elsewhere. For the seasonal ARIMA with all orders one at period 12, multiply the four autoregressive factors with test values of phi and capital Phi, and check that the polynomial has degree 26 and that the lag-12 and lag-13 coefficients are one plus capital Phi and minus one plus phi times one plus capital Phi: the corrected slide. Finally load Tsay's Decile 1 file, 468 months, build the January dummy from the dates, and check the regression's 0.002864 and 0.125251, their standard errors, and the R squared 0.2016.
+
+Routine six, ARCH and GARCH. The variance recursion is written as one linear filter, checked by hand on a five-point example. The negative log-likelihood is written for normal and standardized Student t innovations; it returns a huge value outside the admissible region, alpha zero positive, alpha one and beta one non-negative, their sum below one, and nu above 2.05. The fitting routine minimises it by Nelder-Mead with the first variance fixed at the sample variance, as Tsay does on printed page 134. The simulator draws a GARCH with normal or standardized Student t innovations after a burn-in. Check Intel's 0.1313 and 4.227 and Petrobras's ARCH standard deviation 0.0333. Check the Gaussian kurtosis formula against a seeded simulation of a million draws, with a small alpha one so that the sample kurtosis converges; the trap is that with a large alpha one the eighth moment does not exist and the sample kurtosis never settles. Check Tsay's Example 3.3: persistence 0.9727, long-run variance 0.003150, standard deviation 0.0561, half-life 25.04, kurtosis 6.654; and that the recursion and the closed form of equation 28 agree and reproduce Table 3.1 from a one-step volatility of 0.0536. Check the two-pass 0.1127, the IGARCH straight line with slope 0.000119, the Petrobras persistence, standard deviation, half-life 34.26, excess kurtosis 3.477, and likelihood ratio 958.8. Then check that the maximum likelihood fit recovers the truth on simulated data, normal and Student t, with the Student t fit achieving the higher log-likelihood on Student t data; and fit Tsay's daily S and P 500 file, 2515 days from 1999 to 2008, where the Gaussian fit gives alpha zero about 1.01 times ten to the minus six, alpha one 0.0710 and beta one 0.9238, persistence 0.9948, and the Student t fit has the higher log-likelihood. Finally check that the Volatility Dial's default read-out prints 0.9727, 25.04, 5.61 and 3.654.
+
+Routine seven, asymmetry and tails. With the Petrobras APARCH coefficients at delta equal to 2, check the good-news 0.05787, the bad-news 0.13483, the indicator coefficient 0.07696 and the persistence 0.97813, and check that the literal indicator reading exceeds one. Check, on a grid of shocks, that the APARCH news-impact curve and the same curve written in GJR form are identical. Check the threshold GARCH coefficients 0.12976 and 0.06306, and the EGARCH ratios 1.117 and 1.249 and the shifts 0.23687 and 0.12589. Compute the expected absolute value of a standard normal by numerical integration and check the square root of two over pi; compute the standardized Student t's expected absolute value by formula and by integration and check 0.7595 at nu equal to 7.04. Compute Tiao's kurtosis in its general form and its Student t form, check that they agree, that the dynamics part is 1.563 and the total 12.55, and that the fourth-moment condition holds. Recompute the AIC ladder, check that the skew t wins and that Gaussian GARCH sits at minus 22297.44, and that rugarch's per-observation AIC times 5167 gives minus 22336.4.
+
+Routine eight, stochastic volatility. A small function returns the second moment, the kurtosis and the lag-1 correlation of squares from the closed forms of equations 5 to 9. Check Tsay's Example 12.3: mu h 2.785, sigma h squared 0.2872, expected a squared 18.71, standard deviation 4.33, kurtosis 3.998, lag-1 correlation 0.0906. Check Petrobras: sigma h squared 0.6146, kurtosis 5.547, correlation 0.1828. Then check the autocorrelation formula by Monte Carlo, drawing four million independent pairs of log variances from their bivariate normal at lags 1 and 20, which isolates the formula from the very slow convergence of sample autocorrelations of squares when phi is 0.984; that is the trap this design avoids. Simulate a two-million-step path with Tsay's milder parameters and check the second moment, the kurtosis and the lag-1 correlation in the time domain. Compute the mean and variance of the log of a squared standard normal by numerical integration, minus 1.2704 and pi squared over two; and check the completing-the-square identity behind Tsay's equation 12.23 at a test point.
+
+Routine nine, Bayesian GARCH. Check the M0 prior's mean and standard deviation, 0.000382, and the prior weight, 4 over 884, 0.45 per cent. On a simulated sample of 1760 returns, check that the conjugate posterior mean equals the weighted average of the prior mean and the sample mean square, to machine precision. Check the M1 and M2 prior standard deviations, 0.006627 and 0.00993. Then write the log posterior of bayesGARCH's model: h zero and r zero equal to zero, so h one is alpha zero; the conditional variance equal to h sub t through the varrho scaling; truncated normal priors with variance 1000; nu minus two exponential with rate 0.01; and no stationarity constraint. Sample it by random-walk Metropolis started at the maximum likelihood estimate, on 2000 simulated observations with truth alpha zero 0.02, alpha one 0.08, beta 0.90 and nu 7, for 20,000 iterations with the first 5000 discarded. The run of October 27th, 2026 gave an acceptance rate of 0.20, posterior means of 0.020, 0.079, 0.908 and 5.84, and a posterior probability that alpha one plus beta exceeds one of 0.041. The checks: the acceptance rate between 0.15 and 0.6, every posterior mean within four posterior standard deviations of the truth, the probability of non-stationarity below 0.1, and the posterior mean persistence within 0.02 of the maximum likelihood persistence. The note's remark: bayesGARCH itself uses a better proposal, Ardia and Hoogerheide's generalized least squares approximation; this sampler is the simplest correct one, not a fast one. Finally check the page's Bayes and maximum likelihood persistences, 0.979051 and 0.983696, and half-lives, 32.74 and 42.17 days.
+
+The run's printed lines, in words. Section 1 ok, with the cycles 30.09, 10.62 and 10.656. Section 2 ok, with the 7.12 limit and the ARMA's 0.5231. Section 3 ok, with Dickey-Fuller quantiles minus 3.45, minus 3.16, minus 2.87 and minus 2.58, false rejection 46.5 per cent, and spurious 66 per cent. Section 4 ok, with rho 100 at d equal to 0.4 equal to 0.267. Section 5 ok, with root mean squared errors 36.6 against 63.3 and the January coefficient 0.1253. Section 6 ok, with the S and P 500 persistence 0.9948. Section 7 ok, with 0.7595 and Tiao's 12.55. Section 8 ok. Section 9 ok, with acceptance 0.20, posterior means 0.02, 0.079, 0.908 and 5.838, and a probability of 0.0406. Then: all L08 checks passed.
+
+
+Support part four. Reading route and exercises.
+
+Addresses only. The statements are in the books.
+
+Reading, by section.
+Section 1, the second-order autoregression and the autoregression of order p: the ar-ma deck, slides 18 to 37, and the site page ar-ma. Tsay, section 2.4.1, printed pages 40 to 46, with Figure 2.4 on printed page 43 and Example 2.1 on printed pages 42 to 45; section 2.4.2, printed pages 46 to 53, with Table 2.1 on printed page 47; section 2.4.3, printed pages 53 to 54; and, as a graduate item, section 2.6.3, printed pages 66 to 68. Wooldridge, section 11.1, printed pages 345 to 348.
+Section 2, forecasting, moving averages and ARMA: the ar-ma deck, slides 38 to 52, and the site page ar2-forecast. Tsay, section 2.4.4, printed pages 54 to 57, with Table 2.2; section 2.5, printed pages 57 to 64, with Table 2.3; section 2.6, printed pages 64 to 71. Wooldridge, section 11.1, printed pages 345 to 348.
+Section 3, unit roots: the unitroot deck, slides 1 to 31, and the site page unitroot. Tsay, section 2.7, printed pages 71 to 81. Wooldridge, sections 18.2 and 18.3, printed pages 574 to 580, with Tables 18.2 and 18.3.
+Section 4, long memory: the unitroot deck, slides 32 to 38. Tsay, section 2.11, printed pages 101 to 103; and section 3.13, printed page 154, as a graduate item.
+Section 5, seasonal models: the seasonal deck and the site page on AirPassengers seasonal models. Tsay, section 2.8, printed pages 81 to 90, with Examples 2.3 and 2.4. Wooldridge, section 10.5e, printed pages 336 to 338.
+Section 6, ARCH and GARCH: the site pages garchmodeling and garch-sv-petrobras. Tsay, sections 3.1 to 3.3, printed pages 110 to 115; section 3.4, printed pages 115 to 131, with Example 3.1; section 3.5, printed pages 131 to 140, with Example 3.3 and Table 3.1 on printed page 138; section 3.6, printed pages 140 to 142; section 3.16, printed pages 165 to 166. Wooldridge, section 12.6, printed pages 391 to 396, with Example 12.8.
+Section 7, the GARCH family: the site page garchmodeling, its glossary of models. Tsay, section 3.4, printed pages 121 to 122; section 3.7, printed page 142; section 3.8, printed pages 143 to 148; section 3.9, printed page 149; section 3.16, printed pages 165 to 166.
+Section 8, stochastic volatility: the site pages sp500-gaussian-student-SV-models, GARCH11-SVar1, sections 5 to 5.2, and garch-sv-petrobras, section 5. Tsay, section 3.12, printed pages 153 to 154; section 3.13, printed page 154; section 12.7.1, printed pages 636 to 643, with Example 12.3.
+Section 9, Bayesian GARCH: the bayes-garch deck, 22 slides, and the site page GARCH11-SVar1, sections 4 and 4.1. Tsay, section 12.7, printed page 637, and section 3.4, printed page 121, for the standardized Student t.
+Background from Class 1: the review of autoregressions and vector autoregressions, Class 1, section 7, and the first Bayesian example, Class 1, section 4.
+
+Practice exercises, by number and printed page.
+Tsay, chapter 2: exercises 2.1, 2.2 and 2.3, printed page 104; exercises 2.4, 2.5 and 2.6, printed page 105. They go with sections 1 and 2 for the first four, section 4 for exercise 2.5, and section 5 for exercise 2.6.
+Wooldridge, chapter 18: computer exercise 18.C13, printed page 604, with section 3.
+Tsay, chapter 3: exercises 3.3 and 3.4, printed page 168; exercise 3.6, printed page 169; exercises 3.11 and 3.12, printed page 170; exercise 3.14, printed page 171. They go with section 6, with 3.14 also for section 7, and 3.3 and 3.4 for the Student t likelihood of sections 6 and 9.
+Wooldridge, chapter 12: problem 12.4, printed page 397, with section 6.
+Worked solutions to this list are in the project's book-exercise solutions file for Class 8.
+
+
+Support part five. Self-test: thirty true or false items.
+
+This part covers the original self-test of the pitfalls note; no textbook exercise is reproduced. Scoring follows the course rule: the true or false score is the maximum of zero and the number correct minus half the number wrong, times the item value; blank items do not count as wrong. Difficulty is marked easy, medium or hard. The numbers are illustrative unless a note is cited. After each statement, pause the player, decide true or false and say why, then resume for the answer.
+
+Block A, autoregressive, moving-average and ARMA models. The setting for items 1 to 6: a central-bank analyst fits y sub t equals 1.2 y sub t minus one minus 0.5 y sub t minus two plus a sub t, with sigma equal to one, to quarterly output-gap data, and a colleague proposes y sub t equals a sub t plus 0.9 a sub t minus one instead.
+
+Item 1, easy. The second-order autoregression is stationary. Pause.
+Answer: true. Phi two, minus 0.5, is below one minus 1.2, which is minus 0.2; it is below 2.2; and it is above minus one. The point is inside the triangle, section 1, equation 18.
+
+Item 2, medium. The second-order autoregression implies stochastic cycles of average length about 11 quarters. Pause.
+Answer: true. Phi one squared plus four phi two is 1.44 minus 2, which is minus 0.56, negative: complex roots. The inverse cosine of 1.2 over twice the square root of 0.5, which is the inverse cosine of 0.8485, is 0.5576, so k is two pi over 0.5576, which is 11.27 quarters, section 1, equation 14.
+
+Item 3, medium. The second-order autoregression's lag-1 autocorrelation is 0.8. Pause.
+Answer: true. Rho one is phi one over one minus phi two, 1.2 over 1.5, which is 0.8, section 1, equation 7.
+
+Item 4, medium. The colleague's moving average of order one has lag-1 autocorrelation 0.9. Pause.
+Answer: false. Rho one is 0.9 over one plus 0.81, which is 0.497, below the one-half bound; no moving average of order one reaches 0.9, section 2, equation 17.
+
+Item 5, hard. The moving average y sub t equals a sub t plus one over 0.9 times a sub t minus one has the same autocorrelation as the colleague's model, so the data cannot tell them apart; the convention is to report the invertible one. Pause.
+Answer: true. Theta and one over theta give the same theta over one plus theta squared: 1.111 over one plus 1.235 is 0.497. Only the absolute value of theta below one is invertible, section 2, equation 19.
+
+Item 6, medium. The 10-quarter-ahead forecast-error variance of the second-order autoregression exceeds its unconditional variance. Pause.
+Answer: false. The forecast-error variance, sigma squared times the sum of squared psi weights below ell, increases to gamma zero and never exceeds it, section 2, equation 28.
+
+Block B, identification and forecasting.
+
+Item 7, easy. For an autoregression of order three, the theoretical partial autocorrelation is zero from lag 4 on. Pause.
+Answer: true. Phi ell comma ell is zero for ell above p, Tsay printed page 47 and section 1, subsection 8.
+
+Item 8, medium. BIC penalises each parameter by the log of T over T per observation, so with T equal to 996 it tends to choose smaller models than AIC. Pause.
+Answer: true. Per parameter, the penalty is 2 for AIC against the log of 996, 6.90, for BIC; Table 2.1 has AIC choosing 9 and BIC choosing 1, section 1, equation 25.
+
+Item 9, medium. For a moving average of order two, all forecasts beyond two steps equal the unconditional mean. Pause.
+Answer: true. The ell-step forecast is c zero for ell above q, Tsay printed page 63 and section 2, subsection 7.
+
+Item 10, hard. The autocorrelation of an ARMA of order one and one with phi one equal to 0.8 decays geometrically at rate 0.8 from lag 1, exactly as a first-order autoregression with phi equal to 0.8. Pause.
+Answer: false. Rho ell equals phi one rho ell minus one only from lag 2; rho one differs, 0.5231 for the pair 0.8 and 0.4 against 0.8, section 2, equation 25.
+
+Block C, unit roots and long memory. The setting for items 11 to 16: a pension fund's analyst runs adf.test on 60 years of log house prices and gets t equal to minus 2.1, with p-value 0.53.
+
+Item 11, easy. The analyst may conclude that house prices have a unit root. Pause.
+Answer: false. Non-rejection is not acceptance; Dickey-Fuller tests have little power near one, Wooldridge printed page 576 and section 3, subsection 6.3.
+
+Item 12, medium. Had the analyst compared t equal to minus 2.1 with minus 1.645, he would have rejected a unit root, and that rejection would have been too frequent under the null. Pause.
+Answer: true. Minus 2.1 is below minus 1.645, so the rule rejects; under a true unit root that rule rejects about 46 per cent of the time, section 3, subsection 5.5.
+
+Item 13, medium. If log prices follow a random walk with drift, the conditional variance of the 20-year-ahead forecast is 20 times that of the 1-year-ahead forecast, with annual data. Pause.
+Answer: true. The forecast-error variance is ell sigma squared: 20 sigma squared against sigma squared, section 3, equation 6. The drift shifts the mean only.
+
+Item 14, hard. In the augmented Dickey-Fuller regression of a third-order autoregression, the coefficient on x sub t minus one in the difference form equals phi one plus phi two plus phi three minus one, so a unit root means phi one plus phi two plus phi three equals one. Pause.
+Answer: true. Section 3, equations 25 to 27: beta equals minus phi of one, which is zero if and only if the phi i sum to one.
+
+Item 15, medium. A stationary fractionally integrated model with d equal to 0.3 has an autocorrelation that decays faster than any first-order autoregression's at long lags. Pause.
+Answer: false. It decays hyperbolically, rho k behaving like a constant times k to the minus 0.4, which is slower than any geometric phi to the k, section 4, equation 11.
+
+Item 16, medium. Regressing the log house-price index on an unrelated random walk would yield a significant slope more often than 5 per cent of the time. Pause.
+Answer: true. Spurious regression: 66 per cent rejections at n equal to 50, Wooldridge section 18.3 and section 3, subsection 8.
+
+Block D, seasonal models.
+
+Item 17, easy. In the airline model with s equal to 12, the autocorrelation of w sub t, the doubly differenced series, is nonzero only at lags 1, 11, 12 and 13. Pause.
+Answer: true. Section 5, equations 6 to 12.
+
+Item 18, medium. In the airline model, rho 13 equals rho one times rho 12. Pause.
+Answer: true. Gamma 13 is theta capital Theta sigma squared, and the product form of the variance gives rho 13 equal to rho one times rho 12, section 5, equation 12.
+
+Item 19, hard. When the exact-likelihood estimates of a seasonal autoregressive and a seasonal moving-average factor are both close to one and nearly cancel, the seasonality is better modelled with dummy variables. Pause.
+Answer: true. For Decile 1, the seasonal autoregressive 0.951 and moving-average 0.997 cancel, and a January dummy, 0.1253, removes lags 12, 24 and 36, Tsay Example 2.4 and section 5, subsection 5.
+
+Item 20, medium. Taking logs of AirPassengers before fitting the airline model is meant to turn a multiplicative seasonal pattern into an additive one. Pause.
+Answer: true. The seasonal amplitude grows with the level, and the log stabilises it, the AirPassengers page and Tsay printed page 83.
+
+Block E, ARCH and GARCH. The setting for items 21 to 26: a bank's risk desk fits a Gaussian GARCH of order one and one to daily returns, in per cent, with alpha zero 0.02, alpha one 0.10 and beta one 0.85.
+
+Item 21, easy. The unconditional daily variance is 0.4, in per cent squared. Pause.
+Answer: true. 0.02 over one minus 0.95 is 0.4, section 6, equation 22.
+
+Item 22, medium. A volatility shock has a half-life of about 13.5 days. Pause.
+Answer: true. The log of 0.5 over the log of 0.95 is 13.5, section 6, equation 29.
+
+Item 23, medium. The unconditional kurtosis of returns is finite and above 3. Pause.
+Answer: true. One minus two times 0.01 minus 0.95 squared is 0.0775, positive; the Gaussian excess kurtosis is 0.06 over 0.0775, which is 0.774, so the kurtosis is 3.77, section 6, equation 25.
+
+Item 24, hard. If today's one-day-ahead variance forecast is 1.4, the three-day-ahead forecast is 1.1. Pause.
+Answer: false. The ell-step forecast is 0.4 plus 0.95 to the ell minus one times 1.4 minus 0.4. With 0.95 squared equal to 0.9025, the three-day forecast is 0.4 plus 0.9025 times 1.0, which is 1.3025, not 1.1. The gap to the long-run variance shrinks by only 5 per cent per day, section 6, equation 28.
+
+Item 25, medium. Because the innovations are Gaussian, the unconditional distribution of returns is Gaussian. Pause.
+Answer: false. Conditionally Gaussian, unconditionally fat-tailed, as item 23 showed.
+
+Item 26, medium. The model implies that a minus 3 per cent shock and a plus 3 per cent shock raise tomorrow's variance by the same amount. Pause.
+Answer: true. GARCH depends on a sub t minus one squared only; asymmetry needs GJR or EGARCH, section 7, subsection 1.
+
+Block F, asymmetry, stochastic volatility and Bayes.
+
+Item 27, medium. In an EGARCH with the log of sigma t squared equal to omega plus alpha z sub t minus one plus gamma times the absolute value of z sub t minus one minus its expected value, plus beta times the log of sigma t minus one squared, a negative alpha means bad news raises volatility more than good news. Pause.
+Answer: true. The bad over good ratio at absolute z equal to c is e to the minus two alpha c, which is above one when alpha is negative; for Petrobras, 1.117 at c equal to one, section 7, equation 14.
+
+Item 28, medium. In a stochastic volatility model with a first-order autoregression for the log variance and Gaussian epsilon, the unconditional kurtosis is three times e to the sigma h squared, where sigma h squared is the stationary variance of the log variance. Pause.
+Answer: true. The expected value of a to the fourth over the squared expected value of a squared is three e to the two mu h plus two sigma h squared over e to the two mu h plus sigma h squared, section 8, equation 7.
+
+Item 29, hard. The stochastic volatility likelihood can be evaluated by the same one-pass recursion as the GARCH likelihood, once the parameters are given. Pause.
+Answer: false. The volatility path is latent with its own shock; the likelihood is an n-dimensional integral, section 8, equation 10, handled by Markov chain Monte Carlo or filtering.
+
+Item 30, medium. With an inverse-gamma prior with shape 5 and n equal to 1760 observations, the prior's weight in the posterior mean of sigma squared is below 1 per cent. Pause.
+Answer: true. The weight is a minus one over a minus one plus n over two, which is 4 over 884, 0.45 per cent, section 9, equation 5.
+
+
+Support part six. Glossary.
+
+Weak stationarity: a constant mean and an autocovariance that depends only on the lag.
+Back-shift operator: B, which turns r sub t into r sub t minus one.
+Psi weights: the coefficients with which past shocks enter today's value in the moving-average representation; they are also the impulse response.
+Pi weights: the coefficients of the autoregressive representation, which express the shock through current and past values.
+Yule-Walker equation: the autocorrelation obeys the same difference equation as the series without its shock.
+Characteristic equation: one minus phi one x minus, and so on, minus phi p x to the p, equal to zero; stationarity needs all its solutions outside the unit circle.
+Characteristic roots: in Tsay's language, the inverses of those solutions, which must lie inside the unit circle.
+Stationarity triangle: the region in the plane of phi one and phi two where a second-order autoregression is stationary.
+Stochastic cycle: the damped wave in the autocorrelation and forecasts produced by complex roots, with average length k.
+Partial autocorrelation: the last coefficient of an autoregression of order ell; it cuts off after lag p for an autoregression of order p.
+AIC and BIC: the log residual variance plus a penalty per parameter of 2 over T and the log of T over T, minimised over the order.
+Conditional mean forecast: the forecast that minimises the expected squared error given the information at the origin.
+Mean reversion: the convergence of forecasts to the mean, and of forecast-error variances to the variance, for a stationary series.
+Half-life: the horizon at which half of a deviation, or of a volatility gap, has died out: the log of 0.5 over the log of the persistence.
+Moving average of order q: a finite combination of current and q past shocks, always stationary, with an autocorrelation that cuts off after lag q.
+Invertibility: the property that the shock can be recovered from current and past values with decaying weights; for an MA of order one, absolute theta below one.
+ARMA: a model with both autoregressive and moving-average parts; neither its autocorrelation nor its partial autocorrelation cuts off.
+Extended autocorrelation function: Tsay and Tiao's two-way table for choosing the ARMA orders; graduate layer.
+Random walk: the first-order autoregression with coefficient one; shocks are permanent and the forecast variance grows like ell sigma squared.
+Drift: the constant of a random walk, which becomes a time slope rather than a mean.
+Trend-stationary: a deterministic trend plus a stationary deviation, with bounded variance and transitory shocks.
+Integrated of order d: stationary after d differences.
+ARIMA: a model whose d-th difference is a stationary, invertible ARMA.
+Dickey-Fuller test: the t ratio of phi one minus one in a regression of the level on its lag, with its own non-normal critical values.
+Augmented Dickey-Fuller test: the Dickey-Fuller regression with lagged differences added to clean up serial correlation.
+Spurious regression: a significant-looking regression between independent integrated series, caused by a random-walk error.
+Cointegration: a stationary combination of integrated series; named only, not on the class schedule.
+Long memory: an autocorrelation that decays hyperbolically, like k to the two d minus one, while the series stays stationary.
+Fractional differencing: the operator one minus B to the d for non-integer d, defined by the binomial series.
+ARFIMA: an ARMA applied to a fractionally differenced series.
+Seasonal difference: x sub t minus x sub t minus s.
+Airline model: the seasonal ARIMA with orders zero, one, one by zero, one, one, two differences and two moving-average terms.
+Multiplicative seasonal model: a model whose regular and seasonal polynomials multiply, giving side autocorrelations equal to rho one times rho s.
+Deterministic seasonality: a fixed seasonal pattern, signalled by a seasonal moving-average coefficient near one, and best captured by dummies.
+Volatility: the conditional standard deviation of the return, not directly observed.
+ARCH: a conditional variance that is a linear function of past squared shocks.
+GARCH: ARCH plus lagged conditional variances; an ARMA model for the squared shock.
+Persistence: alpha one plus beta one, the rate at which variance forecasts return to the long-run variance.
+IGARCH: GARCH with persistence exactly one; the long-run variance does not exist and forecasts rise linearly.
+RiskMetrics: IGARCH with no constant, which is exponential smoothing of squared shocks.
+Variance surprise: eta sub t, the squared shock minus its conditional variance, a martingale difference.
+Standardized Student t: a Student t rescaled to variance one, so that sigma t squared stays the conditional variance.
+News-impact curve: next period's variance as a function of today's standardized shock, at the long-run volatility.
+Leverage: the tendency of bad news to raise volatility more than good news of the same size.
+GJR or threshold GARCH: GARCH with an extra coefficient on negative shocks through an indicator.
+APARCH: the asymmetric power GARCH; what fGarch fits when leverage is switched on.
+EGARCH: a model for the log variance driven by a weighted innovation with a signed term; no positivity constraints are needed.
+GARCH in mean: a model with the conditional variance in the mean equation, as a risk premium.
+Generalized error distribution: a family that contains the normal and, at shape one, the Laplace.
+Tiao's formula: the split of total kurtosis into innovation tails, dynamics tails and their interaction.
+Stochastic volatility: a model in which the log variance follows its own autoregression with its own shock.
+Observation-driven against parameter-driven: volatility determined by past data, as in GARCH, against volatility with its own random shock, as in stochastic volatility.
+Lognormal moment: the expected value of e to the k X for normal X, e to the k m plus k squared s squared over two.
+Latent path: the unobserved sequence of volatilities, treated as unknowns in Markov chain Monte Carlo.
+Griddy Gibbs: drawing from a non-standard one-dimensional conditional by evaluating it on a grid.
+Quasi-likelihood by linearisation: treating the log of a squared shock as a linear state-space model and applying the Kalman filter.
+Training-sample prior: a prior built from an earlier period of data and inflated so that the later data dominate.
+Inverse gamma: the conjugate prior for a normal variance, with mean b over a minus one.
+Precision-weighted mean: a posterior mean that averages the data and the prior with weights equal to their precisions.
+Metropolis-Hastings: a sampler that proposes a move and accepts it with probability given by the posterior ratio.
+Scale mixture of normals: writing a Student t as a normal whose variance is itself drawn from an inverse gamma.
+Posterior probability of stationarity: the share of posterior draws with alpha one plus beta below one; 0.9966 for Petrobras.
+Likelihood ridge: a curved direction along which the likelihood is nearly flat, which moves posterior means away from the mode.
+
+
+Support part seven. The whole class in five lines.
+
+One. A linear time-series model is a recipe for psi weights and the roots decide everything: inside the triangle the second-order autoregression is stationary, complex roots give cycles of 30.09 periods for the slides' pair and 10.62 quarters for GNP, and the partial autocorrelation, AIC and BIC choose the order.
+
+Two. Forecasts are conditional means whose error variance, sigma squared times the sum of squared psi weights, rises to gamma zero, a standard deviation of 7.12 for the ar2-forecast model; moving averages cut off in the autocorrelation, obey the one-half bound, and are reported in invertible form.
+
+Three. At a unit root every shock is permanent and the forecast variance grows like ell sigma squared; the Dickey-Fuller ratio needs minus 2.86, not minus 1.645, which would reject a true unit root 46.5 per cent of the time; long memory decays like k to the two d minus one; and the airline model differences twice and keeps two moving-average terms, with side lags rho one times rho s.
+
+Four. Returns are uncorrelated but their squares are not: GARCH is an ARMA for the squared shock, with persistence near one, 0.9727 for Tsay's S and P 500 and 0.980 for Petrobras, kurtosis from normal shocks, asymmetry worth 22 log-likelihood points and fat-tailed innovations worth 141.
+
+Five. Stochastic volatility gives the variance its own shock, kurtosis three times e to the sigma h squared, and a likelihood that only Markov chain Monte Carlo can handle; and Bayesian GARCH turns "is it stationary?" into a posterior probability, 0.9966 for Petrobras.
+
+This is the end of the Class 8 narration.

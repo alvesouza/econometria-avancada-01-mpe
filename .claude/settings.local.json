@@ -1,0 +1,28 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(ls)",
+      "Bash(ls Map Notes)",
+      "Skill(notes)",
+      "Skill(notes:*)",
+      "Bash(sed -n '20,25p' _part_a.py)",
+      "Bash(sed -n '20,29p' _part_b.py)",
+      "Bash(python tools/check_note_links.py)",
+      "Bash(wc -l rules/00_estilo_avaliacao.md rules/06_classificacao_validacao.md rules/09_course_program.md Map/class-plan.md Map/study-guide.md Aula/COURSE.md)",
+      "Bash(ls rules *)",
+      "Bash(ls Notas)",
+      "Bash(ls Notas/L01)",
+      "Bash(time python Notas/L01/L01_python_checks.py)",
+      "Bash(python -c \"import numpy, scipy, statsmodels, matplotlib, sys; print\\(sys.version, numpy.__version__, scipy.__version__, statsmodels.__version__\\)\")",
+      "Bash(ls tools *)",
+      "Bash(head -30 tools/check_note_links.py)",
+      "Bash(python -)",
+      "Bash(time python Notas/L02/L02_python_checks.py)",
+      "Bash(python -c ' *)",
+      "Bash(sed -i 's#figures/_part_a\\\\.py#figures/make_figures.py#g' L02-01-prediction-error-bias-variance.md L02-03-cross-validation-motorcycle.md)",
+      "Bash(sed -i 's/\"100 beta shortcut \\(note 06 rounds it to -26.9\\)\"/\"100 beta shortcut \\(note 06 section 4\\)\"/' L02_python_checks.py L02-09-python.md)",
+      "Bash(grep -c \"make_figures.py\" L02-01-prediction-error-bias-variance.md L02-03-cross-validation-motorcycle.md)",
+      "Bash(grep -n \"100 beta shortcut\" L02_python_checks.py L02-09-python.md)"
+    ]
+  }
+}

@@ -1,0 +1,313 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>The Flexibility Dial</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,500;8..60,650&family=Public+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: controls rail on the left, the answer then two panels on the right; one column under 860px.
+   Colour roles: ink = true f, blue = average fit and variance, red = bias, green = training error, grey = noise floor. */
+:root{
+  --bg:#f4f6f9; --panel:#ffffff; --ink:#18202d; --muted:#586377; --line:#d8dee8; --soft:#eef1f6;
+  --fit:#2b63c4; --band:#2b63c4; --bias:#c63a30; --train:#23864d; --floor:#8a94a6; --opt:#a87b00;
+  --focus:#2b63c4;
+  --display:"Source Serif 4", Georgia, "Times New Roman", serif;
+  --body:"Public Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono:"JetBrains Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#10141b; --panel:#171d27; --ink:#e5e9f0; --muted:#9aa5b8; --line:#2a3342; --soft:#1e2532;
+  --fit:#74a3ff; --band:#74a3ff; --bias:#ff6e61; --train:#4fc486; --floor:#7d8799; --opt:#e9c04a; --focus:#74a3ff; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#10141b; --panel:#171d27; --ink:#e5e9f0; --muted:#9aa5b8; --line:#2a3342; --soft:#1e2532;
+  --fit:#74a3ff; --band:#74a3ff; --bias:#ff6e61; --train:#4fc486; --floor:#7d8799; --opt:#e9c04a; --focus:#74a3ff; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font:15px/1.5 var(--body);margin:0}
+.wrap{max-width:1180px;margin:0 auto;padding-left:max(16px, env(safe-area-inset-left, 0px));padding-right:max(16px, env(safe-area-inset-right, 0px));padding-block:24px 40px}
+header{display:grid;gap:4px;margin-bottom:18px}
+.eyebrow{font:600 12px/1.3 var(--body);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+h1{font:650 clamp(26px,4vw,36px)/1.1 var(--display);margin:0;text-wrap:balance}
+.lede{color:var(--muted);max-width:68ch;margin:0}
+.grid{display:grid;grid-template-columns:320px minmax(0,1fr);gap:20px;align-items:start}
+@media (max-width:860px){.grid{grid-template-columns:minmax(0,1fr)}}
+.rail{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px;display:grid;gap:18px}
+.group{display:grid;gap:12px}
+.group h2{font:600 12px/1.2 var(--body);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:0}
+.ctl{display:grid;gap:4px}
+.ctl .top{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.ctl label{font-weight:600}
+.ctl label i{font-family:var(--display);font-weight:500}
+.ctl output{font:600 14px var(--mono);font-variant-numeric:tabular-nums}
+.ctl p{margin:0;font-size:13px;color:var(--muted)}
+input[type=range]{width:100%;accent-color:var(--ink)}
+input:focus-visible,button:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+button{font:600 13px var(--body);background:var(--soft);color:var(--ink);border:1px solid var(--line);border-radius:6px;padding:7px 12px;cursor:pointer}
+button:hover{border-color:var(--muted)}
+main{display:grid;gap:16px;min-width:0}
+.answer{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px 18px;display:grid;gap:6px}
+.answer .lab{font-size:13px;color:var(--muted)}
+.answer .big{font:600 clamp(34px,6vw,48px)/1 var(--mono);font-variant-numeric:tabular-nums}
+.answer .big small{font:500 15px var(--body);color:var(--muted);margin-left:8px}
+.answer .verdict{font:500 17px/1.4 var(--display);max-width:62ch}
+.answer .ident{font:13px/1.6 var(--mono);color:var(--muted);font-variant-numeric:tabular-nums;overflow-x:auto;white-space:nowrap}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px 16px;min-width:0}
+.panel h3{font:600 15px/1.3 var(--body);margin:0 0 2px}
+.panel .sub{font-size:13px;color:var(--muted);margin:0 0 8px}
+svg{display:block;width:100%;height:auto;max-width:100%}
+svg text{fill:var(--muted);font:12px var(--body)}
+svg .val{font:600 12px var(--mono);fill:var(--ink)}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{font-size:13px;border:1px solid var(--line);border-radius:999px;padding:4px 10px;color:var(--muted)}
+.chip.on{border-color:var(--opt);color:var(--opt);font-weight:600}
+table.ro{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums}
+table.ro td{padding:5px 4px;border-bottom:1px solid var(--line);font-size:14px}
+table.ro td:last-child{text-align:right;font-family:var(--mono)}
+footer{max-width:1180px;margin:0 auto;padding-left:max(16px, env(safe-area-inset-left, 0px));padding-right:max(16px, env(safe-area-inset-right, 0px));padding-block:0 40px;font-size:13px;color:var(--muted);display:grid;gap:10px}
+footer p{margin:0;max-width:110ch}
+.scroll{overflow-x:auto}
+footer table{border-collapse:collapse;font-size:12.5px;min-width:820px}
+footer th,footer td{border-bottom:1px solid var(--line);padding:4px 8px;text-align:left;vertical-align:top}
+.k{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:5px;vertical-align:-1px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <div class="eyebrow">Econometria Avançada · Class 2 · Fundamentos.pdf slides 16–30 · ISLP §2.2.2</div>
+  <h1>The Flexibility Dial</h1>
+  <p class="lede">Turn the polynomial degree up and watch squared bias fall while variance rises. Expected test error is their sum plus the noise floor σ², and training error keeps falling past the point where test error turns back up.</p>
+</header>
+
+<div class="grid">
+<aside class="rail" aria-label="Controls">
+  <div class="group">
+    <h2>The learner</h2>
+    <div class="ctl"><div class="top"><label for="d">Degree <i>d</i></label><output id="o-d"></output></div>
+      <input id="d" type="range" min="0" max="15" step="1">
+      <p>Order of the OLS polynomial in <i>x</i>. It fits <i>d</i> + 1 coefficients, the analogue of the spline's gl. The maximum is min(15, <i>n</i> − 2) so the fit never interpolates.</p></div>
+  </div>
+  <div class="group">
+    <h2>The training sample</h2>
+    <div class="ctl"><div class="top"><label for="n">Training size <i>n</i></label><output id="o-n"></output></div>
+      <input id="n" type="range" min="10" max="200" step="1">
+      <p>Number of design points, equally spaced over 8 to 18 years of schooling. More points shrink the variance at every degree.</p></div>
+    <div class="ctl"><div class="top"><label for="sig">Noise sd <i>σ</i></label><output id="o-sig"></output></div>
+      <input id="sig" type="range" min="0.5" max="15" step="0.5">
+      <p>Standard deviation of ε in thousand R$ per year. It scales the variance and sets the irreducible floor σ².</p></div>
+  </div>
+  <button id="reset" type="button">Reset to defaults</button>
+</aside>
+
+<main>
+  <section class="answer" aria-live="polite">
+    <div class="lab">Expected test error &nbsp;E[(<i>Y</i> − <i>f̂</i>(<i>X</i>))²], averaged over <i>X</i> ~ U(8, 18)</div>
+    <div class="big"><span id="etest"></span><small>(thousand R$)²</small></div>
+    <div class="verdict" id="verdict"></div>
+    <div class="ident" id="ident1"></div>
+    <div class="ident" id="ident2"></div>
+    <div class="chips" id="chips"></div>
+  </section>
+
+  <section class="panel">
+    <h3>The truth, the average fit and its spread</h3>
+    <p class="sub"><span class="k" style="background:var(--ink)"></span><i>f</i>(<i>x</i>) &nbsp; <span class="k" style="background:var(--fit)"></span>E <i>f̂</i>(<i>x</i>) &nbsp; <span class="k" style="background:var(--band);opacity:.3"></span>E <i>f̂</i>(<i>x</i>) ± 2 sd. Ticks on the axis are the design points. The gap between the black and blue curves is the bias; the band's width is the variance. <span id="clipnote"></span></p>
+    <svg id="fitplot" viewBox="0 0 720 300" role="img" aria-label="True regression function, average fitted polynomial and two-standard-deviation band"></svg>
+  </section>
+
+  <section class="panel">
+    <h3>Error against flexibility</h3>
+    <p class="sub"><span class="k" style="background:var(--ink)"></span>expected test error &nbsp; <span class="k" style="background:var(--bias)"></span>avg bias² &nbsp; <span class="k" style="background:var(--fit)"></span>avg variance &nbsp; <span class="k" style="background:var(--train)"></span>expected training error &nbsp; <span class="k" style="background:var(--floor)"></span>σ². Log scale; the ring marks the optimal degree.</p>
+    <svg id="errplot" viewBox="0 0 720 300" role="img" aria-label="Bias squared, variance, test and training error against polynomial degree"></svg>
+  </section>
+
+  <section class="panel">
+    <h3>Every term at the current degree</h3>
+    <p class="sub">Squared errors in (thousand R$ per year)².</p>
+    <table class="ro"><tbody id="tbl"></tbody></table>
+  </section>
+</main>
+</div>
+
+<footer>
+  <p><strong>Belongs to:</strong> Class 2 notes, <code>Notas/L02/</code> (bias–variance decomposition, <code>L02-01-prediction-error-bias-variance.md</code>; polynomial learner, <code>L02-03-cross-validation-motorcycle.md</code>).</p>
+  <p><strong>Model:</strong> <i>Y</i> = <i>f</i>(<i>X</i>) + ε, &nbsp;<i>f</i>(<i>x</i>) = 45 tanh(<i>x</i>/1.9 − 7) + 57, &nbsp;ε ~ N(0, σ²), <i>x</i> in years of schooling, <i>Y</i> in thousand R$ per year (Fundamentos.pdf slide 21).
+    Decomposition E[(<i>Y</i> − <i>f̂</i>(<i>X</i>))²] = ∫ bias²[<i>f̂</i>(<i>x</i>)] d<i>F<sub>X</sub></i> + ∫ Var[<i>f̂</i>(<i>x</i>)] d<i>F<sub>X</sub></i> + σ² (slides 16–18); trade-off and Monte Carlo design (slides 19, 25–27); training error falls monotonically (slides 28–30).</p>
+  <p><strong>What this page changes:</strong> Fundamentos fits a smoothing spline (<code>smooth.spline</code>, flexibility gl) to random <i>X</i> ~ U(8, 18) and approximates every term by Monte Carlo. This page uses the polynomial learner of the motorcycle deck (<code>motorcyle-polynomialregression.pdf</code> slides 4 and 11) on a fixed design <i>x<sub>i</sub></i> = 8 + 10(<i>i</i> − 1)/(<i>n</i> − 1), so every term is exact, conditional on the design:
+    E <i>f̂</i>(<i>x</i>) = <i>b</i>(<i>x</i>)′(<i>B</i>′<i>B</i>)⁻¹<i>B</i>′<i>f</i>, &nbsp;Var <i>f̂</i>(<i>x</i>) = σ²<i>b</i>(<i>x</i>)′(<i>B</i>′<i>B</i>)⁻¹<i>b</i>(<i>x</i>), with <i>b</i>(<i>x</i>) an orthonormal polynomial basis built by modified Gram–Schmidt (with re-orthogonalisation) on Legendre polynomials of <i>u</i> = (<i>x</i> − 13)/5 ∈ [−1, 1].
+    Bias² and variance are averaged over a 400-point uniform grid on [8, 18] (the U(8, 18) average). Expected training error = σ²(1 − (<i>d</i> + 1)/<i>n</i>) + ‖(<i>I</i> − <i>H</i>)<i>f</i>‖²/<i>n</i>, <i>H</i> the hat matrix. No simulation runs in the page.</p>
+  <p><strong>Books:</strong> ISLP (James et al., 2023) §2.2.2 The Bias-Variance Trade-Off, pp. 31–34; §7.1 Polynomial Regression, pp. 290–292.</p>
+  <div class="scroll"><table>
+    <thead><tr><th>Control</th><th>Symbol</th><th>What it is</th><th>Range</th><th>Step</th><th>Default</th><th>Unit</th><th>Source</th><th>What visibly moves</th></tr></thead>
+    <tbody>
+      <tr><td>Degree</td><td><i>d</i></td><td>polynomial order (flexibility)</td><td>0 to min(15, <i>n</i> − 2)</td><td>1</td><td>3</td><td>—</td><td>motorcycle deck, slides 4, 11</td><td>average fit, band, marker on the error curves</td></tr>
+      <tr><td>Training size</td><td><i>n</i></td><td>design points</td><td>10 to 200</td><td>1</td><td>30</td><td>—</td><td>Fundamentos slide 21</td><td>band width, variance curve, maximum degree</td></tr>
+      <tr><td>Noise sd</td><td>σ</td><td>irreducible noise</td><td>0.5 to 15</td><td>0.5</td><td>4</td><td>thousand R$/yr</td><td>Fundamentos slide 21</td><td>band, variance and the error floor</td></tr>
+    </tbody></table></div>
+  <p><strong>Left out on purpose:</strong> random <i>X</i> (the fixed design makes the terms exact), the spline learner itself, and the coefficients of <i>f</i> (45, 1.9, 7, 57), which are the slide's data-generating process and not a modelling choice.</p>
+</footer>
+
+<script id="model">
+// Pure model: no DOM. check_companions.py runs these under node and compares them with numpy.
+const XLO = 8, XHI = 18, NGRID = 400, DMAX_CAP = 15;
+const ftrue = x => 45*Math.tanh(x/1.9 - 7) + 57;
+const dmaxFor = n => Math.min(DMAX_CAP, n - 2);
+const design = n => Array.from({length:n}, (_, i) => XLO + (XHI - XLO)*i/(n - 1));
+const grid = () => Array.from({length:NGRID}, (_, i) => XLO + (XHI - XLO)*i/(NGRID - 1));
+
+// Legendre polynomials P_0..P_m of u = (x-13)/5: well conditioned before orthonormalisation.
+function legendreRow(x, m){
+  const u = (x - (XLO + XHI)/2)/((XHI - XLO)/2), r = [1];
+  if(m >= 1) r.push(u);
+  for(let j = 1; j < m; j++) r.push(((2*j + 1)*u*r[j] - j*r[j - 1])/(j + 1));
+  return r;
+}
+
+// All degrees 0..dmax at once. Q's first d+1 columns span degree <= d, so each degree is a prefix.
+// Returns per-degree arrays of avg bias^2, avg variance (per unit sigma^2) and the residual norm ||(I-H)f||^2,
+// plus the grid fit E f-hat and pointwise variance per unit sigma^2 for every degree.
+function fitAll(n){
+  const m = dmaxFor(n), p = m + 1, xs = design(n), gx = grid();
+  const B = xs.map(x => legendreRow(x, m));
+  const Q = Array.from({length:p}, () => new Float64Array(n));
+  const R = Array.from({length:p}, () => new Float64Array(p));
+  for(let j = 0; j < p; j++){
+    const v = Float64Array.from(B, row => row[j]);
+    for(let pass = 0; pass < 2; pass++){          // MGS twice: keeps Q orthonormal at d = 15
+      for(let k = 0; k < j; k++){
+        let r = 0; for(let i = 0; i < n; i++) r += Q[k][i]*v[i];
+        R[k][j] += r; for(let i = 0; i < n; i++) v[i] -= r*Q[k][i];
+      }
+    }
+    let s = 0; for(let i = 0; i < n; i++) s += v[i]*v[i];
+    R[j][j] = Math.sqrt(s); for(let i = 0; i < n; i++) Q[j][i] = v[i]/R[j][j];
+  }
+  const fx = xs.map(ftrue), c = Q.map(q => q.reduce((a, qi, i) => a + qi*fx[i], 0));
+  // G = Bg R^{-1}: orthonormal basis evaluated on the grid (forward substitution per row).
+  const G = gx.map(x => { const b = legendreRow(x, m), z = new Float64Array(p);
+    for(let j = 0; j < p; j++){ let s = b[j]; for(let k = 0; k < j; k++) s -= z[k]*R[k][j]; z[j] = s/R[j][j]; }
+    return z; });
+  const fg = gx.map(ftrue);
+  const mean = [], vpt = [], bias2 = [], var1 = [], rss = [];
+  const curM = new Float64Array(NGRID), curV = new Float64Array(NGRID), resid = Float64Array.from(fx);
+  for(let d = 0; d <= m; d++){
+    let sb = 0, sv = 0;
+    for(let g = 0; g < NGRID; g++){
+      curM[g] += G[g][d]*c[d]; curV[g] += G[g][d]*G[g][d];
+      const e = curM[g] - fg[g]; sb += e*e; sv += curV[g];
+    }
+    mean.push(Float64Array.from(curM)); vpt.push(Float64Array.from(curV));
+    bias2.push(sb/NGRID); var1.push(sv/NGRID);
+    let rs = 0; for(let i = 0; i < n; i++){ resid[i] -= c[d]*Q[d][i]; rs += resid[i]*resid[i]; }
+    rss.push(rs);
+  }
+  return {n, m, xs, gx, fg, mean, vpt, bias2, var1, rss};
+}
+
+// Every read-out the page displays, for controls p = {d, n, sig}.
+function compute(p, fit){
+  fit = fit || fitAll(p.n);
+  const s2 = p.sig*p.sig, d = Math.min(p.d, fit.m);
+  const curve = fit.bias2.map((b, k) => ({d:k, bias2:b, vari:s2*fit.var1[k], test:b + s2*fit.var1[k] + s2,
+    train:s2*(1 - (k + 1)/p.n) + fit.rss[k]/p.n}));
+  let opt = 0; curve.forEach((r, k) => { if(r.test < curve[opt].test) opt = k; });
+  const cur = curve[d];
+  let maxsd = 0; for(const v of fit.vpt[d]) maxsd = Math.max(maxsd, Math.sqrt(s2*v));
+  return {d, dmax:fit.m, s2, bias2:cur.bias2, vari:cur.vari, test:cur.test, train:cur.train,
+    gap:cur.test - cur.train, dopt:opt, testOpt:curve[opt].test, maxsd, curve};
+}
+</script>
+
+<script>
+const D = {d:3, n:30, sig:4};
+const ids = Object.keys(D);
+const el = id => document.getElementById(id);
+// Display precision: 3 decimals below 10, 2 below 1000, 1 above. check_companions.py mirrors this.
+const fmtE = v => { const a = Math.abs(v), s = a < 10 ? a.toFixed(3) : a < 1000 ? a.toFixed(2) : a.toFixed(1); return (v < 0 && +s !== 0 ? "−" : "") + s; };
+let cache = {n:null, fit:null};
+
+function read(){
+  const n = parseInt(el("n").value, 10), dm = dmaxFor(n);
+  el("d").max = dm;
+  if(parseInt(el("d").value, 10) > dm) el("d").value = dm;
+  return {d:parseInt(el("d").value, 10), n, sig:parseFloat(el("sig").value)};
+}
+
+function drawFit(p, fit, r){
+  const svg = el("fitplot"), W = 720, H = 300, L = 46, Rm = 14, T = 12, Bm = 44, ylo = 0, yhi = 120;
+  const X = v => L + (v - XLO)/(XHI - XLO)*(W - L - Rm), Y = v => T + (1 - (v - ylo)/(yhi - ylo))*(H - T - Bm);
+  const m = fit.mean[r.d], v = fit.vpt[r.d], gx = fit.gx;
+  const up = gx.map((x, g) => [x, m[g] + 2*Math.sqrt(r.s2*v[g])]), dn = gx.map((x, g) => [x, m[g] - 2*Math.sqrt(r.s2*v[g])]);
+  const line = pts => pts.map((q, i) => (i ? "L" : "M") + X(q[0]).toFixed(1) + " " + Y(q[1]).toFixed(1)).join("");
+  let s = `<defs><clipPath id="clipfit"><rect x="${L}" y="${T}" width="${W - L - Rm}" height="${H - T - Bm}"/></clipPath></defs>`;
+  [0, 20, 40, 60, 80, 100, 120].forEach(t => { s += `<line x1="${L}" x2="${W - Rm}" y1="${Y(t)}" y2="${Y(t)}" stroke="var(--line)"/><text x="${L - 6}" y="${Y(t) + 4}" text-anchor="end">${t}</text>`; });
+  [8, 10, 12, 14, 16, 18].forEach(t => { s += `<text x="${X(t)}" y="${H - Bm + 30}" text-anchor="middle">${t}</text>`; });
+  s += `<g clip-path="url(#clipfit)">`;
+  s += `<path d="${line(up)}${line(dn.slice().reverse()).replace("M", "L")}Z" fill="var(--band)" opacity="0.16"/>`;
+  s += `<path d="${line(gx.map((x, g) => [x, fit.fg[g]]))}" fill="none" stroke="var(--ink)" stroke-width="2.2"/>`;
+  s += `<path d="${line(gx.map((x, g) => [x, m[g]]))}" fill="none" stroke="var(--fit)" stroke-width="2.2"/>`;
+  s += `</g>`;
+  s += `<line x1="${L}" x2="${W - Rm}" y1="${H - Bm}" y2="${H - Bm}" stroke="var(--muted)"/>`;
+  fit.xs.forEach(x => { s += `<line x1="${X(x).toFixed(1)}" x2="${X(x).toFixed(1)}" y1="${H - Bm}" y2="${H - Bm + 7}" stroke="var(--muted)"/>`; });
+  s += `<text x="${(L + W - Rm)/2}" y="${H - 2}" text-anchor="middle">years of schooling x</text>`;
+  s += `<text x="12" y="${(T + H - Bm)/2}" text-anchor="middle" transform="rotate(-90 12 ${(T + H - Bm)/2})">income, thousand R$ / yr</text>`;
+  svg.innerHTML = s;
+  const out = up.some(q => q[1] > yhi) || dn.some(q => q[1] < ylo);
+  el("clipnote").textContent = out ? `The band leaves the frame (largest 2 sd = ${(2*r.maxsd).toFixed(1)}).` : "";
+}
+
+function drawErr(p, r){
+  const svg = el("errplot"), W = 720, H = 300, L = 56, Rm = 16, T = 14, Bm = 40;
+  const c = r.curve, vals = c.flatMap(q => [q.bias2, q.vari, q.test, q.train]).concat([r.s2]).map(v => Math.max(v, 1e-12));
+  const lo = Math.floor(Math.log10(Math.min(...vals))), hi = Math.ceil(Math.log10(Math.max(...vals)));
+  const X = k => L + (r.dmax ? k/r.dmax : 0.5)*(W - L - Rm), Y = v => T + (1 - (Math.log10(Math.max(v, 1e-12)) - lo)/(hi - lo))*(H - T - Bm);
+  let s = "";
+  for(let e = lo; e <= hi; e++){ s += `<line x1="${L}" x2="${W - Rm}" y1="${Y(10**e)}" y2="${Y(10**e)}" stroke="var(--line)"/><text x="${L - 6}" y="${Y(10**e) + 4}" text-anchor="end">${e >= 0 && e <= 4 ? String(10**e) : "1e" + e}</text>`; }
+  const tickStep = r.dmax > 10 ? 3 : r.dmax > 5 ? 2 : 1;
+  for(let k = 0; k <= r.dmax; k += tickStep) s += `<text x="${X(k)}" y="${H - Bm + 18}" text-anchor="middle">${k}</text>`;
+  s += `<text x="${(L + W - Rm)/2}" y="${H - 4}" text-anchor="middle">polynomial degree d (flexibility)</text>`;
+  s += `<line x1="${X(r.d)}" x2="${X(r.d)}" y1="${T}" y2="${H - Bm}" stroke="var(--muted)" stroke-dasharray="4 3"/>`;
+  s += `<line x1="${L}" x2="${W - Rm}" y1="${Y(r.s2)}" y2="${Y(r.s2)}" stroke="var(--floor)" stroke-width="1.5" stroke-dasharray="6 4"/>`;
+  s += `<text x="${L + 6}" y="${Y(r.s2) + 14}" text-anchor="start" style="fill:var(--floor)">σ² = ${fmtE(r.s2)}</text>`;
+  const series = [["bias2", "var(--bias)", 2, ""], ["vari", "var(--fit)", 2, ""], ["train", "var(--train)", 2, "5 4"], ["test", "var(--ink)", 2.6, ""]];
+  series.forEach(([k, col, w, dash]) => {
+    s += `<path d="${c.map((q, i) => (i ? "L" : "M") + X(i).toFixed(1) + " " + Y(q[k]).toFixed(1)).join("")}" fill="none" stroke="${col}" stroke-width="${w}" ${dash ? `stroke-dasharray="${dash}"` : ""}/>`;
+    s += c.map((q, i) => `<circle cx="${X(i).toFixed(1)}" cy="${Y(q[k]).toFixed(1)}" r="${i === r.d ? 4.5 : 2.2}" fill="${col}"/>`).join("");
+  });
+  s += `<circle cx="${X(r.dopt)}" cy="${Y(r.testOpt)}" r="9" fill="none" stroke="var(--opt)" stroke-width="2.5"/>`;
+  const lx = Math.min(W - Rm - 70, Math.max(L + 70, X(r.dopt)));
+  s += `<text x="${lx}" y="${Math.max(T + 12, Y(r.testOpt) - 14)}" text-anchor="middle" style="fill:var(--opt);font-weight:600">optimum d* = ${r.dopt}</text>`;
+  svg.innerHTML = s;
+}
+
+function update(){
+  const p = read();
+  if(cache.n !== p.n) cache = {n:p.n, fit:fitAll(p.n)};
+  const r = compute(p, cache.fit);
+  el("o-d").textContent = `${r.d}  (max ${r.dmax})`; el("o-n").textContent = p.n; el("o-sig").textContent = p.sig.toFixed(1);
+  el("etest").textContent = fmtE(r.test);
+  const side = r.d < r.dopt ? `<strong>below the optimum</strong> d* = ${r.dopt}: too rigid, squared bias still dominates and adding terms lowers test error.`
+    : r.d > r.dopt ? `<strong>above the optimum</strong> d* = ${r.dopt}: too flexible, variance dominates and dropping terms lowers test error.`
+    : `<strong>at the optimum</strong>: no other degree up to ${r.dmax} has lower expected test error.`;
+  el("verdict").innerHTML = `Degree ${r.d} is ${side} Best attainable: ${fmtE(r.testOpt)} at d* = ${r.dopt}.`;
+  el("ident1").textContent = `test  = bias² + variance + σ²:  ${fmtE(r.test)} = ${fmtE(r.bias2)} + ${fmtE(r.vari)} + ${fmtE(r.s2)}`;
+  el("ident2").textContent = `train = σ²(1 − (d+1)/n) + ‖(I−H)f‖²/n = ${fmtE(r.train)}   (optimism ${fmtE(r.gap)})`;
+  const chips = [[r.d === r.dopt, `at the optimal degree d* = ${r.dopt}`], [r.d === 0, "d = 0: the fit is the constant mean"],
+    [r.d === r.dmax, `d = ${r.dmax}: the most flexible fit allowed at n = ${p.n}`]];
+  el("chips").innerHTML = chips.map(([on, t]) => `<span class="chip${on ? " on" : ""}">${on ? "● " : "○ "}${t}</span>`).join("");
+  const rows = [["Noise floor σ²", r.s2, "var(--floor)"], ["Average squared bias", r.bias2, "var(--bias)"], ["Average variance", r.vari, "var(--fit)"],
+    ["Expected test error", r.test, "var(--ink)"], ["Expected training error", r.train, "var(--train)"], ["Optimism (test − training)", r.gap, "var(--muted)"],
+    [`Test error at the optimum d* = ${r.dopt}`, r.testOpt, "var(--opt)"]];
+  el("tbl").innerHTML = rows.map(([k, v, c]) => `<tr><td><span class="k" style="background:${c}"></span>${k}</td><td>${fmtE(v)}</td></tr>`).join("")
+    + `<tr><td>Coefficients fitted, d + 1, out of n</td><td>${r.d + 1} / ${p.n}</td></tr>`;
+  drawFit(p, cache.fit, r); drawErr(p, r);
+}
+function reset(){ ids.forEach(k => el(k).value = D[k]); update(); }
+ids.forEach(k => el(k).addEventListener("input", update));
+el("reset").addEventListener("click", reset);
+reset();
+</script>
+</body>
+</html>

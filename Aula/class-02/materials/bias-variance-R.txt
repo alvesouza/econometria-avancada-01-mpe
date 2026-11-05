@@ -1,0 +1,94 @@
+# The intuition behind the bias-variance tradeof in Machine Learning
+
+# Paulo C. Marques F. <PauloCMF1@insper.edu.br>
+
+library(tree)
+
+# A simple data generating process.
+
+set.seed(42)
+
+n <- 10^3
+x <- runif(n)
+y <- 1 - x + 2*x^2 + rnorm(n, sd = 0.1)
+
+db <- data.frame(x, y)
+
+# This is how Machine Learning works (although no book puts it quite like this).
+# If you examine the bias-variance tradeoff derivation carefully, really
+# considering where the "randomness" comes from in all the "formulas", you
+# will see that a high-bias learning method is one capable of learning a
+# very restricted class of functions (consider linear regression and regression
+# trees with a single split, for example), but whose learned regression
+# function is "stable" regarding small changes in the training sample.
+# On the other hand, a high-variance learning method may be able to learn a
+# more flexible class of functions, but the estimated regression function
+# will be "unstable" when we make small changes to the training sample
+# (consider super tall regression trees, for example).
+
+# In the following simulations, we change 10% of the training sample in each
+# iteration.
+
+# Linear regression (high bias, low variance)
+
+# Can you even see the fitted regression line changing?
+
+for (t in 1:20) {
+    cat(t, " ")
+    trn <- db[sample(1:nrow(db), size = round(0.9 * nrow(db)), replace = FALSE), ]
+    lin_reg <- lm(y ~ x, data = trn)
+    plot(trn, pch = 19, cex = 0.25, main = "High Bias, Low Variance", xlim = c(0, 1), ylim = c(0.5, 2.5))
+    x_grid <- seq(0, 1, by = 0.01)
+    points(x_grid, predict(lin_reg, newdata = data.frame(x = x_grid)), type = "l", lwd = 2, col = "blue")
+    Sys.sleep(1)
+}
+
+# Regression tree with a single split (high bias, low variance)
+
+# Not much change here either... Easy to understand if you think about how CART
+# decides the split.
+
+for (t in 1:20) {
+    cat(t, " ")
+    trn <- db[sample(1:nrow(db), size = round(0.9 * nrow(db)), replace = FALSE), ]
+    rtree <- tree(y ~ x, data = trn, control = tree.control(nobs = nrow(trn), mincut = 1, minsize = 2, mindev = 0.5))
+    plot(trn, pch = 19, cex = 0.25, main = "High Bias, Low Variance", xlim = c(0, 1), ylim = c(0.5, 2.5))
+    x_grid <- seq(0, 1, by = 0.01)
+    points(x_grid, predict(rtree, newdata = data.frame(x = x_grid)), type = "l", lwd = 2, col = "blue")
+    Sys.sleep(1)
+}
+
+plot(rtree, type = "uniform")
+
+# Super tall tree (low bias, high variance)
+
+# The estimated regression function changes wildly, because a single differently
+# decided split "propagates" down the tree during the CART training process.
+
+for (t in 1:20) {
+    cat(t, " ")
+    trn <- db[sample(1:nrow(db), size = round(0.9 * nrow(db)), replace = FALSE), ]
+    rtree <- tree(y ~ x, data = trn, control = tree.control(nobs = nrow(trn), minsize = 1, mindev = 1e-4))
+    plot(trn, pch = 19, cex = 0.25, main = "Low Bias, High Variance", xlim = c(0, 1), ylim = c(0.5, 2.5))
+    x_grid <- seq(0, 1, by = 0.01)
+    points(x_grid, predict(rtree, newdata = data.frame(x = x_grid)), type = "l", lwd = 2, col = "blue")
+    Sys.sleep(1)
+}
+
+# Look at the trees. Can you see that (as expected per the former simulation)
+# the top of the different trees don´t change much?
+
+for (t in 1:20) {
+    cat(t, " ")
+    trn <- db[sample(1:nrow(db), size = round(0.9 * nrow(db)), replace = FALSE), ]
+    rtree <- tree(y ~ x, data = trn, control = tree.control(nobs = nrow(trn), minsize = 1, mindev = 1e-4))
+    plot(rtree, type = "uniform")
+    Sys.sleep(1)
+}
+
+# The high-performance Boosting and Random Forest algorithms exploit the
+# bias-variance tradeoff in orthogonal directions. Boosting aggregates a
+# sequence of short trees (high bias, low variance) and is essentially
+# a bias reduction mechanism, while the Random Forest averages a large number
+# of tall trees (low bias, high variance) and is a (quite familiar) variance
+# reduction process.

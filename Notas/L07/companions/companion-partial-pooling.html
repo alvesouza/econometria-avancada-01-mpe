@@ -1,0 +1,302 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>The Partial-Pooling Dial</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,500;8..60,650&family=Public+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: controls rail on the left, the answer then two panels on the right; one column under 860px.
+   Colour roles: blue = the eight schools, orange = the highlighted school, green = posterior median of tau, gold = complete-pooling landmark. */
+:root{
+  --bg:#f4f6f9; --panel:#ffffff; --ink:#18202d; --muted:#586377; --line:#d8dee8; --soft:#eef1f6;
+  --main:#2b63c4; --hi:#c76f1c; --good:#2f7a52; --mark:#a87b00;
+  --focus:#2b63c4;
+  --display:"Source Serif 4", Georgia, "Times New Roman", serif;
+  --body:"Public Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono:"JetBrains Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#10141b; --panel:#171d27; --ink:#e5e9f0; --muted:#9aa5b8; --line:#2a3342; --soft:#1e2532;
+  --main:#74a3ff; --hi:#f0a04b; --good:#5fc28d; --mark:#e9c04a; --focus:#74a3ff; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#10141b; --panel:#171d27; --ink:#e5e9f0; --muted:#9aa5b8; --line:#2a3342; --soft:#1e2532;
+  --main:#74a3ff; --hi:#f0a04b; --good:#5fc28d; --mark:#e9c04a; --focus:#74a3ff; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font:15px/1.5 var(--body);margin:0}
+.wrap{max-width:1180px;margin:0 auto;padding-left:max(16px, env(safe-area-inset-left, 0px));padding-right:max(16px, env(safe-area-inset-right, 0px));padding-block:24px 40px}
+header{display:grid;gap:4px;margin-bottom:18px}
+.eyebrow{font:600 12px/1.3 var(--body);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+h1{font:650 clamp(26px,4vw,36px)/1.1 var(--display);margin:0;text-wrap:balance}
+.lede{color:var(--muted);max-width:68ch;margin:0}
+.grid{display:grid;grid-template-columns:320px minmax(0,1fr);gap:20px;align-items:start}
+@media (max-width:860px){.grid{grid-template-columns:minmax(0,1fr)}}
+.rail{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px;display:grid;gap:18px}
+.group{display:grid;gap:12px}
+.group h2{font:600 12px/1.2 var(--body);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:0}
+.ctl{display:grid;gap:4px}
+.ctl .top{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.ctl label{font-weight:600}
+.ctl label i{font-family:var(--display);font-weight:500}
+.ctl output{font:600 14px var(--mono);font-variant-numeric:tabular-nums}
+.ctl p{margin:0;font-size:13px;color:var(--muted)}
+input[type=range]{width:100%;accent-color:var(--ink)}
+input:focus-visible,button:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+button{font:600 13px var(--body);background:var(--soft);color:var(--ink);border:1px solid var(--line);border-radius:6px;padding:7px 12px;cursor:pointer}
+button:hover{border-color:var(--muted)}
+.btns{display:flex;flex-wrap:wrap;gap:8px}
+main{display:grid;gap:16px;min-width:0}
+.answer{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px 18px;display:grid;gap:6px}
+.answer .lab{font-size:13px;color:var(--muted)}
+.answer .big{font:600 clamp(34px,6vw,48px)/1 var(--mono);font-variant-numeric:tabular-nums}
+.answer .verdict{font:500 17px/1.4 var(--display);max-width:62ch}
+.answer .ident{font:13px/1.6 var(--mono);color:var(--muted);font-variant-numeric:tabular-nums;overflow-x:auto;white-space:nowrap}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px 16px;min-width:0}
+.panel h3{font:600 15px/1.3 var(--body);margin:0 0 2px}
+.panel .sub{font-size:13px;color:var(--muted);margin:0 0 8px}
+svg{display:block;width:100%;height:auto;max-width:100%}
+svg text{fill:var(--muted);font:12px var(--body)}
+svg .val{font:600 12px var(--mono);fill:var(--ink)}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{font-size:13px;border:1px solid var(--line);border-radius:999px;padding:4px 10px;color:var(--muted)}
+.chip.on{border-color:var(--mark);color:var(--mark);font-weight:600}
+table.ro{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums}
+table.ro td{padding:5px 4px;border-bottom:1px solid var(--line);font-size:14px}
+table.ro td:last-child{text-align:right;font-family:var(--mono)}
+footer{max-width:1180px;margin:0 auto;padding-left:max(16px, env(safe-area-inset-left, 0px));padding-right:max(16px, env(safe-area-inset-right, 0px));padding-block:0 40px;font-size:13px;color:var(--muted);display:grid;gap:10px}
+footer p{margin:0;max-width:110ch}
+.scroll{overflow-x:auto}
+footer table{border-collapse:collapse;font-size:12.5px;min-width:820px}
+footer th,footer td{border-bottom:1px solid var(--line);padding:4px 8px;text-align:left;vertical-align:top}
+.k{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:5px;vertical-align:-1px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <div class="eyebrow">Econometria Avançada · Class 7 · HLM.pdf slide 23 (eight schools) · Greenberg §4.6, pp. 52–53</div>
+  <h1>The Partial-Pooling Dial</h1>
+  <p class="lede">Eight schools, each with an estimated effect <i>y<sub>i</sub></i> and a standard error σ<sub><i>i</i></sub>. The hierarchical model lets the true effects θ<sub><i>i</i></sub> differ with spread τ. At τ = 0 every school gets the common mean; as τ grows each keeps its own estimate. The data choose τ through <i>p</i>(τ | <i>y</i>).</p>
+</header>
+
+<div class="grid">
+<aside class="rail" aria-label="Controls">
+  <div class="group">
+    <h2>Population level</h2>
+    <div class="ctl"><div class="top"><label for="tau">Between-school sd <i>τ</i></label><output id="o-tau"></output></div>
+      <input id="tau" type="range" min="0" max="40" step="0.1">
+      <p>How different the true school effects are allowed to be. 0 forces one common effect (complete pooling).</p></div>
+    <div class="ctl"><div class="top"><label for="A">Prior upper bound <i>A</i></label><output id="o-A"></output></div>
+      <input id="A" type="range" min="5" max="100" step="1">
+      <p>The hyperprior τ ~ U(0, <i>A</i>); the slide uses 100. Small <i>A</i> cuts off the right tail of <i>p</i>(τ | <i>y</i>).</p></div>
+  </div>
+  <div class="group">
+    <h2>Data</h2>
+    <div class="ctl"><div class="top"><label for="kap">Data precision <i>κ</i></label><output id="o-kap"></output></div>
+      <input id="kap" type="range" min="-20" max="40" step="1">
+      <p>Thought experiment: every σ<sub><i>i</i></sub>² divided by κ, as if each school had κ times the students. Log scale 0.25 to 16; the middle mark (κ = 1) is the data.</p></div>
+    <div class="ctl"><div class="top"><label for="sch">Highlighted school <i>i</i></label><output id="o-sch"></output></div>
+      <input id="sch" type="range" min="0" max="7" step="1">
+      <p>Which school the read-outs describe (A to H).</p></div>
+  </div>
+  <div class="btns"><button id="reset" type="button">Reset to defaults</button><button id="tomed" type="button">τ to posterior median</button><button id="tozero" type="button">τ = 0</button></div>
+</aside>
+
+<main>
+  <section class="answer" aria-live="polite">
+    <div class="lab">Posterior mean of the highlighted school's true effect, given τ: &nbsp;<i>E</i>(θ<sub><i>i</i></sub> | <i>y</i>, τ) = (1 − <i>B<sub>i</sub></i>) <i>y<sub>i</sub></i> + <i>B<sub>i</sub></i> μ̂(τ)</div>
+    <div class="big" id="ans"></div>
+    <div class="verdict" id="verdict"></div>
+    <div class="ident" id="ident1"></div>
+    <div class="ident" id="ident2"></div>
+    <div class="ident" id="ident3"></div>
+    <div class="chips" id="chips"></div>
+  </section>
+
+  <section class="panel">
+    <h3>Shrinkage paths: <i>E</i>(θ<sub><i>i</i></sub> | <i>y</i>, τ) for all eight schools</h3>
+    <p class="sub"><span class="k" style="background:var(--main)"></span>the eight paths &nbsp;<span class="k" style="background:var(--hi)"></span>highlighted school &nbsp;<span class="k" style="background:var(--ink)"></span>current τ &nbsp;<span class="k" style="background:var(--good)"></span>posterior median of τ &nbsp;<span class="k" style="background:var(--mark)"></span>μ̂(0), the complete-pooling mean.</p>
+    <svg id="paths" viewBox="0 0 720 300" role="img" aria-label="Posterior means of the eight school effects against tau"></svg>
+  </section>
+
+  <section class="panel">
+    <h3>Marginal posterior <i>p</i>(τ | <i>y</i>)</h3>
+    <p class="sub">Exact up to a grid: μ and the θ<sub><i>i</i></sub> integrated out analytically, then normalized over τ ∈ [0, <i>A</i>] on 2001 points.</p>
+    <svg id="post" viewBox="0 0 720 220" role="img" aria-label="Marginal posterior density of tau"></svg>
+  </section>
+
+  <section class="panel">
+    <h3>Every term, highlighted school</h3>
+    <table class="ro"><tbody id="tbl"></tbody></table>
+  </section>
+</main>
+</div>
+
+<footer>
+  <p><strong>Belongs to:</strong> Class 7 notes, <code>Notas/L07/</code> (hierarchical linear models, <code>L07-04-hierarchical-linear-models.md</code>).</p>
+  <p><strong>Model (HLM.pdf slide 23):</strong> <i>y<sub>i</sub></i> | θ<sub><i>i</i></sub> ~ N(θ<sub><i>i</i></sub>, σ<sub><i>i</i></sub>²), θ<sub><i>i</i></sub> ~ N(μ, τ²), μ ~ N(0, 10⁶), τ ~ U(0, <i>A</i>), <i>i</i> = 1, …, 8, with <i>d<sub>i</sub></i> = σ<sub><i>i</i></sub>²/κ.
+    Given τ: <i>w<sub>i</sub></i> = 1/(<i>d<sub>i</sub></i> + τ²), <i>V</i><sub>μ</sub> = 1/(10⁻⁶ + Σ<i>w<sub>i</sub></i>), μ̂ = <i>V</i><sub>μ</sub>Σ<i>w<sub>i</sub>y<sub>i</sub></i>, <i>B<sub>i</sub></i> = <i>d<sub>i</sub></i>/(<i>d<sub>i</sub></i> + τ²),
+    <i>E</i>(θ<sub><i>i</i></sub> | <i>y</i>, τ) = (1 − <i>B<sub>i</sub></i>)<i>y<sub>i</sub></i> + <i>B<sub>i</sub></i>μ̂, Var(θ<sub><i>i</i></sub> | <i>y</i>, τ) = (1 − <i>B<sub>i</sub></i>)<i>d<sub>i</sub></i> + <i>B<sub>i</sub></i>²<i>V</i><sub>μ</sub>.
+    Marginal: <i>y</i> | τ ~ N₈(0, diag(<i>d<sub>i</sub></i> + τ²) + 10⁶·11′), evaluated with the matrix-determinant lemma and Sherman–Morrison; <i>p</i>(τ | <i>y</i>) ∝ 1{τ &lt; <i>A</i>} × that density. Fully Bayes <i>E</i>(θ<sub><i>i</i></sub> | <i>y</i>) = ∫ <i>E</i>(θ<sub><i>i</i></sub> | <i>y</i>, τ) <i>p</i>(τ | <i>y</i>) dτ by the trapezoid rule on the same grid.
+    Data: the slide's table (Rubin 1981, as printed). Default τ = 5.2 is the posterior median 5.23 at the defaults, rounded to the slider step.</p>
+  <p><strong>Books:</strong> Greenberg (2007) §4.6 Hierarchical Models, pp. 52–53 (the extra level θ₀ and why it is not identified on its own); §9.3 Panel Data, pp. 144–149 (random effects <i>b<sub>i</sub></i>).</p>
+  <div class="scroll"><table>
+    <thead><tr><th>Control</th><th>Symbol</th><th>What it is</th><th>Range</th><th>Step</th><th>Default</th><th>Unit</th><th>Source</th><th>What visibly moves</th></tr></thead>
+    <tbody>
+      <tr><td>Between-school sd</td><td>τ</td><td>spread of the true effects</td><td>0 to 40</td><td>0.1</td><td>5.2</td><td>points</td><td>slide 23</td><td>marker on the paths, all conditional read-outs</td></tr>
+      <tr><td>Prior upper bound</td><td><i>A</i></td><td>τ ~ U(0, <i>A</i>)</td><td>5 to 100</td><td>1</td><td>100</td><td>points</td><td>slide 23 hyperprior</td><td><i>p</i>(τ | <i>y</i>), median, fully Bayes means</td></tr>
+      <tr><td>Data precision</td><td>κ</td><td>σ<sub><i>i</i></sub>² divided by κ</td><td>0.25 to 16, log slider 2<sup><i>s</i>/10</sup>, <i>s</i> = −20…40 (κ = 1 at <i>s</i> = 0)</td><td>1 in <i>s</i></td><td>1</td><td>—</td><td>thought experiment, stated</td><td>paths, <i>p</i>(τ | <i>y</i>), every read-out</td></tr>
+      <tr><td>Highlighted school</td><td><i>i</i></td><td>school read out</td><td>A to H</td><td>1</td><td>A</td><td>—</td><td>slide 23</td><td>highlighted path, read-outs</td></tr>
+    </tbody></table></div>
+  <p><strong>Left out on purpose:</strong> the prior on μ (10⁶ is effectively flat; it moves no read-out visibly), other priors for τ (half-Cauchy, inverse gamma), and covariates — this page has no regressors, only the pooling mechanism the random-coefficients model of slides 14–16 shares.</p>
+</footer>
+
+<script id="model">
+// Pure model: no DOM. check_companions.py runs these under node and compares them with numpy/scipy.
+const Y8 = [28.39, 7.94, -2.75, 6.82, -0.64, 0.63, 18.01, 12.16];
+const S8 = [14.9, 10.2, 16.3, 11.0, 9.4, 11.4, 10.4, 17.6];
+const NAMES = ["A","B","C","D","E","F","G","H"];
+const V0 = 1e6, NG = 2001, TMAX = 100;
+const kappaOf = s => Math.pow(2, s/10);
+
+// Conditional posterior given tau (kappa scales the data precision).
+function conditional(tau, kappa){
+  const d = S8.map(s => s*s/kappa), t2 = tau*tau;
+  const w = d.map(v => 1/(v + t2));
+  const sw = w.reduce((a, b) => a + b, 0);
+  const vmu = 1/(1/V0 + sw);
+  const mu = vmu*w.reduce((a, wi, i) => a + wi*Y8[i], 0);
+  const B = d.map(v => t2 === 0 ? 1 : v/(v + t2));
+  const mean = Y8.map((y, i) => (1 - B[i])*y + B[i]*mu);
+  const sd = d.map((v, i) => Math.sqrt((1 - B[i])*v + B[i]*B[i]*vmu));
+  return {d, mu, vmu, B, mean, sd};
+}
+// log N_8(y | 0, D + V0 11') with D = diag(d + tau^2): determinant lemma + Sherman-Morrison.
+function logMarg(tau, kappa){
+  const t2 = tau*tau, dd = S8.map(s => s*s/kappa + t2);
+  let logdet = 0, q = 0, sw = 0, swy = 0;
+  for(let i = 0; i < 8; i++){ logdet += Math.log(dd[i]); q += Y8[i]*Y8[i]/dd[i]; sw += 1/dd[i]; swy += Y8[i]/dd[i]; }
+  logdet += Math.log(1 + V0*sw);
+  q -= V0*swy*swy/(1 + V0*sw);
+  return -0.5*(8*Math.log(2*Math.PI) + logdet + q);
+}
+// p(tau | y) on 0..100 (2001 points), zero at and above A; trapezoid-normalized. Median by inverting the cumulative trapezoid.
+function tauPosterior(kappa, A){
+  const g = [], lp = [];
+  for(let k = 0; k < NG; k++){ const t = TMAX*k/(NG - 1); g.push(t); lp.push(t < A ? logMarg(t, kappa) : -Infinity); }
+  const m = Math.max(...lp.filter(isFinite));
+  let p = lp.map(v => isFinite(v) ? Math.exp(v - m) : 0);
+  const cdf = [0];
+  for(let k = 1; k < NG; k++) cdf.push(cdf[k - 1] + 0.5*(p[k] + p[k - 1])*(g[k] - g[k - 1]));
+  const Z = cdf[NG - 1];
+  p = p.map(v => v/Z);
+  const F = cdf.map(v => v/Z);
+  const inv = q => { for(let k = 1; k < NG; k++) if(F[k] >= q) return g[k - 1] + (q - F[k - 1])/(F[k] - F[k - 1])*(g[k] - g[k - 1]); return g[NG - 1]; };
+  let mean = 0; for(let k = 1; k < NG; k++) mean += 0.5*(g[k]*p[k] + g[k - 1]*p[k - 1])*(g[k] - g[k - 1]);
+  // fully Bayes E(theta_i | y)
+  const fb = Array(8).fill(0);
+  let prev = conditional(g[0], kappa).mean;
+  for(let k = 1; k < NG; k++){
+    const cur = conditional(g[k], kappa).mean;
+    for(let i = 0; i < 8; i++) fb[i] += 0.5*(cur[i]*p[k] + prev[i]*p[k - 1])*(g[k] - g[k - 1]);
+    prev = cur;
+  }
+  return {g, p, median:inv(0.5), q025:inv(0.025), q975:inv(0.975), mean, fb};
+}
+function compute(c){
+  const kappa = kappaOf(c.kap), cond = conditional(c.tau, kappa), post = tauPosterior(kappa, c.A);
+  const i = c.sch;
+  return {kappa, i, name:NAMES[i], y:Y8[i], sigma:S8[i]/Math.sqrt(kappa), B:cond.B[i], mean:cond.mean[i], sd:cond.sd[i],
+          mu:cond.mu, vmu:cond.vmu, fb:post.fb[i], median:post.median, q025:post.q025, q975:post.q975, taumean:post.mean,
+          cond, post, ptau:c.tau < c.A ? Math.exp(logMarg(c.tau, kappa)) : 0};
+}
+</script>
+
+<script>
+const D = {tau:5.2, A:100, kap:0, sch:0};
+const ids = Object.keys(D);
+const el = id => document.getElementById(id);
+const f2 = x => (x < 0 ? "−" : "") + Math.abs(x).toFixed(2);
+const f3 = x => (x < 0 ? "−" : "") + Math.abs(x).toFixed(3);
+const read = () => { const p = {}; ids.forEach(k => p[k] = parseFloat(el(k).value)); return p; };
+let last = null;
+
+function drawPaths(c, m){
+  const svg = el("paths"), W = 720, H = 300, L = 50, Rm = 30, T = 12, Bm = 36, Hb = H - Bm;
+  const N = 200, taus = Array.from({length:N + 1}, (_, k) => 40*k/N);
+  const curves = taus.map(t => conditional(t, m.kappa).mean);
+  const lo = Math.min(...Y8, ...curves.flat()) - 2, hi = Math.max(...Y8, ...curves.flat()) + 2;
+  const X = v => L + v/40*(W - L - Rm), Yp = v => T + (hi - v)/(hi - lo)*(Hb - T);
+  let s = "";
+  for(let t = 0; t <= 40; t += 5) s += `<text x="${X(t)}" y="${Hb + 16}" text-anchor="middle">${t}</text>`;
+  const step = (hi - lo) > 40 ? 10 : 5;
+  for(let v = Math.ceil(lo/step)*step; v <= hi; v += step) s += `<line x1="${L}" x2="${W - Rm}" y1="${Yp(v)}" y2="${Yp(v)}" stroke="var(--line)"/><text x="${L - 6}" y="${Yp(v) + 4}" text-anchor="end">${v}</text>`;
+  s += `<text x="${(L + W - Rm)/2}" y="${H - 2}" text-anchor="middle">τ (points)</text>`;
+  s += `<text x="14" y="${(T + Hb)/2}" text-anchor="middle" transform="rotate(-90 14 ${(T + Hb)/2})">E(θᵢ | y, τ)</text>`;
+  const mu0 = conditional(0, m.kappa).mu;
+  s += `<line x1="${L}" x2="${W - Rm}" y1="${Yp(mu0)}" y2="${Yp(mu0)}" stroke="var(--mark)" stroke-dasharray="2 3"/>`;
+  for(let i = 0; i < 8; i++){
+    const d = curves.map((cv, k) => (k ? "L" : "M") + X(taus[k]).toFixed(1) + " " + Yp(cv[i]).toFixed(1)).join("");
+    const on = i === m.i;
+    s += `<path d="${d}" fill="none" stroke="${on ? "var(--hi)" : "var(--main)"}" stroke-width="${on ? 3 : 1.4}" opacity="${on ? 1 : 0.8}"/>`;
+    s += `<text x="${W - Rm + 4}" y="${Yp(curves[N][i]) + 4}" ${on ? 'class="val"' : ""}>${NAMES[i]}</text>`;
+  }
+  if(m.median <= 40) s += `<line x1="${X(m.median)}" x2="${X(m.median)}" y1="${T}" y2="${Hb}" stroke="var(--good)" stroke-dasharray="5 4" stroke-width="1.5"/>`;
+  s += `<line x1="${X(c.tau)}" x2="${X(c.tau)}" y1="${T}" y2="${Hb}" stroke="var(--ink)" stroke-width="1.5"/>`;
+  s += `<circle cx="${X(c.tau)}" cy="${Yp(m.mean)}" r="5" fill="var(--hi)"/>`;
+  s += `<text class="val" x="${X(c.tau) + (X(c.tau) > 560 ? -6 : 6)}" y="${Yp(m.mean) - 8}" text-anchor="${X(c.tau) > 560 ? "end" : "start"}">${f2(m.mean)}</text>`;
+  svg.innerHTML = s;
+}
+function drawPost(c, m){
+  const svg = el("post"), W = 720, H = 220, L = 50, Rm = 14, T = 10, Bm = 36, Hb = H - Bm;
+  const g = m.post.g, p = m.post.p, idx = g.map((t, k) => k).filter(k => g[k] <= 40);
+  const ymax = 1.1*Math.max(...idx.map(k => p[k]));
+  const X = v => L + v/40*(W - L - Rm), Yp = v => T + (1 - v/ymax)*(Hb - T);
+  let s = "";
+  for(let t = 0; t <= 40; t += 5) s += `<text x="${X(t)}" y="${Hb + 16}" text-anchor="middle">${t}</text>`;
+  s += `<line x1="${L}" x2="${W - Rm}" y1="${Hb}" y2="${Hb}" stroke="var(--muted)"/>`;
+  s += `<text x="${(L + W - Rm)/2}" y="${H - 2}" text-anchor="middle">τ (points)</text>`;
+  s += `<text x="14" y="${(T + Hb)/2}" text-anchor="middle" transform="rotate(-90 14 ${(T + Hb)/2})">p(τ | y)</text>`;
+  const d = idx.map((k, j) => (j ? "L" : "M") + X(g[k]).toFixed(1) + " " + Yp(p[k]).toFixed(1)).join("");
+  s += `<path d="${d}" fill="none" stroke="var(--main)" stroke-width="2.2"/>`;
+  if(c.A < 40) s += `<line x1="${X(c.A)}" x2="${X(c.A)}" y1="${T}" y2="${Hb}" stroke="var(--muted)" stroke-dasharray="2 3"/><text x="${X(c.A) + 4}" y="${T + 12}">A</text>`;
+  if(m.median <= 40) s += `<line x1="${X(m.median)}" x2="${X(m.median)}" y1="${T}" y2="${Hb}" stroke="var(--good)" stroke-dasharray="5 4" stroke-width="1.5"/><text class="val" x="${X(m.median) + 5}" y="${T + 26}" style="fill:var(--good)">median ${f2(m.median)}</text>`;
+  s += `<line x1="${X(c.tau)}" x2="${X(c.tau)}" y1="${T}" y2="${Hb}" stroke="var(--ink)" stroke-width="1.5"/>`;
+  svg.innerHTML = s;
+}
+function verdict(c, m){
+  const moved = m.mean - m.y, dir = moved > 0 ? "up" : "down";
+  if(c.tau === 0) return `Complete pooling: τ = 0 sends every school to the common mean μ̂ = ${f2(m.mu)}; school ${m.name}'s own estimate ${f2(m.y)} gets weight 0.`;
+  return `School ${m.name}'s estimate ${f2(m.y)} is pulled <strong>${dir}</strong> by ${f2(Math.abs(moved))} toward μ̂(τ) = ${f2(m.mu)}: its own data get weight 1 − B = ${f3(1 - m.B)}, the population ${f3(m.B)}. `
+    + (m.B > 0.5 ? "More than half of the answer comes from the other schools." : "Its own data dominate.");
+}
+function update(){
+  const c = read(), m = compute(c);
+  last = m;
+  el("o-tau").textContent = c.tau.toFixed(1); el("o-A").textContent = c.A.toFixed(0);
+  el("o-kap").textContent = m.kappa.toPrecision(3); el("o-sch").textContent = m.name;
+  el("ans").textContent = f2(m.mean);
+  el("verdict").innerHTML = verdict(c, m);
+  el("ident1").textContent = `B = σ²/(σ² + τ²) = ${f2(m.sigma*m.sigma)}/(${f2(m.sigma*m.sigma)} + ${f2(c.tau*c.tau)}) = ${f3(m.B)};  (1 − B)·${f2(m.y)} + B·${f2(m.mu)} = ${f2(m.mean)}`;
+  el("ident2").textContent = `posterior sd given τ = ${f2(m.sd)};  fully Bayes E(θ | y) = ${f2(m.fb)} (τ integrated out)`;
+  el("ident3").textContent = `p(τ | y): median ${f2(m.median)}, mean ${f2(m.taumean)}, 95% interval [${f2(m.q025)}, ${f2(m.q975)}]`;
+  const chips = [[c.tau === 0, "τ = 0: complete pooling"], [c.kap === 0, "κ = 1: the slide's data"],
+    [Math.abs(c.tau - m.median) < 0.05, "τ at the posterior median"], [m.B < 0.1, "B < 0.1: essentially no pooling"]];
+  el("chips").innerHTML = chips.map(([on, t]) => `<span class="chip${on ? " on" : ""}">${on ? "● " : "○ "}${t}</span>`).join("");
+  const rows = [["School, y, σ (after κ)", `${m.name}, ${f2(m.y)}, ${f2(m.sigma)}`], ["Shrinkage factor B", f3(m.B)],
+    ["μ̂(τ) and its sd", `${f2(m.mu)} (${f2(Math.sqrt(m.vmu))})`], ["E(θ | y, τ)", f2(m.mean)], ["sd(θ | y, τ)", f2(m.sd)],
+    ["Fully Bayes E(θ | y)", f2(m.fb)], ["Posterior median of τ", f2(m.median)], ["p(τ | y) mean", f2(m.taumean)]];
+  el("tbl").innerHTML = rows.map(([k, v]) => `<tr><td>${k}</td><td>${v}</td></tr>`).join("");
+  drawPaths(c, m); drawPost(c, m);
+}
+function reset(){ ids.forEach(k => el(k).value = D[k]); update(); }
+ids.forEach(k => el(k).addEventListener("input", update));
+el("reset").addEventListener("click", reset);
+el("tomed").addEventListener("click", () => { el("tau").value = (Math.round(last.median*10)/10).toFixed(1); update(); });
+el("tozero").addEventListener("click", () => { el("tau").value = 0; update(); });
+reset();
+</script>
+</body>
+</html>

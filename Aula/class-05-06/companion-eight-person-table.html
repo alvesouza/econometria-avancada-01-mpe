@@ -1,0 +1,200 @@
+<title>The Eight-Person Table</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,500;8..60,650&family=Public+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: the table and its controls on the left, the answer and the exact randomisation distribution on the right; one column under 900px.
+   Colour roles follow the class-01 video: orange = Y0, blue = Y1, green = causal effects, red = selection bias, grey = unobserved, gold = this assignment. */
+:root{
+  --bg:#f4f6f9; --panel:#ffffff; --ink:#18202d; --muted:#586377; --line:#d8dee8; --soft:#eef1f6;
+  --y0:#c76f1c; --y1:#2b63c4; --eff:#23864d; --bias:#c63a30; --live:#a87b00; --unobs:#98a2b3; --hide:#e7eaf0; --focus:#2b63c4;
+  --display:"Source Serif 4", Georgia, "Times New Roman", serif;
+  --body:"Public Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono:"JetBrains Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#10141b; --panel:#171d27; --ink:#e5e9f0; --muted:#9aa5b8; --line:#2a3342; --soft:#1e2532;
+  --y0:#f0a04b; --y1:#74a3ff; --eff:#4fc486; --bias:#ff6e61; --live:#e9c04a; --unobs:#5f6979; --hide:#222a37; --focus:#74a3ff; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#10141b; --panel:#171d27; --ink:#e5e9f0; --muted:#9aa5b8; --line:#2a3342; --soft:#1e2532;
+  --y0:#f0a04b; --y1:#74a3ff; --eff:#4fc486; --bias:#ff6e61; --live:#e9c04a; --unobs:#5f6979; --hide:#222a37; --focus:#74a3ff; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font:15px/1.5 var(--body);margin:0}
+.wrap{max-width:1180px;margin:0 auto;padding-inline:16px;padding-block:24px 40px}
+header{display:grid;gap:4px;margin-bottom:18px}
+.eyebrow{font:600 12px/1.3 var(--body);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+h1{font:650 clamp(26px,4vw,36px)/1.1 var(--display);margin:0;text-wrap:balance}
+.lede{color:var(--muted);max-width:70ch;margin:0}
+.grid{display:grid;grid-template-columns:minmax(0,440px) minmax(0,1fr);gap:20px;align-items:start}
+@media (max-width:900px){.grid{grid-template-columns:minmax(0,1fr)}}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px 16px;min-width:0}
+.panel h3{font:600 15px/1.3 var(--body);margin:0 0 2px}
+.panel .sub{font-size:13px;color:var(--muted);margin:0 0 10px}
+.scroll{overflow-x:auto}
+table.pt{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums}
+table.pt th{font:600 12px var(--body);color:var(--muted);text-align:right;padding:6px 6px;border-bottom:1px solid var(--line)}
+table.pt th:first-child,table.pt td:first-child{text-align:left}
+table.pt th i{font-family:var(--display);font-size:14px}
+table.pt td{padding:4px 6px;border-bottom:1px solid var(--line);text-align:right;font-family:var(--mono);font-size:14px}
+table.pt td.name{font-family:var(--body)}
+td.c0{color:var(--y0);font-weight:600} td.c1{color:var(--y1);font-weight:600} td.ce{color:var(--eff)}
+td.hidden{color:var(--unobs);background:var(--hide);font-weight:400}
+tr.treated td.name{font-weight:600}
+.dbtn{min-width:44px;font:600 13px var(--mono);border-radius:6px;padding:4px 8px;cursor:pointer;border:1px solid var(--line);background:var(--soft);color:var(--muted)}
+.dbtn[aria-pressed="true"]{background:var(--y1);border-color:var(--y1);color:var(--panel)}
+.tools{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;align-items:center}
+button{font:600 13px var(--body);background:var(--soft);color:var(--ink);border:1px solid var(--line);border-radius:6px;padding:7px 12px;cursor:pointer}
+button:hover{border-color:var(--muted)}
+.tog{display:flex;align-items:center;gap:6px;font-size:14px;font-weight:600}
+input:focus-visible,button:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+main{display:grid;gap:16px;min-width:0}
+.answer{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px 18px;display:grid;gap:6px}
+.answer .lab{font-size:13px;color:var(--muted)}
+.answer .big{font:600 clamp(34px,6vw,48px)/1 var(--mono);font-variant-numeric:tabular-nums}
+.answer .verdict{font:500 17px/1.4 var(--display);max-width:62ch}
+.ident{font:13px/1.6 var(--mono);color:var(--muted);font-variant-numeric:tabular-nums;overflow-x:auto;white-space:nowrap}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin-top:4px}
+.stat{border-top:1px solid var(--line);padding-top:6px}
+.stat .l{font-size:12px;color:var(--muted)}
+.stat .v{font:600 16px var(--mono);font-variant-numeric:tabular-nums}
+svg{display:block;width:100%;height:auto;max-width:100%}
+svg text{fill:var(--muted);font:12px var(--body)}
+.k{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:5px;vertical-align:-1px}
+footer{margin-top:22px;font-size:13px;color:var(--muted);display:grid;gap:8px}
+</style>
+
+<div class="wrap">
+<header>
+  <div class="eyebrow">Econometria Avançada · Classes 5+6 · MHE §2.1–2.2, pp. 10–12</div>
+  <h1>The Eight-Person Table</h1>
+  <p class="lede">Eight people, both potential outcomes visible. Choose who is treated and watch the naive comparison split into the effect on the treated plus selection bias. Then compare your choice with every possible random assignment.</p>
+</header>
+
+<div class="grid">
+<section class="panel">
+  <h3>Potential outcomes</h3>
+  <p class="sub">Health index 0–10, higher = healthier. Click a <i>D</i> cell to switch that person between treated (1) and untreated (0).</p>
+  <div class="scroll"><table class="pt">
+    <thead><tr><th>Person</th><th><i>Y</i>₀</th><th><i>Y</i>₁</th><th><i>Y</i>₁ − <i>Y</i>₀</th><th><i>D</i></th><th>observed <i>Y</i></th></tr></thead>
+    <tbody id="rows"></tbody>
+  </table></div>
+  <div class="tools">
+    <label class="tog"><input type="checkbox" id="god"> God's view</label>
+    <button id="self" type="button">Self-selection (the sick)</button>
+    <button id="rand" type="button">Random draw</button>
+    <button id="reset" type="button">Reset</button>
+  </div>
+  <p class="sub" id="godnote" style="margin-top:10px"></p>
+</section>
+
+<main>
+  <section class="answer" aria-live="polite">
+    <div class="lab">Naive gap &nbsp;mean <i>Y</i> of treated − mean <i>Y</i> of untreated</div>
+    <div class="big" id="naive"></div>
+    <div class="verdict" id="verdict"></div>
+    <div class="ident" id="id1"></div>
+    <div class="ident" id="id2"></div>
+    <div class="stats" id="stats"></div>
+  </section>
+  <section class="panel">
+    <h3 id="disth">Every random assignment of the same size</h3>
+    <p class="sub"><span class="k" style="background:var(--unobs)"></span>each possible assignment &nbsp;<span class="k" style="background:var(--live)"></span>yours &nbsp;<span class="k" style="background:var(--eff)"></span>ATE = 1.125, which is also the mean of all the dots</p>
+    <svg id="dist" viewBox="0 0 640 250" role="img" aria-label="Exact randomisation distribution of the naive gap"></svg>
+    <div class="stats" id="dstats"></div>
+  </section>
+</main>
+</div>
+
+<footer>
+  <div><strong>Belongs to:</strong> Classes 5+6 notes (<code>Aula/class-05-06/potential-outcomes.ipynb</code>) and the class-01 explainer video (<code>Videos/class-01-potential-outcomes</code>, beats B05–B17), which use the same table.</div>
+  <div><strong>Model:</strong> switching equation <i>Y</i> = <i>Y</i>₀ + (<i>Y</i>₁ − <i>Y</i>₀)<i>D</i> (MHE eq. 2.1.1, p. 11); naive gap = ATT + selection bias (MHE p. 11); with π = <i>k</i>/8 the share treated, naive gap = ATE + SB + (1 − π)(ATT − ATU), which is the standard extension that follows from ATE = π·ATT + (1−π)·ATU. All numbers on this page are exact finite-population values. The distribution enumerates all C(8, <i>k</i>) assignments; nothing is sampled except the "Random draw" button.</div>
+  <div><strong>Table:</strong> invented for teaching; it is not data. ATE = 1.125, and under the self-selection preset ATT = 2, ATU = 0.25, SB = −5, naive gap = −3.</div>
+</footer>
+
+<script>
+const P = [["Ana",3,5],["Bruno",2,5],["Carla",4,6],["Davi",3,4],["Elisa",8,8],["Fábio",9,8],["Gabi",7,8],["Hugo",8,9]];
+const SELF = [1,1,1,1,0,0,0,0];
+const el = id => document.getElementById(id);
+const ATE = P.reduce((a,p)=>a+p[2]-p[1],0)/8;
+let D = SELF.slice();
+const fmt = (x,d=2) => { const v=Math.abs(x)<0.5*Math.pow(10,-d)?0:x; return (v<0?"−":"")+Math.abs(v).toFixed(d); };
+const sgn = x => (x<0?"− ":"+ ")+Math.abs(Math.abs(x)<0.0005?0:x).toFixed(3);
+const mean = a => a.reduce((s,v)=>s+v,0)/a.length;
+
+function stats(d){
+  const T=P.filter((_,i)=>d[i]), C=P.filter((_,i)=>!d[i]);
+  if(!T.length||!C.length) return null;
+  const naive=mean(T.map(p=>p[2]))-mean(C.map(p=>p[1]));
+  const ATT=mean(T.map(p=>p[2]-p[1])), ATU=mean(C.map(p=>p[2]-p[1]));
+  const SB=mean(T.map(p=>p[1]))-mean(C.map(p=>p[1])), pi=T.length/8;
+  return {naive, ATT, ATU, SB, pi, het:(1-pi)*(ATT-ATU), k:T.length};
+}
+function allAssign(k){ const out=[]; for(let m=0;m<256;m++){ let c=0; for(let i=0;i<8;i++) c+=(m>>i)&1; if(c===k){ const d=[]; for(let i=0;i<8;i++) d.push((m>>i)&1); out.push(d);} } return out; }
+
+function renderRows(){
+  const god=el("god").checked;
+  el("rows").innerHTML=P.map((p,i)=>{
+    const d=D[i], hid0=!god&&d, hid1=!god&&!d, eff=p[2]-p[1];
+    return `<tr class="${d?"treated":""}"><td class="name">${p[0]}</td>`+
+      `<td class="${hid0?"hidden":"c0"}">${hid0?"?":p[1]}</td>`+
+      `<td class="${hid1?"hidden":"c1"}">${hid1?"?":p[2]}</td>`+
+      `<td class="${god?"ce":"hidden"}">${god?fmt(eff,0):"?"}</td>`+
+      `<td><button class="dbtn" type="button" id="d${i}" aria-pressed="${d?"true":"false"}" aria-label="${p[0]} treated">${d}</button></td>`+
+      `<td>${d?p[2]:p[1]}</td></tr>`;
+  }).join("");
+  P.forEach((_,i)=>el("d"+i).addEventListener("click",()=>{ D[i]=1-D[i]; update(); el("d"+i).focus(); }));
+  el("godnote").textContent = god ? "God's view: both columns are visible. No dataset ever gives you this." : "Researcher's view: for each person you see only the outcome under the treatment they got (Holland's fundamental problem, MHE p. 11 fn. 2).";
+}
+
+function drawDist(cur){
+  const svg=el("dist"), W=640,H=250,L=30,R=16,T=18,B=40;
+  const all=allAssign(cur.k).map(d=>stats(d).naive);
+  let lo=Math.min(...all,0,ATE), hi=Math.max(...all,0,ATE); const pad=0.4; lo-=pad; hi+=pad;
+  const x=v=>L+(v-lo)/(hi-lo)*(W-L-R);
+  const bw=(hi-lo)/40, stacks={}; let maxh=0;
+  const pts=all.map(v=>{ const b=Math.round((v-lo)/bw); stacks[b]=(stacks[b]||0)+1; maxh=Math.max(maxh,stacks[b]); return [v,b,stacks[b]]; });
+  const r=Math.max(2.5,Math.min(7,(H-T-B)/(2*maxh+1)));
+  let s="";
+  for(let t=Math.ceil(lo);t<=Math.floor(hi);t++){ s+=`<line x1="${x(t)}" x2="${x(t)}" y1="${T}" y2="${H-B}" stroke="var(--line)"/><text x="${x(t)}" y="${H-B+16}" text-anchor="middle">${fmt(t,0)}</text>`; }
+  s+=`<line x1="${x(0)}" x2="${x(0)}" y1="${T}" y2="${H-B}" stroke="var(--muted)" stroke-width="1.5"/>`;
+  s+=`<line x1="${L}" x2="${W-R}" y1="${H-B}" y2="${H-B}" stroke="var(--muted)"/>`;
+  pts.forEach(([v,b,h])=>{ s+=`<circle cx="${x(lo+b*bw)}" cy="${H-B-r-(h-1)*2*r}" r="${r*0.9}" fill="var(--unobs)"/>`; });
+  s+=`<line x1="${x(ATE)}" x2="${x(ATE)}" y1="${T}" y2="${H-B}" stroke="var(--eff)" stroke-width="2.5"/>`;
+  s+=`<text x="${x(ATE)+5}" y="${T+10}" style="fill:var(--eff);font-weight:600">ATE 1.125</text>`;
+  s+=`<path d="M${x(cur.naive)} ${H-B+2} l-7 -12 h14 Z" fill="var(--live)"/>`;
+  s+=`<text x="${x(cur.naive)}" y="${H-B+30}" text-anchor="middle" style="fill:var(--live);font-weight:600">yours ${fmt(cur.naive)}</text>`;
+  svg.innerHTML=s;
+  const n=all.length, wrong=all.filter(v=>v<=1e-9).length, far=all.filter(v=>Math.abs(v-ATE)>=Math.abs(cur.naive-ATE)-1e-9).length;
+  el("disth").textContent=`All ${n} ways to treat ${cur.k} of the 8`;
+  el("dstats").innerHTML=[["mean of all gaps",fmt(mean(all),3)],["range",`${fmt(Math.min(...all))} to ${fmt(Math.max(...all))}`],["wrong sign (≤ 0)",`${wrong} of ${n}`],["as far from ATE as yours",`${far} of ${n}`]]
+    .map(([l,v])=>`<div class="stat"><div class="l">${l}</div><div class="v">${v}</div></div>`).join("");
+}
+
+function update(){
+  renderRows();
+  const s=stats(D);
+  if(!s){
+    el("naive").textContent="—";
+    el("verdict").textContent="Treat at least one person and leave at least one untreated: a comparison needs both groups.";
+    ["id1","id2","stats","dstats"].forEach(i=>el(i).textContent="");
+    el("dist").innerHTML=""; el("disth").textContent="Every random assignment of the same size"; return;
+  }
+  el("naive").textContent=fmt(s.naive);
+  let v;
+  if(Math.abs(s.SB)<1e-9 && Math.abs(s.het)<1e-9) v="No selection bias and no heterogeneity term: this assignment recovers the ATE exactly.";
+  else if(s.naive<=0) v=`The comparison says treatment ${s.naive<0?"hurts":"does nothing"}, yet every person's own effect averages to +1.125. ${s.SB<0?"The treated were sicker to begin with.":""}`;
+  else if(s.SB>0) v="The treated were healthier to begin with, so the gap overstates the effect.";
+  else if(s.SB<0) v="The treated were sicker to begin with, so the gap understates the effect.";
+  else v="No selection bias here; the gap differs from the ATE only through the heterogeneity term.";
+  el("verdict").innerHTML=v;
+  el("id1").textContent=`naive = ATT + SB:                    ${fmt(s.naive,3)} = ${fmt(s.ATT,3)} ${sgn(s.SB)}`;
+  el("id2").textContent=`naive = ATE + SB + (1−π)(ATT−ATU):  ${fmt(s.naive,3)} = ${fmt(ATE,3)} ${sgn(s.SB)} ${sgn(s.het)}   (π = ${s.k}/8)`;
+  el("stats").innerHTML=[["ATE (fixed)",fmt(ATE,3),"var(--eff)"],["ATT",fmt(s.ATT,3),"var(--eff)"],["ATU",fmt(s.ATU,3),"var(--eff)"],["selection bias",fmt(s.SB,3),"var(--bias)"]]
+    .map(([l,v,c])=>`<div class="stat"><div class="l"><span class="k" style="background:${c}"></span>${l}</div><div class="v">${v}</div></div>`).join("");
+  drawDist(s);
+}
+el("god").addEventListener("change",update);
+el("self").addEventListener("click",()=>{ D=SELF.slice(); update(); });
+el("reset").addEventListener("click",()=>{ D=SELF.slice(); el("god").checked=false; update(); });
+el("rand").addEventListener("click",()=>{ const k=D.reduce((a,b)=>a+b,0); const kk=(k>=1&&k<=7)?k:4; const all=allAssign(kk); D=all[Math.floor(Math.random()*all.length)]; update(); });
+update();
+</script>

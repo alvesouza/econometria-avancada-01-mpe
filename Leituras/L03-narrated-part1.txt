@@ -1,0 +1,687 @@
+Advanced Econometrics, Classes 3 and 4. Introduction to Bayesian learning. Narrated study notes, part 1 of 3.
+
+How to listen.
+
+This is a listening version of the finished study notes for Classes 3 and 4 of the course Econometria Avançada, in the professional master's in economics at Insper, taught by Hedibert Freitas Lopes. It carries the same content as the written notes, re-voiced for the ear. Every formula is spoken in words, the way you would dictate it to someone writing on a board, and then its meaning is said in plain language.
+
+The narration comes in three files. Part 1, this file, covers the map of the unit, then the rule and the conjugate families, and then decisions and models. That is: Bayes' rule on a finite parameter space, with Diego's two tests, the three coins and the base-rate examples; conjugate priors and sequential updating, with the Beta and Bernoulli pair, the Gamma and Poisson pair and the Pareto and uniform pair; the normal model and the four physicists; Bayes estimators and loss functions; and model comparison by marginal likelihoods and Bayes factors. Part 2 covers computing posteriors and priors as models: Monte Carlo simulation; Markov chains and the Gibbs sampler; Metropolis-Hastings and Hamiltonian Monte Carlo; hierarchical models and shrinkage; and sparsity priors. Part 3 holds the support material: the pitfalls, the spoken formula sheet, the implementation described as a sequence of steps, the reading route and exercises, a true or false self-test, a glossary, and the whole unit in five lines.
+
+A word on the three layers the notes use. The U layer is intuition: forward against inverse probability; the prior as earlier data; the physicists' joint density; "accept or stay"; borrowing strength; a horseshoe of shrinkage. The C layer is the course layer, and it is what is examinable: Bayes' rule and the predictive; the conjugate families; sequential updating; Bayes estimators under four losses, Bayes risk, credible and highest-posterior-density intervals; marginal likelihood, posterior odds, Bayes factors, Jeffreys' scale, the large-sample penalty and improper priors; Monte Carlo, the inverse distribution function method, composition, accept-reject, importance sampling and sampling importance resampling; Markov chains, Gibbs with the switch point, Metropolis-Hastings, mixing and the numerical standard error; hierarchical Beta-Binomial and Gaussian models; and ridge and lasso as posterior modes, scale mixtures, the normal-gamma prior and the horseshoe. The G layer is graduate material: coherence; minimax; Chib's marginal likelihood; Rao-Blackwellisation; Hamiltonian Monte Carlo and the no-U-turn sampler; the Pólya-Gamma logit; the details of stochastic volatility estimation; spike-and-slab priors and reversible jump. These are named, not examinable. Each time a G item comes up, the narration says so out loud.
+
+The books are cited by short names. Greenberg is Introduction to Bayesian Econometrics, by Edward Greenberg, first edition, the main book for this unit; the syllabus lists the second edition. Tsay is Analysis of Financial Time Series, third edition. Bolfarine and Sandoval is their 2010 inference text. Morettin and Singer is their 2021 text, used for its appendices B and C. Izbicki and Mendonça is their 2020 machine-learning text, and ISLP is An Introduction to Statistical Learning with Applications in Python. The class materials are the ingredients deck, called Bayesian ingredients, 56 slides; the Bayes-estimator deck, in Portuguese, 16 slides; the question zero deck, 18 slides, with its R script on three coins; seven pages of examples from Stone, 2013; the sparse-priors deck, 9 pages; the sparse-regression simulation; and a set of site pages, each named where it is used.
+
+A word on scope. The final exam has no code. Expect derivations, such as posteriors, predictives and full conditional distributions; Bayes-factor arithmetic; and the reading of Markov chain Monte Carlo output. Out of scope here: sequential Monte Carlo, which is not on the site; Bayesian vector autoregressions, which belong to Class 9; the stochastic volatility model as a volatility model, which belongs to Class 8; and probit and Tobit as models, which belong to Class 7.
+
+
+Part zero. The map of Classes 3 and 4.
+
+This part covers the map note, which sets out the one claim of the unit, the reading order, the one result to hold, the numbers to memorize, the figures and the companions, the scope, the errata found in the sources, and the place of the unit in the course. The sources are the ingredients deck, 56 slides; the Bayes-estimator deck, 16 slides; the question zero deck, 18 slides, with its R script; the examples from Stone, 2013, 7 pages; the sparse-priors deck, 9 pages; the sparse-regression simulation with its R code; and the site pages on sequential Bayes with Bernoulli and uniform trials, Bernoulli trials with a discrete prior, the four physicists A, B, C and D, the correlation coefficient, zero-inflated Poisson fishing, Bayesian logistic regression, Bayesian beta regression, the Petrobras Gaussian and Student t stochastic volatility models, the hierarchical Beta-Binomial model, and the hierarchical Gaussian linear model, plus a text file of examples one, two and three in R and Stan.
+
+From Greenberg: sections 2.1 and 2.2, printed pages 7 to 18; chapter 3, printed pages 20 to 40; chapter 4, printed pages 41 to 59; chapter 5, printed pages 63 to 75; chapter 6, printed pages 76 to 89; chapter 7, printed pages 90 to 107; and sections 8.1 and 8.2, printed pages 111 to 130. From Tsay: sections 12.1 to 12.4, printed pages 614 to 624, and section 12.7, printed pages 636 to 638. From Bolfarine and Sandoval: sections 4.3 and 4.4, printed pages 61 to 70, and section 5.5, printed pages 85 to 87. From Morettin and Singer: appendix B, printed pages 453 to 478, and section C.5, printed pages 487 to 488. From Izbicki and Mendonça: section 3.6, printed pages 42 to 43. And from ISLP: section 6.2, printed pages 240 to 251.
+
+The one claim. Bayesian learning is one rule applied over and over: the posterior is proportional to the likelihood times the prior, normalised by the predictive.
+
+That rule turns Diego's 70 per cent prior into 85 per cent after one positive test, and 99 per cent after two. The same arithmetic, with conjugate priors, adds data to pseudo-data: in the Beta, Gamma, Pareto and normal families.
+
+A point estimate is a decision. Quadratic loss reports the posterior mean, absolute loss the median, and zero-one loss the mode.
+
+A model is judged by its marginal likelihood, which charges for every parameter the data did not need. That is Greenberg's Table 3.2.
+
+When integrals have no closed form, simulate: Monte Carlo with independent draws, and Gibbs or Metropolis-Hastings chains whose invariant distribution is the posterior, at the price of autocorrelation.
+
+And priors are also a modelling tool: hierarchies let units borrow strength, and sparsity priors shrink noise while leaving signals alone.
+
+The reading order. Four parts and three support notes.
+
+Part one, the rule and the conjugate families, has three sections.
+
+Section 1 is Bayes' rule on a discrete space: the ingredients deck, slides 1 to 25; the question zero deck; Stone, 2013; the discrete-prior site page; and Greenberg sections 2.1 and 2.2, printed pages 7 to 18, and section 3.1.3. The numbers to carry: Diego goes from 0.70 to 0.847 to 0.993, and to 0.983 with the second test Y alone; three heads leave the fair coin with 0.0674; chickenpox beats smallpox 90 to 1 on base rates; and sequential updating equals batch updating.
+
+Section 2 is conjugate priors and sequential updating: the sequential-Bayes site page; Greenberg sections 2.2, 3.1.3 to 3.1.4 and 3.2.3; Bolfarine and Sandoval examples 4.4.1, 4.4.2 and 5.5.2; and Tsay results 12.3 to 12.6. The numbers to carry: the posterior is a Beta with parameters alpha zero plus s and beta zero plus n minus s, and its mean is a weighted average, 0.357 and then 0.315 in Greenberg's Figure 2.2; the predictive probability of a success equals the posterior mean; under a uniform prior the posterior mode is the maximum likelihood estimate; and the Pareto posterior has scale equal to the larger of the sample maximum and theta zero, and shape alpha zero plus n.
+
+Section 3 is the normal model and the physicists: the ingredients deck, slides 26 to 52; the site page on the four physicists; Greenberg sections 3.2.3, 4.2 and 4.3; Bolfarine and Sandoval example 4.4.3; and Tsay result 12.1. The numbers to carry: the predictive is normal with mean mu zero and variance sigma squared plus tau zero squared; precisions add; physicist A's posterior is normal with mean 890 and standard deviation 17.9, and physicist B's is normal with mean 840 and standard deviation 35.8; the Student t prior C gives 891.1 and the mixture prior D gives 876.1, both by numerical quadrature; and a t prior's pull is bounded: 1022 against 940 at an observation of 1100.
+
+Part two, decisions and models, has two sections.
+
+Section 4 is Bayes estimators and loss: the Bayes-estimator deck, 16 slides; Greenberg sections 3.2.1 and 3.2.2; and Bolfarine and Sandoval sections 4.3, 4.4 and 5.5. The mean, median, mode and quantile come from four losses; for a Beta with parameters 2 and 10, the mean is 0.167, the median 0.148 and the mode 0.100. Then the exponential and Gamma example; both estimators are biased; the Bayes risk is one seventy-second, below one sixtieth; and highest-posterior-density against equal-tail intervals.
+
+Section 5 is model comparison and Bayes factors: Greenberg sections 3.2.4 and 4.2. The marginal likelihood, posterior odds and Jeffreys' scale; Table 3.2 reproduced, with a log base ten Bayes factor of minus 1.200 at proportions 0.2 and 0.8, and plus 0.756 at 0.5 and 0.5 with m equal to 100; the penalty of one half log n per parameter; and improper priors make the Bayes factor arbitrary.
+
+Part three, computing posteriors, has three sections.
+
+Section 6 is Monte Carlo simulation: the ingredients deck, slides 53 to 56; Greenberg chapter 5; Morettin and Singer appendix B; and the correlation and zero-inflated Poisson site pages. The numerical standard error, 0.052 for the estimate of pi at M equal to 1000; the inverse distribution function method, composition and accept-reject, with a constant c of 1.875 and an acceptance rate of 0.533, and for the normal case 0.760, not 0.658; importance sampling with infinite variance; sampling importance resampling; and the zero-inflated Poisson maximum likelihood estimates, 4.223 and 0.526, with n equal to 45.
+
+Section 7 is Markov chains and Gibbs: Greenberg chapter 6 and sections 7.1 and 7.3; Tsay sections 12.1 to 12.3; and Morettin and Singer section C.5. Invariant distributions; the proof that Gibbs leaves the posterior invariant; the normal mean and precision sampler; the coal-mining switch point, 1891, with posterior probability 0.240, and rates 3.106 and 0.930, Gibbs against the exact answer; and the autocorrelation rho to the two h with the inefficiency factor.
+
+Section 8 is Metropolis-Hastings and Hamiltonian Monte Carlo: Greenberg sections 7.2 and 8.2.3; Tsay sections 12.4 and 12.7; and the logit, stochastic volatility and Stan pages. Reversibility and the acceptance probability alpha equal to the minimum of one and a ratio; random-walk and independence kernels; the acceptance rate two over pi times the arc tangent of two over s, 0.445 at s equal to 2.38; Gibbs as Metropolis-Hastings with acceptance one; and the Bayesian logit.
+
+Part four, priors as models, has two sections.
+
+Section 9 is hierarchical models and shrinkage: Greenberg sections 4.5 and 4.6, and the hierarchical site pages. Exchangeability; partial pooling with weight eta over eta plus n i; thirteen hospitals on an exact grid against Stan, with a posterior median of mu of 0.0714 against 0.0715; and the random-coefficient Gibbs sampler for 68 women, with sigma equal to 1.10 against 3.61 pooled.
+
+Section 10 is sparsity priors: the sparse-priors deck; the sparse-regression simulation; Izbicki and Mendonça section 3.6; and ISLP section 6.2. Ridge and lasso as posterior modes; scale mixtures; the normal-gamma kurtosis, three over lambda; the horseshoe, whose shrinkage weight kappa is distributed Beta with parameters one half and one half; at an observation of 6, the posterior means 3.00, 4.59 and 5.66; and the horseshoe's null coefficients 8 times tighter than ridge's.
+
+The support notes are the formula sheet, which maps the site's topics and the class-plan goals to the notes, with every result and every number; the pitfalls note, with fifteen confusions and their counterexamples and an original 25-item true or false self-test; and the Python note, the reference implementation section by section with its output. There is also a PDF rendered from the notes.
+
+The one result to hold. The posterior of theta given y equals f of y given theta, times pi of theta, divided by the integral of f of y given theta times pi of theta, over theta. The numerator is learning. The denominator is the predictive, and the evidence for the model.
+
+Everything in the unit is this formula. Its numerator gives the posterior and, through a loss, the estimate: sections 1 to 4. Its denominator is the predictive of the data and the marginal likelihood that ranks models: section 5. When neither can be computed, simulation evaluates them: sections 6 to 8. And the prior pi itself can be a model of how units or coefficients relate: sections 9 and 10.
+
+Now the numbers and cases to have memorized. Twelve of them.
+
+First. Diego: the probability that he is ill given a positive test X is 0.847, and given positive X and Y it is 0.993. The prior was 0.70; the second test does the work.
+
+Second. The three coins after three heads: 0.0674, 0.3932 and 0.5394. The predictive probability of three heads is 0.618.
+
+Third. The Beta-Bernoulli posterior mean in Greenberg's Figure 2.2: five fourteenths, 0.357, and then seventeen fifty-fourths, 0.315. The prior's weight falls from 0.29 to 0.07.
+
+Fourth. Physicists A and B at an observation of 850: posteriors normal with mean 890 and standard deviation 17.9, and normal with mean 840 and standard deviation 35.8. The weights on the observation are 0.8 and 0.2.
+
+Fifth. Normal against t prior at an observation of 1100: posterior means 940 against 1022. That is bounded influence.
+
+Sixth. The Beta with parameters 2 and 10: mode 0.100, median 0.148, mean 0.167. Three losses, three answers.
+
+Seventh. Table 3.2: with m equal to 10 and proportions 0.2 and 0.8, the log base ten Bayes factor is minus 1.200; with m equal to 100 and proportions 0.5 and 0.5, it is plus 0.756. Evidence both ways.
+
+Eighth. Accept-reject for a Beta with parameters 3 and 3: c equal to 1.875, acceptance 0.533, which is one over c.
+
+Ninth. The coal switch point: 1891, with probability 0.240; lambda one equal to 3.106 and lambda two equal to 0.930. Gibbs equals the exact answer.
+
+Tenth. Gibbs on a bivariate normal with correlation rho: the lag-h autocorrelation is rho to the two h, and the inefficiency factor is 999.5 at rho equal to 0.999. Dependence costs draws.
+
+Eleventh. The random-walk Metropolis-Hastings acceptance rate on a standard normal is two over pi times the arc tangent of two over s; 0.445 at s equal to 2.38. That is the scale trade-off.
+
+Twelfth. The hospitals: separate estimates from 0.029 to 0.130 become hierarchical estimates from 0.057 to 0.089, with weight eta over eta plus n i. And, as a thirteenth to keep beside it, shrinkage at an observation of 6: normal 3.00, Laplace 4.59, horseshoe 5.66. Signals survive the horseshoe.
+
+The figures. Eight figures are built by a script in the notes' figures folder, and every figure asserts at least one plotted number. The sequential-learning figure, with the coin posteriors against the number of heads in a row, Greenberg's Figure 2.2 Beta update, and the Pareto-uniform posterior band against n. The four-priors figure for the normal model, with priors A to D and the likelihood, the four posteriors, and the posterior mean against the observation for normal and t priors. The loss-functions figure, with the Beta of 2 and 10 and its mode, median and mean, and the expected-loss curves with their minima. The Bayes-factor figure, with the log base ten Bayes factor against the proportions for m equal to 10 and 100, and its growth with m against the BIC line. The accept-reject figure, for the Beta of 3 and 3, with the running estimate of pi in its plus or minus two standard error funnel. The Gibbs switch-point figure, with the exact posterior of the switch point against the Gibbs frequencies, and the rate marginals. The mixing figure, with the Gibbs autocorrelation rho to the two h and the random-walk acceptance curve. And the shrinkage figure, with the hospital rates shrunk toward the posterior mean of mu, and the shrinkage profiles of the normal, Laplace and horseshoe priors. Each is described in words where it belongs.
+
+Two interactive companion pages go with the notes. The Prior-Conflict Dial lets you move the observation x, the instrument's sigma, the prior mean and standard deviation, and the t degrees of freedom, and watch the normal and Student t posteriors, the curve of posterior mean against x, and the two posterior means side by side, with the normal weight w and the t pull. Its defaults reproduce slide 40, 890.0 and 17.9, and prior C, 891.1. The Bayes-Factor Dial lets you move m, Michaela's and Lila's heads, the symmetric Beta prior and the prior odds, and watch the log base ten Bayes factor with its Jeffreys label against Lila's count, the posteriors under each model, the posterior probability of model one, and the large-sample approximation. Buttons load the ten rows of Table 3.2. Both pages are verified by a checking script against their own JavaScript at both ends of every range, the default and landmark vectors, with Table 3.2 reproduced to three decimals.
+
+The scope, said once in full. Examinable, the C layer: the class-plan goals one to nine as mapped in the formula sheet. That is Bayes' rule, the predictive, sequential and conjugate updating, the normal model, Bayes estimators and losses, credible intervals, Bayes factors and posterior model probabilities, Monte Carlo with the inverse distribution function, composition, accept-reject, importance sampling and sampling importance resampling, Markov chains, Gibbs, Metropolis-Hastings, convergence and the numerical standard error, hierarchical Beta-Binomial and Gaussian models, ridge and lasso as posterior modes, scale mixtures, the normal-gamma and the horseshoe.
+
+Named only, the G layer: coherence, minimax, Chib's marginal likelihood, Rao-Blackwellisation, Hamiltonian Monte Carlo and the no-U-turn sampler, Pólya-Gamma, spike-and-slab and reversible jump, and the details of stochastic volatility estimation.
+
+Out of scope here: sequential Monte Carlo, not on the site; Bayesian vector autoregressions, Class 9; the stochastic volatility model as a volatility model, Class 8; and probit and Tobit as models, Class 7. The final exam has no code: expect derivations of posteriors, predictives and full conditionals, Bayes-factor arithmetic, and the reading of Markov chain Monte Carlo output.
+
+The errata found while writing the notes. Nine of them.
+
+One. The ingredients deck, slide 40, prints physicist B's prior as normal with mean 800 and standard deviation 40, and slide 44 as normal with mean 800 and variance 1600. The posterior, normal with mean 840 and standard deviation 35.7, and the site page on the four physicists require a prior standard deviation of 80. And slide 19 prints 0.8373093 for 0.3 times 2.790698, which is 0.8372093. These are in section 3, subsection 1, and section 1, subsection 3.
+
+Two. The sequential-Bayes site page types the Pareto posterior mean as theta one times alpha one over alpha one plus one; its code uses alpha one minus one. And the prior density carries a stray a. That is section 2, subsection 6.
+
+Three. The site page on the four physicists writes prior D with the mean and variance of A twice; its code uses A, B and C. That is section 3, subsection 5.
+
+Four. The correlation-coefficient site page states the arc-sine prior but codes one over the square root of one plus rho squared. That is section 6, subsection 7.1.
+
+Five. The zero-inflated Poisson fishing page says n equal to 42; its table and estimates need n equal to 45. That is section 6, subsection 7.2.
+
+Six. The hierarchical Gaussian linear model page prints V i without the inverse, X i transposed y i without the factor one over sigma squared, and the prior of beta i with tau alpha. The code is right. That is section 9, subsection 5.
+
+Seven. The Bayes-estimator deck, slide 13, says "the maximum likelihood estimator is unbiased by construction". That fails for the exponential, where its expected value is n theta over n minus one. That is section 4, subsection 8.
+
+Eight. Greenberg: the acceptance probability of Algorithm 5.4 is 0.7602, not one over c equal to 0.6577; and the importance sampler of Algorithm 5.5 has infinite variance, so its reported numerical standard error is not meaningful. That is section 6, subsections 5 and 6.
+
+Nine. Stone's Figure 1.4 prints the prior of smallpox as 0.0011 but computes with 0.001. That is section 1, subsection 6.
+
+Finally, the position of Classes 3 and 4 in the course. From Class 1, the review: the exponential-Gamma coal posterior becomes conjugate analysis; the integrated change point becomes the Gibbs switch point of section 7, subsection 6; the p-value against the Bayes factor becomes model comparison; and mean squared error becomes Bayes risk. From Class 2, statistical learning: the logit by iteratively reweighted least squares becomes the Bayesian logit by Metropolis-Hastings; the bias-variance trade-off becomes shrinkage; and a cross-validated lambda becomes a prior. Classes 3 and 4 themselves are prior, posterior and predictive; conjugacy; Bayes factors; Monte Carlo and Markov chain Monte Carlo; and hierarchical and sparsity priors. In Classes 5 and 6, causal inference, Bayesian instrumental variables and treatment models, Greenberg chapter 11, reuse Gibbs with latent data. In Class 7, more econometric models, Student t errors return as scale mixtures, with hierarchical models, and Tobit and probit by data augmentation, Greenberg sections 8.1 and 8.2. In Class 8, univariate time series, stochastic volatility is estimated by Markov chain Monte Carlo, Tsay section 12.7 and the Petrobras page. And in Class 9, multivariate time series, come Bayesian vector autoregressions with shrinkage priors, and factor stochastic volatility.
+
+Recap of part zero. One rule: posterior proportional to likelihood times prior, normalised by the predictive. A point estimate is a decision under a loss. A model is judged by its marginal likelihood. When integrals fail, simulate. And the prior can itself be a model of how units and coefficients relate.
+
+
+Part one, section 1. Bayes' rule on a finite parameter space: posterior equals prior times likelihood over predictive.
+
+This section covers the ingredients deck, slides 1 to 25, the Diego example; the question zero deck, 18 slides, with its R script on three coins; the examples from Stone, 2013, seven image pages, Figures 1.2 to 1.7 and 1.12; the site page on Bernoulli trials with a discrete prior; Greenberg section 2.1, printed pages 7 to 11; section 2.2, printed pages 12 to 18, equations 2.1 to 2.3; and section 3.1.3, printed pages 24 to 25, equation 3.1.
+
+The claim, before the arithmetic. When the unknown takes finitely many values, Bayes' rule is arithmetic. Multiply each prior probability by the likelihood of what was seen, add the products to get the predictive probability of the data, and divide. Diego's positive test moves the probability that he is ill from 0.70 to 0.847, and a second, better test moves it to 0.993. Three heads in a row leave coin 1, the fair one, with 0.0674. The likelihood alone answers a different question: smallpox explains the spots better than chickenpox, 0.9 against 0.8, yet chickenpox is 90 times more probable, because it is 100 times more common. And updating one datum at a time gives exactly the posterior of updating on all the data at once.
+
+The notation. Theta is the state of nature, the unknown, taking values in a finite set, such as zero and one, or coins 1, 2 and 3. x and y are observed data, such as test results or tosses, and they are discrete. p of theta is the prior probability, which sums to one over theta. p of x given theta is the likelihood: the probability of the data under theta, read as a function of theta; it lies between zero and one. p of x is the predictive, or marginal, probability of the data: the sum over theta of p of x given theta times p of theta. p of theta given x is the posterior probability, which sums to one over theta. And capital H denotes the information held at a given moment.
+
+One point one. Two questions that look alike. This is the U layer.
+
+Diego feels unwell. His doctor wants the probability that he is ill given that the test is positive. The number that comes out of the laboratory's validation study is the probability that the test is positive given that he is ill, 0.95. The deck's slide 14 calls confusing the two "the common, and wrong, answer". Bayes' rule is the bridge between forward probability, from the state of nature to the data, which is what the laboratory measures, and inverse probability, from the data back to the state, which is what the doctor needs.
+
+Stone's Figure 1.12 draws the two directions as two loops. On top, the true theta goes through physics to produce x. On the bottom, x goes through the model to the likelihood, then through Bayes' rule to the estimated theta, with the prior entering only on the way back.
+
+The likelihood is a forward quantity read backwards. It is a probability over data, but in Bayes' rule it is used as a function of theta with the data fixed. It does not sum to one over theta, as Greenberg says on printed page 14. The prior is what turns it into a probability over theta.
+
+One point two. Bayes' rule, Greenberg equations 2.1 to 2.3. This is the C layer.
+
+Start from the definition of conditional probability, Greenberg's Axiom 4: the probability of A given B equals the probability of A and B, divided by the probability of B. Since the probability of A and B equals the probability of B and A, we get equation 1: the probability of A given B, times the probability of B, equals the probability of B given A, times the probability of A.
+
+Divide both sides of equation 1 by the probability of B, which must be positive. Equation 2: the probability of A given B equals the probability of B given A, times the probability of A, divided by the probability of B.
+
+Set A equal to theta and B equal to x in equation 2. This is Greenberg's equation 2.1 for discrete data. Equation 3: p of theta given x equals p of x given theta, times p of theta, divided by p of x.
+
+The denominator comes from the law of total probability, the question zero deck, slides 12 to 14. The events "theta equals theta k" partition the sample space, so equation 4: p of x equals the sum over k of p of x given theta k, times p of theta k.
+
+Equation 4 is the predictive probability of the data: what the model and the prior together predict before x is seen. The ingredients deck writes equation 3 in words on slide 18. Equation 5: posterior equals prior times likelihood, divided by predictive.
+
+Because p of x does not depend on theta, equation 3 is often written as Greenberg's equation 2.3. Equation 6: p of theta given x is proportional to p of x given theta times p of theta. The constant is recovered at the end by making the posterior sum to one.
+
+One point three. Worked example: Diego, one test. Slides 4 to 19.
+
+The model. Theta equals one if Diego is ill and zero if not. The test X has the following probabilities. If Diego is healthy, theta equal to zero, the test is positive with probability 0.40, a false positive, and negative with probability 0.60. If he is ill, theta equal to one, the test is positive with probability 0.95, and negative with probability 0.05, a false negative. The prior gives 0.30 to healthy and 0.70 to ill.
+
+Maximum likelihood, slides 8 and 9. A positive X is more likely under theta equal to one. The ratio of the probability of a positive test given ill to the probability of a positive test given healthy is 0.95 over 0.40, which is 2.375. So the maximum likelihood estimate of theta is one.
+
+The predictive, slide 12. Substitute the probabilities into equation 4. Equation 7: the probability that X equals one is 0.40 times 0.30, plus 0.95 times 0.70, which is 0.120 plus 0.665, which is 0.785.
+
+The posterior, slide 16. Substitute equation 7 and the probabilities into equation 3. Equation 8: the probability that theta equals one given X equal to one is 0.70 times 0.95 over 0.785, which is 0.70 times 1.210191, which is 0.8471338.
+
+The factor 0.95 over 0.785, which is 1.210, is the likelihood relative to the predictive. The datum raises the probability of every state under which it was more likely than average.
+
+If instead X equals zero, slide 19. The likelihood ratio is 0.60 over 0.05, which is 12, so the maximum likelihood estimate is zero. The probability that X equals zero is 0.60 times 0.30, plus 0.05 times 0.70, which is 0.180 plus 0.035, which is 0.215. And the probability that theta equals zero given X equal to zero is 0.30 times 0.60 over 0.215, which is 0.30 times 2.790698, which is 0.8372093.
+
+The slide prints 0.8373093. The product of its own two factors is 0.8372093, so the printed value has a typo in the fourth decimal.
+
+One point four. Sequential learning: yesterday's posterior is today's prior. Slides 20 to 25; Greenberg section 3.1.3. This is the C layer.
+
+The doctor orders a second test Y, more reliable than X. The probability that Y is negative given ill is 0.01, and the probability that Y is positive given healthy is 0.04. The tests are conditionally independent given theta.
+
+The general statement, Greenberg's equation 3.1, for two data sets y one and y two, in three steps. Equation 9. First, the posterior of theta given y one and y two is proportional to f of y one and y two given theta, times p of theta. Second, that equals f of y two given y one and theta, times f of y one given theta, times p of theta. Third, that equals f of y two given y one and theta, times p of theta given y one, times f of y one. The last step uses equation 6 for p of theta given y one, and f of y one is a constant. With conditional independence, f of y two given y one and theta equals f of y two given theta, so equation 9 is Bayes' rule with p of theta given y one in the place of the prior.
+
+The predictive for Y given X equal to one, slide 21. Apply equation 4 with the posterior of equation 8 as the weights. Equation 10: the probability that Y equals one given X equal to one is 0.04 times 0.1528662, plus 0.99 times 0.8471338, which is 0.0061146 plus 0.8386625, which is 0.8447771.
+
+The posterior after both tests, slide 22. Apply equation 3 with the prior of equation 8 and the predictive of equation 10. Equation 11: the probability that theta equals one given X equal to one and Y equal to one is 0.8471338 times 0.99 over 0.8447771, which is 0.8471338 times 1.171907, which is 0.992762.
+
+The batch check. Using both tests at once, the likelihood of X equal to one and Y equal to one is 0.95 times 0.99, which is 0.9405, under theta equal to one, and 0.40 times 0.04, which is 0.016, under theta equal to zero. The posterior is 0.70 times 0.9405, over the sum of 0.70 times 0.9405 and 0.30 times 0.016. That is 0.65835 over 0.65835 plus 0.0048, which is 0.65835 over 0.66315, which is 0.992762.
+
+The sequential and batch answers agree to every digit, as equation 9 says they must.
+
+The deck's summary, slide 23, walks the information H. Before X and Y, the probability that Diego is ill is 0.70. After X equal to one, 0.847. After X equal to one and Y equal to one, 0.993. And after Y equal to one alone, it is 0.99 times 0.70, over the sum of 0.99 times 0.70 and 0.04 times 0.30. That is 0.693 over 0.705, which is 0.982979.
+
+Slide 25 says: "Don't consider test X, unless it is 'cost' free". Y alone gets to 98.3 per cent; adding X buys one more point. The value of a datum is how far it moves the posterior, and that depends on what is already known.
+
+One point five. Worked example: three coins. The question zero deck and its R script.
+
+Three coins have probabilities of a head of 0.5, 0.9 and 1.0, and one is picked at random, so each coin has prior probability one third. Three tosses give three heads.
+
+The likelihoods, slide 6. 0.5 cubed is 0.125; 0.9 cubed is 0.729; 1.0 cubed is 1.000.
+
+The predictive, slide 14. By equation 4, equation 12: the probability of three heads is 0.125 times one third, plus 0.729 times one third, plus 1.000 times one third, which is 1.854 over 3, which is 0.618.
+
+The posteriors, slides 15 to 17. By equation 3. The probability of coin 1 given three heads is 0.125 times one third, over 0.618; that is 0.0416667 over 0.618, which is 0.0674. The probability of coin 2 is 0.243 over 0.618, which is 0.3932. And the probability of coin 3 is 0.333333 over 0.618, which is 0.5394.
+
+Slide 18 asks: "What if a fourth flip turned out head as well?" Treat the three-head posterior as the prior, by equation 9. The posterior of coin k after four heads is proportional to p k times the posterior of coin k after three heads: 0.5 times 0.0674 is 0.0337; 0.9 times 0.3932 is 0.3539; and 1.0 times 0.5394 is 0.5394. The sum is 0.9270, so the posteriors are 0.0364, 0.3818 and 0.5819. The batch route gives the same: p k to the fourth over the sum of the p j to the fourth, which is 0.0625 over 1.7186, 0.6561 over 1.7186, and 1 over 1.7186.
+
+The sequential-learning figure, left panel, plots the posterior probability of each coin against the number of heads in a row, from 0 to 10. It is equation 3 with prior one third for each coin and likelihood p k to the n, the R script evaluated exactly. Coin 1 falls from one third to near zero. Coin 2 rises to a peak near 0.39 at two to three heads and then declines to 0.26. Coin 3 rises steadily to 0.74. The values at three heads are labelled 0.0674, 0.3932 and 0.5394. The middle and right panels belong to section 2.
+
+Read the left panel from left to right. Every head multiplies coin 1's weight by 0.5, coin 2's by 0.9 and coin 3's by 1, and renormalises. Coin 2 first gains, because it explains heads better than coin 1, and then loses, because coin 3 explains them better still. Coin 3 can never be ruled in with certainty by heads alone, because coin 2 also produces them: after ten heads it holds 0.741. One tail would settle it, because its likelihood under coin 3 is zero.
+
+One point six. Worked example: base rates. Stone, 2013, Figures 1.2 to 1.7.
+
+Spots, Figure 1.4. The symptoms are x. Chickenpox has a likelihood of the spots of 0.8 and a prior of 0.1. Smallpox has a likelihood of 0.9 and a prior of 0.001. Stone takes p of x equal to 0.081. Equation 13: the posterior of chickenpox is 0.8 times 0.1 over 0.081, which is 0.988; the posterior of smallpox is 0.9 times 0.001 over 0.081, which is 0.011.
+
+The likelihood favours smallpox; the posterior favours chickenpox by a factor of 0.988 over 0.011, about 90. The ratio of posteriors is the ratio of likelihoods times the ratio of priors: 0.8 over 0.9, times 0.1 over 0.001, which is 0.889 times 100, which is 88.9.
+
+Two remarks on the figure. Its prior box prints the smallpox prior as 0.0011, but its arithmetic uses 0.001. And p of x equal to 0.081 is rounded: the two diseases alone give 0.08 plus 0.0009, which is 0.0809, and that yields 0.989 and 0.011.
+
+"Four candles", Figures 1.5 to 1.7. The acoustic signal fits "fork handles" a little better, 0.7 against 0.6, but "four candles" is nine times more frequent, 0.9 against 0.1. So p of x is 0.6 times 0.9 plus 0.7 times 0.1, which is 0.54 plus 0.07, which is 0.61. The posterior of "four candles" is 0.54 over 0.61, which is 0.885, and the posterior of "fork handles" is 0.07 over 0.61, which is 0.115.
+
+The posterior ratio is the likelihood ratio times the prior ratio. A datum that is only slightly more likely under a rare state cannot overcome a large difference in base rates.
+
+One point seven. A discrete prior for a Bernoulli probability. The site page on Bernoulli trials with a discrete prior. This is the C layer.
+
+The same arithmetic works when theta is a probability restricted to a few values. The site page uses theta in the set 0.3, 0.5 and 0.8, with prior probabilities 0.4, 0.5 and 0.1, and n Bernoulli trials with s n successes. The likelihood of the sequence is theta to the s n, times one minus theta to the n minus s n. So by equation 3, equation 14: the posterior probability that theta equals theta j, given the n observations, is p j times theta j to the s n times one minus theta j to the n minus s n, divided by the sum over l from 1 to 3 of the same expression with l in place of j.
+
+That is the line of the R code that multiplies the prior by theta to the number of successes and by one minus theta to the number of failures, renormalised.
+
+Two facts are visible in equation 14. First, it depends on the data only through s n and n: the order of the successes is irrelevant. That is sufficiency. Second, the prior only shifts the starting point. With 40 successes in 50 trials, equation 14 gives the posterior probability of theta equal to 0.8 as 0.99967, even though the prior gave theta equal to 0.8 only 10 per cent. The likelihood ratio, 0.8 over 0.5 to the 40th, times 0.2 over 0.5 to the 10th, is 1.5 times ten to the fourth, and it swamps the prior odds of 0.1 over 0.5. The page simulates with a fixed R seed, 12345; Python cannot reproduce that random stream, so the notes quote the formula and this deterministic case, not the page's path.
+
+One point eight. Subjective probability and coherence. Greenberg section 2.1.2, printed pages 8 to 11. This is the G layer, named for orientation and not examinable.
+
+Greenberg grounds the prior in subjective probability: a probability is the price at which you would buy or sell a bet that pays one if the event occurs. Coherence, meaning no set of bets that loses for sure, forces these prices to obey the axioms of probability, so Bayes' rule applies to beliefs as it does to frequencies. The frequentist reading, section 2.1.1, cannot give theta a distribution, because a parameter is not the outcome of a repeated experiment.
+
+Links. Next comes the same rule with a continuous theta and conjugate families, in section 2. Comparing the coins as models comes in section 5, subsection 5. The earlier first Bayesian example, an exponential prior with Poisson data, is Class 1, section 4; and "a p-value is not the probability of the null given the data" is Class 1, section 8. Reading: Greenberg sections 2.1 and 2.2, printed pages 7 to 18, and section 3.1.3, printed pages 24 to 25. Practice: Greenberg exercise 2.1, printed page 19, on coherence, is background; the class list starts at Greenberg exercise 2.2, printed page 19.
+
+Checklist for section 1. You should be able to derive Bayes' rule from the definition of conditional probability, and the predictive from the law of total probability. You should be able to compute Diego's 0.847 and 0.993, both sequentially and in batch, and the 0.983 of test Y alone. You should be able to compute the three-coin posteriors, 0.0674, 0.3932 and 0.5394, and their update after a fourth head. You should be able to state why the posterior ratio is the likelihood ratio times the prior ratio, and use it on the spots and the candles. And you should be able to explain why the posterior depends on the data only through the number of successes and trials.
+
+
+Part one, section 2. Conjugate updating: the posterior adds the data to the prior's pseudo-data.
+
+This section covers the site page "Sequential Bayesian Learning", its Beta-Binomial and Pareto-uniform sections; the Portuguese Bayes-estimator deck, slides 4 and 5, on the exponential-Gamma model; Greenberg section 2.2, printed pages 15 to 18, equations 2.4 and 2.5 and Figure 2.2; section 3.1.3, printed pages 24 to 25; section 3.1.4, printed pages 25 to 27, equation 3.2; and section 3.2.3, printed pages 32 to 33; Bolfarine and Sandoval examples 4.4.1 and 4.4.2, printed pages 65 to 68, and example 5.5.2, printed pages 86 to 87, equations 5.5.2 and 5.5.3; and Tsay section 12.3.2, results 12.3 to 12.6, printed pages 620 to 621.
+
+The claim, before the derivations. For a conjugate pair the posterior is the prior's family with updated parameters, and the update is a count. The Beta prior adds successes and failures; the Gamma prior adds events and exposure; the Pareto prior raises its lower bound to the sample maximum and adds n to its shape. The posterior mean is a weighted average of the prior mean and the maximum likelihood estimate, with the prior's weight falling like one over n. Because the update is a count, updating in batches or one observation at a time gives the same posterior. The predictive probability that the next Bernoulli trial succeeds equals the posterior mean of theta. With a uniform prior the posterior mode is the maximum likelihood estimate, s over n; the mean, one plus s over two plus n, is not.
+
+The notation. x one to x n are the data: Bernoulli, Poisson, exponential or uniform. s n, the sum of the x i, is the number of successes for Bernoulli data or the total count for Poisson data. Alpha zero and beta zero are the Beta prior parameters, positive; Greenberg calls them alpha and beta, and Bolfarine a and b. Alpha one and beta one are the posterior parameters. x in parentheses n, read "x of n", is the sample maximum. For the Pareto, theta zero is the lower bound and alpha zero the shape. And capital B of a and b is the Beta function: gamma of a times gamma of b, over gamma of a plus b.
+
+Two point one. The prior as data seen earlier. This is the U layer.
+
+Greenberg's reading, printed page 17: in a Beta prior with parameters alpha zero and beta zero, alpha zero is "the number of heads obtained in the experiment on which the prior is based", and beta zero the number of tails. After the data, the posterior is what you would have believed had you seen both experiments. This is why conjugate updating is sequential by construction, and why a prior can be judged by asking how many observations it is worth: alpha zero plus beta zero for the Beta, and beta zero periods of exposure for the Gamma, as in Class 1, section 4, where the exponential prior with mean one half was worth half a year.
+
+Two point two. The Beta-Bernoulli pair. Greenberg section 2.2; the site page, section 1; Bolfarine example 4.4.1. This is the C layer.
+
+The likelihood, Greenberg equation 2.4. For n independent tosses, equation 1: the probability of x one to x n given theta is the product over i of theta to the x i times one minus theta to the one minus x i, which is theta to the s n times one minus theta to the n minus s n.
+
+The prior. Theta is distributed Beta with parameters alpha zero and beta zero. Equation 2 gives four facts. The density is theta to the alpha zero minus one, times one minus theta to the beta zero minus one, divided by the Beta function of alpha zero and beta zero. The mean is alpha zero over alpha zero plus beta zero. The variance is alpha zero times beta zero, over alpha zero plus beta zero squared, times alpha zero plus beta zero plus one. And the mode is alpha zero minus one, over alpha zero plus beta zero minus two.
+
+The posterior. Substitute equations 1 and 2 into "posterior proportional to likelihood times prior", section 1 equation 6, and drop the Beta function, which is a constant. Equation 3: the posterior is proportional to theta to the s n times one minus theta to the n minus s n, times theta to the alpha zero minus one times one minus theta to the beta zero minus one. Adding exponents, that is theta to the power alpha zero plus s n, minus one, times one minus theta to the power beta zero plus n minus s n, minus one.
+
+Equation 3 is a Beta kernel. So equation 4: theta given x is distributed Beta with parameters alpha one and beta one, where alpha one equals alpha zero plus s n, and beta one equals beta zero plus n minus s n.
+
+The posterior mean as a weighted average, Greenberg equation 2.5. By equation 2 applied to equation 4, equation 5: the posterior mean of theta is alpha zero plus s n, over alpha zero plus beta zero plus n.
+
+Split the numerator into alpha zero and s n, which is n times x bar. Equation 6: the posterior mean equals w times the prior mean plus one minus w times x bar. The weight w is alpha zero plus beta zero, over alpha zero plus beta zero plus n; the prior mean is alpha zero over alpha zero plus beta zero; and one minus w is n over alpha zero plus beta zero plus n.
+
+Check: the first product is alpha zero over alpha zero plus beta zero plus n, and the second is s n over alpha zero plus beta zero plus n. They add to equation 5.
+
+Greenberg's Figure 2.2 in numbers, with prior Beta of 2 and 2, mean 0.5. Two cases.
+
+First case: n equal to 10 and s equal to 3. The posterior by equation 4 is Beta of 5 and 9. The weight w is 4 over 14, which is 0.2857. The posterior mean by equation 6 is 0.2857 times 0.5 plus 0.7143 times 0.3, which is 0.1429 plus 0.2143, which is 0.3571. The maximum likelihood estimate is 0.3.
+
+Second case: n equal to 50 and s equal to 15. The posterior is Beta of 17 and 37. The weight w is 4 over 54, which is 0.0741. The posterior mean is 0.0741 times 0.5 plus 0.9259 times 0.3, which is 0.0370 plus 0.2778, which is 0.3148. The maximum likelihood estimate is again 0.3.
+
+The same proportion of heads, five times the data: the prior's weight falls from 29 per cent to 7 per cent.
+
+The uniform prior, from the site page and Bolfarine equations 4.4.10 and 4.4.11. Put alpha zero and beta zero both equal to one in equations 4, 5 and 2. Equation 7: theta given x is distributed Beta with parameters one plus s n and one plus n minus s n; the posterior mean is one plus s n over two plus n; and the posterior mode is one plus s n minus one, over two plus n minus two, which is s n over n, the maximum likelihood estimate. Equation 8: the posterior variance is one plus s n, times one plus n minus s n, over two plus n squared, times three plus n.
+
+With s equal to 1 in n equal to 10, the sample of Class 1, section 1: the mode is 0.100; the mean is 2 over 12, which is 0.167; and the posterior standard deviation is the square root of 2 times 10, over 144 times 13, which is 0.103.
+
+The sequential-learning figure, middle panel, recomputes Greenberg's Figure 2.2 from equation 4. It shows the Beta of 2 and 2 prior, the dotted likelihoods, normalised to integrate to one, and the Beta of 5 and 9 and Beta of 17 and 37 posteriors, with means 0.357 and 0.315. Each dotted likelihood sits almost on top of its posterior; the prior only nudges the posterior toward 0.5, and less so for n equal to 50. That is equation 6 seen as densities: the posterior is approximately the likelihood when w is small. The right panel shows the Pareto-uniform update, subsection 6, on a seeded uniform sample on zero to two, with the Pareto prior with bound 1.5 and shape 0.1, as on the site page.
+
+Two point three. Sequential updating is exact. Greenberg section 3.1.3, printed page 25.
+
+The first experiment has n one trials and s one successes. By equation 4 the posterior is Beta with parameters alpha zero plus s one and beta zero plus n one minus s one. Use it as the prior for the second experiment, with n two trials and s two successes, and apply equation 4 again. Equation 9: theta given s one and s two is Beta with first parameter alpha zero plus s one, plus s two, and second parameter beta zero plus n one minus s one, plus n two minus s two. Regrouped, that is Beta with parameters alpha zero plus the total successes s one plus s two, and beta zero plus the total trials n one plus n two minus the total successes.
+
+That is the posterior from the Beta of alpha zero and beta zero and all n one plus n two trials at once. The site page's recursion, which sets alpha n to the cumulative sum of successes plus one and beta n to the trial count plus one minus the cumulative sum, is equation 9 applied one trial at a time.
+
+The order and grouping of the data do not matter; only the sufficient statistic does. This is section 1, equation 9, for a continuous theta.
+
+Two point four. The predictive probability of the next trial. Greenberg section 3.2.3, printed pages 32 to 33.
+
+Introduce theta and integrate it out. Equation 10: the probability that x n plus one equals one, given x, is the integral from zero to one of the probability that x n plus one equals one given theta, times the posterior of theta. That is the integral from zero to one of theta, times theta to the alpha one minus one, times one minus theta to the beta one minus one, divided by the Beta function of alpha one and beta one.
+
+The integrand is the kernel of a Beta with parameters alpha one plus one and beta one, whose integral is the Beta function of alpha one plus one and beta one. Equation 11, in four steps. The predictive equals the Beta function of alpha one plus one and beta one, over the Beta function of alpha one and beta one. Writing the Beta functions with gamma functions, that is gamma of alpha one plus one times gamma of alpha one plus beta one, over gamma of alpha one times gamma of alpha one plus beta one plus one. Using gamma of a plus one equal to a times gamma of a, twice, it is alpha one over alpha one plus beta one. And that is alpha zero plus s n, over alpha zero plus beta zero plus n.
+
+Equation 11 equals the posterior mean, equation 5, because for a Bernoulli variable the expected value of x given theta equals the probability that x equals one given theta, which is theta. With alpha zero and beta zero equal to one, equation 11 is Laplace's rule of succession: s n plus one, over n plus two. For Figure 2.2's first case, it is 5 over 14, which is 0.357.
+
+The predictive averages the model over the posterior; it does not plug in an estimate. Plugging in the maximum likelihood estimate would give s n over n, which is zero after n failures: a forecast of certainty that no finite sample justifies.
+
+Two point five. Gamma-Poisson and Gamma-exponential. Tsay results 12.4 and 12.5; Bolfarine example 4.4.2; the deck's slides 4 and 5.
+
+Take a Gamma prior with shape alpha zero and rate beta zero: the prior of lambda is proportional to lambda to the alpha zero minus one, times e to the minus beta zero lambda. Two cases.
+
+First, Poisson data with rate lambda. The likelihood kernel is lambda to the s n times e to the minus n lambda. The posterior is Gamma with shape alpha zero plus s n and rate beta zero plus n, and its mean is alpha zero plus s n, over beta zero plus n.
+
+Second, exponential data with density theta times e to the minus theta x. The likelihood kernel is theta to the n, times e to the minus theta times the sum of the x i. The posterior is Gamma with shape alpha zero plus n and rate beta zero plus the sum of the x i, and its mean is alpha zero plus n, over beta zero plus the sum of the x i.
+
+Each case is equation 3 with a Gamma kernel: multiply the kernels and add exponents. The Poisson case is Tsay's Result 12.4 and Bolfarine's example 4.4.2. The exponential case is Tsay's Result 12.5 and the "Modelo Exponencial-Gama" of the Bayes-estimator deck, slides 4 and 5, used in section 4. Class 1's coal example is the Poisson case with alpha zero equal to 1, beta zero equal to one half, n equal to 41 and s n equal to 127: the posterior is Gamma with shape 128 and rate 41.5, with mean 128 over 41.5, which is 3.084.
+
+Two point six. Pareto-uniform. The site page, section 2; Bolfarine example 5.5.2.
+
+The likelihood. For x i independent and uniform on zero to theta, equation 12: the probability of the sample given theta is the product of one over theta times the indicator that x i is at most theta, which is one over theta to the n, times the indicator that the sample maximum is at most theta.
+
+The likelihood is zero below the sample maximum and decreasing above it, so the maximum likelihood estimate of theta is the sample maximum: the boundary estimator of Class 1, section 5.
+
+The prior. The Pareto with bound theta zero and shape alpha zero has density alpha zero times theta zero to the alpha zero, times theta to the minus alpha zero plus one, for theta at least theta zero, and zero below. The site page types the numerator with alpha in the exponent instead of alpha zero, and adds a stray a in the denominator.
+
+The posterior. Multiply equation 12 by the prior and keep the factors in theta. Equation 13: the posterior is proportional to one over theta to the n, times the indicator that theta is at least the sample maximum, times one over theta to the alpha zero plus one, times the indicator that theta is at least theta zero. That is one over theta to the power alpha zero plus n, plus one, times the indicator that theta is at least the larger of the sample maximum and theta zero.
+
+Equation 13 is a Pareto kernel. So equation 14: theta given x is Pareto with bound theta one and shape alpha one, where theta one is the larger of the sample maximum and theta zero, and alpha one is alpha zero plus n.
+
+The summaries, equation 15, for a Pareto with bound theta one and shape alpha one. The mean is alpha one times theta one over alpha one minus one, when alpha one exceeds one. The median is theta one times two to the power one over alpha one. And the variance is theta one squared times alpha one, over alpha one minus one squared, times alpha one minus two, when alpha one exceeds two.
+
+The mean follows from the integral from theta one to infinity of theta, times alpha one theta one to the alpha one, times theta to the minus alpha one minus one. That equals alpha one times theta one to the alpha one, times theta one to the one minus alpha one, over alpha one minus one. The site page's text writes the posterior mean as theta one times alpha one over alpha one plus one, which is smaller than theta one and so outside the support; its code uses equation 15.
+
+Worked, on a seeded sample. The site page draws n equal to 50 from the uniform on zero to two, with the Pareto prior with bound 1.5 and shape 0.1. Python cannot replay R's seed, so the notes use a seeded NumPy sample with the same design. The sample maximum is 1.8923, so by equation 14 theta one is the larger of 1.8923 and 1.5, which is 1.8923, and alpha one is 0.1 plus 50, which is 50.1. By equation 15, the posterior mean is 50.1 times 1.8923 over 49.1, which is 1.9308, and the median is 1.8923 times two to the one over 50.1, which is 1.9186.
+
+The 5 per cent and 95 per cent posterior quantiles are theta one times 0.95 to the minus one over alpha one, which is 1.8942, and theta one times 0.05 to the minus one over alpha one, which is 2.0089. The true theta, 2, lies inside.
+
+The posterior never goes below the data's maximum, and the maximum likelihood estimate never goes above it. Every posterior summary sits at or above the sample maximum, which is the bias correction that the frequentist n plus one over n times the sample maximum, from Class 1 section 5, makes by hand. The right panel of the sequential-learning figure shows the posterior median and the 10 to 90 per cent band for theta against n from 5 to 50, hugging the running maximum from above, below the true value 2, and narrowing like one over n.
+
+The Bayesian interval, Bolfarine example 5.5.2, equation 5.5.3. For coverage one minus epsilon, which is Bolfarine's gamma equal to one minus alpha, solve two conditions with the Pareto distribution function, one minus theta one over t, to the alpha one: the posterior probability that theta is at most t one equals epsilon over two, and the posterior probability that theta is at least t two equals epsilon over two. That gives the equal-tail interval from theta one times one minus epsilon over two to the minus one over alpha one, up to theta one times epsilon over two to the minus one over alpha one. With epsilon equal to 0.10, that is the interval from 1.8942 to 2.0089 above. It is not the highest-posterior-density interval, which here starts at theta one because the density is decreasing.
+
+Two point seven. Large samples. Greenberg section 3.1.4, printed pages 25 to 27.
+
+Write the posterior as proportional to p of theta times the exponential of n times l bar of theta given y, where l bar is the mean log-likelihood contribution. A second-order expansion of l bar around the maximum likelihood estimate theta hat, where the first derivative vanishes, gives equation 16: the posterior is approximately p of theta times the exponential of minus n over two v, times theta minus theta hat squared, where v is the inverse of minus the second derivative of l bar at theta hat.
+
+So for large n the posterior is approximately normal with mean theta hat and variance v over n, provided the prior at theta hat is not zero. Three consequences, Greenberg printed page 27. The prior's role shrinks. The posterior concentrates at the true value, the Bayesian counterpart of consistency. And it is approximately normal around the maximum likelihood estimate.
+
+For the Beta-Bernoulli, equation 8 gives a posterior variance of approximately x bar times one minus x bar, over n: the inverse Fisher information of Class 1, section 1. The proviso matters for the Pareto prior: a lower bound theta zero above the true theta gives the true value zero posterior probability for every n.
+
+Two point eight. Other conjugate pairs. This is the G layer, named only.
+
+The Dirichlet-multinomial, Greenberg section 3.1.2, printed pages 23 to 24: a Dirichlet prior with parameter alpha gives a Dirichlet posterior with parameter alpha plus y, and the marginal of theta one is a Beta. The Beta-negative binomial, Tsay Result 12.6, printed page 621. The normal-normal and normal-inverse-gamma pairs come in section 3. And the inverse chi-squared for a variance, Tsay Result 12.8, is used inside the Gibbs samplers of section 7.
+
+Links. Next is the normal model, where the weight w becomes a ratio of variances, section 3; point estimates from these posteriors are in section 4. Earlier material: the exponential-Gamma model on the coal data, Class 1, section 4; and the estimators for the uniform on zero to theta, Class 1, section 5. Practice, statements in the books: Greenberg 2.2, printed page 19, Gamma-Poisson; Greenberg 2.4, printed page 19, Pareto-uniform; Greenberg 3.2, printed page 39, the Poisson predictive; Greenberg 3.4, printed page 39, sequential Poisson updating; Bolfarine 4.10, printed page 72, a Pareto prior for the uniform on zero to theta; and Tsay 12.1, printed page 670.
+
+Checklist for section 2. You should be able to derive the Beta posterior by adding exponents, and write its mean as a weighted average with weight alpha zero plus beta zero, over alpha zero plus beta zero plus n. You should be able to reproduce Greenberg's 0.357 and 0.315. You should be able to show that sequential updating equals batch updating. You should be able to derive the predictive probability of a success with the Beta function and the gamma recursion, and recognise Laplace's rule of succession. You should be able to state the Gamma-Poisson and Gamma-exponential posteriors. And you should be able to derive the Pareto posterior for uniform data, explain why every summary sits above the sample maximum, and build its equal-tail interval.
+
+
+Part one, section 3. The normal measurement model: predictive, posterior, and what a heavy-tailed prior changes.
+
+This section covers the ingredients deck, slides 26 to 52, Example 2, Gaussian measurement error, with physicists A, B and C; the site page on the four physicists, with priors A to D and its summary table by sampling importance resampling; Greenberg section 3.1.1, printed pages 20 to 21; section 3.2.3, printed pages 32 to 33; section 4.2, printed pages 43 to 44; section 4.3, printed pages 44 to 47, equations 4.2 to 4.7; and section 4.8, printed page 54; Bolfarine and Sandoval example 4.4.3, printed pages 68 to 69, and example 5.5.1, printed page 86; and Tsay Result 12.1, printed pages 618 to 619.
+
+The claim, before the derivations. Let x given theta be normal with mean theta and variance sigma squared, and let the prior be normal with mean mu zero and variance tau zero squared. Then the predictive is normal with mean mu zero and variance sigma squared plus tau zero squared, and the posterior is normal with mean w mu zero plus one minus w times x, and variance w tau zero squared, where w is sigma squared over sigma squared plus tau zero squared. Precisions add, and the mean is the precision-weighted average.
+
+For x equal to 850 and sigma equal to 40, physicist A, with prior normal with mean 900 and standard deviation 20, ends at a normal with mean 890 and standard deviation 17.9. Physicist B, with prior normal with mean 800 and standard deviation 80, ends at a normal with mean 840 and standard deviation 35.8. Physicist C holds a Student t prior with 5 degrees of freedom and A's mean and variance; there is no closed form, and quadrature gives a posterior mean of 891.1. At 850, A and C barely differ. But the normal prior pulls by the fixed share w however far x lands, while the t prior's pull dies away when data and prior conflict: at x equal to 1100, the posterior means are 940 under the normal and 1022 under the t.
+
+The notation. Theta is the physical quantity, a real number. x is one measurement, 850 on slide 39. Sigma is the measurement standard deviation, 40 on slide 28. Mu zero and tau zero are the prior mean and standard deviation of a normal prior: 900 and 20 for A, 800 and 80 for B. w is the weight on the prior mean, sigma squared over sigma squared plus tau zero squared, between zero and one. Mu one and tau one squared are the posterior mean and variance. h and h zero are the precisions, one over sigma squared and one over tau zero squared. And t sub nu of mu and s squared is the Student t with nu degrees of freedom, location mu and scale s, whose variance is nu s squared over nu minus two. Physicist C's prior is a t with 5 degrees of freedom, location 900 and scale squared 240.
+
+Three point one. Two physicists, one instrument. Slides 26 to 33. This is the U layer.
+
+The deck's second example learns a physical constant from one noisy reading. The instrument's error is known: x given theta is normal with mean theta and standard deviation 40, slide 28. Two physicists bring different experience. A, with large experience, has theta normal with mean 900 and standard deviation 20. B, not so experienced, has theta normal with mean 800 and standard deviation 80.
+
+Slide 33 draws each physicist's joint density, p of x and theta equal to p of x given theta times p of theta: a tilted ellipse for A, a broad one for B. Everything below is a slice or a projection of that joint density. The predictive is its projection on the x axis; the posterior is its slice at the observed x.
+
+An erratum. Slide 40 prints B's prior as normal with mean 800 and standard deviation 40, and slide 44 as normal with mean 800 and variance 1600. The posterior on slide 40, normal with mean 840 and standard deviation 35.7, and the site page, which sets B's sigma to 80, both require tau zero equal to 80, which is the value used here.
+
+Three point two. The predictive distribution. Slides 34 to 36; the setting of Greenberg exercise 3.3. This is the C layer.
+
+Write the measurement as the quantity plus an independent error. Equation 1: x equals theta plus e, where theta is normal with mean mu zero and variance tau zero squared, e is normal with mean zero and variance sigma squared, and theta and e are independent.
+
+A sum of independent normals is normal, with means and variances added. Equation 2: x is normal with mean mu zero plus zero and variance tau zero squared plus sigma squared.
+
+This is slide 35's result, x normal with mean theta zero and variance sigma squared plus tau zero squared, obtained there by computing p of x as the integral of p of x given theta times p of theta, and completing the square in theta. In numbers: for A, the predictive is normal with mean 900 and variance 1600 plus 400, which is 2000, so the predictive standard deviation is the square root of 2000, which is 44.72. For B, it is normal with mean 800 and variance 1600 plus 6400, which is 8000, with standard deviation the square root of 8000, which is 89.44.
+
+The predictive is wider than the instrument. Before measuring, a physicist is uncertain both about theta and about the error; equation 2 adds the two. The observed 850 is 850 minus 900 over 44.72, which is minus 1.12 predictive standard deviations from A's centre, and 850 minus 800 over 89.44, which is 0.56 from B's. Neither physicist is surprised.
+
+Three point three. The posterior. Slides 37 and 38; Bolfarine example 4.4.3; Tsay Result 12.1.
+
+Keep only the factors of p of x given theta times p of theta that involve theta. Equation 3: the posterior is proportional to the exponential of minus x minus theta squared over two sigma squared, times the exponential of minus theta minus mu zero squared over two tau zero squared. That equals the exponential of minus one half times the bracket: theta squared minus two theta x, over sigma squared, plus theta squared minus two theta mu zero, over tau zero squared; plus a constant c, which collects x squared over sigma squared and mu zero squared over tau zero squared.
+
+Collect theta squared and theta. Equation 4: the posterior is proportional to the exponential of minus one half times the bracket: theta squared times one over sigma squared plus one over tau zero squared, minus two theta times x over sigma squared plus mu zero over tau zero squared.
+
+Define the posterior precision and mean. Equation 5: one over tau one squared equals one over sigma squared plus one over tau zero squared; and mu one equals tau one squared times x over sigma squared plus mu zero over tau zero squared.
+
+Substitute equation 5 into equation 4 and complete the square. The bracket is theta squared minus two theta mu one, over tau one squared, which equals theta minus mu one squared over tau one squared, minus mu one squared over tau one squared, and the last term is a constant. So equation 6: theta given x is normal with mean mu one and variance tau one squared.
+
+Slide 37's form. From equation 5, tau one squared equals sigma squared tau zero squared over sigma squared plus tau zero squared. Then equation 7: mu one equals sigma squared tau zero squared over sigma squared plus tau zero squared, times x over sigma squared plus mu zero over tau zero squared; and multiplying out, that is sigma squared over sigma squared plus tau zero squared, times mu zero, plus tau zero squared over sigma squared plus tau zero squared, times x.
+
+With w equal to sigma squared over sigma squared plus tau zero squared, between zero and one, slide 38, equation 8: the posterior mean equals w times the prior mean plus one minus w times x; and the posterior variance equals w times the prior variance.
+
+Precisions add; means are precision-weighted, as Tsay says on printed page 619. Equation 5 says the posterior precision is the prior precision plus the data precision, and equation 7 weights each source by its share of the total precision. The weight on the prior, w, is large when the instrument is noisy relative to the prior, that is, when sigma squared is much larger than tau zero squared.
+
+The limits, slide 38. As tau zero squared tends to infinity, a vague prior, w tends to zero and theta given x tends to a normal with mean x and variance sigma squared: "the posterior collapses at the observed value x". As tau zero squared tends to zero, w tends to one: the data are ignored.
+
+n observations, Bolfarine example 4.4.3 and Tsay Result 12.1. With x one to x n independent normal with mean theta and variance sigma squared, the sample mean, normal with mean theta and variance sigma squared over n, is sufficient. So equations 5 to 8 hold with sigma squared over n in place of sigma squared, and the weight w n equals sigma squared over sigma squared plus n tau zero squared, which tends to zero like one over n.
+
+Three point four. Worked example: physicists A and B at x equal to 850. Slides 39 to 41.
+
+For A, w is 1600 over 1600 plus 400, which is 0.8. Substitute into equation 8. The posterior mean is 0.8 times 900 plus 0.2 times 850, which is 720 plus 170, which is 890. The posterior variance is 0.8 times 400, which is 320, and the standard deviation is the square root of 320, which is 17.89.
+
+For B, w is 1600 over 1600 plus 6400, which is 0.2. The posterior mean is 0.2 times 800 plus 0.8 times 850, which is 160 plus 680, which is 840. The posterior variance is 0.2 times 6400, which is 1280, and the standard deviation is the square root of 1280, which is 35.78.
+
+Slide 40 prints a normal with mean 890 and standard deviation 17.9, and a normal with mean 840 and standard deviation 35.7; 35.78 rounds to 35.8.
+
+The experienced physicist barely moves; the inexperienced one mostly follows the data. A moves 10 units toward x, 20 per cent of the 50-unit gap; B moves 40 units, 80 per cent of the gap. Both posteriors are narrower than both their prior and the instrument: 17.9 is below the smaller of 20 and 40, and 35.8 is below the smaller of 80 and 40.
+
+Three point five. Physicist C: a Student t prior. Slides 44 to 52. This is the C layer.
+
+Prior C, slide 45. Theta is distributed t with 5 degrees of freedom, location 900 and scale squared 240. Equation 9: its variance is nu over nu minus two times s squared, which is five thirds times 240, which is 400, the variance of prior A.
+
+Same centre, same variance as A, but heavier tails. Slide 47's log densities show C's log prior falling like minus nu plus one, times the log of the absolute value of theta minus 900, which is minus 6 times that log, instead of minus theta minus 900 squared over 800.
+
+No closed form, slide 48. Equation 10 gives the predictive and the posterior. The predictive p of x is the integral over theta of the normal density of x given theta, times the t density, which is gamma of 3 over gamma of five halves times the square root of 5 pi times 240, times the bracket one plus theta minus 900 squared over 5 times 240, raised to the minus 3. The posterior is proportional to the exponential of minus x minus theta squared over two sigma squared, times the bracket one plus theta minus 900 squared over 1200, raised to the minus 3. Neither is a standard form.
+
+The deck postpones them to Monte Carlo, with the footnote "yet to be learned!" on slides 49 and 51. The site page uses sampling importance resampling, section 6, subsection 7. A one-dimensional posterior can also be computed exactly by quadrature: evaluate the kernel of equation 10 on a fine grid and normalise.
+
+Prior D, from the site page. It is the equal mixture of the three physicists: one third of the normal with mean 900 and standard deviation 20, plus one third of the normal with mean 800 and standard deviation 80, plus one third of the t with 5 degrees of freedom, location 900 and scale squared 240. The page's text writes A's normal twice; its code uses A, B and C.
+
+The page's table against quadrature. The resampling draws come from uniform proposals on 600 to 1000, so the targets are the posteriors restricted to that interval; the restriction changes nothing at two decimals. The table compares four summaries for each posterior, first by resampling and then exactly.
+
+Posterior A. The mean is 890.06 by resampling against 890.00 exactly. The median is 890.10 against 890.00. The posterior probability that theta is below x is 0.01 against 0.013. The 5 per cent quantile is 860.52 against 860.58.
+
+Posterior B. The mean is 840.02 against 840.00. The median is 840.09 against 840.00. The probability that theta is below x is 0.61 against 0.610. The 5 per cent quantile is 781.18 against 781.15.
+
+Posterior C. The mean is 891.16 against 891.12. The median is 892.45 against 892.41. The probability that theta is below x is 0.02 against 0.022. The 5 per cent quantile is 860.30 against 860.31.
+
+Posterior D. The mean is 876.15 against 876.08. The median is 884.35 against 884.30. The probability that theta is below x is 0.19 against 0.187. The 5 per cent quantile is 806.53 against 806.40.
+
+The resampling column agrees with quadrature to Monte Carlo error, with a million draws. C's posterior is slightly to the right of A's and slightly narrower, standard deviation 17.70 against 17.89: near the centre, a t prior with A's variance is more peaked than A. D looks bimodal, with a long left shoulder: B's component keeps values near 800 alive, so its median, 884.3, exceeds its mean, 876.1.
+
+The four-priors figure has three panels. The left panel shows priors A, the normal at 900 with standard deviation 20; B, the normal at 800 with standard deviation 80; C, the Student t peaked at 900; D, the mixture; and the dashed likelihood centred at 850. The middle panel shows the four posteriors on the range 680 to 960, with means 890.0, 840.0, 891.1 and 876.1: equation 6 for A and B, and quadrature of equation 10 for C and D, at x equal to 850 and sigma equal to 40. The right panel plots the posterior mean against the observed x from 700 to 1150: the normal-prior line has slope 0.2 and passes through 900 at x equal to 900; the Student t curve follows it near 900 but bends back toward the 45-degree line for x far from 900 on either side.
+
+The right panel is the comparative static that matters. Under the normal prior the posterior mean is the straight line 0.8 times 900 plus 0.2 x: the pull toward 900 is 0.8 times x minus 900, proportional to the conflict, without limit. Under the t prior the curve hugs the normal line while x is within about 100 of 900, and then turns back toward the 45-degree line: the prior gives way when the data contradict it strongly.
+
+Three point six. Why the t prior gives way: bounded influence. This is the C layer.
+
+Take logs of the posterior kernel and differentiate. Equation 11: the posterior mode, theta tilde, solves x minus theta tilde over sigma squared equals psi of theta tilde, where psi of theta is minus the derivative of the log prior. The left side is the data's pull toward x; psi is the prior's pull back toward mu zero.
+
+The normal prior. The log prior is minus theta minus mu zero squared over two tau zero squared, plus a constant, so psi of theta is theta minus mu zero over tau zero squared. It grows linearly without bound. Substituting into equation 11 gives theta tilde equal to mu one of equation 5, for every x.
+
+The Student t prior. The log prior is minus nu plus one over two, times the log of one plus theta minus mu zero squared over nu s squared, plus a constant. So equation 12: psi of theta equals nu plus one times theta minus mu zero, over nu s squared plus theta minus mu zero squared.
+
+Equation 12 rises to a maximum where the absolute value of theta minus mu zero equals s times the square root of nu, and then falls to zero. The prior's pull is bounded and vanishes in the tails. For C, s times the square root of nu is the square root of 240 times 5, which is 34.6, and the largest pull is psi equal to 6 over 2 times 34.6, which is 0.087, against a data pull of x minus theta over 1600. When x is far from 900, the data pull wins and theta tilde tends to x.
+
+The numbers, by quadrature. At x equal to 1100, which is 4.47 predictive standard deviations from A's centre, the normal posterior mean is 0.8 times 900 plus 0.2 times 1100, which is 940.0. The t posterior mean is 1022.0, with posterior standard deviation 53.6, against 17.9: the t posterior is wide because it is torn between the prior and the data.
+
+A normal prior is never contradicted; it is averaged in. A heavy-tailed prior encodes "I am fairly sure, unless the data say otherwise". Greenberg makes the same point about likelihoods in section 3.1.1, printed pages 20 to 21: a Student t puts more probability in the tails than a normal with the same variance, and the choice can be compared by posterior odds. The Petrobras page applies it to returns, in section 8, subsection 7.
+
+The companion page, the Prior-Conflict Dial, lets you move the observation x, the instrument's sigma, the prior mean and standard deviation, and the t degrees of freedom, and watch both posteriors and the curve of posterior mean against x, with the normal pull w and the t pull side by side. Its defaults reproduce 890.0 and 17.9, and 891.1; a button that sets x equal to mu zero shows the no-conflict case.
+
+Three point seven. Improper priors and the regression version. Greenberg sections 4.2 and 4.3. This is the G layer.
+
+The flat prior. A prior proportional to a constant on the whole real line is improper, section 4.2, printed pages 43 to 44. With the normal likelihood it still gives the proper posterior, normal with mean x and variance sigma squared, the limit as tau zero tends to infinity of subsection 3. It is unusable for Bayes factors, section 5, subsection 6.
+
+Normal linear regression, Greenberg equations 4.2 to 4.7, printed pages 45 to 46. Let beta given sigma squared be K-variate normal with mean beta zero and covariance sigma squared times B zero, and let sigma squared be inverse gamma with parameters alpha zero over two and delta zero over two. Then beta given sigma squared and y is K-variate normal with mean beta bar and covariance sigma squared times B one, where B one is the inverse of X transposed X plus the inverse of B zero, and beta bar is B one times X transposed y plus the inverse of B zero times beta zero. And sigma squared given y is inverse gamma with parameters alpha one over two and delta one over two, with alpha one equal to alpha zero plus n. Marginally, beta given y is multivariate t, equation 4.7. Beta bar is the matrix version of equation 7: a precision-weighted average of beta zero and the ordinary least squares estimate. Dropping the proportionality of the prior covariance to sigma squared, section 4.9, loses the closed form and leads to the Gibbs sampler of section 7.
+
+Links. Next comes which summary of this posterior to report, section 4. Monte Carlo for physicist C is in section 6, subsection 7. Earlier: least squares as a projection and the Gaussian likelihood, Class 1, section 6. Later: the shrinkage estimators built on equation 7, sections 9 and 10. Practice, statements in the books: Greenberg 3.3, printed page 39, the normal predictive; Greenberg 4.5, printed page 58, the marginal likelihood of the normal-inverse-gamma model; and Tsay 12.1, printed page 670, the normal-normal posterior.
+
+Checklist for section 3. You should be able to derive the normal predictive as a sum of independent normals, and the normal posterior by completing the square. You should be able to state that precisions add and the posterior mean is precision-weighted, and compute A's 890 and 17.9 and B's 840 and 35.8. You should be able to explain why a Student t prior has no closed-form posterior and how quadrature or resampling handles it. And you should be able to derive the prior's pull psi for the normal and the t, show that the t pull is bounded, and explain the 940 against 1022 at an observation of 1100.
+
+
+Part two of the notes, section 4. A point estimate is the answer to a loss function.
+
+This section opens the second part of the notes, decisions and models. It covers the Portuguese Bayes-estimator deck, titled "Estimador Bayesiano e Funções de Perda", 16 slides; Greenberg section 3.2.1, printed pages 29 to 31, and section 3.2.2, printed page 31; and Bolfarine and Sandoval section 4.3, printed pages 61 to 63, with definitions 4.3.1 and 4.3.2 and example 4.3.2; section 4.4, printed pages 63 to 70, with theorem 4.4.1, examples 4.4.1 to 4.4.3 and theorem 4.4.2; and section 5.5, printed pages 85 to 87, with definition 5.5.1 and example 5.5.1.
+
+The claim, before the derivations. The posterior is the whole answer; a single number requires a loss function. The Bayes estimator minimises the posterior expected loss. Quadratic loss gives the posterior mean; absolute loss gives the median; zero-one loss gives the mode, the maximum a posteriori estimate; and Greenberg's bilinear loss gives the quantile of order a over a plus b. With a uniform prior and one success in ten trials the posterior is a Beta with parameters 2 and 10: mode 0.100, which equals the maximum likelihood estimate, median 0.148, mean 0.167. So the three losses give three different answers. Bayes estimators are usually biased, yet they minimise the Bayes risk, and they become the maximum likelihood estimate as n tends to infinity or as the prior becomes vague. Interval summaries are credible intervals: probability statements about theta given the data, with the highest-posterior-density interval the shortest.
+
+The notation. The deck writes delta of x and pi of theta given x; Greenberg writes theta hat and pi of theta given y. Capital L of theta and a is the loss when the truth is theta and the estimate is a; it is non-negative. Rho of a given x is the posterior expected loss, the expected value of L of theta and a given x. Delta of x is the Bayes estimator, the value of a that minimises rho of a given x. Capital F of a given x is the posterior distribution function, between zero and one. Capital R of theta and d is the frequentist risk of the rule d: the expected value, for fixed theta, of L of theta and d of X. And small r of pi and d is the Bayes risk: the integral of R of theta and d times pi of theta.
+
+Four point one. Why the posterior is not yet an answer. This is the U layer.
+
+A posterior is a distribution. A forecaster who must publish one number, a regulator who must set one threshold, an estimator plugged into the next model: each needs a single a. Which number depends on what an error costs. Overestimating a bridge's load capacity costs more than underestimating it; missing a fraud costs more than a false alarm. The loss function writes those costs down, and the Bayes estimator is the number that does best on average over what is still uncertain about theta, given everything observed. That is the deck's slides 6 to 8.
+
+Four point two. Loss, expected loss, and the Bayes estimator. The deck's slides 6 to 8; Greenberg section 3.2.1; Bolfarine definitions 4.3.1 and 4.3.2. This is the C layer.
+
+For each true value theta and estimate a, L of theta and a, at least zero, measures the loss. Before the data, the prior expected loss of a is the integral of L of theta and a times pi of theta, slide 6. After observing x, equation 1: rho of a given x equals the expected value of L of theta and a given x, which is the integral over the parameter space of L of theta and a times the posterior pi of theta given x.
+
+Equation 2: delta of x is the value of a that minimises rho of a given x.
+
+Equation 2 is the deck's definition of the Bayes estimator, slide 8: "The optimal estimator depends on the choice of the loss function." Greenberg, printed page 31, stresses that equation 2 is mechanical: given a loss, there is nothing to invent, only a minimisation.
+
+Four point three. Quadratic loss gives the posterior mean. Slide 9; Greenberg printed page 30; Bolfarine theorem 4.4.1.
+
+The loss is theta minus a, squared. Write theta minus a as theta minus theta bar, plus theta bar minus a, where theta bar is the posterior mean, and expand inside equation 1. Equation 3: rho of a given x equals the posterior expected value of theta minus theta bar squared, plus two times theta bar minus a times the posterior expected value of theta minus theta bar, plus theta bar minus a squared.
+
+The middle expectation is theta bar minus theta bar, which is zero. So equation 4: rho of a given x equals the posterior variance of theta plus theta bar minus a, squared.
+
+Equation 4 is minimised at a equal to theta bar. Equation 5: delta of x is the posterior mean, and the minimum expected loss is the posterior variance.
+
+Greenberg reaches the same result by differentiating under the integral: minus two times the integral of theta minus theta hat, times the posterior, equals zero. Equation 4 is the posterior twin of "mean squared error equals variance plus squared bias", Class 1 section 5; but here the expectation is over theta given x, not over x given theta.
+
+Four point four. Absolute loss gives the posterior median. Slide 10; the setting of Greenberg exercise 3.5.
+
+The loss is the absolute value of theta minus a. Split equation 1 at a. Equation 6: rho of a given x equals the integral from minus infinity to a of a minus theta times the posterior, plus the integral from a to infinity of theta minus a times the posterior.
+
+Differentiate with respect to a by the Leibniz rule; the boundary terms are zero because the integrands vanish at theta equal to a. Equation 7: the derivative of rho with respect to a equals the integral of the posterior from minus infinity to a, minus the integral of the posterior from a to infinity. That is F of a given x minus one minus F of a given x, which is two F of a given x minus one.
+
+Equation 7 is negative below the median and positive above it. So equation 8: delta of x is the posterior median, the point where F of delta given x equals one half.
+
+The deck says absolute loss is "more robust than quadratic loss: it penalises errors linearly and is less sensitive to extreme values".
+
+Four point five. Zero-one loss gives the posterior mode. Slide 11; the setting of Greenberg exercise 3.6.
+
+The loss is one if the absolute value of theta minus a is at least epsilon, and zero otherwise, for a small positive epsilon. Then equation 9: rho of a given x is the posterior probability that the absolute value of theta minus a is at least epsilon. That is one minus the integral of the posterior from a minus epsilon to a plus epsilon, which is approximately one minus two epsilon times the posterior density at a.
+
+Minimising equation 9 means maximising the posterior density at a. As epsilon tends to zero, equation 10: delta of x is the posterior mode, the maximum a posteriori estimate, abbreviated MAP.
+
+Four point six. Bilinear loss gives a quantile. Greenberg printed page 29, his loss L three.
+
+Greenberg's bilinear loss charges a per unit when the estimate is too low, that is, when theta exceeds theta hat, and b per unit when it is too high. Repeat equations 6 and 7 with the two weights. Equation 11: the derivative of rho with respect to theta hat is minus a times one minus F of theta hat given x, plus b times F of theta hat given x. Setting it to zero gives F of theta hat given x equal to a over a plus b.
+
+The Bayes estimator is the posterior quantile of order a over a plus b; a equal to b gives back the median. If over-estimation is three times as costly as under-estimation, a equal to 1 and b equal to 3, report the 25 per cent quantile.
+
+The deck's summary, slide 12, in four lines. Quadratic loss, theta minus a squared, gives the posterior mean. Absolute loss gives the posterior median. Zero-one loss, the indicator that the error is at least epsilon, gives the posterior mode. Bilinear loss with weights a and b gives the posterior quantile of order a over a plus b.
+
+Four point seven. Worked example: the Beta with parameters 2 and 10. One posterior, four answers.
+
+A uniform prior with one success in ten trials, from section 2 equation 7, gives theta given x distributed Beta with parameters 2 and 10. Five summaries.
+
+The mode, from zero-one loss: alpha one minus one over alpha one plus beta one minus two, which is 1 over 10, which is 0.1000. It equals the maximum likelihood estimate, s over n.
+
+The median, from absolute loss: the inverse distribution function at 0.5, which is 0.1480.
+
+The mean, from quadratic loss: alpha one over alpha one plus beta one, which is 2 over 12, which is 0.1667.
+
+The 25 per cent quantile, from bilinear loss with a equal to 1 and b equal to 3: the inverse distribution function at 0.25, which is 0.0876.
+
+And the minimum expected quadratic loss: the posterior variance, 2 times 10 over 12 squared times 13, which is 0.010684.
+
+The loss-functions figure has two panels. The left panel shows the Beta of 2 and 10 posterior density, right-skewed with its peak at 0.1, with vertical lines at the mode 0.100, the median 0.148 and the mean 0.167. The right panel shows the posterior expected loss of equation 1 against the estimate a on 0 to 0.45, for quadratic, absolute and zero-one loss, the last with epsilon equal to 0.01, each computed by quadrature and rescaled to the interval zero to one; their minima, marked with dots, fall at 0.167, 0.148 and 0.100, the values of equations 5, 8 and 10.
+
+For a right-skewed posterior the ordering is mode below median below mean: the mean is pulled by the long right tail, and the mode ignores it. The zero-one curve is the steepest and the narrowest: it only rewards landing near the peak. The quadratic curve is the flattest near its minimum, which is why small departures from the mean cost little. The same ordering holds for Class 1's coal posterior, the Gamma with shape 128 and rate 41.5: mode 3.0602, below median 3.0763, below mean 3.0843, all three close because 41 years of data make the posterior nearly symmetric.
+
+Four point eight. The exponential-Gamma example. The deck's slides 4 and 5, and 13 to 15.
+
+x one to x n given theta are exponential with rate theta, density theta e to the minus theta x, and theta is Gamma with parameters alpha zero and beta zero; the deck writes "Gama". The kernels, slide 4, are pi of theta proportional to theta to the alpha zero minus one times e to the minus beta zero theta, and the likelihood proportional to theta to the n times e to the minus theta times the sum of the x i. So equation 12: the posterior is proportional to theta to the power alpha zero plus n, minus one, times e to the minus beta zero plus the sum of the x i, times theta. That is, theta given x is Gamma with parameters alpha zero plus n and beta zero plus the sum of the x i.
+
+Under quadratic loss, by equation 5, equation 13: delta of x, the posterior mean, is alpha zero plus n over beta zero plus the sum of the x i. The maximum likelihood estimate, which the deck abbreviates EMV, is n over the sum of the x i, which is one over x bar.
+
+Observation 1, slide 13: the Bayes estimator is biased. True, and the reason is the prior's pull. But the slide's contrast, "while the MLE is unbiased by construction", fails here. Let S, the sum of the x i, be Gamma with parameters n and theta. Equation 14: the expected value of one over S is the integral from zero to infinity of one over s, times theta to the n, s to the n minus one, e to the minus theta s, over gamma of n. That equals theta to the n times gamma of n minus one, over gamma of n times theta to the n minus one, which is theta over n minus one. So the expected value of the maximum likelihood estimate is n over n minus one, times theta, which is not theta.
+
+Both estimators are biased; neither is unbiased "by construction". Maximum likelihood guarantees invariance and large-sample efficiency, not unbiasedness; Class 1, section 1, showed the same for the negative binomial.
+
+Observation 2, slide 14: asymptotic efficiency. As n tends to infinity, the prior's contribution, alpha zero and beta zero in equation 13, is swamped by n and the sum of the x i. So the posterior mean minus the maximum likelihood estimate tends to zero, and the Bayes estimator inherits the maximum likelihood estimator's efficiency, as in section 2, subsection 7.
+
+The vague prior, slide 15. Letting alpha zero and beta zero tend to zero in equation 13 sends the posterior mean to n over the sum of the x i. A seeded illustration: 30 draws with theta equal to 2 and the prior Gamma with parameters 2 and 1 give delta equal to 2.1636, against a maximum likelihood estimate of 2.1755.
+
+Four point nine. Bayes risk: why the posterior mean is optimal before the data too. Bolfarine sections 4.3 and 4.4.
+
+The frequentist risk of a rule d is R of theta and d, the expected value for fixed theta of L of theta and d of X: an average over data for fixed theta. Averaging it over the prior gives the Bayes risk, Bolfarine definition 4.3.1. Equation 15: r of pi and d equals the integral of R of theta and d times pi of theta, which is the double integral of L of theta and d of x, times f of x given theta, times pi of theta, over x and theta.
+
+Write f of x given theta times pi of theta as pi of theta given x times g of x, Bolfarine equation 4.4.3, where g is the marginal of x, and swap the integrals. Equation 16: r of pi and d equals the integral over x of the bracket, the integral of L of theta and d of x times the posterior over theta, times g of x. That is the integral of rho of d of x given x, times g of x.
+
+Equation 16 is minimised by minimising the bracket for every x, which is equation 2. The Bayes estimator minimises the Bayes risk: Bolfarine definition 4.3.2, and theorem 4.4.1 for quadratic loss.
+
+Worked, Bolfarine example 4.4.1. Bernoulli data, a uniform prior and quadratic loss give delta equal to S plus one over n plus two, Bolfarine equation 4.4.11. Its risk is variance plus squared bias. Equation 17: R of theta and delta equals n theta times one minus theta over n plus two squared, plus the square of n theta plus one over n plus two, minus theta. Simplified, that is n theta times one minus theta, plus one minus two theta squared, all over n plus two squared.
+
+Integrate equation 17 over theta uniform on zero to one, using the expected value of theta equal to one half and the expected value of theta squared equal to one third. Equation 18: the Bayes risk of delta is n over 6 plus one third, over n plus two squared, which is one over six times n plus two. The Bayes risk of the sample mean is the integral from zero to one of theta times one minus theta over n, which is one over six n.
+
+For n equal to 10: one seventy-second, 0.0139, against one sixtieth, 0.0167. The biased estimator has the smaller average risk.
+
+Two more facts, Bolfarine printed pages 64 to 70. The Bayes estimator depends on the data only through a sufficient statistic, theorem 4.4.2. And it is not invariant: if theta hat is the Bayes estimator of theta, g of theta hat need not be the Bayes estimator of g of theta, because the posterior expected value of g of theta is not g of the posterior expected value of theta for a nonlinear g. The maximum likelihood estimator is invariant, as Class 1 section 1 showed.
+
+Four point ten. Interval estimates: credible and highest posterior density. Greenberg section 3.2.2; Bolfarine section 5.5.
+
+A 100 times one minus epsilon per cent credible interval, from t one to t two, satisfies: the integral of the posterior from t one to t two equals one minus epsilon, Bolfarine definition 5.5.1. It is a probability statement about theta given the observed data. A confidence interval is a statement about the procedure over repeated samples, Greenberg printed page 31. Among all intervals with the same content, the shortest is the highest posterior density interval, abbreviated HPD, whose endpoints have equal density.
+
+The Beta of 2 and 10, at 95 per cent. Equal tails: from the 2.5 per cent quantile to the 97.5 per cent quantile, 0.0228 to 0.4128, length 0.390. The highest-posterior-density interval: 0.0063 to 0.3675, length 0.361, with equal posterior density at 0.0063 and at 0.3675. The highest-density interval moves toward the mode because the posterior is skewed. For a symmetric posterior, such as the normal of Bolfarine example 5.5.1, the two coincide: theta bar plus or minus 1.96 standard deviations.
+
+Four point eleven. Minimax. This is the G layer, named only and not examinable here.
+
+Bolfarine section 4.2, printed pages 60 to 61, ranks rules by their worst-case risk, the maximum over theta of R of theta and d, instead of the average of equation 15. Example 4.2.2 finds d of X equal to X minimax for a Poisson mean under the loss theta minus a squared over theta, and example 4.3.2 finds the Bayes rule X over 2 within the rules c times X under an exponential prior with rate one.
+
+Links. Before this, section 3 gave a symmetric posterior, where mean, median and mode coincide. Next comes choosing between models instead of values, section 5. Earlier: mean squared error as variance plus squared bias, Class 1 section 5; and posterior mean against mode on the coal data, Class 1 section 4. Practice, statements in the books: Greenberg 3.5, printed page 39, the median under absolute loss; Greenberg 3.6, printed page 39, zero-one loss and the mode; Bolfarine 4.3, printed page 71; Bolfarine 4.5, printed page 71; Bolfarine 4.9, printed page 72; Bolfarine 4.10, printed page 72; and Bolfarine 5.11, printed page 89, a symmetric Bayesian interval.
+
+Checklist for section 4. You should be able to define the posterior expected loss and the Bayes estimator. You should be able to derive the posterior mean from quadratic loss by adding and subtracting theta bar, the median from absolute loss by the Leibniz rule, the mode from zero-one loss, and the quantile a over a plus b from bilinear loss. You should be able to compute the Beta of 2 and 10 summaries, 0.100, 0.148 and 0.167, and explain their ordering. You should be able to show that the exponential maximum likelihood estimator has expectation n theta over n minus one. You should be able to prove that the Bayes estimator minimises the Bayes risk, and compute one seventy-second against one sixtieth. And you should be able to distinguish an equal-tail credible interval from a highest-posterior-density interval, and both from a confidence interval.
+
+
+Section 5. Bayes factors: the marginal likelihood rewards fit and charges for every free parameter.
+
+This section covers Greenberg section 3.2.4, printed pages 33 to 38, with equations 3.3 to 3.5, Table 3.1, the Michaela and Lila example, and Table 3.2; section 4.2, printed pages 43 to 44; and section 7.1.2, printed pages 95 to 96, named only. It also rereads the question zero deck and the Diego slides of the ingredients deck as model choice, and it answers the class-plan goal "Bayes factors, posterior model probabilities, model selection".
+
+The claim, before the derivations. A model is a likelihood plus a prior. Its marginal likelihood, m of y equal to the integral of f of y given theta times pi of theta, is the likelihood averaged over the prior. Posterior odds equal prior odds times the Bayes factor, B one two, which is m one of y over m two of y. Greenberg's Michaela and Lila example compares "one coin probability" with "two". With m equal to 10 tosses each and proportions 0.2 and 0.8, the log base ten Bayes factor is minus 1.200: strong evidence for two probabilities. With 0.5 and 0.5 it is plus 0.297 for the simpler model, and plus 0.756 at m equal to 100. The simpler model gains when the data agree with it, because the bigger model spreads its prior over values the data rule out. In large samples the log Bayes factor is approximately the log likelihood ratio minus d one minus d two over two, times log n: a BIC-type penalty. And Bayes factors need proper priors; an improper prior makes the Bayes factor arbitrary.
+
+The notation. M i is model i, with prior probability p i, parameters theta i, d i of them, prior pi i of theta i, and likelihood f i of y given theta i. m i of y is the marginal likelihood of model i, positive. B one two is the Bayes factor, m one of y over m two of y. R one two is the posterior odds, the posterior probability of model one over that of model two. Small m is the number of tosses by each girl in the Michaela and Lila example. s one and s two are the heads by Michaela and by Lila, between zero and m. And n is the total sample size, here two m.
+
+Five point one. Comparing explanations, not testing a point. This is the U layer.
+
+A frequentist test asks whether the data would be unusual if the null hypothesis were true, and refers a statistic to its sampling distribution, Greenberg printed page 36. The Bayesian question is different and symmetric: which model, given the data, is more probable? It applies to non-nested models, such as a normal against a Student t likelihood, or y against log y, as easily as to nested ones. And it can end in "both are still plausible; wait for more data", Greenberg printed page 35. The three-coin problem of section 1 was already a model comparison: each coin is a model with no free parameter, and its marginal likelihood is just its likelihood.
+
+Five point two. Posterior model probabilities. Greenberg equations 3.3 and 3.4. This is the C layer.
+
+Apply Bayes' rule to the model index and introduce the parameters, as for the predictive in section 2 equation 10. Equation 1: the posterior probability of model one given y equals p one times f one of y given model one, over f of y; and that is p one times the integral of f one of y given theta one and model one, times pi one of theta one given model one, over f of y.
+
+Equation 2: f of y equals p one times that same integral for model one, plus p two times the corresponding integral for model two.
+
+Each integral in equation 2 is a marginal likelihood, Greenberg equation 3.4. Equation 3: m i of y equals the integral of f i of y given theta i and model i, times pi i of theta i given model i, over theta i.
+
+Greenberg calls it "the expected value of the likelihood function with respect to the prior distribution", printed page 34. It is also the normalising constant of model i's posterior, so the constants of f and of pi must be kept.
+
+Five point three. Posterior odds and the Bayes factor. Greenberg printed pages 34 to 35.
+
+Divide equation 1 for model one by equation 1 for model two; f of y cancels. Equation 4: the posterior odds R one two, the posterior probability of model one over that of model two, equals the prior odds p one over p two, times the Bayes factor B one two, which is m one of y over m two of y.
+
+With two models, the posterior probability of model one is R one two over one plus R one two, which is one over one plus the ratio of p two over p one to the Bayes factor.
+
+Jeffreys' guidelines, Greenberg Table 3.1, printed page 35, for evidence in favour of model one; mirror the signs for model two. Five bands of the log base ten of the posterior odds. Above 2: decisive support for model one. From three halves to 2: very strong evidence. From 1 to three halves: strong evidence. From one half to 1: substantial evidence. From 0 to one half: weak evidence.
+
+Greenberg adds: "these values are arbitrary, as is the 5 per cent level of significance". If the log base ten Bayes factor is 2, the prior odds would have to be below one in a hundred for the posterior odds to favour model two.
+
+Five point four. Worked example: Michaela and Lila. Greenberg printed pages 37 to 38, Table 3.2.
+
+Michaela tosses a coin m times and gets s one heads; Lila tosses it m times and gets s two. Model one says theta one equals theta two equals theta: the way they toss does not matter. Model two says theta one is not equal to theta two. The priors are Beta with parameters 1 and 1, that is, uniform, on theta under model one, and on each theta j under model two.
+
+Model one. The likelihood of the two m tosses is theta to the s one plus s two, times one minus theta to the two m minus s one minus s two. Integrate against the uniform prior with the Beta integral: the integral from zero to one of theta to the a minus one times one minus theta to the b minus one equals the Beta function of a and b. Equation 5: m one of y is the integral from zero to one of theta to the s one plus s two times one minus theta to the two m minus s one minus s two. That is the Beta function of s one plus s two plus one and two m minus s one minus s two plus one. In Greenberg's gamma-function form, with y bar equal to s one plus s two over two m, it is gamma of two m y bar plus one, times gamma of two m minus two m y bar plus one, over gamma of two m plus two.
+
+Model two. The two probabilities are independent a priori and each appears in its own factor of the likelihood, so the double integral factors, Greenberg equation 3.5. Equation 6: m two of y equals the Beta function of s one plus one and m minus s one plus one, times the Beta function of s two plus one and m minus s two plus one. In gamma form, each factor is gamma of m y bar j plus one, times gamma of m minus m y bar j plus one, over gamma of m plus two.
+
+One row in full: m equal to 10, s one equal to 2 and s two equal to 8. By equation 5, m one is the Beta function of 11 and 11, and its log base ten is minus 6.5888. By equation 6, m two is the Beta function of 3 and 9 times the Beta function of 9 and 3, and its log base ten is minus 5.3892. Then the log base ten Bayes factor is minus 6.5888 minus minus 5.3892, which is minus 1.1996, about minus 1.200.
+
+With even prior odds, the posterior probability of model one is one over one plus ten to the 1.1996, which is 0.059: strong evidence that the girls toss differently.
+
+Table 3.2 reproduced. Lila's proportion is one minus Michaela's. Five rows, each with the log base ten Bayes factor at m equal to 10 and then at m equal to 100.
+
+Michaela 0.1 and Lila 0.9: minus 2.506 at m equal to 10, and minus 30.775 at m equal to 100.
+
+Michaela 0.2 and Lila 0.8: minus 1.200, and minus 15.793.
+
+Michaela 0.3 and Lila 0.7: minus 0.348, and minus 6.316.
+
+Michaela 0.4 and Lila 0.6: plus 0.138, and minus 0.975.
+
+Michaela 0.5 and Lila 0.5: plus 0.297, and plus 0.756.
+
+Every entry is recomputed from equations 5 and 6 in the Python note, section 5, and agrees to the printed three decimals.
+
+The Bayes-factor figure has two panels. The left panel plots the log base ten Bayes factor for model one against Michaela's proportion of heads, with Lila's equal to one minus it, evaluating equations 5 and 6 on a continuum of proportions, since the gamma functions accept non-integers. For m equal to 10 it is a shallow arch peaking near 0.3 at 0.5; for m equal to 100 it is a steep arch peaking at 0.76 at 0.5 and falling below minus 30 at 0.1. The Table 3.2 values are marked as dots, and dotted lines mark the Jeffreys thresholds. The right panel plots the log base ten Bayes factor at equal proportions, s one equal to s two equal to m over two, against m on a log scale, rising from 0.15 to 1.75, with the BIC-type line, one half log base ten of two m, running parallel about 0.4 above it: the large-sample approximation of equation 8.
+
+Two comparative statics. Across proportions, the Bayes factor is largest when both girls agree, 0.5 and 0.5, and collapses as they diverge; more data sharpen the verdict in both directions, because the m equal to 100 arch is taller and steeper. Across sample sizes at perfect agreement, the evidence for the simpler model keeps growing, like one half log base ten of m: two free probabilities are never refuted by agreeing data, only penalised for being unnecessary.
+
+The companion page, the Bayes-Factor Dial, lets you move m, the two head counts, the symmetric Beta prior with parameter alpha, and the prior odds, and watch the log base ten Bayes factor against Lila's count with the Jeffreys bands, the Beta posteriors under each model, and the large-sample approximation. The buttons load the ten entries of Table 3.2.
+
+Five point five. Worked: coins and tests as models.
+
+The three coins, from section 1, subsection 5. With no free parameters, the marginal likelihood of three heads under coin k is p k cubed. So the Bayes factor of coin 3 against coin 1 is 1 over 0.125, which is 8, and that of coin 2 against coin 1 is 0.729 over 0.125, which is 5.832. With equal prior odds these give the posteriors 0.5394, 0.3932 and 0.0674. Here the Bayes factor is the likelihood ratio, because there is nothing to integrate.
+
+Diego, from section 1, subsection 3. "Ill" and "healthy" are two models. The Bayes factor of a positive X is 0.95 over 0.40, which is 2.375, with log base ten 0.38: weak evidence. The prior odds, 0.7 over 0.3, turn it into posterior odds of 5.54, that is, a probability of 0.847.
+
+Five point six. What the marginal likelihood penalises. Greenberg printed page 37. This is the C layer.
+
+Exponentiate the second-order expansion of the log-likelihood around the maximum likelihood estimate theta hat i, section 2 equation 16, Greenberg equation 3.2, and substitute into equation 3. For large n the exponential dominates the prior, so pi i of theta i is approximately pi i of theta hat i on the region that matters. Equation 7, in two steps. First, m i of y is approximately the maximised likelihood L i at theta hat i, times pi i of theta hat i, times the integral of the exponential of minus n over two, times theta i minus theta hat i transposed, times the inverse of V i, times theta i minus theta hat i. Second, that Gaussian integral equals two pi to the d i over two, times n to the minus d i over two, times the square root of the determinant of V i.
+
+Take the log of the ratio of equation 7 for models one and two. Equation 8: the log Bayes factor is approximately the sum of two brackets. The first bracket grows with n: the log of the ratio of the maximised likelihoods, minus d one minus d two over two, times log n. The second bracket is bounded: the log of the ratio of the priors at the maximum likelihood estimates, plus one half the log of the ratio of the determinants of V one and V two, plus d one minus d two over two, times the log of two pi.
+
+The first bracket is the log-likelihood ratio minus half the log sample size per extra parameter: the Schwarz, or BIC, penalty of Class 1 section 6, derived rather than imposed.
+
+The check on Michaela and Lila. d one minus d two is one minus two, which is minus one, and n is two m, so the first bracket is the log likelihood ratio plus one half the log of two m. For the counts 2 and 8 at m equal to 10, the log base ten likelihood ratio is minus 1.674, and the approximation gives minus 1.674 plus one half the log base ten of 20, which is minus 1.024, against the exact minus 1.200. At equal proportions the likelihood ratio is one; and with uniform priors, pi equal to one and V equal to theta times one minus theta, which is one quarter, the bounded bracket evaluates to minus one half the log of two pi. The exact value tends to one half the log base ten of m over pi, which stays one half the log base ten of two pi, that is 0.399, below the BIC line: the constant gap in the right panel.
+
+Occam's razor is built in. Model two can fit anything model one fits, so its maximised likelihood is always at least as high. But its marginal likelihood averages over a prior spread across pairs of theta one and theta two that the data contradict, and that average is lower whenever the extra freedom is not needed.
+
+Five point seven. Bayes factors need proper priors. Greenberg section 4.2, printed page 44.
+
+An improper prior is defined only up to a constant: c times pi of theta is "the same" prior for every positive c. Substitute into equations 3 and 4. Equation 9: the Bayes factor equals c one times the integral of f one of y given theta one times pi one of theta one, over c two times the integral of f two of y given theta two times pi two of theta two. The arbitrary ratio c one over c two sets the Bayes factor to any value, "even if only one of the prior distributions is improper".
+
+A posterior for theta within a model survives an improper prior, because the constant cancels in section 1 equation 3; a comparison between models does not. A related warning: a proper but very diffuse prior makes m i small, so the log of pi i at theta hat i in equation 8 favours the smaller model however good the bigger one's fit. That is the Jeffreys-Lindley effect of Class 1 section 8.
+
+Five point eight. Model averaging and invariance. Greenberg printed pages 35 to 36.
+
+Prediction under model uncertainty. Weight each model's predictive by its posterior probability. Equation 10: the predictive of a future y f given y equals the sum over the models of the posterior probability of model i, times the integral of f i of y f given theta i, y and model i, times the posterior of theta i given y and model i.
+
+Models with small posterior probability contribute little. The Vanguard table in section 10 uses Bayesian model averaging, BMA, as the benchmark.
+
+Invariance to the scale of y. If model one models y and model two models z equal to g of y, with g monotone, transforming model two back to the y scale multiplies its density by the Jacobian, the absolute value of dz by dy, and the same factor appears in every comparison on the y scale. So comparing y with log y is legitimate once both densities are on the same scale, Greenberg printed page 36.
+
+Five point nine. Computing marginal likelihoods. This is the G layer, named only and not examinable here.
+
+When the posterior is not of a known form, m of y is not available in closed form. Chib's method, Greenberg section 7.1.2, printed pages 95 to 96, uses the identity: f of y equals f of y given theta star, times pi of theta star, over pi of theta star given y, at a point theta star, and estimates the denominator from Gibbs output. Chib and Jeliazkov, section 7.2.2, do the same for Metropolis-Hastings output. Greenberg's union-wage example, section 8.1.1, printed page 113, reports a log base ten Bayes factor of 5.390 for including union membership.
+
+Links. Next comes computing the integrals that have no closed form, section 6. Earlier: p-value against Bayes factor at X equal to 1.8, Class 1 section 8; and BIC as a selection criterion, Class 1 section 6. Practice, statements in the books: Greenberg 3.7, printed page 40, verifying equation 3.5; Greenberg 3.8, printed page 40, Bayes factors for two Poisson rates, listed in the class plan; and Greenberg 4.5, printed page 58, an analytic marginal likelihood.
+
+Checklist for section 5. You should be able to derive posterior model probabilities and posterior odds, and state that the posterior odds are the prior odds times the Bayes factor. You should be able to state Jeffreys' scale. You should be able to compute the Michaela and Lila marginal likelihoods with Beta functions, and reproduce minus 1.200 and plus 0.756. You should be able to derive the large-sample approximation and identify the BIC penalty of one half log n per parameter. And you should be able to explain why an improper prior makes the Bayes factor arbitrary while leaving the within-model posterior intact.
+
+Recap of part 1. Bayes' rule is arithmetic on a finite space and a kernel calculation on a continuous one: posterior proportional to likelihood times prior, with the predictive as the normalising constant. Conjugate priors add data to pseudo-data, so sequential and batch updating agree and the posterior mean is a weighted average whose prior weight falls like one over n. In the normal model precisions add, and a heavy-tailed prior gives way when the data contradict it. A point estimate is the minimiser of a posterior expected loss: mean, median, mode or quantile. And a model is judged by its marginal likelihood, which builds in Occam's razor and the BIC penalty, but only under proper priors. Part 2 turns to computing posteriors when no closed form exists, and to priors as models.
+
+This is the end of part 1 of the Classes 3 and 4 narration.

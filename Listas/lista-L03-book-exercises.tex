@@ -1,0 +1,1504 @@
+% =============================================================================
+% L03 (Classes 3+4, Introduction to Bayesian learning): textbook exercises with solutions.
+% Built from ~/.claude/commands/templates/lista-exam.tex (book problems: \questao + verbatim text).
+%
+% TWO MODES (one source file):
+%   \solucoesfalse  -> blank LIST (statements + space to work)
+%   \solucoestrue   -> ANSWER KEY (same file, full solutions)
+%
+% Compile (copyable PDF, lmodern+cmap):  pdflatex lista-L03-book-exercises.tex  (2x);  pdffonts -> Type 1 only
+% Every number in the solutions is reproduced and asserted by Listas/L03-book-exercises-check.py.
+% =============================================================================
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}   % fontes vetoriais Type 1 (substitui bitmap PK)
+\usepackage{cmap}      % ToUnicode CMap -> texto e acentos copiaveis
+\usepackage[brazil,english]{babel}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage[a4paper,margin=2.2cm]{geometry}
+\usepackage{enumitem}
+\usepackage{fancyhdr}
+\usepackage{comment}
+% One cut file per job: parallel builds in one folder would otherwise share comment.cut and
+% swap solutions. Redefine DefaultCutFileName; overriding CommentCutFile alone is reset by comment.sty.
+\def\DefaultCutFileName{\def\CommentCutFile{\jobname.cut}}
+\usepackage{needspace}
+\usepackage{xcolor}
+\usepackage{microtype}
+\usepackage{booktabs}
+\usepackage{listings}
+\lstset{language=Python,basicstyle=\ttfamily\footnotesize,columns=fullflexible,keepspaces=true,
+  breaklines=true,frame=single,framerule=0.3pt,rulecolor=\color{black!40},
+  keywordstyle=\color{blue!55!black},commentstyle=\color{black!55},showstringspaces=false}
+
+% ====================== CONFIGURATION ======================
+\newif\ifsolucoes
+\solucoesfalse                 % <<<< \solucoestrue for the ANSWER KEY; \solucoesfalse for the LIST
+
+\newcommand{\disciplina}{Advanced Econometrics --- MPE (Insper)}
+\newcommand{\listatema}{\textit{L03 --- Introduction to Bayesian learning (Classes 3+4): textbook exercises}}
+\newcommand{\espacoresol}{4.5cm}   % height of the working space in the blank list
+
+% ====================== MACHINERY ======================
+\ifsolucoes\includecomment{sol}\else\excludecomment{sol}\fi
+
+\pagestyle{fancy}\fancyhf{}
+\lhead{\footnotesize\disciplina}
+\rhead{\footnotesize L03 book exercises\ifsolucoes{} --- Solutions\fi}
+\cfoot{\footnotesize\thepage}
+\renewcommand{\headrulewidth}{0.3pt}
+\setlength{\headheight}{14pt}
+
+\setlist{topsep=2pt,itemsep=2pt}
+\newcounter{questao}
+% equations are numbered (Qn.k) inside question n, so they never clash with the books' (7.1), (12.6)...
+\counterwithin*{equation}{questao}
+\renewcommand{\theequation}{Q\thequestao.\arabic{equation}}
+
+% Block header (one block per book)
+\newcommand{\bloco}[3]{\bigskip\noindent
+  {\large\bfseries\color{blue!55!black}Block #1 --- #2}\hfill\textit{(#3)}\par
+  \noindent\rule{\linewidth}{0.3pt}\smallskip}
+\emergencystretch=3em
+
+% Question (automatic numbering)
+\newcommand{\questao}[1]{\refstepcounter{questao}\needspace{6\baselineskip}\medskip\noindent
+  \textbf{Question \thequestao.}~#1\par}
+% Source line of a book question (estilo-avaliacao, Book-questions rule)
+\newcommand{\fonte}[1]{\par\noindent{\small\textit{Source:} #1}\par}
+% Verbatim statement and verbatim context (context = book material the item refers to)
+\newenvironment{enunciado}{\begin{quote}}{\end{quote}}
+\newenvironment{contexto}[1]{\begin{quote}\small\noindent\textit{Context the item refers to (not part of the exercise; #1, reproduced verbatim).}\par}{\end{quote}}
+% Notation list that opens every solution (estilo-avaliacao §4, "Equations, notation and layout").
+\newenvironment{notacao}{\par\smallskip\noindent\textbf{Notation.}\begin{itemize}[leftmargin=1.4em,topsep=1pt,itemsep=0pt]\small}{\end{itemize}}
+\allowdisplaybreaks
+
+% Working space in the blank list
+\newcommand{\resolespaco}{\ifsolucoes\else\par\textit{Work:}\vspace{\espacoresol}\par\fi}
+
+% Solution step (use inside sol)
+\newcommand{\passo}[2]{\par\smallskip\noindent\textbf{Step --- #1.}~#2}
+\newcommand{\intuicao}[1]{\par\smallskip\noindent\textit{Intuition.}~#1}
+\newcommand{\refbib}[1]{\par\smallskip\noindent{\footnotesize\color{black!60}\textbf{Ref:} #1}}
+
+% =============================================================================
+\begin{document}
+\begin{center}
+  {\Large\bfseries \disciplina}\\[2pt]
+  {\large Problem set: \listatema}\ifsolucoes\\[2pt]\textit{Solutions}\fi
+\end{center}
+\vspace{2pt}
+
+{\footnotesize\noindent\textbf{Instructions.} Every question is a textbook exercise from the
+``Practice'' list of Classes 3+4 in \texttt{Map/class-plan.md}, reproduced verbatim from the book PDF
+with its source line; Portuguese-language books (Bolfarine \& Sandoval; Morettin \& Singer) are quoted
+in Portuguese. When an exercise refers to an equation, table or exercise elsewhere in the book, that
+material is reproduced as \emph{context}. Show every step. Computational items are solved in Python
+(NumPy/SciPy only, fixed seeds); every number printed in the solutions is reproduced and asserted by
+\texttt{Listas/L03-book-exercises-check.py}. Greenberg's gamma $G(\alpha,\beta)$ and Bolfarine's
+$Gama(\alpha,\beta)$ both use the rate form $\beta^\alpha\theta^{\alpha-1}e^{-\beta\theta}/\Gamma(\alpha)$,
+mean $\alpha/\beta$; $IG(\alpha,\beta)$ is the inverse gamma with density
+$\beta^\alpha y^{-(\alpha+1)}e^{-\beta/y}/\Gamma(\alpha)$ (Greenberg, App.~A.1.7--A.1.8).\par}
+
+% =============================================================================
+\bloco{1}{Greenberg (2007)}{Chs.~2--8 \,\textbullet\, 15 questions}
+
+% -----------------------------------------------------------------------------
+\questao{Greenberg 2.2 --- gamma--Poisson conjugacy.}
+\fonte{Greenberg, E. (2007), \textit{Introduction to Bayesian Econometrics}, Cambridge University Press, Exercise 2.2, p.~19 --- reproduced verbatim.}
+\begin{enunciado}
+\textbf{2.2} The Poisson distribution has probability mass function
+\[
+p(y_i|\theta)=\frac{\theta^{y_i}e^{-\theta}}{y_i!},\qquad \theta>0,\ y_i=0,1,\ldots,
+\]
+and let $y_1,\ldots,y_n$ be a random sample from this distribution.
+\begin{enumerate}[label=\textbf{(\alph*)},leftmargin=2em]
+\item Show that the gamma distribution $G(\alpha,\beta)$ is a conjugate prior distribution for the Poisson distribution.
+\item Show that $\bar y$ is the MLE for $\theta$.
+\item Write the mean of the posterior distribution as a weighted average of the mean of the prior distribution and the MLE.
+\item What happens to the weight on the prior mean as $n$ becomes large?
+\end{enumerate}
+\end{enunciado}
+\resolespaco
+\begin{sol}
+\begin{notacao}
+\item $y_i\in\{0,1,\ldots\}$: count of observation $i$; $n\ge1$: sample size; $s=\sum_{i=1}^n y_i\ge0$; $\bar y=s/n$.
+\item $\theta>0$: Poisson rate (mean); $\alpha,\beta>0$: prior shape and rate, $G(\alpha,\beta)$ density $\beta^\alpha\theta^{\alpha-1}e^{-\beta\theta}/\Gamma(\alpha)$, mean $\alpha/\beta$ (Greenberg A.1).
+\item $w\in(0,1)$: weight on the prior mean.
+\end{notacao}
+\passo{(a) likelihood}{By independence the joint p.m.f.\ is the product of the statement's p.m.f.:
+\begin{align}
+f(y|\theta)&=\prod_{i=1}^n\frac{\theta^{y_i}e^{-\theta}}{y_i!}\label{g22:l1}\\
+&=\frac{\theta^{s}e^{-n\theta}}{\prod_{i}y_i!}.\label{g22:lik}
+\end{align}}
+\passo{(a) prior and Bayes theorem}{The prior and Bayes theorem are
+\begin{align}
+\pi(\theta)&=\frac{\beta^\alpha}{\Gamma(\alpha)}\theta^{\alpha-1}e^{-\beta\theta},\label{g22:prior}\\
+\pi(\theta|y)&\propto f(y|\theta)\,\pi(\theta).\label{g22:bayes}
+\end{align}
+Substituting \eqref{g22:lik} and \eqref{g22:prior} into \eqref{g22:bayes} and dropping factors free of $\theta$:
+\begin{align}
+\pi(\theta|y)&\propto\left(\theta^{s}e^{-n\theta}\right)\left(\theta^{\alpha-1}e^{-\beta\theta}\right)\label{g22:p1}\\
+&=\theta^{\alpha+s-1}e^{-(\beta+n)\theta}.\label{g22:post}
+\end{align}
+\eqref{g22:post} is the kernel of $G(\alpha+s,\beta+n)$: prior and posterior are in the same family, so $G(\alpha,\beta)$ is conjugate.}
+\passo{(b) MLE}{The log of \eqref{g22:lik} and its derivative are
+\begin{align}
+\ell(\theta)&=s\log\theta-n\theta-\textstyle\sum_i\log y_i!,\label{g22:ll}\\
+\ell'(\theta)&=\frac{s}{\theta}-n.\label{g22:score}
+\end{align}
+Setting \eqref{g22:score} to zero gives $\hat\theta=s/n=\bar y$; $\ell''(\theta)=-s/\theta^2<0$ for $s>0$, so it is a maximum (if $s=0$, \eqref{g22:ll} decreases in $\theta$ and the supremum is at $\bar y=0$).}
+\passo{(c) posterior mean}{From \eqref{g22:post} and the gamma mean,
+\begin{align}
+E(\theta|y)&=\frac{\alpha+s}{\beta+n}.\label{g22:pm}
+\end{align}
+Writing $\alpha=\beta(\alpha/\beta)$ and $s=n\bar y$ in the numerator of \eqref{g22:pm}:
+\begin{align}
+E(\theta|y)&=\frac{\beta\,(\alpha/\beta)+n\,(\bar y)}{\beta+n}\label{g22:pm2}\\
+&=\underbrace{\frac{\beta}{\beta+n}}_{w}\,\frac{\alpha}{\beta}+\underbrace{\frac{n}{\beta+n}}_{1-w}\,\bar y.\label{g22:wavg}
+\end{align}}
+\passo{(d) large $n$}{$w=\beta/(\beta+n)\to0$ as $n\to\infty$, so by \eqref{g22:wavg} $E(\theta|y)\to\bar y$: the data swamp the prior.}
+\passo{numerical illustration}{Coal-mining disasters 1851--1891 (the series of the class-1 Rmd page): $n=41$, $s=127$, $\bar y=127/41=3.097561$. With $G(2,1)$, \eqref{g22:post} gives $G(129,42)$; \eqref{g22:pm} gives $129/42=3.071429$; $w=1/(1+41)=0.023810$, and \eqref{g22:wavg} reads $(0.023810)(2)+(0.976190)(3.097561)=0.047619+3.023810=3.071429$.}
+\intuicao{$\beta$ acts as a prior ``number of observations'' and $\alpha$ as the prior ``total count'': the posterior pools $\beta$ pseudo-observations with the $n$ real ones, so the prior's weight is its share of the pooled sample.}
+\refbib{Greenberg \S2.2 (pp.~12--18) and App.~A.1.7; Tsay Result~12.4 (p.~620); Bolfarine \& Sandoval Example~4.4.2 (pp.~67--68).}
+\end{sol}
+
+% -----------------------------------------------------------------------------
+\questao{Greenberg 2.4 --- Pareto--uniform conjugacy.}
+\fonte{Greenberg, E. (2007), \textit{Introduction to Bayesian Econometrics}, Cambridge University Press, Exercise 2.4, p.~19 --- reproduced verbatim.}
+\begin{enunciado}
+\textbf{2.4} Consider the uniform distribution with density function $f(y_i|\theta)=1/\theta$, $0\le y_i\le\theta$, and $\theta$ unknown.
+\begin{enumerate}[label=\textbf{(\alph*)},leftmargin=2em]
+\item Show that the Pareto distribution,
+\[
+\pi(\theta)=\begin{cases}ak^a\theta^{-(a+1)}, & \theta\ge k,\ a>0,\\ 0, & \text{otherwise,}\end{cases}
+\]
+is a conjugate prior distribution for the uniform distribution.
+\item Show that $\hat\theta=\max(y_1,\ldots,y_n)$ is the MLE of $\theta$, where the $y_i$ are a random sample from $f(y_i|\theta)$.
+\item Find the posterior distribution of $\theta$ and its expected value.
+\end{enumerate}
+\end{enunciado}
+\resolespaco
+\begin{sol}
+\begin{notacao}
+\item $y_i\ge0$: observations, $i=1,\ldots,n$; $y_{(n)}=\max_i y_i$; $\theta>0$: upper end of the support.
+\item $k>0$: Pareto scale (lower bound of $\theta$); $a>0$: Pareto shape; $1(\cdot)$: indicator.
+\item $k_1=\max(k,y_{(n)})$, $a_1=a+n$: posterior scale and shape.
+\end{notacao}
+\passo{(a) likelihood}{Each density is $\theta^{-1}1(y_i\le\theta)$, so
+\begin{align}
+f(y|\theta)&=\prod_{i=1}^n\theta^{-1}1(y_i\le\theta)\label{g24:l1}\\
+&=\theta^{-n}\,1(\theta\ge y_{(n)}),\label{g24:lik}
+\end{align}
+because all $y_i\le\theta$ exactly when the largest one is.}
+\passo{(a) posterior}{With the prior $\pi(\theta)=ak^a\theta^{-(a+1)}1(\theta\ge k)$, substituting \eqref{g24:lik} into $\pi(\theta|y)\propto f(y|\theta)\pi(\theta)$:
+\begin{align}
+\pi(\theta|y)&\propto\left(\theta^{-n}1(\theta\ge y_{(n)})\right)\left(ak^a\theta^{-(a+1)}1(\theta\ge k)\right)\label{g24:p1}\\
+&\propto\theta^{-(a+n+1)}\,1\big(\theta\ge\max(k,y_{(n)})\big).\label{g24:kern}
+\end{align}
+The normalising integral of \eqref{g24:kern} is
+\begin{align}
+\int_{k_1}^\infty\theta^{-(a_1+1)}d\theta&=\frac{k_1^{-a_1}}{a_1},\label{g24:norm}
+\end{align}
+so dividing \eqref{g24:kern} by \eqref{g24:norm}:
+\begin{align}
+\pi(\theta|y)&=a_1k_1^{a_1}\theta^{-(a_1+1)}1(\theta\ge k_1),\qquad a_1=a+n,\ k_1=\max(k,y_{(n)}).\label{g24:post}
+\end{align}
+\eqref{g24:post} is again Pareto: the family is conjugate.}
+\passo{(b) MLE}{By \eqref{g24:lik} the likelihood is $0$ for $\theta<y_{(n)}$ and $\theta^{-n}$ for $\theta\ge y_{(n)}$, where $\frac{d}{d\theta}\theta^{-n}=-n\theta^{-n-1}<0$. A function that is zero to the left of $y_{(n)}$ and strictly decreasing to its right is maximised at the boundary: $\hat\theta=y_{(n)}$ (no derivative equals zero; the maximum is at a corner).}
+\passo{(c) posterior mean}{For a Pareto$(a_1,k_1)$ variable with $a_1>1$,
+\begin{align}
+E(\theta|y)&=\int_{k_1}^\infty\theta\,a_1k_1^{a_1}\theta^{-(a_1+1)}d\theta\label{g24:m1}\\
+&=a_1k_1^{a_1}\,\frac{k_1^{1-a_1}}{a_1-1}\label{g24:m2}\\
+&=\frac{a_1k_1}{a_1-1}.\label{g24:m3}
+\end{align}
+Substituting $a_1=a+n$ and $k_1=\max(k,y_{(n)})$ into \eqref{g24:m3}:
+\begin{align}
+E(\theta|y)&=\frac{(a+n)\max(k,y_{(n)})}{a+n-1},\label{g24:pm}
+\end{align}
+finite because $a+n>1$ whenever $n\ge1$.}
+\intuicao{The data can only push the lower bound of $\theta$ up (to $y_{(n)}$); the posterior mean sits a factor $(a+n)/(a+n-1)>1$ above that bound, correcting the downward bias of $y_{(n)}$, and the factor tends to one as $n$ grows.}
+\refbib{Greenberg \S2.2; Bolfarine \& Sandoval Exercise~4.10 (Question~22 below, same model in other letters) and Example~5.5.2 (p.~86).}
+\end{sol}
+
+% -----------------------------------------------------------------------------
+\questao{Greenberg 3.3 --- normal predictive distribution.}
+\fonte{Greenberg, E. (2007), \textit{Introduction to Bayesian Econometrics}, Cambridge University Press, Exercise 3.3, p.~39 --- reproduced verbatim.}
+\begin{enunciado}
+\textbf{3.3} Compute the predictive distribution for $y_{n+1}$ if the $y_i$ have independent normal distributions $N(\mu,1)$, where the prior distribution for $\mu$ is $N(\mu_0,\sigma_0^2)$.
+\end{enunciado}
+\resolespaco
+\begin{sol}
+\begin{notacao}
+\item $y_i|\mu\sim N(\mu,1)$, $i=1,\ldots,n$, independent; $\bar y$: sample mean; $y_{n+1}$: the next observation.
+\item $\mu\in\mathbb R$: unknown mean; $\mu_0\in\mathbb R$, $\sigma_0^2>0$: prior mean and variance.
+\item $\mu_n$, $\sigma_n^2$: posterior mean and variance of $\mu$.
+\end{notacao}
+\passo{posterior of $\mu$}{Bayes theorem with the normal likelihood and prior:
+\begin{align}
+\pi(\mu|y)&\propto\exp\Big[-\tfrac12\textstyle\sum_i(y_i-\mu)^2\Big]\exp\Big[-\dfrac{(\mu-\mu_0)^2}{2\sigma_0^2}\Big].\label{g33:b}
+\end{align}
+Expanding the exponent of \eqref{g33:b} and dropping terms free of $\mu$:
+\begin{align}
+-\tfrac12\Big[n\mu^2-2\mu n\bar y+\frac{\mu^2}{\sigma_0^2}-\frac{2\mu\mu_0}{\sigma_0^2}\Big]
+&=-\tfrac12\Big[\Big(n+\frac1{\sigma_0^2}\Big)\mu^2-2\mu\Big(n\bar y+\frac{\mu_0}{\sigma_0^2}\Big)\Big].\label{g33:e}
+\end{align}
+Define
+\begin{align}
+\sigma_n^2&=\Big(n+\frac{1}{\sigma_0^2}\Big)^{-1},\label{g33:s}\\
+\mu_n&=\sigma_n^2\Big(n\bar y+\frac{\mu_0}{\sigma_0^2}\Big).\label{g33:m}
+\end{align}
+Substituting \eqref{g33:s}--\eqref{g33:m} into \eqref{g33:e} and completing the square:
+\begin{align}
+-\frac{1}{2\sigma_n^2}\big[\mu^2-2\mu\mu_n\big]&=-\frac{(\mu-\mu_n)^2}{2\sigma_n^2}+\text{const},\label{g33:cs}
+\end{align}
+so $\mu|y\sim N(\mu_n,\sigma_n^2)$.}
+\passo{predictive}{By definition,
+\begin{align}
+f(y_{n+1}|y)&=\int f(y_{n+1}|\mu)\,\pi(\mu|y)\,d\mu.\label{g33:pred}
+\end{align}
+Equivalently, write $y_{n+1}=\mu+\varepsilon$ with $\varepsilon\sim N(0,1)$ independent of $\mu$ given $y$. A sum of independent normals is normal, with means and variances adding:
+\begin{align}
+E(y_{n+1}|y)&=\mu_n+0=\mu_n,\label{g33:pm}\\
+\operatorname{Var}(y_{n+1}|y)&=\sigma_n^2+1.\label{g33:pv}
+\end{align}
+Substituting \eqref{g33:s}--\eqref{g33:m}:
+\begin{align}
+y_{n+1}|y&\sim N\!\left(\frac{n\bar y+\mu_0/\sigma_0^2}{n+1/\sigma_0^2},\ 1+\frac{1}{n+1/\sigma_0^2}\right).\label{g33:ans}
+\end{align}
+The check script evaluates \eqref{g33:pred} by quadrature and matches \eqref{g33:ans} to $10^{-10}$.}
+\intuicao{Two sources of uncertainty add: the sampling noise of a new draw (variance 1) and the remaining uncertainty about $\mu$ ($\sigma_n^2$). As $n\to\infty$, $\sigma_n^2\to0$ and the predictive tends to the ``plug-in'' $N(\bar y,1)$.}
+\refbib{Greenberg \S3.2.3 (prediction) and \S2.2; Tsay Result~12.1 (p.~619).}
+\end{sol}
+
+% -----------------------------------------------------------------------------
+\questao{Greenberg 3.4 --- sequential updating, Poisson model.}
+\fonte{Greenberg, E. (2007), \textit{Introduction to Bayesian Econometrics}, Cambridge University Press, Exercise 3.4, p.~39 --- reproduced verbatim.}
+\begin{enunciado}
+\textbf{3.4} Explicitly verify the updating feature of the posterior distribution for the case where $y$ has a Poisson distribution with parameter $\theta$. Choose $G(\alpha,\beta)$ as the prior distribution, and consider observing a total of $s_1$ events in the first of two independent experiments and $s_2$ in the second.
+\end{enunciado}
+\resolespaco
+\begin{sol}
+\begin{notacao}
+\item Experiment $j=1,2$: $n_j\ge1$ independent Poisson$(\theta)$ counts with total $s_j$ (the statement's case, one count per experiment, is $n_1=n_2=1$).
+\item $y^{(j)}$: data of experiment $j$; $\theta>0$; $\alpha,\beta>0$: prior parameters.
+\end{notacao}
+\passo{after experiment 1}{As in \eqref{g22:post} of Question~1, with $n_1$ counts totalling $s_1$:
+\begin{align}
+\pi(\theta|y^{(1)})&\propto\left(\theta^{s_1}e^{-n_1\theta}\right)\left(\theta^{\alpha-1}e^{-\beta\theta}\right)\label{g34:a}\\
+&=\theta^{\alpha+s_1-1}e^{-(\beta+n_1)\theta},\label{g34:b}
+\end{align}
+i.e.\ $G(\alpha+s_1,\beta+n_1)$.}
+\passo{experiment 2 with \eqref{g34:b} as the prior}{Independence gives $f(y^{(1)},y^{(2)}|\theta)=f(y^{(1)}|\theta)f(y^{(2)}|\theta)$, so
+\begin{align}
+\pi(\theta|y^{(1)},y^{(2)})&\propto f(y^{(2)}|\theta)\,\pi(\theta|y^{(1)}).\label{g34:c}
+\end{align}
+Substituting $f(y^{(2)}|\theta)\propto\theta^{s_2}e^{-n_2\theta}$ and \eqref{g34:b} into \eqref{g34:c}:
+\begin{align}
+\pi(\theta|y^{(1)},y^{(2)})&\propto\left(\theta^{s_2}e^{-n_2\theta}\right)\left(\theta^{\alpha+s_1-1}e^{-(\beta+n_1)\theta}\right)\label{g34:d}\\
+&=\theta^{\alpha+s_1+s_2-1}e^{-(\beta+n_1+n_2)\theta}.\label{g34:e}
+\end{align}}
+\passo{both experiments at once}{The pooled likelihood is $\theta^{s_1+s_2}e^{-(n_1+n_2)\theta}$; times the prior,
+\begin{align}
+\pi(\theta|y^{(1)},y^{(2)})&\propto\left(\theta^{s_1+s_2}e^{-(n_1+n_2)\theta}\right)\left(\theta^{\alpha-1}e^{-\beta\theta}\right)=\theta^{\alpha+s_1+s_2-1}e^{-(\beta+n_1+n_2)\theta},\label{g34:f}
+\end{align}
+identical to \eqref{g34:e}: $G(\alpha+s_1+s_2,\ \beta+n_1+n_2)$, which is $G(\alpha+s_1+s_2,\beta+2)$ for one count per experiment.}
+\intuicao{Yesterday's posterior is today's prior. Because the sufficient statistics (event totals and exposure) simply add, the order and grouping of the data do not matter.}
+\refbib{Greenberg \S3.1.3 (updating), pp.~25--26; Tsay Result~12.4.}
+\end{sol}
+
+% -----------------------------------------------------------------------------
+\questao{Greenberg 3.2 --- Poisson--gamma predictive distribution.}
+\fonte{Greenberg, E. (2007), \textit{Introduction to Bayesian Econometrics}, Cambridge University Press, Exercise 3.2, p.~39 --- reproduced verbatim.}
+\begin{enunciado}
+\textbf{3.2} Compute the predictive distribution for $y_{n+1}$ if the $y_i$ have independent Poisson distributions with parameter $\theta$, given that the first $n$ experiments yielded $y_1,y_2,\ldots,y_n$ events, respectively. Assume the prior distribution $G(\alpha,\beta)$.
+\end{enunciado}
+\resolespaco
+\begin{sol}
+\begin{notacao}
+\item $y_i$, $s=\sum_{i\le n}y_i$, $\theta$, $\alpha$, $\beta$ as in Question~1; $y\in\{0,1,\ldots\}$: value of $y_{n+1}$.
+\item $\alpha_1=\alpha+s$, $\beta_1=\beta+n$: posterior parameters.
+\end{notacao}
+\passo{posterior}{By \eqref{g22:post} of Question~1, $\theta|y_{1:n}\sim G(\alpha_1,\beta_1)$.}
+\passo{predictive integral}{Integrating the Poisson p.m.f.\ against the posterior:
+\begin{align}
+p(y_{n+1}=y|y_{1:n})&=\int_0^\infty\frac{\theta^{y}e^{-\theta}}{y!}\,\frac{\beta_1^{\alpha_1}}{\Gamma(\alpha_1)}\theta^{\alpha_1-1}e^{-\beta_1\theta}\,d\theta\label{g32:a}\\
+&=\frac{\beta_1^{\alpha_1}}{\Gamma(\alpha_1)\,y!}\int_0^\infty\theta^{\alpha_1+y-1}e^{-(\beta_1+1)\theta}d\theta.\label{g32:b}
+\end{align}
+The gamma integral (Greenberg A.1.7) is
+\begin{align}
+\int_0^\infty\theta^{a-1}e^{-b\theta}d\theta&=\frac{\Gamma(a)}{b^{a}}.\label{g32:gi}
+\end{align}
+Substituting \eqref{g32:gi} with $a=\alpha_1+y$, $b=\beta_1+1$ into \eqref{g32:b}:
+\begin{align}
+p(y_{n+1}=y|y_{1:n})&=\frac{\beta_1^{\alpha_1}}{\Gamma(\alpha_1)\,y!}\cdot\frac{\Gamma(\alpha_1+y)}{(\beta_1+1)^{\alpha_1+y}}\label{g32:c}\\
+&=\frac{\Gamma(\alpha_1+y)}{\Gamma(\alpha_1)\,y!}\left(\frac{\beta_1}{\beta_1+1}\right)^{\alpha_1}\left(\frac{1}{\beta_1+1}\right)^{y},\qquad y=0,1,\ldots\label{g32:nb}
+\end{align}
+This is the negative binomial with $r=\alpha_1$ and success probability $p=\beta_1/(\beta_1+1)$.}
+\passo{moments}{For that negative binomial, $E=r(1-p)/p$ and $\operatorname{Var}=r(1-p)/p^2$; substituting $r=\alpha_1$, $p=\beta_1/(\beta_1+1)$:
+\begin{align}
+E(y_{n+1}|y_{1:n})&=\frac{\alpha_1}{\beta_1},\label{g32:m}\\
+\operatorname{Var}(y_{n+1}|y_{1:n})&=\frac{\alpha_1}{\beta_1}\Big(1+\frac{1}{\beta_1}\Big).\label{g32:v}
+\end{align}}
+\passo{numbers}{Coal data 1851--1891 with $G(2,1)$ (Question~1): $\alpha_1=129$, $\beta_1=42$. From \eqref{g32:nb}, $P(y_{n+1}=0)=(42/43)^{129}=0.048054$ and $P(y_{n+1}=3)=\frac{131\cdot130\cdot129}{3!}(42/43)^{129}(1/43)^3=0.221297$; from \eqref{g32:m}--\eqref{g32:v}, $E=129/42=3.071429$ and $\operatorname{Var}=(3.071429)(1+1/42)=3.144558$. The script also checks \eqref{g32:nb} against direct numerical integration of \eqref{g32:a}.}
+\intuicao{The predictive variance exceeds the mean (a Poisson with known $\theta$ would have them equal): the factor $1+1/\beta_1$ is the extra spread coming from not knowing $\theta$, and it vanishes as $n$ (hence $\beta_1$) grows.}
+\refbib{Greenberg \S3.2.3, App.~A.1.3 (negative binomial) and A.1.7.}
+\end{sol}
+
+% -----------------------------------------------------------------------------
+\questao{Greenberg 3.8 --- Bayes factor for two typists.}
+\fonte{Greenberg, E. (2007), \textit{Introduction to Bayesian Econometrics}, Cambridge University Press, Exercise 3.8, p.~40 --- reproduced verbatim.}
+\begin{enunciado}
+\textbf{3.8} Suppose the number of typographical errors per page has a Poisson distribution $P(\theta)$. Sam types the first $m$ pages of a manuscript and makes $e_1$ errors in total, and Levi types the last $m$ pages and makes $e_2$ errors. Let Sam's error rate be $\theta_1$ and Levi's error rate be $\theta_2$. To compare model $M_1:\theta_1=\theta_2=\theta$ with model $M_2:\theta_1\neq\theta_2$, produce a table like Table~3.2 for $m=100$ with 10 total errors and for $m=200$ with 20 total errors and Sam's error proportions of 0.9, 0.8, 0.7, 0.6, and 0.5. Take $G(1,1)$ as a prior for $\theta_1$ and $\theta_2$.
+\end{enunciado}
+\begin{contexto}{Greenberg, Table~3.2, p.~38}
+\begin{center}\small
+\textbf{Table 3.2.} Bayes Factors for Selected Possible Outcomes\\[2pt]
+\begin{tabular}{ccrr}
+\toprule
+Michaela & Lila & \multicolumn{2}{c}{log$_{10}$(Bayes factor)}\\
+Proportion heads & Proportion heads & $m=10$ & $m=100$\\
+\midrule
+0.1 & 0.9 & $-2.506$ & $-30.775$\\
+0.2 & 0.8 & $-1.200$ & $-15.793$\\
+0.3 & 0.7 & $-0.348$ & $-6.316$\\
+0.4 & 0.6 & $0.138$ & $-0.975$\\
+0.5 & 0.5 & $0.297$ & $0.756$\\
+\bottomrule
+\end{tabular}
+\end{center}
+\end{contexto}
+\resolespaco
+\begin{sol}
+\begin{notacao}
+\item $y_{1i}$, $y_{2i}$ ($i=1,\ldots,m$): errors on page $i$ typed by Sam and by Levi; $e_1=\sum_iy_{1i}$, $e_2=\sum_iy_{2i}$, $e=e_1+e_2$.
+\item $\theta,\theta_1,\theta_2>0$: error rates per page; prior $G(1,1)$, i.e.\ $\pi(\theta)=e^{-\theta}$.
+\item $P=\prod_iy_{1i}!\prod_iy_{2i}!$; $m_j(y)$: marginal likelihood of $M_j$; $B_{12}=m_1(y)/m_2(y)$.
+\end{notacao}
+\passo{marginal likelihood of $M_1$}{All $2m$ pages share $\theta$:
+\begin{align}
+m_1(y)&=\int_0^\infty\prod_{i}\frac{\theta^{y_{1i}}e^{-\theta}}{y_{1i}!}\prod_{i}\frac{\theta^{y_{2i}}e^{-\theta}}{y_{2i}!}\,e^{-\theta}\,d\theta\label{g38:m1a}\\
+&=\frac1P\int_0^\infty\theta^{e}e^{-(2m+1)\theta}d\theta.\label{g38:m1b}
+\end{align}
+Substituting \eqref{g32:gi} (Question~5) with $a=e+1$, $b=2m+1$:
+\begin{align}
+m_1(y)&=\frac1P\,\frac{\Gamma(e+1)}{(2m+1)^{e+1}}.\label{g38:m1}
+\end{align}}
+\passo{marginal likelihood of $M_2$}{The two rates have independent priors, so the integral factorises:
+\begin{align}
+m_2(y)&=\frac1P\int_0^\infty\theta_1^{e_1}e^{-(m+1)\theta_1}d\theta_1\int_0^\infty\theta_2^{e_2}e^{-(m+1)\theta_2}d\theta_2\label{g38:m2a}\\
+&=\frac1P\,\frac{\Gamma(e_1+1)}{(m+1)^{e_1+1}}\,\frac{\Gamma(e_2+1)}{(m+1)^{e_2+1}}.\label{g38:m2}
+\end{align}}
+\passo{Bayes factor}{Dividing \eqref{g38:m1} by \eqref{g38:m2}; $P$ cancels, so only the totals matter:
+\begin{align}
+B_{12}&=\frac{\Gamma(e+1)\,(m+1)^{e+2}}{(2m+1)^{e+1}\,\Gamma(e_1+1)\,\Gamma(e_2+1)},\label{g38:B}\\
+\log_{10}B_{12}&=\frac{\ln\Gamma(e+1)+(e+2)\ln(m+1)-(e+1)\ln(2m+1)-\ln\Gamma(e_1+1)-\ln\Gamma(e_2+1)}{\ln10}.\label{g38:logB}
+\end{align}}
+\passo{one entry worked out}{$m=100$, $e=10$, Sam's proportion $0.9$, so $e_1=9$, $e_2=1$. The pieces of \eqref{g38:logB}: $\ln\Gamma(11)=\ln10!=15.104413$; $12\ln101=12(4.615121)=55.381446$; $11\ln201=11(5.303305)=58.336354$; $\ln\Gamma(10)=\ln9!=12.801827$; $\ln\Gamma(2)=0$. Substituting:
+\begin{align}
+\log_{10}B_{12}&=\frac{(15.104413)+(55.381446)-(58.336354)-(12.801827)-(0)}{2.302585}\label{g38:w1}\\
+&=\frac{-0.652323}{2.302585}=-0.283.\label{g38:w2}
+\end{align}}
+\passo{the table}{The same computation for every cell (code in the check script, function \texttt{g38}; each cell is also verified by integrating \eqref{g38:m1b} and \eqref{g38:m2a} numerically):
+\begin{center}
+\begin{tabular}{ccrcr}
+\toprule
+& \multicolumn{2}{c}{$m=100$, $e=10$} & \multicolumn{2}{c}{$m=200$, $e=20$}\\
+\cmidrule(lr){2-3}\cmidrule(lr){4-5}
+Sam's proportion & $(e_1,e_2)$ & $\log_{10}B_{12}$ & $(e_1,e_2)$ & $\log_{10}B_{12}$\\
+\midrule
+0.9 & (9, 1) & $-0.283$ & (18, 2) & $-1.717$\\
+0.8 & (8, 2) & $0.370$ & (16, 4) & $-0.310$\\
+0.7 & (7, 3) & $0.796$ & (14, 6) & $0.593$\\
+0.6 & (6, 4) & $1.039$ & (12, 8) & $1.105$\\
+0.5 & (5, 5) & $1.118$ & (10, 10) & $1.271$\\
+\bottomrule
+\end{tabular}
+\end{center}}
+\passo{reading it}{On Jeffreys' scale (Greenberg Table~3.1), with 10 errors even a 9--1 split favours $M_2$ only weakly ($\log_{10}B_{21}=0.283<1/2$), while an even split gives strong support to $M_1$ ($1<1.118<3/2$). Doubling the evidence (20 errors) sharpens everything: an 18--2 split now gives very strong evidence for $M_2$ ($3/2<1.717<2$), and equal shares strengthen $M_1$ ($1.271$).}
+\intuicao{The Bayes factor automatically penalises the extra parameter of $M_2$: it pays off only when the split is lopsided enough to beat that Occam penalty, and the same proportions carry more weight when they rest on more errors (compare the two $m$ columns, as in Table~3.2).}
+\refbib{Greenberg \S3.2.4 (Bayes factors, Table~3.1, Table~3.2), pp.~33--38.}
+\end{sol}
+
+% -----------------------------------------------------------------------------
+\questao{Greenberg 4.5 --- marginal likelihood of the conjugate normal regression.}
+\fonte{Greenberg, E. (2007), \textit{Introduction to Bayesian Econometrics}, Cambridge University Press, Exercise 4.5, p.~58 --- reproduced verbatim.}
+\begin{enunciado}
+\textbf{4.5} Since the posterior distribution of $(\beta,\sigma^2)$ in Section 4.3 is of known form, it is possible to compute its marginal likelihood analytically. Start from the definition of the marginal likelihood:
+\begin{align*}
+&\int f(y|\beta,\sigma^2)\pi(\beta,\sigma^2)\,d\beta\,d\sigma^2\\
+&=\int\left(\frac{1}{2\pi\sigma^2}\right)^{n/2}\exp\left[-\frac{1}{2\sigma^2}(y-X\beta)'(y-X\beta)\right]\left(\frac{1}{2\pi\sigma^2}\right)^{K/2}\\
+&\quad\times\frac{1}{|B_0|^{1/2}}\exp\left[-\frac{1}{2\sigma^2}(\beta-\beta_0)'B_0^{-1}(\beta-\beta_0)\right]\\
+&\quad\times\frac{(\delta_0/2)^{\alpha_0/2}}{\Gamma(\alpha_0/2)}\left(\frac{1}{\sigma^2}\right)^{\alpha_0/2+1}\exp\left[-\frac{\delta_0}{2\sigma^2}\right]d\beta\,d\sigma^2\\
+&=\left(\frac{1}{2\pi}\right)^{n/2}\frac{(\delta_0/2)^{\alpha_0/2}}{\Gamma(\alpha_0/2)}\frac{1}{|B_0|^{1/2}}\int\left\{\left(\frac{1}{2\pi\sigma^2}\right)^{K/2}\right.\\
+&\quad\left.\times\exp\left[-\frac{1}{2\sigma^2}(\beta-\bar\beta)'B_1^{-1}(\beta-\bar\beta)\right]d\beta\right\}\left\{\left(\frac{1}{\sigma^2}\right)^{\alpha_1/2+1}\exp\left[-\frac{\delta_1}{2\sigma^2}\right]d\sigma^2\right\},
+\end{align*}
+where we have used (4.5). Now integrate the first pair of curly braces as a multivariate normal and the second as an inverted gamma to find this expression for the marginal likelihood:
+\[
+\left(\frac{1}{\pi}\right)^{n/2}\frac{|B_1|^{1/2}}{|B_0|^{1/2}}\frac{\Gamma(\alpha_1/2)}{\Gamma(\alpha_0/2)}\frac{\delta_0^{\alpha_0/2}}{\delta_1^{\alpha_1/2}}.
+\]
+\end{enunciado}
+\begin{contexto}{Greenberg \S4.3, pp.~45--46, equations (4.2) and (4.6)}
+\begin{align*}
+\pi(\beta,\sigma^2)&=\pi(\beta|\sigma^2)\pi(\sigma^2) \tag{4.2}\\
+&=N_K(\beta|\beta_0,\sigma^2B_0)\,IG(\sigma^2|\alpha_0/2,\delta_0/2),
+\end{align*}
+[\ldots] where the updated parameters are
+\begin{align*}
+B_1&=(X'X+B_0^{-1})^{-1} \tag{4.6}\\
+\bar\beta&=B_1(X'y+B_0^{-1}\beta_0)\\
+\alpha_1&=\alpha_0+n\\
+\delta_1&=\delta_0+y'y+\beta_0'B_0^{-1}\beta_0-\bar\beta'B_1^{-1}\bar\beta.
+\end{align*}
+\end{contexto}
+\resolespaco
+\begin{sol}
+\begin{notacao}
+\item $y$: $n\times1$ response; $X$: $n\times K$ covariates of full column rank; $\beta\in\mathbb R^K$; $\sigma^2>0$.
+\item Prior hyperparameters: $\beta_0\in\mathbb R^K$, $B_0$ ($K\times K$, positive definite), $\alpha_0,\delta_0>0$; posterior ones $B_1,\bar\beta,\alpha_1,\delta_1$ from (4.6).
+\item $m(y)$: the marginal likelihood (the integral of the statement).
+\end{notacao}
+\passo{first equality}{The three factors of the integrand are the normal likelihood, the prior of $\beta$ given $\sigma^2$ and the inverse-gamma prior; since $|\sigma^2B_0|^{1/2}=(\sigma^2)^{K/2}|B_0|^{1/2}$,
+\begin{align}
+f(y|\beta,\sigma^2)&=(2\pi\sigma^2)^{-n/2}\exp\left[-\tfrac{1}{2\sigma^2}(y-X\beta)'(y-X\beta)\right],\label{g45:f}\\
+\pi(\beta|\sigma^2)&=(2\pi\sigma^2)^{-K/2}|B_0|^{-1/2}\exp\left[-\tfrac{1}{2\sigma^2}(\beta-\beta_0)'B_0^{-1}(\beta-\beta_0)\right],\label{g45:pb}\\
+\pi(\sigma^2)&=\frac{(\delta_0/2)^{\alpha_0/2}}{\Gamma(\alpha_0/2)}(\sigma^2)^{-(\alpha_0/2+1)}\exp\left[-\tfrac{\delta_0}{2\sigma^2}\right].\label{g45:ps}
+\end{align}
+Their product is the first line of the statement.}
+\passo{the completing-square identity behind (4.5)}{Expanding the three quadratic forms in the exponent,
+\begin{align}
+&(y-X\beta)'(y-X\beta)+(\beta-\beta_0)'B_0^{-1}(\beta-\beta_0)+\delta_0\nonumber\\
+&\quad=\beta'(X'X+B_0^{-1})\beta-2\beta'(X'y+B_0^{-1}\beta_0)+y'y+\beta_0'B_0^{-1}\beta_0+\delta_0.\label{g45:q1}
+\end{align}
+By (4.6), $X'X+B_0^{-1}=B_1^{-1}$ and $X'y+B_0^{-1}\beta_0=B_1^{-1}\bar\beta$; substituting into \eqref{g45:q1}:
+\begin{align}
+&=\beta'(B_1^{-1})\beta-2\beta'(B_1^{-1}\bar\beta)+y'y+\beta_0'B_0^{-1}\beta_0+\delta_0.\label{g45:q2}
+\end{align}
+Adding and subtracting $\bar\beta'B_1^{-1}\bar\beta$:
+\begin{align}
+&=(\beta-\bar\beta)'B_1^{-1}(\beta-\bar\beta)+\big[\delta_0+y'y+\beta_0'B_0^{-1}\beta_0-\bar\beta'B_1^{-1}\bar\beta\big]\label{g45:q3}\\
+&=(\beta-\bar\beta)'B_1^{-1}(\beta-\bar\beta)+\delta_1,\label{g45:q4}
+\end{align}
+using the definition of $\delta_1$ in (4.6).}
+\passo{second equality}{Collect the constants of \eqref{g45:f}--\eqref{g45:ps} outside, and the powers of $\sigma^2$ not in the $(2\pi\sigma^2)^{-K/2}$ factor:
+\begin{align}
+(\sigma^2)^{-n/2}(\sigma^2)^{-(\alpha_0/2+1)}&=(\sigma^2)^{-((\alpha_0+n)/2+1)}=(\sigma^2)^{-(\alpha_1/2+1)},\label{g45:pow}
+\end{align}
+using $\alpha_1=\alpha_0+n$. Substituting \eqref{g45:q4} for the exponent splits it into a $\beta$-part and a $\sigma^2$-part, which is the second line of the statement.}
+\passo{integrate over $\beta$}{The first brace is a $N_K(\bar\beta,\sigma^2B_1)$ density without its factor $|B_1|^{-1/2}$; since that density integrates to one,
+\begin{align}
+\int\left(\frac{1}{2\pi\sigma^2}\right)^{K/2}\exp\left[-\tfrac{1}{2\sigma^2}(\beta-\bar\beta)'B_1^{-1}(\beta-\bar\beta)\right]d\beta&=|B_1|^{1/2},\label{g45:ib}
+\end{align}
+which no longer depends on $\sigma^2$.}
+\passo{integrate over $\sigma^2$}{The $IG(a,b)$ density integrates to one, so
+\begin{align}
+\int_0^\infty(\sigma^2)^{-(a+1)}e^{-b/\sigma^2}d\sigma^2&=\frac{\Gamma(a)}{b^{a}}.\label{g45:ig}
+\end{align}
+With $a=\alpha_1/2$, $b=\delta_1/2$ the second brace is $\Gamma(\alpha_1/2)/(\delta_1/2)^{\alpha_1/2}$.}
+\passo{assemble}{Substituting \eqref{g45:ib} and \eqref{g45:ig} into the second line of the statement:
+\begin{align}
+m(y)&=\left(\frac{1}{2\pi}\right)^{n/2}\frac{(\delta_0/2)^{\alpha_0/2}}{\Gamma(\alpha_0/2)\,|B_0|^{1/2}}\,\big(|B_1|^{1/2}\big)\,\left(\frac{\Gamma(\alpha_1/2)}{(\delta_1/2)^{\alpha_1/2}}\right).\label{g45:a1}
+\end{align}
+The powers of $2$ from $\delta_0/2$ and $\delta_1/2$ combine as
+\begin{align}
+\frac{(1/2)^{\alpha_0/2}}{(1/2)^{\alpha_1/2}}&=2^{(\alpha_1-\alpha_0)/2}=2^{n/2},\label{g45:two}\\
+\left(\frac{1}{2\pi}\right)^{n/2}2^{n/2}&=\left(\frac1\pi\right)^{n/2}.\label{g45:pi}
+\end{align}
+Substituting \eqref{g45:two}--\eqref{g45:pi} into \eqref{g45:a1}:
+\begin{align}
+m(y)&=\left(\frac{1}{\pi}\right)^{n/2}\frac{|B_1|^{1/2}}{|B_0|^{1/2}}\frac{\Gamma(\alpha_1/2)}{\Gamma(\alpha_0/2)}\frac{\delta_0^{\alpha_0/2}}{\delta_1^{\alpha_1/2}},\label{g45:ans}
+\end{align}
+the expression of the statement. Independent check: under (4.2) the prior predictive of $y$ is a multivariate $t_{\alpha_0}\big(X\beta_0,(\delta_0/\alpha_0)(I_n+XB_0X')\big)$; the script (function \texttt{g45}) evaluates both on simulated data and they agree to $10^{-9}$.}
+\intuicao{$|B_1|^{1/2}/|B_0|^{1/2}$ is an ``Occam factor'': the ratio of posterior to prior volume of $\beta$, small when the prior is diffuse relative to what the data pin down. $\delta_1$ grows with the residual sum of squares plus prior--data conflict, so a poor fit lowers $m(y)$ through $\delta_1^{-\alpha_1/2}$.}
+\refbib{Greenberg \S4.3 (pp.~44--47) and \S3.2.4 (marginal likelihood, Bayes factors); App.~A.1.8, A.1.12.}
+\end{sol}
+
+% -----------------------------------------------------------------------------
+\questao{Greenberg 5.4 --- accept--reject sampling of Beta(3, 3).}
+\fonte{Greenberg, E. (2007), \textit{Introduction to Bayesian Econometrics}, Cambridge University Press, Exercise 5.4, p.~75 --- reproduced verbatim.}
+\begin{enunciado}
+\textbf{5.4} Draw 500 observations from Beta(3, 3) using algorithm 5.3. Compute the mean and variance of the sample and compare them to the true values.
+\end{enunciado}
+\begin{contexto}{Greenberg \S5.3, p.~67, Algorithm 5.3}
+\textbf{Algorithm 5.3: Beta distribution}\\
+\textbf{5.1} Draw $u_1$ and $u_2$ from $U(0,1)$.\\
+\textbf{5.2} If
+\[
+u_2\le\frac{\text{Beta}(3,3)^{-1}u_1^2(1-u_1)^2}{1.8750},
+\]
+return $y=u_1$ as a draw from the target distribution. Otherwise reject it and return to 1.
+\end{contexto}
+\resolespaco
+\begin{sol}
+\begin{notacao}
+\item $f(y)=y^2(1-y)^2/B(3,3)$, $0<y<1$: Beta(3,3) target; $B(3,3)=\Gamma(3)\Gamma(3)/\Gamma(6)=4/120=1/30$ (the book's ``Beta$(3,3)^{-1}$'').
+\item $g(y)=1$ on $(0,1)$: proposal; $c$: bound with $f\le cg$; $u_1,u_2\sim U(0,1)$.
+\end{notacao}
+\passo{the bound $c$}{$f$ is symmetric with its maximum at $y=1/2$:
+\begin{align}
+c=f(1/2)&=30\,(1/2)^2(1-1/2)^2=\frac{30}{16}=1.8750,\label{g54:c}\\
+P(\text{accept})&=\frac1c=0.5333.\label{g54:acc}
+\end{align}}
+\passo{true moments}{For Beta$(a,b)$, $E=a/(a+b)$ and $\operatorname{Var}=ab/[(a+b)^2(a+b+1)]$; with $a=b=3$:
+\begin{align}
+E(y)&=\frac{3}{6}=0.5,\label{g54:m}\\
+\operatorname{Var}(y)&=\frac{(3)(3)}{(6)^2(7)}=\frac{9}{252}=\frac{1}{28}=0.03571.\label{g54:v}
+\end{align}}
+\passo{code (seed 54; function \texttt{g54} of the check script)}{}
+\begin{lstlisting}
+rng = np.random.default_rng(54)
+c = stats.beta.pdf(0.5, 3, 3)                 # 1.8750
+draws, tried = [], 0
+while len(draws) < 500:
+    u1, u2 = rng.uniform(), rng.uniform()
+    tried += 1
+    if u2 <= stats.beta.pdf(u1, 3, 3) / c:    # step 5.2: accept u1
+        draws.append(u1)
+d = np.array(draws); print(500 / tried, d.mean(), d.var(ddof=1))
+\end{lstlisting}
+\noindent Output: $900$ proposals for $500$ acceptances (rate $500/900=0.5556$ vs.\ $0.5333$ in \eqref{g54:acc}); sample mean $0.5045$, sample variance $0.03883$.
+\passo{comparison}{The mean error is $0.5045-0.5=0.0045$, about half of its standard error $\sqrt{(1/28)/500}=0.0085$. The variance is $0.03883-0.03571=0.0031$ above \eqref{g54:v}, a sampling fluctuation of the same order (about $1.7$ standard errors); both agree with the truth.}
+\intuicao{The uniform proposal wastes about half the draws (those near 0 and 1 are accepted with low probability), but every accepted draw is an exact, independent Beta(3,3) draw: accept--reject trades computing time for exactness.}
+\refbib{Greenberg \S5.3 (pp.~66--69), Figure~5.1; Morettin \& Singer \S B.6.1 (pp.~468--470; Question~24 below).}
+\end{sol}
+
+% -----------------------------------------------------------------------------
+\questao{Greenberg 6.2 --- the two-state Markov chain.}
+\fonte{Greenberg, E. (2007), \textit{Introduction to Bayesian Econometrics}, Cambridge University Press, Exercise 6.2, pp.~87--88 --- reproduced verbatim.}
+\begin{enunciado}
+\textbf{6.2} Let
+\[
+P=\begin{pmatrix}1-\alpha&\alpha\\ \beta&1-\beta\end{pmatrix}.\tag{6.10}
+\]
+\begin{enumerate}[label=\textbf{(\alph*)},leftmargin=2em]
+\item Find the invariant distribution if $0<\alpha,\beta<1$. Is the process aperiodic? Is it irreducible? What is $\lim P^n$ in this case?
+\item Suppose $\alpha=\beta=0$. Is there a unique invariant distribution? Is the process aperiodic? Is it irreducible? What is $\lim P^n$?
+\item Suppose $\alpha=\beta=1$. Is there a unique invariant distribution? Is the process aperiodic? Is it irreducible? What is $\lim P^n$?
+\end{enumerate}
+\end{enunciado}
+\resolespaco
+\begin{sol}
+\begin{notacao}
+\item States $\{1,2\}$; $\alpha=P(X_{t+1}=2|X_t=1)$, $\beta=P(X_{t+1}=1|X_t=2)$, $\alpha,\beta\in[0,1]$.
+\item $\pi=(\pi_1,\pi_2)$: row vector with $\pi_1+\pi_2=1$, invariant if $\pi P=\pi$; $p_{ii}^{(n)}$: $n$-step return probability.
+\end{notacao}
+\passo{(a) invariant distribution}{The first column of $\pi P=\pi$ reads
+\begin{align}
+\pi_1(1-\alpha)+\pi_2\beta&=\pi_1,\label{g62:a}\\
+\text{i.e.}\quad\pi_2\beta&=\pi_1\alpha.\label{g62:b}
+\end{align}
+Substituting $\pi_2=1-\pi_1$ into \eqref{g62:b}:
+\begin{align}
+(1-\pi_1)\beta&=\pi_1\alpha,\label{g62:c}\\
+\pi_1=\frac{\beta}{\alpha+\beta},&\qquad\pi_2=\frac{\alpha}{\alpha+\beta}.\label{g62:pi}
+\end{align}}
+\passo{(a) classification and limit}{$p_{12}=\alpha>0$ and $p_{21}=\beta>0$, so $1\leftrightarrow2$: irreducible. $p_{11}=1-\alpha>0$, so returns in one step are possible and the period is 1: aperiodic. The eigenvalues of $P$ are $1$ and $\lambda_2=1-\alpha-\beta$ (trace $2-\alpha-\beta$), and
+\begin{align}
+P^n&=\frac{1}{\alpha+\beta}\begin{pmatrix}\beta&\alpha\\ \beta&\alpha\end{pmatrix}+\frac{(1-\alpha-\beta)^n}{\alpha+\beta}\begin{pmatrix}\alpha&-\alpha\\ -\beta&\beta\end{pmatrix}\label{g62:Pn}
+\end{align}
+(at $n=1$ the $(1,1)$ entry is $[\beta+\alpha(1-\alpha-\beta)]/(\alpha+\beta)=1-\alpha$, as it should be). Since $|1-\alpha-\beta|<1$,
+\begin{align}
+\lim_{n\to\infty}P^n&=\begin{pmatrix}\pi_1&\pi_2\\ \pi_1&\pi_2\end{pmatrix}.\label{g62:lim}
+\end{align}
+Example: the matrix (6.2) is \eqref{g62:Pn} with $\alpha=0.25$, $\beta=0.125$, so $\pi=(0.125/0.375,\,0.25/0.375)=(0.333333,\,0.666667)$, $\lambda_2=0.625$; the script finds both rows of $P^{50}$ equal to $(0.333333,0.666667)$.}
+\passo{(b) $\alpha=\beta=0$}{$P=I$, so $\pi I=\pi$ for \emph{every} distribution: the invariant distribution is not unique. Each state is absorbing and they do not communicate: reducible. $p_{ii}=1$, so the period is 1: aperiodic. $P^n=I$ for all $n$, hence $\lim P^n=I$: the limit depends on the starting state.}
+\passo{(c) $\alpha=\beta=1$}{$P=\begin{pmatrix}0&1\\1&0\end{pmatrix}$. \eqref{g62:pi} still applies ($\alpha+\beta=2>0$): $\pi=(1/2,1/2)$ is the unique invariant distribution. $1\leftrightarrow2$: irreducible. Returns occur only at even times ($p_{ii}^{(n)}>0$ iff $n$ is even): period 2, not aperiodic. With $1-\alpha-\beta=-1$, \eqref{g62:Pn} gives $P^n=I$ for even $n$ and $P^n=P$ for odd $n$: $\lim P^n$ does not exist (only the Ces\`aro average $\frac1N\sum_{n\le N}P^n$ converges, to \eqref{g62:lim}).}
+\intuicao{Uniqueness of $\pi$ needs irreducibility; convergence of $P^n$ to $\pi$ needs aperiodicity as well. MCMC kernels are built to satisfy both, and $|\lambda_2|$ sets the speed: (6.2) forgets its start at rate $0.625^n$.}
+\refbib{Greenberg \S6.1--6.2 (pp.~76--83); Tsay \S12.1 (p.~614).}
+\end{sol}
+
+% -----------------------------------------------------------------------------
+\questao{Greenberg 7.1 --- full conditionals of the normal model.}
+\fonte{Greenberg, E. (2007), \textit{Introduction to Bayesian Econometrics}, Cambridge University Press, Exercise 7.1, p.~105 --- reproduced verbatim.}
+\begin{enunciado}
+\textbf{7.1} Verify (7.1) and (7.2).
+\end{enunciado}
+\begin{contexto}{Greenberg \S7.1.1, p.~93}
+Let $y_i\sim N(\mu,h^{-1})$, $i=1,\ldots,n$, be independently distributed, where the distribution has been parameterized in terms of the precision. We assume the conditionally conjugate priors $\mu\sim N(\mu_0,h_0^{-1})$ and $h\sim G(\alpha_0/2,\delta_0/2)$. [\ldots] From this specification, we have
+\[
+\pi(\mu,h|y)\propto h^{n/2}\exp\left[-\frac h2\sum(y_i-\mu)^2\right]\exp\left[-\frac{h_0}{2}(\mu-\mu_0)^2\right]\times h^{\alpha_0/2-1}\exp\left[-\frac{\delta_0h}{2}\right].
+\]
+From here, it is easy to derive the conditional posterior distribution of $h$,
+\[
+\pi(h|\mu,y)\propto h^{(\alpha_0+n)/2-1}\exp\left[-h\frac{\delta_0+\sum(y_i-\mu)^2}{2}\right].\tag{7.1}
+\]
+[\ldots] We complete the square in $\mu$ to obtain
+\[
+\pi(\mu|h,y)\propto\exp\left[-\frac{h_0+hn}{2}\left(\mu-\frac{h_0\mu_0+hn\bar y}{h_0+hn}\right)^2\right],\tag{7.2}
+\]
+which should be recognized as $N[(h_0\mu_0+hn\bar y)/(h_0+hn),(h_0+hn)^{-1}]$ [\ldots].
+\end{contexto}
+\resolespaco
+\begin{sol}
+\begin{notacao}
+\item $y_i|\mu,h\sim N(\mu,1/h)$; $h>0$: precision; $\bar y$: sample mean.
+\item Priors: $\mu\sim N(\mu_0,1/h_0)$, $h\sim G(\alpha_0/2,\delta_0/2)$, independent; $\mu_0\in\mathbb R$, $h_0,\alpha_0,\delta_0>0$.
+\end{notacao}
+\passo{joint posterior}{The likelihood and the two prior kernels are
+\begin{align}
+f(y|\mu,h)&=\prod_{i=1}^n\Big(\frac{h}{2\pi}\Big)^{1/2}\exp\Big[-\frac h2(y_i-\mu)^2\Big]\propto h^{n/2}\exp\Big[-\frac h2\textstyle\sum_i(y_i-\mu)^2\Big],\label{g71:lik}\\
+\pi(\mu)&\propto\exp\Big[-\frac{h_0}{2}(\mu-\mu_0)^2\Big],\qquad\pi(h)\propto h^{\alpha_0/2-1}\exp\Big[-\frac{\delta_0h}{2}\Big],\label{g71:pri}
+\end{align}
+whose product is the joint posterior displayed in the context.}
+\passo{(7.1)}{Fixing $\mu$, keep only the factors containing $h$:
+\begin{align}
+\pi(h|\mu,y)&\propto h^{n/2}\exp\Big[-\frac h2\textstyle\sum_i(y_i-\mu)^2\Big]\,h^{\alpha_0/2-1}\exp\Big[-\frac{\delta_0h}{2}\Big]\label{g71:h1}\\
+&=h^{(\alpha_0+n)/2-1}\exp\Big[-h\,\frac{\delta_0+\sum_i(y_i-\mu)^2}{2}\Big],\label{g71:h2}
+\end{align}
+which is (7.1): the kernel of $G\big((\alpha_0+n)/2,\ (\delta_0+\sum_i(y_i-\mu)^2)/2\big)$.}
+\passo{(7.2)}{Fixing $h$, keep the factors containing $\mu$:
+\begin{align}
+\pi(\mu|h,y)&\propto\exp\Big[-\frac h2\textstyle\sum_i(y_i-\mu)^2-\frac{h_0}{2}(\mu-\mu_0)^2\Big].\label{g71:m1}
+\end{align}
+The decomposition $\sum_i(y_i-\mu)^2=\sum_i(y_i-\bar y)^2+n(\bar y-\mu)^2$ and dropping the first (free of $\mu$) term give
+\begin{align}
+\pi(\mu|h,y)&\propto\exp\Big[-\tfrac12\big\{hn(\mu-\bar y)^2+h_0(\mu-\mu_0)^2\big\}\Big].\label{g71:m2}
+\end{align}
+Expanding the braces of \eqref{g71:m2} and dropping constants:
+\begin{align}
+hn(\mu^2-2\mu\bar y)+h_0(\mu^2-2\mu\mu_0)&=(h_0+hn)\mu^2-2\mu(h_0\mu_0+hn\bar y)\label{g71:m3}\\
+&=(h_0+hn)\Big(\mu-\frac{h_0\mu_0+hn\bar y}{h_0+hn}\Big)^2+\text{const}.\label{g71:m4}
+\end{align}
+Substituting \eqref{g71:m4} into \eqref{g71:m2} gives (7.2), the kernel of $N\big[(h_0\mu_0+hn\bar y)/(h_0+hn),\,(h_0+hn)^{-1}\big]$.}
+\intuicao{Given $\mu$, each observation adds $1/2$ to the gamma shape and half a squared residual to its rate; given $h$, precisions add ($h_0+hn$) and the mean is the precision-weighted average of $\mu_0$ and $\bar y$. These two standard draws are Algorithm~7.3.}
+\refbib{Greenberg \S7.1.1 (pp.~91--94); Tsay Results~12.1--12.2 (pp.~618--620).}
+\end{sol}
+
+% -----------------------------------------------------------------------------
+\questao{Greenberg 7.3 --- Gibbs sampler for the coal-mining switch point.}
+\fonte{Greenberg, E. (2007), \textit{Introduction to Bayesian Econometrics}, Cambridge University Press, Exercise 7.3, p.~106 --- reproduced verbatim.}
+\begin{enunciado}
+\textbf{7.3} Construct a Gibbs algorithm to analyze the Poisson model with unknown switch point. Given the specification in Equations (7.3) and (7.4), show that
+\[
+\pi(\theta_1,\theta_2,k|y)\propto\theta_1^{\alpha_{10}-1}e^{-\beta_{10}\theta_1}\theta_2^{\alpha_{20}-1}e^{-\beta_{20}\theta_2}\prod_{i=1}^ke^{-\theta_1}\theta_1^{y_i}\prod_{i=k+1}^ne^{-\theta_2}\theta_2^{y_i},
+\]
+and verify that
+\begin{align*}
+\theta_1|y,k&\sim G\Big(\alpha_{10}+\sum_1^ky_i,\ \beta_{10}+k\Big),\\
+\theta_2|k,y&\sim G\Big(\alpha_{20}+\sum_{k+1}^ny_i,\ \beta_{20}+n-k\Big),\\
+\pi(k|y,\theta_1,\theta_2)&=\frac{e^{k(\theta_2-\theta_1)}(\theta_1/\theta_2)^{\sum_1^ky_i}}{\sum_{k=1}^ne^{k(\theta_2-\theta_1)}(\theta_1/\theta_2)^{\sum_1^ky_i}},\qquad k=1,\ldots,n.
+\end{align*}
+Apply your algorithm to the mining disaster data analyzed by Carlin et al. (1992a); the data may be found in the article. Your analysis should generate marginal posterior distributions for $\theta_1$, $\theta_2$, $p(k)$, and the marginal likelihood computed by the method of Chib (1995). For simplicity, set $\alpha_{10}=\alpha_{20}=0.5$ and $\beta_{10}=\beta_{20}=1.0$. (Curiously, although these data have been analyzed from the Bayesian viewpoint in several papers, none of them present historical material that might shed light on when changes in parameters took place. For example, changes in government regulation, technology, or the location of mines might be expected to affect the probability of a disaster. A more general version of the model permits multiple switch points if necessary.)
+\end{enunciado}
+\begin{contexto}{Greenberg \S7.1.1, pp.~93--94, equations (7.3)--(7.4)}
+\[
+p(y_i)=\begin{cases}\dfrac{e^{-\theta_1}\theta_1^{y_i}}{y_i!}, & \text{for } i=1,\ldots,k,\\[8pt]\dfrac{e^{-\theta_2}\theta_2^{y_i}}{y_i!}, & \text{for } i=k+1,\ldots,n,\end{cases}\tag{7.3}
+\]
+where $y_i=0,1,\ldots$, and the switch point $k$ is unknown. The specification is completed by assigning the conditionally conjugate priors,
+\[
+\theta_1\sim G(\alpha_{10},\beta_{10}),\quad\theta_2\sim G(\alpha_{20},\beta_{20}),\quad\pi(k=j)=1/n,\ j=1,\ldots,n.\tag{7.4}
+\]
+\end{contexto}
+\resolespaco
+\begin{sol}
+\begin{notacao}
+\item $y_i$: number of British coal-mining disasters in year $1850+i$, $i=1,\ldots,n$, $n=112$ (1851--1962), $\sum_iy_i=191$; data of Carlin, Gelfand and Smith (1992a), embedded in the check script (its first 40 years total 125, as on the lecturer's slides).
+\item $k\in\{1,\ldots,n\}$: last year of regime 1 (year $1850+k$); $\theta_1,\theta_2>0$: disaster rates before/after.
+\item $S_k=\sum_{i=1}^ky_i$ ($S_0=0$, $S_n=191$); $\alpha_{j0}=0.5$, $\beta_{j0}=1$; $G$: number of retained draws.
+\end{notacao}
+\passo{joint posterior}{By Bayes theorem with (7.3)--(7.4),
+\begin{align}
+\pi(\theta_1,\theta_2,k|y)&\propto\prod_{i=1}^k\frac{e^{-\theta_1}\theta_1^{y_i}}{y_i!}\prod_{i=k+1}^n\frac{e^{-\theta_2}\theta_2^{y_i}}{y_i!}\;\theta_1^{\alpha_{10}-1}e^{-\beta_{10}\theta_1}\,\theta_2^{\alpha_{20}-1}e^{-\beta_{20}\theta_2}\;\frac1n.\label{g73:j}
+\end{align}
+Dropping $\prod_iy_i!$ and $1/n$ (free of the parameters) gives the expression of the statement.}
+\passo{$\theta_1|y,k$ and $\theta_2|y,k$}{Keeping in \eqref{g73:j} only the factors with $\theta_1$:
+\begin{align}
+\pi(\theta_1|y,k,\theta_2)&\propto\theta_1^{\alpha_{10}-1}e^{-\beta_{10}\theta_1}\prod_{i=1}^ke^{-\theta_1}\theta_1^{y_i}\label{g73:t1a}\\
+&=\theta_1^{\alpha_{10}+S_k-1}e^{-(\beta_{10}+k)\theta_1},\label{g73:t1}
+\end{align}
+the kernel of $G(\alpha_{10}+S_k,\beta_{10}+k)$, free of $\theta_2$. In the same way,
+\begin{align}
+\pi(\theta_2|y,k,\theta_1)&\propto\theta_2^{\alpha_{20}+S_n-S_k-1}e^{-(\beta_{20}+n-k)\theta_2}.\label{g73:t2}
+\end{align}}
+\passo{$k|y,\theta_1,\theta_2$}{Keeping the factors of \eqref{g73:j} that depend on $k$:
+\begin{align}
+\pi(k|y,\theta_1,\theta_2)&\propto e^{-k\theta_1}\theta_1^{S_k}\,e^{-(n-k)\theta_2}\theta_2^{S_n-S_k}.\label{g73:k1}
+\end{align}
+Dividing \eqref{g73:k1} by $e^{-n\theta_2}\theta_2^{S_n}$, which does not depend on $k$:
+\begin{align}
+\pi(k|y,\theta_1,\theta_2)&\propto e^{k(\theta_2-\theta_1)}(\theta_1/\theta_2)^{S_k},\qquad k=1,\ldots,n,\label{g73:k2}
+\end{align}
+and normalising over $k$ gives the discrete distribution of the statement.}
+\passo{Gibbs algorithm}{Start at $k^{(0)}=56$; at iteration $g$ draw $\theta_1^{(g)}$ from \eqref{g73:t1} with $k=k^{(g-1)}$, $\theta_2^{(g)}$ from \eqref{g73:t2}, and $k^{(g)}$ from \eqref{g73:k2} (a categorical draw over $1,\ldots,n$). Burn-in 1{,}000, keep $G=10{,}000$, seed 73 (function \texttt{g73}):}
+\begin{lstlisting}
+S = np.concatenate([[0], np.cumsum(y)]); k_grid = np.arange(1, n + 1); k = n // 2
+for g in range(G + burn):
+    t1 = rng.gamma(a10 + S[k], 1 / (b10 + k))              # (Q11.3)
+    t2 = rng.gamma(a20 + S[n] - S[k], 1 / (b20 + n - k))   # (Q11.4)
+    logp = k_grid * (t2 - t1) + S[1:] * np.log(t1 / t2)    # (Q11.6)
+    p = np.exp(logp - logp.max()); p /= p.sum()
+    k = rng.choice(k_grid, p=p)
+\end{lstlisting}
+\passo{exact benchmark}{Integrating $\theta_1,\theta_2$ out of \eqref{g73:j} with the gamma integral \eqref{g32:gi} (Question~5):
+\begin{align}
+p(y|k)&=\frac{\beta_{10}^{\alpha_{10}}}{\Gamma(\alpha_{10})}\frac{\Gamma(\alpha_{10}+S_k)}{(\beta_{10}+k)^{\alpha_{10}+S_k}}\cdot\frac{\beta_{20}^{\alpha_{20}}}{\Gamma(\alpha_{20})}\frac{\Gamma(\alpha_{20}+S_n-S_k)}{(\beta_{20}+n-k)^{\alpha_{20}+S_n-S_k}}\cdot\frac{1}{\prod_iy_i!},\label{g73:pyk}\\
+p(k|y)&=\frac{p(y|k)}{\sum_{j=1}^np(y|j)},\qquad m(y)=\frac1n\sum_{k=1}^np(y|k).\label{g73:exact}
+\end{align}}
+\passo{Chib (1995) marginal likelihood}{For any point $\theta^*=(\theta_1^*,\theta_2^*)$, Bayes theorem rearranged gives the identity
+\begin{align}
+\log m(y)&=\log f(y|\theta^*)+\log\pi(\theta^*)-\log\pi(\theta^*|y),\label{g73:chib}\\
+f(y|\theta_1,\theta_2)&=\frac1n\sum_{k=1}^nf(y|\theta_1,\theta_2,k),\label{g73:lik}\\
+\hat\pi(\theta^*|y)&=\frac1G\sum_{g=1}^GG\big(\theta_1^*|\alpha_{10}+S_{k^{(g)}},\beta_{10}+k^{(g)}\big)\,G\big(\theta_2^*|\alpha_{20}+S_n-S_{k^{(g)}},\beta_{20}+n-k^{(g)}\big),\label{g73:ord}
+\end{align}
+where \eqref{g73:ord} uses that, given $k$, $\theta_1$ and $\theta_2$ are independent with the gamma conditionals \eqref{g73:t1}--\eqref{g73:t2}. Take $\theta^*$ = posterior means.}
+\passo{results}{Posterior summaries ($G=10{,}000$; exact values from \eqref{g73:exact}):
+\begin{center}\small
+\begin{tabular}{lcccc}
+\toprule
+& mean (MCMC) & mean (exact) & sd & 95\% interval\\
+\midrule
+$\theta_1$ (1851--$1850+k$) & 3.0512 & 3.0500 & 0.2861 & (2.513, 3.628)\\
+$\theta_2$ ($1851+k$--1962) & 0.9144 & 0.9147 & 0.1170 & (0.702, 1.157)\\
+\bottomrule
+\end{tabular}\\[4pt]
+\begin{tabular}{lcccc}
+\toprule
+$k$ (last year of regime 1) & 41 (1891) & 40 (1890) & 39 (1889) & 42 (1892)\\
+\midrule
+$p(k|y)$, MCMC & 0.2514 & 0.1903 & 0.1374 & 0.0991\\
+$p(k|y)$, exact & 0.2482 & 0.1848 & 0.1414 & 0.1010\\
+\bottomrule
+\end{tabular}
+\end{center}
+Chib: $\log f(y|\theta^*)=-172.2568$, $\log\pi(\theta^*)=-5.6234$, $\log\hat\pi(\theta^*|y)=1.5790$. Substituting into \eqref{g73:chib}:
+\begin{align}
+\log\hat m(y)&=(-172.2568)+(-5.6234)-(1.5790)\label{g73:c1}\\
+&=-179.4592,\label{g73:c2}
+\end{align}
+against the exact $\log m(y)=-179.4590$ from \eqref{g73:exact}.}
+\intuicao{The disaster rate falls from about 3.05 to about 0.91 per year, with the switch most likely right after 1889--1892 (posterior mode: 1891). Because the gamma conditionals are known in closed form, the Rao--Blackwellised ordinate \eqref{g73:ord} is very accurate, and Chib's estimate lands within $0.0002$ of the exact log marginal likelihood.}
+\refbib{Greenberg \S7.1.1 (pp.~93--94), \S7.1.2 (marginal likelihood by Chib's method, p.~95); Bolfarine \& Sandoval \S3.4 (profile likelihood, used for the same data in class 1).}
+\end{sol}
+
+% -----------------------------------------------------------------------------
+\questao{Greenberg 7.5 --- random-walk Metropolis--Hastings for the Laplace distribution.}
+\fonte{Greenberg, E. (2007), \textit{Introduction to Bayesian Econometrics}, Cambridge University Press, Exercise 7.5, p.~106 --- reproduced verbatim.}
+\begin{enunciado}
+\textbf{7.5} Construct a random walk MH sampler to generate a sample of 10,000 from the Laplace distribution, $f(x)=(1/2)\,e^{-|x|}$, $-\infty<x<\infty$. Use $u\sim N(0,\sigma^2)$ to generate proposals $y=x^{(g-1)}+u$. Compare the mean, variances, and autocorrelations of the generated series for various values of $\sigma^2$.
+\end{enunciado}
+\resolespaco
+\begin{sol}
+\begin{notacao}
+\item $f(x)=\frac12e^{-|x|}$: target, mean $0$, variance $2$; $x^{(g)}$: state at iteration $g$; $y$: proposal; $u\sim N(0,\sigma^2)$.
+\item $\alpha(x,y)$: acceptance probability; $r_L$: lag-$L$ sample autocorrelation of the retained chain.
+\end{notacao}
+\passo{acceptance probability}{The random-walk proposal density $q(x,y)=\phi\big((y-x)/\sigma\big)/\sigma$ is symmetric, $q(x,y)=q(y,x)$, so it cancels from the MH ratio:
+\begin{align}
+\alpha(x,y)&=\min\left\{1,\frac{f(y)q(y,x)}{f(x)q(x,y)}\right\}=\min\left\{1,\frac{f(y)}{f(x)}\right\}\label{g75:a1}\\
+&=\min\left\{1,\exp\big(|x|-|y|\big)\right\}.\label{g75:a2}
+\end{align}}
+\passo{true moments}{$E(x)=0$ by symmetry and $\operatorname{Var}(x)=\int x^2\tfrac12e^{-|x|}dx=\int_0^\infty x^2e^{-x}dx=\Gamma(3)=2$.}
+\passo{code (seed 75; function \texttt{g75})}{Start at $x=0$, burn-in 1{,}000, keep 10{,}000 per $\sigma^2$:}
+\begin{lstlisting}
+for s2 in (0.1, 1.0, 10.0, 100.0):
+    x, acc, out = 0.0, 0, np.empty(G)
+    for g in range(G + burn):
+        prop = x + rng.normal(0, s2 ** 0.5)
+        if np.log(rng.uniform()) <= abs(x) - abs(prop):   # (Q12.2)
+            x = prop; acc += g >= burn
+        if g >= burn: out[g - burn] = x
+\end{lstlisting}
+\passo{results}{\par
+\begin{center}\small
+\begin{tabular}{rccccc}
+\toprule
+$\sigma^2$ & acceptance & mean & variance & $r_1$ & $r_{10}$\\
+\midrule
+0.1 & 0.8835 & $-0.306$ & 2.317 & 0.983 & 0.852\\
+1 & 0.6970 & $-0.097$ & 1.908 & 0.880 & 0.285\\
+10 & 0.3928 & $-0.056$ & 1.976 & 0.668 & 0.025\\
+100 & 0.1577 & $-0.062$ & 2.120 & 0.714 & 0.018\\
+\midrule
+truth & --- & 0 & 2 & 0 & 0\\
+\bottomrule
+\end{tabular}
+\end{center}
+A tiny step ($\sigma^2=0.1$) is almost always accepted but barely moves: $r_1=0.983$, and after 10{,}000 draws the mean is still $-0.306$. A huge step ($\sigma^2=100$) is usually rejected (acceptance $0.158$), so the chain repeats values and $r_1$ climbs back to $0.714$. $\sigma^2=10$ (acceptance $0.39$) has the smallest lag-1 autocorrelation and mean and variance closest to the truth.}
+\intuicao{Every $\sigma^2$ gives a chain with the right invariant distribution; what $\sigma^2$ controls is efficiency. The best random-walk scale balances step length against acceptance, which is why tuning to an acceptance rate of roughly 0.3--0.5 in one dimension is the standard advice.}
+\refbib{Greenberg \S7.2.1 (pp.~96--101) and \S7.3 (autocorrelation, n.s.e., p.~102); Tsay \S12.4.1--12.4.2 (pp.~622--623).}
+\end{sol}
+
+% -----------------------------------------------------------------------------
+\questao{Greenberg 7.8 --- MH within Gibbs with a tailored truncated-$t$ proposal.}
+\fonte{Greenberg, E. (2007), \textit{Introduction to Bayesian Econometrics}, Cambridge University Press, Exercise 7.8, p.~107 --- reproduced verbatim.}
+\begin{enunciado}
+\textbf{7.8} Generalize Exercise 7.7 to allow for an unknown variance, $u_i\sim N(0,\sigma^2)$, with prior distribution $\sigma^2\sim\mathrm{IG}(5/2,3/2)$. Verify that $\sigma^2|y,\beta$ has an inverse gamma distribution, but that the distribution of $\beta|y,\sigma^2$ is not standard. Devise a two-block algorithm in which $\sigma^2|y,\beta$ is generated in a Gibbs step and $\beta$ is generated by a tailored kernel where $\hat\beta$ depends on $\sigma^2$, so that the mean and scale factor of the truncated Student-$t$ distribution must be recomputed at each step. Choose a value of $\sigma^2$ from its prior distribution, and generate and analyze a data set as in Exercise 7.7.
+\end{enunciado}
+\begin{contexto}{Greenberg, Exercise 7.7, pp.~106--107}
+\textbf{7.7} Consider the model
+\[
+y_i=\beta x_i+u_i,\quad u_i\sim N(0,1),\quad i=1,\ldots,n,
+\]
+with the gamma prior distribution $\beta\sim G(2,1)$, $\beta>0$. Verify the posterior distribution
+\[
+\pi(\beta|y)\propto\beta\exp[-\beta]\exp\left[-\frac12\sum_{i=1}^n(y_i-\beta x_i)^2\right]1(\beta>0).
+\]
+Note that this distribution does not have a standard form. Construct an MH algorithm to sample from this distribution with an independence kernel, where the kernel is a Student-$t$ distribution truncated to the region $(0,\infty)$, with five degrees of freedom, mean equal to the value of $\beta$ that maximizes the posterior distribution ($\hat\beta$), and scale factor equal to the negative inverse of the second derivative of the log posterior distribution evaluated at $\hat\beta$. Verify that
+\[
+\hat\beta=\frac{\big(\sum x_iy_i-1\big)+\sqrt{\big(\sum x_iy_i-1\big)^2+4\sum x_i^2}}{2\sum x_i^2}
+\]
+and that the scale factor is $(1/\hat\beta^2+\sum x_i^2)^{-1}$. Generate a data set by choosing $n=50$, $x_i$ from $N(0,1)$, and a value of $\beta$ from its prior distribution. Write a program to implement your algorithm and see how well $\beta$ is determined. You may try larger values of $n$ to explore the effect of sample size, and, depending on the acceptance rate, you may wish to change the scale factor.
+\end{contexto}
+\resolespaco
+\begin{sol}
+\begin{notacao}
+\item $y_i=\beta x_i+u_i$, $u_i\sim N(0,\sigma^2)$, $i=1,\ldots,n$ ($n=50$); $S_{xx}=\sum x_i^2$, $S_{xy}=\sum x_iy_i$, $S_{yy}=\sum y_i^2$; $\mathrm{SSR}(\beta)=\sum_i(y_i-\beta x_i)^2$.
+\item Priors: $\beta\sim G(2,1)$, $\pi(\beta)=\beta e^{-\beta}1(\beta>0)$; $\sigma^2\sim IG(5/2,3/2)$, $\pi(\sigma^2)\propto(\sigma^2)^{-7/2}e^{-3/(2\sigma^2)}$; independent.
+\item $\hat\beta(\sigma^2)$, $V(\sigma^2)$: conditional posterior mode and scale; $t_5(m,V)$: Student-$t$, 5 d.f., location $m$, scale$^2$ $V$.
+\end{notacao}
+\passo{joint posterior}{Likelihood times the two priors:
+\begin{align}
+\pi(\beta,\sigma^2|y)&\propto(\sigma^2)^{-n/2}\exp\Big[-\frac{\mathrm{SSR}(\beta)}{2\sigma^2}\Big]\,\beta e^{-\beta}1(\beta>0)\,(\sigma^2)^{-(5/2+1)}e^{-(3/2)/\sigma^2}.\label{g78:j}
+\end{align}}
+\passo{$\sigma^2|y,\beta$ is inverse gamma}{Keeping the factors of \eqref{g78:j} with $\sigma^2$:
+\begin{align}
+\pi(\sigma^2|y,\beta)&\propto(\sigma^2)^{-(5/2+n/2+1)}\exp\Big[-\frac{3/2+\mathrm{SSR}(\beta)/2}{\sigma^2}\Big],\label{g78:s1}\\
+\sigma^2|y,\beta&\sim IG\Big(\frac52+\frac n2,\ \frac32+\frac{\mathrm{SSR}(\beta)}{2}\Big).\label{g78:s2}
+\end{align}}
+\passo{$\beta|y,\sigma^2$ is not standard}{Keeping the factors with $\beta$ and expanding $\mathrm{SSR}(\beta)=S_{yy}-2\beta S_{xy}+\beta^2S_{xx}$:
+\begin{align}
+\log\pi(\beta|y,\sigma^2)&=\log\beta-\beta-\frac{S_{yy}-2\beta S_{xy}+\beta^2S_{xx}}{2\sigma^2}+\text{const},\quad\beta>0.\label{g78:lp}
+\end{align}
+The $\log\beta$ term (from the gamma prior) next to a quadratic (from the normal likelihood) is neither a normal nor a gamma log-kernel: no standard distribution, hence an MH step. (With $\sigma^2=1$, exponentiating \eqref{g78:lp} is the posterior of Exercise~7.7.)}
+\passo{mode $\hat\beta(\sigma^2)$}{Differentiating \eqref{g78:lp}:
+\begin{align}
+\frac{d\log\pi}{d\beta}&=\frac1\beta-1+\frac{S_{xy}-\beta S_{xx}}{\sigma^2}=0.\label{g78:d1}
+\end{align}
+Multiplying \eqref{g78:d1} by $\beta\sigma^2>0$:
+\begin{align}
+\sigma^2-\sigma^2\beta+\beta S_{xy}-\beta^2S_{xx}&=0,\label{g78:d2}\\
+S_{xx}\beta^2-(S_{xy}-\sigma^2)\beta-\sigma^2&=0.\label{g78:d3}
+\end{align}
+The product of the roots of \eqref{g78:d3} is $-\sigma^2/S_{xx}<0$, so exactly one is positive:
+\begin{align}
+\hat\beta(\sigma^2)&=\frac{(S_{xy}-\sigma^2)+\sqrt{(S_{xy}-\sigma^2)^2+4\sigma^2S_{xx}}}{2S_{xx}},\label{g78:bh}
+\end{align}
+which with $\sigma^2=1$ is the formula of Exercise~7.7.}
+\passo{scale $V(\sigma^2)$}{Differentiating \eqref{g78:d1} again and taking minus the inverse at $\hat\beta$:
+\begin{align}
+\frac{d^2\log\pi}{d\beta^2}&=-\frac{1}{\beta^2}-\frac{S_{xx}}{\sigma^2},\label{g78:d2b}\\
+V(\sigma^2)&=\Big(\frac{1}{\hat\beta^2}+\frac{S_{xx}}{\sigma^2}\Big)^{-1},\label{g78:V}
+\end{align}
+equal to $(1/\hat\beta^2+\sum x_i^2)^{-1}$ when $\sigma^2=1$, as Exercise~7.7 states. The script checks \eqref{g78:bh}--\eqref{g78:V} by finite differences.}
+\passo{two-block algorithm}{Given $(\beta^{(g-1)},\sigma^{2(g-1)})$:
+\begin{enumerate}[leftmargin=2em]
+\item Gibbs step: draw $\sigma^{2(g)}$ from \eqref{g78:s2} with $\beta=\beta^{(g-1)}$.
+\item Recompute $\hat\beta$ and $V$ from \eqref{g78:bh}--\eqref{g78:V} at $\sigma^{2(g)}$; draw $\beta'\sim t_5(\hat\beta,V)$ truncated to $(0,\infty)$ (inverse c.d.f.: $u\sim U(F_5(-\hat\beta/\sqrt V),1)$, $\beta'=\hat\beta+\sqrt V F_5^{-1}(u)$).
+\item Accept $\beta^{(g)}=\beta'$ with probability
+\begin{align}
+\alpha&=\min\left\{1,\frac{\pi(\beta'|y,\sigma^{2(g)})\,q(\beta^{(g-1)})}{\pi(\beta^{(g-1)}|y,\sigma^{2(g)})\,q(\beta')}\right\},\qquad q(b)\propto t_5\text{ density at }(b-\hat\beta)/\sqrt V,\label{g78:acc}
+\end{align}
+else $\beta^{(g)}=\beta^{(g-1)}$. The truncation constant is common to both $q$ terms and cancels.
+\end{enumerate}
+The proposal may depend on $\sigma^2$ because, inside the $\beta$ block, $\sigma^2$ is held fixed: step 2--3 is an independence MH kernel whose invariant distribution is $\pi(\beta|y,\sigma^2)$.}
+\passo{code (seed 78; function \texttt{g78})}{}
+\begin{lstlisting}
+beta_true = rng.gamma(2.0, 1.0); s2_true = 1 / rng.gamma(2.5, 1 / 1.5)
+x = rng.normal(size=n); y = beta_true * x + rng.normal(0, s2_true ** 0.5, n)
+for g in range(G + burn):
+    s2 = 1 / rng.gamma(2.5 + n / 2, 1 / (1.5 + (Syy - 2*b*Sxy + b*b*Sxx) / 2))  # (Q13.3)
+    bh, V = mode_scale(s2); sd = V ** 0.5                                      # (Q13.8),(Q13.10)
+    prop = bh + sd * stats.t.ppf(rng.uniform(stats.t.cdf(-bh / sd, 5), 1.0), 5)
+    logq = lambda v: stats.t.logpdf((v - bh) / sd, 5)
+    if np.log(rng.uniform()) <= logpost(prop, s2) - logpost(b, s2) + logq(b) - logq(prop):
+        b = prop                                                               # (Q13.11)
+\end{lstlisting}
+\passo{results}{Data: $\beta=0.9369$ drawn from $G(2,1)$, $\sigma^2=0.9079$ drawn from $IG(5/2,3/2)$, $n=50$; OLS $\hat\beta=0.9788$, $s^2=1.0762$. With burn-in 1{,}000 and $G=10{,}000$: $E(\beta|y)=0.9806$ (sd $0.1785$, 95\% interval $(0.6329,1.3353)$); $E(\sigma^2|y)=1.0702$ (sd $0.2121$, interval $(0.7373,1.5616)$); acceptance rate of the $\beta$ step $0.9267$. Both true values lie inside their intervals; with $n=50$ the data dominate both priors, so the posterior means sit next to OLS.}
+\intuicao{A tailored proposal (mode and curvature of the target) makes the independence kernel almost the target itself, hence the 93\% acceptance. Re-tailoring at every $\sigma^2$ costs one quadratic formula per iteration and keeps that efficiency as $\sigma^2$ moves.}
+\refbib{Greenberg \S7.2.1 (tailored kernels, pp.~99--100; Algorithm~7.6, MH with two blocks, p.~100); Tsay \S12.4.2.}
+\end{sol}
+
+% -----------------------------------------------------------------------------
+\questao{Greenberg 8.1 --- Bayesian regression for birth weight.}
+\fonte{Greenberg, E. (2007), \textit{Introduction to Bayesian Econometrics}, Cambridge University Press, Exercise 8.1, p.~132 --- reproduced verbatim.}
+\begin{enunciado}
+\textbf{8.1} Download the data in ``Birth weight II'' from the StatLabs Web site, www.stat.berkeley.\allowbreak edu/\allowbreak users/\allowbreak statlabs/\allowbreak labs.html. The variables are birth weight (ounces, 999 unknown), gestation (length of pregnancy in days, 999 unknown), parity (0 = firstborn, 9 is unknown), age (mother's age in years), height (mother's height in inches), weight (mother's prepregnancy weight in pounds), smoke (0 not now, 1 yes now, 9 = unknown).
+
+Specify a linear regression, where the response variable is birth weight, and the covariates are a constant and the remaining variables in the data set. Eliminate observations for which you do not have complete information on the variables. Specify prior distributions for the coefficients and the variance (or precision). Summarize the results for the dummy variable for smoking. Does smoking by the mother appear to affect the baby's birth weight?
+\end{enunciado}
+\resolespaco
+\begin{sol}
+\begin{notacao}
+\item $y_i$: birth weight (oz); $x_i=(1,\text{gestation},\text{parity},\text{age},\text{height},\text{weight},\text{smoke})'$, $K=7$; $X$: $n\times K$.
+\item $\beta\in\mathbb R^7$, $\sigma^2>0$; priors $\beta\sim N_7(\beta_0,B_0)$, $\sigma^2\sim IG(\alpha_0/2,\delta_0/2)$ as in (8.1); $\beta_{\text{smoke}}$: 7th coefficient.
+\end{notacao}
+\passo{data}{File \texttt{babies.data} (StatLabs, saved to \texttt{Listas/data/}, provenance in its README): 1{,}236 births. Missing codes in the file: gestation 999, age 99, height 99, weight 999, smoke 9 (birth weight has none; parity is coded 0/1 with no 9s). Dropping the 62 incomplete rows leaves $n=1{,}174$.}
+\passo{priors}{$\beta_0=0$, $B_0=10^4I_7$ (prior s.d.\ 100 for every coefficient, very diffuse at the scale of these covariates); $\alpha_0=6$, $\delta_0=1800$, so $E(\sigma^2)=\delta_0/(\alpha_0-2)=450$ (birth-weight s.d.\ about 21 oz), worth 6 pseudo-observations against 1{,}174.}
+\passo{Gibbs sampler}{Greenberg (8.2)--(8.3):
+\begin{align}
+\beta|\sigma^2,y&\sim N_K(\bar\beta,B_1),\quad B_1=(\sigma^{-2}X'X+B_0^{-1})^{-1},\quad\bar\beta=B_1(\sigma^{-2}X'y+B_0^{-1}\beta_0),\label{g81:b}\\
+\sigma^2|\beta,y&\sim IG\big(\alpha_1/2,\delta_1/2\big),\quad\alpha_1=\alpha_0+n,\quad\delta_1=\delta_0+(y-X\beta)'(y-X\beta).\label{g81:s}
+\end{align}
+Burn-in 1{,}000, $G=10{,}000$, seed 81 (function \texttt{g81}):}
+\begin{lstlisting}
+for g in range(G + burn):
+    B1 = np.linalg.inv(XtX / s2 + B0inv); bbar = B1 @ (Xty / s2 + B0inv @ b0)
+    beta = bbar + np.linalg.cholesky(B1) @ rng.normal(size=K)         # (Q14.1)
+    r = y - X @ beta
+    s2 = 1 / rng.gamma((a0 + n) / 2, 2 / (d0 + r @ r))                  # (Q14.2)
+\end{lstlisting}
+\passo{results}{\par
+\begin{center}\small
+\begin{tabular}{lrrrrr}
+\toprule
+& post.\ mean & post.\ sd & \multicolumn{2}{c}{95\% interval} & OLS (s.e.)\\
+\midrule
+constant & $-78.6033$ & 14.1929 & $-106.1171$ & $-51.1482$ & $-80.4109$ (14.3466)\\
+gestation (days) & 0.4421 & 0.0292 & 0.3845 & 0.4982 & 0.4440 (0.0291)\\
+parity & $-3.3401$ & 1.1372 & $-5.5466$ & $-1.1178$ & $-3.3272$ (1.1289)\\
+age (years) & $-0.0114$ & 0.0864 & $-0.1791$ & 0.1587 & $-0.0090$ (0.0858)\\
+height (in) & 1.1342 & 0.2039 & 0.7389 & 1.5368 & 1.1540 (0.2050)\\
+weight (lb) & 0.0508 & 0.0254 & 0.0008 & 0.1019 & 0.0502 (0.0252)\\
+\textbf{smoke} & $\mathbf{-8.4084}$ & \textbf{0.9465} & $\mathbf{-10.2359}$ & $\mathbf{-6.5505}$ & $-8.4007$ (0.9538)\\
+$\sigma^2$ & 251.1114 & 10.3514 & 231.6747 & 272.2228 & \\
+\bottomrule
+\end{tabular}
+\end{center}
+For the smoking dummy, $P(\beta_{\text{smoke}}<0|y)=1.0000$ (all 10{,}000 draws are negative). The only visible prior effect is on the constant ($-78.6$ vs.\ $-80.4$), shrunk slightly toward $0$ by the s.d.-100 prior; all slopes match OLS.}
+\passo{answer}{Yes. Holding gestation, parity, age, height and pre-pregnancy weight fixed, babies of mothers who smoke weigh on average $8.41$ oz less, i.e.\ $(-8.4084)(28.3495)=-238.37$ g, with 95\% posterior probability between $6.55$ and $10.24$ oz less.}
+\intuicao{With 1{,}174 observations and a diffuse prior the Bayesian and OLS answers coincide; the Bayesian output adds a direct probability statement ($P(\beta_{\text{smoke}}<0|y)\approx1$). Two cautions: the comparison is observational (smokers may differ in unmeasured ways; classes 5+6), and because smoking also shortens gestation, controlling for gestation leaves only the part of the smoking effect that does not run through it.}
+\refbib{Greenberg \S8.1.1 (pp.~111--114), \S4.9; Wooldridge \S3.2 (\texttt{BWGHT} is a related data set).}
+\end{sol}
+
+% -----------------------------------------------------------------------------
+\questao{Greenberg 8.8 --- logit posterior and latent data.}
+\fonte{Greenberg, E. (2007), \textit{Introduction to Bayesian Econometrics}, Cambridge University Press, Exercise 8.8, pp.~132--133 --- reproduced verbatim.}
+\begin{enunciado}
+\textbf{8.8} Verify that the posterior distribution of the logit model with a normal prior (Section 8.2.3) has the form
+\begin{align*}
+\pi(\beta|y)&\propto\prod\left(\frac{\exp[x_i'\beta]}{1+\exp[x_i'\beta]}\right)^{y_i}\left(\frac{1}{1+\exp[x_i'\beta]}\right)^{1-y_i}\\
+&\quad\times\exp\left[-\frac12(\beta-\beta_0)'B_0^{-1}(\beta-\beta_0)\right],
+\end{align*}
+and show that including the latent data in the sampler does not simplify the posterior distribution.
+\end{enunciado}
+\begin{contexto}{Greenberg \S8.2.3, pp.~126--127}
+The binary logit model is another model for binary data. It is based on
+\[
+P(y_i=1)=P_i=\frac{\exp[x_i'\beta]}{1+\exp[x_i'\beta]},
+\]
+[\ldots] This model can be written in the form of latent data as
+\[
+y_i^*=x_i'\beta+u_i,
+\]
+where $u_i$ has the \emph{logistic} distribution, $P(U_i\le u_i)=\Lambda(u_i)=e^{u_i}/(1+e^{u_i})$ and density function $\lambda(u_i)=e^{u_i}/(1+e^{u_i})^2$.
+\end{contexto}
+\resolespaco
+\begin{sol}
+\begin{notacao}
+\item $y_i\in\{0,1\}$, $x_i\in\mathbb R^K$, $i=1,\ldots,n$; $\beta\in\mathbb R^K$ with prior $N_K(\beta_0,B_0)$.
+\item $\Lambda$, $\lambda$: logistic c.d.f.\ and density; $y_i^*$: latent utility, $y_i=1(y_i^*>0)$.
+\end{notacao}
+\passo{posterior}{Each $y_i$ is Bernoulli$(P_i)$, and
+\begin{align}
+1-P_i&=1-\frac{\exp[x_i'\beta]}{1+\exp[x_i'\beta]}=\frac{1}{1+\exp[x_i'\beta]},\label{g88:q}\\
+f(y|\beta)&=\prod_{i=1}^nP_i^{y_i}(1-P_i)^{1-y_i},\label{g88:lik}\\
+\pi(\beta)&\propto\exp\left[-\tfrac12(\beta-\beta_0)'B_0^{-1}(\beta-\beta_0)\right].\label{g88:pri}
+\end{align}
+Substituting $P_i$ and \eqref{g88:q} into \eqref{g88:lik} and multiplying by \eqref{g88:pri} gives exactly the displayed $\pi(\beta|y)$. It is not a normal or any standard density in $\beta$ (the log-likelihood is not quadratic in $\beta$), so Greenberg samples it by MH.}
+\passo{latent-data representation}{With $y_i^*=x_i'\beta+u_i$ and $y_i=1(y_i^*>0)$, by symmetry of the logistic distribution,
+\begin{align}
+P(y_i=1|\beta)&=P(u_i>-x_i'\beta)=1-\Lambda(-x_i'\beta)=\Lambda(x_i'\beta)=P_i,\label{g88:sym}
+\end{align}
+so the representation reproduces the model.}
+\passo{augmented posterior}{Treating $y^*$ as parameters,
+\begin{align}
+\pi(\beta,y^*|y)&\propto\pi(\beta)\prod_{i=1}^n\lambda(y_i^*-x_i'\beta)\big[y_i1(y_i^*>0)+(1-y_i)1(y_i^*\le0)\big].\label{g88:aug}
+\end{align}
+The conditional of $y^*$ is easy (independent truncated logistics). The conditional of $\beta$ keeps the factors of \eqref{g88:aug} with $\beta$:
+\begin{align}
+\pi(\beta|y^*,y)&\propto\exp\left[-\tfrac12(\beta-\beta_0)'B_0^{-1}(\beta-\beta_0)\right]\prod_{i=1}^n\frac{e^{y_i^*-x_i'\beta}}{\big(1+e^{y_i^*-x_i'\beta}\big)^2}.\label{g88:beta}
+\end{align}
+The log of each logistic factor, $(y_i^*-x_i'\beta)-2\log(1+e^{y_i^*-x_i'\beta})$, is not quadratic in $\beta$, so \eqref{g88:beta} is no more standard than $\pi(\beta|y)$: an MH step is still needed, now in a space enlarged by $n$ latent variables. Integrating $y_i^*$ out of \eqref{g88:aug} returns the original form, since for $y_i=1$
+\begin{align}
+\int_0^\infty\lambda(y_i^*-x_i'\beta)\,dy_i^*&=1-\Lambda(-x_i'\beta)=\Lambda(x_i'\beta)=P_i,\label{g88:int}
+\end{align}
+and $\int_{-\infty}^0\lambda(y_i^*-x_i'\beta)dy_i^*=1-P_i$ for $y_i=0$.}
+\intuicao{Latent data help when the latent model is conditionally conjugate. In the probit, $u_i\sim N(0,1)$ makes $\beta|y^*$ a normal regression posterior (Gibbs, \S8.2.2); with logistic errors the latent model is itself a non-Gaussian regression, so augmentation adds work without removing the MH step.}
+\refbib{Greenberg \S8.2.2--8.2.3 (pp.~122--129).}
+\end{sol}
+
+% =============================================================================
+\bloco{2}{Tsay (2010)}{Ch.~12 \,\textbullet\, 3 questions}
+
+% -----------------------------------------------------------------------------
+\questao{Tsay 12.1 --- normal mean, one observation.}
+\fonte{Tsay, R. S. (2010), \textit{Analysis of Financial Time Series}, 3rd ed., Wiley, Exercise 12.1, p.~670 --- reproduced verbatim.}
+\begin{enunciado}
+\textbf{12.1.} Suppose that $x$ is normally distributed with mean $\mu$ and variance 4. Assume that the prior distribution of $\mu$ is also normal with mean 0 and variance 25. What is the posterior distribution of $\mu$ given the data point $x$?
+\end{enunciado}
+\resolespaco
+\begin{sol}
+\begin{notacao}
+\item $x|\mu\sim N(\mu,\sigma^2)$, $\sigma^2=4$, one observation ($n=1$); prior $\mu\sim N(\mu_o,\sigma_o^2)$, $\mu_o=0$, $\sigma_o^2=25$.
+\item $\mu_*$, $\sigma_*^2$: posterior mean and variance; $\eta=1/\sigma^2$, $\eta_o=1/\sigma_o^2$, $\eta_*=1/\sigma_*^2$: precisions.
+\end{notacao}
+\passo{from scratch}{Bayes theorem and expansion of the exponent (dropping terms free of $\mu$):
+\begin{align}
+\pi(\mu|x)&\propto\exp\Big[-\frac{(x-\mu)^2}{8}\Big]\exp\Big[-\frac{\mu^2}{50}\Big]\label{t121:b}\\
+&\propto\exp\Big[-\tfrac12\Big\{\Big(\frac14+\frac1{25}\Big)\mu^2-2\mu\frac{x}{4}\Big\}\Big],\label{t121:e}
+\end{align}
+so the posterior is normal with precision $\eta_*=1/4+1/25$ and mean $\mu_*=(x/4)/\eta_*$.}
+\passo{numbers (Tsay Result 12.1)}{Result 12.1 with $n=1$ gives
+\begin{align}
+\mu_*&=\frac{\sigma^2\mu_o+n\sigma_o^2x}{\sigma^2+n\sigma_o^2}\label{t121:m}\\
+&=\frac{(4)(0)+(1)(25)x}{(4)+(1)(25)}=\frac{25}{29}\,x=0.862069\,x,\label{t121:m2}\\
+\sigma_*^2&=\frac{\sigma^2\sigma_o^2}{\sigma^2+n\sigma_o^2}=\frac{(4)(25)}{(4)+(25)}=\frac{100}{29}=3.448276.\label{t121:v}
+\end{align}
+In precisions, $\eta_*=0.04+0.25=0.29$ and $1/0.29=3.448276$, matching \eqref{t121:v}. Hence
+\begin{align}
+\mu|x&\sim N\Big(\frac{25}{29}x,\ \frac{100}{29}\Big).\label{t121:ans}
+\end{align}}
+\intuicao{The observation is about six times as precise as the prior ($0.25$ vs.\ $0.04$), so it gets weight $25/29\approx0.86$ and the prior mean $0$ gets $4/29$; the posterior variance $3.45$ is below both $4$ and $25$.}
+\refbib{Tsay \S12.3.2, Result 12.1 (pp.~618--619); Greenberg Exercise~4.2 (p.~58); Question~3 above.}
+\end{sol}
+
+% -----------------------------------------------------------------------------
+\questao{Tsay 12.2 --- Gibbs conditionals for regression with AR($p$) errors.}
+\fonte{Tsay, R. S. (2010), \textit{Analysis of Financial Time Series}, 3rd ed., Wiley, Exercise 12.2, p.~670 --- reproduced verbatim.}
+\begin{enunciado}
+\textbf{12.2.} Consider the linear regression model with time series errors in Section 12.5. Assume that $z_t$ is an AR($p$) process (i.e., $z_t=\phi_1z_{t-1}+\cdots+\phi_pz_{t-p}+a_t$). Let $\boldsymbol\phi=(\phi_1,\ldots,\phi_p)'$ be the vector of AR parameters. Derive the conditional posterior distributions of $f(\boldsymbol\beta|\boldsymbol Y,\boldsymbol X,\boldsymbol\phi,\sigma^2)$, $f(\boldsymbol\phi|\boldsymbol Y,\boldsymbol X,\boldsymbol\beta,\sigma^2)$, and $f(\sigma^2|\boldsymbol Y,\boldsymbol X,\boldsymbol\beta,\boldsymbol\phi)$ using the conjugate prior distributions, that is, the priors are
+\[
+\boldsymbol\beta\sim N(\boldsymbol\beta_o,\boldsymbol\Sigma_o),\qquad\boldsymbol\phi\sim N(\boldsymbol\phi_o,\boldsymbol A_o),\qquad(v\lambda)/\sigma^2\sim\chi_v^2.
+\]
+\end{enunciado}
+\begin{contexto}{Tsay \S12.5, p.~624, equation (12.6)}
+The model becomes
+\[
+y_t=\boldsymbol x_t'\boldsymbol\beta+z_t,\qquad z_t=\phi z_{t-1}+a_t,\qquad t=1,\ldots,n,\tag{12.6}
+\]
+where $n$ is the sample size. [\ldots] $\{a_t\}$ being a sequence of independent and identically distributed normal random variables with mean zero and variance $\sigma^2$.
+\end{contexto}
+\resolespaco
+\begin{sol}
+\begin{notacao}
+\item $y_t$: response; $\boldsymbol x_t$: $(k+1)\times1$ regressors (with a constant); $\boldsymbol\beta$: coefficients; $z_t=y_t-\boldsymbol x_t'\boldsymbol\beta$: regression error; $a_t\sim N(0,\sigma^2)$ i.i.d.
+\item $\boldsymbol\phi=(\phi_1,\ldots,\phi_p)'$; the likelihood conditions on the first $p$ observations and uses $t=p+1,\ldots,n$ (Tsay uses $t=2,\ldots,n$ for $p=1$).
+\item Hyperparameters $\boldsymbol\beta_o,\boldsymbol\Sigma_o,\boldsymbol\phi_o,\boldsymbol A_o$ (known), $v,\lambda>0$; $\sum$ means $\sum_{t=p+1}^n$.
+\end{notacao}
+\passo{conditional likelihood}{With $a_t=z_t-\sum_{j=1}^p\phi_jz_{t-j}$,
+\begin{align}
+f(\boldsymbol Y|\boldsymbol X,\boldsymbol\beta,\boldsymbol\phi,\sigma^2)&\propto(\sigma^2)^{-(n-p)/2}\exp\Big[-\frac{1}{2\sigma^2}\textstyle\sum a_t^2\Big].\label{t122:lik}
+\end{align}}
+\passo{(i) $\boldsymbol\beta$ given $\boldsymbol\phi,\sigma^2$}{Define the AR-filtered data
+\begin{align}
+y_{o,t}=y_t-\textstyle\sum_{j=1}^p\phi_jy_{t-j},\qquad\boldsymbol x_{o,t}=\boldsymbol x_t-\textstyle\sum_{j=1}^p\phi_j\boldsymbol x_{t-j}.\label{t122:filt}
+\end{align}
+Substituting $z_t=y_t-\boldsymbol x_t'\boldsymbol\beta$ into $a_t$:
+\begin{align}
+a_t&=(y_t-\boldsymbol x_t'\boldsymbol\beta)-\textstyle\sum_j\phi_j(y_{t-j}-\boldsymbol x_{t-j}'\boldsymbol\beta)\label{t122:a1}\\
+&=y_{o,t}-\boldsymbol x_{o,t}'\boldsymbol\beta,\label{t122:a2}
+\end{align}
+so $y_{o,t}=\boldsymbol x_{o,t}'\boldsymbol\beta+a_t$ is a regression with i.i.d.\ normal errors. Substituting \eqref{t122:a2} into \eqref{t122:lik} and multiplying by the $N(\boldsymbol\beta_o,\boldsymbol\Sigma_o)$ prior, the exponent is, up to constants,
+\begin{align}
+-\tfrac12\Big[\boldsymbol\beta'\Big(\frac{\sum\boldsymbol x_{o,t}\boldsymbol x_{o,t}'}{\sigma^2}+\boldsymbol\Sigma_o^{-1}\Big)\boldsymbol\beta-2\boldsymbol\beta'\Big(\frac{\sum\boldsymbol x_{o,t}y_{o,t}}{\sigma^2}+\boldsymbol\Sigma_o^{-1}\boldsymbol\beta_o\Big)\Big].\label{t122:bexp}
+\end{align}
+Completing the square in \eqref{t122:bexp}:
+\begin{align}
+\boldsymbol\beta|\boldsymbol Y,\boldsymbol X,\boldsymbol\phi,\sigma^2&\sim N(\boldsymbol\beta_*,\boldsymbol\Sigma_*),\quad
+\boldsymbol\Sigma_*^{-1}=\frac{\sum\boldsymbol x_{o,t}\boldsymbol x_{o,t}'}{\sigma^2}+\boldsymbol\Sigma_o^{-1},\quad
+\boldsymbol\beta_*=\boldsymbol\Sigma_*\Big(\frac{\sum\boldsymbol x_{o,t}y_{o,t}}{\sigma^2}+\boldsymbol\Sigma_o^{-1}\boldsymbol\beta_o\Big),\label{t122:beta}
+\end{align}
+which is Tsay's (12.9) with $p$ lags in the filter.}
+\passo{(ii) $\boldsymbol\phi$ given $\boldsymbol\beta,\sigma^2$}{With $\boldsymbol\beta$ known, $z_t=y_t-\boldsymbol x_t'\boldsymbol\beta$ is observed. Let $\boldsymbol w_t=(z_{t-1},\ldots,z_{t-p})'$:
+\begin{align}
+z_t&=\boldsymbol w_t'\boldsymbol\phi+a_t,\qquad t=p+1,\ldots,n,\label{t122:ar}
+\end{align}
+again a normal regression. The same completing of the square with the $N(\boldsymbol\phi_o,\boldsymbol A_o)$ prior gives
+\begin{align}
+\boldsymbol\phi|\boldsymbol Y,\boldsymbol X,\boldsymbol\beta,\sigma^2&\sim N(\boldsymbol\phi_*,\boldsymbol A_*),\quad
+\boldsymbol A_*^{-1}=\frac{\sum\boldsymbol w_t\boldsymbol w_t'}{\sigma^2}+\boldsymbol A_o^{-1},\quad
+\boldsymbol\phi_*=\boldsymbol A_*\Big(\frac{\sum\boldsymbol w_tz_t}{\sigma^2}+\boldsymbol A_o^{-1}\boldsymbol\phi_o\Big),\label{t122:phi}
+\end{align}
+the AR($p$) version of (12.10). (If stationarity is imposed, \eqref{t122:phi} is truncated to the stationary region, e.g.\ by rejecting draws outside it.)}
+\passo{(iii) $\sigma^2$ given $\boldsymbol\beta,\boldsymbol\phi$}{The prior $v\lambda/\sigma^2\sim\chi^2_v$ is an inverted chi-squared, with density
+\begin{align}
+\pi(\sigma^2)&\propto(\sigma^2)^{-(v/2+1)}\exp\Big[-\frac{v\lambda}{2\sigma^2}\Big].\label{t122:sp}
+\end{align}
+Multiplying \eqref{t122:lik} by \eqref{t122:sp}, with $a_t$ computed from $\boldsymbol\beta$ and $\boldsymbol\phi$:
+\begin{align}
+\pi(\sigma^2|\boldsymbol Y,\boldsymbol X,\boldsymbol\beta,\boldsymbol\phi)&\propto(\sigma^2)^{-((v+n-p)/2+1)}\exp\Big[-\frac{v\lambda+\sum a_t^2}{2\sigma^2}\Big],\label{t122:s1}\\
+\frac{v\lambda+\sum_{t=p+1}^na_t^2}{\sigma^2}&\sim\chi^2_{v+n-p},\label{t122:s2}
+\end{align}
+which is (12.11) for $p=1$.}
+\passo{numerical check (seed 122; function \texttt{t122})}{Simulated data: $n=500$, $\boldsymbol x_t=(1,x_t)'$ with $x_t\sim N(0,1)$, $\boldsymbol\beta=(1,2)'$, $\boldsymbol\phi=(0.5,-0.3)'$, $\sigma^2=1$; priors $\boldsymbol\beta_o=\mathbf 0$, $\boldsymbol\Sigma_o=100\boldsymbol I$, $\boldsymbol\phi_o=\mathbf 0$, $\boldsymbol A_o=\boldsymbol I$, $v=3$, $\lambda=1$. Cycling \eqref{t122:beta}, \eqref{t122:phi}, \eqref{t122:s2} for 2{,}100 iterations and discarding 100 (as in Tsay's Example 12.1):}
+\begin{lstlisting}
+yo = y[p:] - lagmat(y) @ phi                                   # (Q17.2)
+Xo = X[p:] - sum(phi[j] * X[p-j-1:n-j-1] for j in range(p))
+Sst = np.linalg.inv(Xo.T @ Xo / s2 + Sinv)
+beta = Sst @ (Xo.T @ yo / s2 + Sinv @ bo) + np.linalg.cholesky(Sst) @ rng.normal(size=2)
+zz = y - X @ beta; W, zt = lagmat(zz), zz[p:]
+Ast = np.linalg.inv(W.T @ W / s2 + Ainv)
+phi = Ast @ (W.T @ zt / s2 + Ainv @ phio) + np.linalg.cholesky(Ast) @ rng.normal(size=p)
+at = zt - W @ phi
+s2 = (v * lam + at @ at) / rng.chisquare(v + n - p)           # (Q17.11)
+\end{lstlisting}
+\noindent Posterior means (s.d.): $\beta_0=1.0317$ (0.0550), $\beta_1=2.0554$ (0.0394), $\phi_1=0.5182$ (0.0415), $\phi_2=-0.3652$ (0.0413), $\sigma^2=1.0533$ (0.0669); every true value is within two posterior s.d.
+\intuicao{Each block is a textbook conjugate regression once the other blocks are fixed: knowing $\boldsymbol\phi$ whitens the errors (Cochrane--Orcutt filtering), knowing $\boldsymbol\beta$ reveals the error series, and knowing both reveals the innovations.}
+\refbib{Tsay \S12.5 (pp.~624--628), Results 12.1a and 12.8 (pp.~619--621); Greenberg \S10.1 (AR models).}
+\end{sol}
+
+% -----------------------------------------------------------------------------
+\questao{Tsay 12.3 --- two consecutive missing values in an AR($p$).}
+\fonte{Tsay, R. S. (2010), \textit{Analysis of Financial Time Series}, 3rd ed., Wiley, Exercise 12.3, p.~670 --- reproduced verbatim.}
+\begin{enunciado}
+\textbf{12.3.} Consider the linear AR($p$) model in Section 12.6.1. Suppose that $x_h$ and $x_{h+1}$ are two missing values with a joint prior distribution being multivariate normal with mean $\boldsymbol\mu_o$ and covariance matrix $\boldsymbol\Sigma_o$. Other prior distributions are the same as that in the text. What is the conditional posterior distribution of the two missing values?
+\end{enunciado}
+\begin{contexto}{Tsay \S12.6.1, pp.~629--630}
+For ease in presentation, consider an AR($p$) time series
+\[
+x_t=\phi_1x_{t-1}+\cdots+\phi_px_{t-p}+a_t,\tag{12.15}
+\]
+where $\{a_t\}$ is a Gaussian white noise series with mean zero and variance $\sigma^2$. [\ldots] If we assume that the prior distributions are
+\[
+\boldsymbol\phi\sim N(\boldsymbol\phi_o,\boldsymbol\Sigma_o),\qquad x_h\sim N(\mu_o,\sigma_o^2),\qquad\frac{v\lambda}{\sigma^2}\sim\chi_v^2,
+\]
+where the hyperparameters are known [\ldots].
+\end{contexto}
+\resolespaco
+\begin{sol}
+\begin{notacao}
+\item $x_t$: AR($p$) series (12.15), $t=1,\ldots,n$; $\boldsymbol m=(x_h,x_{h+1})'$: the two missing values, with $h-p\ge1$ and $h+1+p\le n$.
+\item $\psi_0=1$, $\psi_j=-\phi_j$ ($j=1,\ldots,p$), so $a_t=\sum_{j=0}^p\psi_jx_{t-j}$; $\psi_j\equiv0$ outside $0\le j\le p$.
+\item $\boldsymbol\mu_o$, $\boldsymbol\Sigma_o$: prior mean and covariance of $\boldsymbol m$; $\boldsymbol\mu_*$, $\boldsymbol\Sigma_*$: posterior ones.
+\end{notacao}
+\passo{which equations involve $\boldsymbol m$}{$x_h$ enters $a_t$ for $t=h,\ldots,h+p$ and $x_{h+1}$ for $t=h+1,\ldots,h+1+p$: the $p+2$ equations $t=h,\ldots,h+p+1$. Splitting each into the missing and the observed parts:
+\begin{align}
+a_t&=c_{t1}x_h+c_{t2}x_{h+1}+\textstyle\sum_{j:\,t-j\notin\{h,h+1\}}\psi_jx_{t-j},\label{t123:split}\\
+c_{t1}&=\psi_{t-h},\qquad c_{t2}=\psi_{t-h-1}.\label{t123:c}
+\end{align}
+Define the observed quantity $y_t^*=-\sum_{j:\,t-j\notin\{h,h+1\}}\psi_jx_{t-j}$ and $b_t=-a_t\sim N(0,\sigma^2)$ (the normal is symmetric, as in Tsay). Then \eqref{t123:split} becomes
+\begin{align}
+y_t^*&=\boldsymbol c_t'\boldsymbol m+b_t,\qquad t=h,\ldots,h+p+1,\label{t123:reg}\\
+\boldsymbol y^*&=\boldsymbol C\boldsymbol m+\boldsymbol b,\qquad\boldsymbol C=(\boldsymbol c_h,\ldots,\boldsymbol c_{h+p+1})'\ \ ((p+2)\times2),\label{t123:stack}
+\end{align}
+a linear regression with two unknown ``coefficients'' $x_h$, $x_{h+1}$. No other equation of the likelihood involves $\boldsymbol m$.}
+\passo{posterior}{Given $\boldsymbol\phi$, $\sigma^2$ and the observed data, multiply the likelihood of \eqref{t123:stack} by the prior of $\boldsymbol m$:
+\begin{align}
+\pi(\boldsymbol m|\boldsymbol X,\boldsymbol\phi,\sigma^2)&\propto\exp\Big[-\frac{(\boldsymbol y^*-\boldsymbol C\boldsymbol m)'(\boldsymbol y^*-\boldsymbol C\boldsymbol m)}{2\sigma^2}-\frac{(\boldsymbol m-\boldsymbol\mu_o)'\boldsymbol\Sigma_o^{-1}(\boldsymbol m-\boldsymbol\mu_o)}{2}\Big].\label{t123:post}
+\end{align}
+Completing the square in $\boldsymbol m$ (Result 12.1a with the least-squares estimate $\hat{\boldsymbol m}=(\boldsymbol C'\boldsymbol C)^{-1}\boldsymbol C'\boldsymbol y^*$, $\operatorname{Var}(\hat{\boldsymbol m})=\sigma^2(\boldsymbol C'\boldsymbol C)^{-1}$):
+\begin{align}
+(x_h,x_{h+1})'\,|\,\boldsymbol X,\boldsymbol\phi,\sigma^2&\sim N_2(\boldsymbol\mu_*,\boldsymbol\Sigma_*),\label{t123:ans}\\
+\boldsymbol\Sigma_*^{-1}&=\boldsymbol\Sigma_o^{-1}+\frac{\boldsymbol C'\boldsymbol C}{\sigma^2},\label{t123:S}\\
+\boldsymbol\mu_*&=\boldsymbol\Sigma_*\Big(\boldsymbol\Sigma_o^{-1}\boldsymbol\mu_o+\frac{\boldsymbol C'\boldsymbol y^*}{\sigma^2}\Big).\label{t123:m}
+\end{align}}
+\passo{the entries of $\boldsymbol C'\boldsymbol C$}{From \eqref{t123:c}, as $t$ runs over the $p+2$ equations each column of $\boldsymbol C$ runs over $\psi_0,\ldots,\psi_p$, shifted by one row:
+\begin{align}
+(\boldsymbol C'\boldsymbol C)_{11}=(\boldsymbol C'\boldsymbol C)_{22}&=\textstyle\sum_{j=0}^p\psi_j^2=1+\sum_{j=1}^p\phi_j^2,\label{t123:cc1}\\
+(\boldsymbol C'\boldsymbol C)_{12}&=\textstyle\sum_{j=1}^p\psi_j\psi_{j-1}=-\phi_1+\sum_{j=2}^p\phi_j\phi_{j-1}.\label{t123:cc2}
+\end{align}
+For $p=1$: $\boldsymbol c_h=(1,0)'$, $\boldsymbol c_{h+1}=(-\phi,1)'$, $\boldsymbol c_{h+2}=(0,-\phi)'$; $y^*_h=\phi x_{h-1}$, $y^*_{h+1}=0$, $y^*_{h+2}=-x_{h+2}$; so
+\begin{align}
+\boldsymbol C'\boldsymbol C&=\begin{pmatrix}1+\phi^2&-\phi\\-\phi&1+\phi^2\end{pmatrix},\qquad\boldsymbol C'\boldsymbol y^*=\begin{pmatrix}\phi x_{h-1}\\ \phi x_{h+2}\end{pmatrix}.\label{t123:p1}
+\end{align}
+The script (function \texttt{t123}) builds $\boldsymbol C$ for an AR(2), checks \eqref{t123:cc1}--\eqref{t123:cc2}, and verifies at random points that the log of prior $\times$ full AR likelihood differs from its value at $\boldsymbol\mu_*$ by exactly $-\frac12(\boldsymbol m-\boldsymbol\mu_*)'\boldsymbol\Sigma_*^{-1}(\boldsymbol m-\boldsymbol\mu_*)$ (to $10^{-9}$).}
+\intuicao{The two gaps are filled from both sides: $p$ values before and $p$ after inform them, through the AR equations, as a small regression. The off-diagonal $-\phi_1/\sigma^2$ (for $p=1$) in the precision makes adjacent missing values positively correlated when $\phi_1>0$, which is why Tsay recommends drawing them jointly in a Gibbs sampler.}
+\refbib{Tsay \S12.6.1 (pp.~629--631), eqs.\ (12.16)--(12.17) for one missing value; Result 12.1a (p.~619).}
+\end{sol}
+
+% =============================================================================
+\bloco{3}{Bolfarine \& Sandoval (2010)}{Chs.~4--5 \,\textbullet\, 5 questions}
+
+% -----------------------------------------------------------------------------
+\questao{Bolfarine \& Sandoval 4.3 --- risk and Bayes risk, binomial.}
+\fonte{Bolfarine, H. and Sandoval, M. C. (2010), \textit{Introdução à Inferência Estatística}, 2nd ed., SBM, Exercício 4.3, p.~71 --- reproduced verbatim (Portuguese original).}
+\begin{enunciado}\begin{otherlanguage}{brazil}
+\textbf{4.3.} Considere uma única observação da variável aleatória $X\sim Binomial(m,\theta)$. Seja $l(\theta,d)=(\theta-d)^2$.\\
+(i) Encontre o risco de $d(X)=X/m$.\\
+(ii) Encontre o risco de Bayes de $d(X)$ em (i), com relação a priori $\pi(\theta)=1,0\le\theta\le1$.
+\end{otherlanguage}\end{enunciado}
+\resolespaco
+\begin{sol}
+\begin{notacao}
+\item $X\sim\text{Binomial}(m,\theta)$, $m\ge1$, $\theta\in[0,1]$; $d(X)=X/m$; loss $l(\theta,d)=(\theta-d)^2$.
+\item $R(\theta,d)=E_\theta[l(\theta,d(X))]$: risk; $r(\pi,d)=E_\pi[R(\theta,d)]$: Bayes risk under the uniform prior.
+\end{notacao}
+\passo{(i) risk}{Squared-error risk is variance plus squared bias, and $E(X)=m\theta$, $\operatorname{Var}(X)=m\theta(1-\theta)$:
+\begin{align}
+R(\theta,d)&=E\big[(\theta-X/m)^2\big]=\operatorname{Var}(X/m)+\big(E[X/m]-\theta\big)^2\label{b43:a}\\
+&=\frac{m\theta(1-\theta)}{m^2}+\Big(\frac{m\theta}{m}-\theta\Big)^2\label{b43:b}\\
+&=\frac{\theta(1-\theta)}{m}.\label{b43:R}
+\end{align}}
+\passo{(ii) Bayes risk}{Averaging \eqref{b43:R} over $\pi(\theta)=1$:
+\begin{align}
+r(\pi,d)&=\int_0^1\frac{\theta(1-\theta)}{m}\,(1)\,d\theta\label{b43:c}\\
+&=\frac1m\Big(\frac12-\frac13\Big)\label{b43:d}\\
+&=\frac{1}{6m}.\label{b43:r}
+\end{align}
+(The script checks \eqref{b43:R} by summing over the binomial p.m.f.\ and \eqref{b43:r} by quadrature, for $m=10$.)}
+\intuicao{$X/m$ is unbiased, so its risk is all variance, largest at $\theta=1/2$. The Bayes estimator under this prior, $(X+1)/(m+2)$, has the smaller Bayes risk $1/[6(m+2)]$ (Bolfarine \& Sandoval Example 4.4.1): a little bias buys a larger cut in variance.}
+\refbib{Bolfarine \& Sandoval \S4.1--4.4 (pp.~55--70), Example 4.4.1.}
+\end{sol}
+
+% -----------------------------------------------------------------------------
+\questao{Bolfarine \& Sandoval 4.5 --- Bayes risk of $X$ under a gamma prior.}
+\fonte{Bolfarine, H. and Sandoval, M. C. (2010), \textit{Introdução à Inferência Estatística}, 2nd ed., SBM, Exercício 4.5, p.~71 --- reproduced verbatim (Portuguese original).}
+\begin{enunciado}\begin{otherlanguage}{brazil}
+\textbf{4.5.} Seja uma única observação da distribuição $Poisson(\theta)$. Encontre o risco de Bayes do estimador $d(X)=X$, com relação à perda quadrática e a priori $Gama(\alpha,\beta)$.
+\end{otherlanguage}\end{enunciado}
+\resolespaco
+\begin{sol}
+\begin{notacao}
+\item $X\sim\text{Poisson}(\theta)$, one observation; $d(X)=X$; quadratic loss $(\theta-d)^2$.
+\item Prior $Gama(\alpha,\beta)$: $\pi(\theta)=\beta^\alpha\theta^{\alpha-1}e^{-\beta\theta}/\Gamma(\alpha)$ (Bolfarine \& Sandoval Example 2.3.4), $\alpha,\beta>0$.
+\end{notacao}
+\passo{risk}{$d(X)=X$ is unbiased ($E_\theta X=\theta$), so
+\begin{align}
+R(\theta,d)&=E_\theta(\theta-X)^2=\operatorname{Var}_\theta(X)=\theta.\label{b45:R}
+\end{align}}
+\passo{Bayes risk}{Averaging \eqref{b45:R} over the prior and using the gamma integral \eqref{g32:gi}:
+\begin{align}
+r(\pi,d)&=\int_0^\infty\theta\,\frac{\beta^\alpha}{\Gamma(\alpha)}\theta^{\alpha-1}e^{-\beta\theta}d\theta\label{b45:a}\\
+&=\frac{\beta^\alpha}{\Gamma(\alpha)}\cdot\frac{\Gamma(\alpha+1)}{\beta^{\alpha+1}}\label{b45:b}\\
+&=\frac{\alpha}{\beta}.\label{b45:r}
+\end{align}}
+\passo{comparison}{The Bayes estimator under this prior is the posterior mean $(\alpha+X)/(\beta+1)$, whose Bayes risk is the expected posterior variance:
+\begin{align}
+E\Big[\frac{\alpha+X}{(\beta+1)^2}\Big]&=\frac{\alpha+\alpha/\beta}{(\beta+1)^2}=\frac{\alpha}{\beta(\beta+1)}<\frac\alpha\beta,\label{b45:cmp}
+\end{align}
+using $E(X)=E[E(X|\theta)]=E(\theta)=\alpha/\beta$ (checked numerically in the script).}
+\intuicao{The Bayes risk of $X$ is simply the prior mean of its variance $\theta$; shrinking $X$ toward the prior mean divides that risk by $\beta+1$.}
+\refbib{Bolfarine \& Sandoval \S4.3 (Definition 4.3.1, p.~61), Example 4.4.2 (pp.~67--68).}
+\end{sol}
+
+% -----------------------------------------------------------------------------
+\questao{Bolfarine \& Sandoval 4.9 --- Bayes estimator of $P_\theta(X=0)$.}
+\fonte{Bolfarine, H. and Sandoval, M. C. (2010), \textit{Introdução à Inferência Estatística}, 2nd ed., SBM, Exercício 4.9, p.~72 --- reproduced verbatim (Portuguese original).}
+\begin{enunciado}\begin{otherlanguage}{brazil}
+\textbf{4.9.} Em uma área de reflorestamento, o número de árvores de determinada espécie, por hectare, com certa doença tem uma distribuição $Poisson(\theta)$. A distribuição a priori de $\theta$ é exponencial com média igual a 1. Encontre o estimador de Bayes de $P_\theta(X=0)$ com relação à perda quadrática..
+\end{otherlanguage}\end{enunciado}
+\resolespaco
+\begin{sol}
+\begin{notacao}
+\item $X_1,\ldots,X_n$: diseased trees in $n$ hectares, i.i.d.\ Poisson$(\theta)$ (the statement's single hectare is $n=1$); $s=\sum_iX_i$.
+\item Prior: exponential with mean 1, $\pi(\theta)=e^{-\theta}$ ($=Gama(1,1)$); $g(\theta)=P_\theta(X=0)=e^{-\theta}$.
+\end{notacao}
+\passo{posterior}{As in \eqref{g22:post} of Question~1 with $\alpha=\beta=1$:
+\begin{align}
+\pi(\theta|x)&\propto\left(\theta^{s}e^{-n\theta}\right)\left(e^{-\theta}\right)=\theta^{s}e^{-(n+1)\theta},\label{b49:post}
+\end{align}
+i.e.\ $\theta|x\sim Gama(s+1,n+1)$.}
+\passo{Bayes estimator}{Under quadratic loss the Bayes estimator of $g(\theta)$ is its posterior mean (Theorem 4.4.1 applied to $g(\theta)$):
+\begin{align}
+d_B(x)&=E\big[e^{-\theta}|x\big]=\int_0^\infty e^{-\theta}\,\frac{(n+1)^{s+1}}{\Gamma(s+1)}\theta^{s}e^{-(n+1)\theta}d\theta\label{b49:a}\\
+&=\frac{(n+1)^{s+1}}{\Gamma(s+1)}\int_0^\infty\theta^{s}e^{-(n+2)\theta}d\theta.\label{b49:b}
+\end{align}
+Substituting the gamma integral \eqref{g32:gi} with $a=s+1$, $b=n+2$:
+\begin{align}
+d_B(x)&=\frac{(n+1)^{s+1}}{\Gamma(s+1)}\cdot\frac{\Gamma(s+1)}{(n+2)^{s+1}}\label{b49:c}\\
+&=\Big(\frac{n+1}{n+2}\Big)^{s+1}.\label{b49:d}
+\end{align}
+For one hectare ($n=1$, $X=x$):
+\begin{align}
+d_B(x)&=\Big(\frac23\Big)^{x+1},\label{b49:one}
+\end{align}
+e.g.\ $2/3$ for $x=0$ and $(2/3)^4=0.1975$ for $x=3$.}
+\intuicao{$d_B$ is not $e^{-E(\theta|x)}$ (by Jensen's inequality $E[e^{-\theta}|x]>e^{-E[\theta|x]}$), and unlike the plug-in $e^{-\bar x}$ it never claims certainty: after seeing $x=0$ the plug-in says $P(X=0)=1$, the Bayes estimator says $2/3$.}
+\refbib{Bolfarine \& Sandoval \S4.4, Theorem 4.4.1 (p.~63), Example 4.4.2.}
+\end{sol}
+
+% -----------------------------------------------------------------------------
+\questao{Bolfarine \& Sandoval 4.10 --- Pareto prior for $U(0,\theta)$.}
+\fonte{Bolfarine, H. and Sandoval, M. C. (2010), \textit{Introdução à Inferência Estatística}, 2nd ed., SBM, Exercício 4.10, p.~72 --- reproduced verbatim (Portuguese original).}
+\begin{enunciado}\begin{otherlanguage}{brazil}
+\textbf{4.10.} Sejam $X_1,\ldots,X_n$ uma amostra aleatória da distribuição $U(0,\theta)$. Suponhamos que $\theta$ seja uma variável aleatória com função de densidade de probabilidade (Pareto)
+\[
+\pi(\theta)=\begin{cases}ba^b/\theta^{b+1}, & \theta\ge a,\\ 0, & \theta<a,\end{cases}
+\]
+Encontre a distribuição a posteriori de $\theta$ e o estimador de Bayes de $\theta$ com relação à perda quadrática.
+\end{otherlanguage}\end{enunciado}
+\resolespaco
+\begin{sol}
+\begin{notacao}
+\item $X_i\sim U(0,\theta)$, $i=1,\ldots,n$; $X_{(n)}=\max_iX_i$; $I_A$: indicator.
+\item Pareto prior: scale $a>0$ (lower bound), shape $b>0$ (Greenberg's $k$ and $a$ in Question~2); $M=\max(a,X_{(n)})$.
+\end{notacao}
+\passo{posterior}{By \eqref{g24:lik} of Question~2 the likelihood is $\theta^{-n}I(\theta\ge X_{(n)})$; times the prior,
+\begin{align}
+\pi(\theta|\boldsymbol X)&\propto\left(\theta^{-n}I(\theta\ge X_{(n)})\right)\left(ba^b\theta^{-(b+1)}I(\theta\ge a)\right)\label{b410:a}\\
+&\propto\theta^{-(n+b+1)}I(\theta\ge M).\label{b410:b}
+\end{align}
+Normalising with $\int_M^\infty\theta^{-(n+b+1)}d\theta=M^{-(n+b)}/(n+b)$:
+\begin{align}
+h(\theta|\boldsymbol X)&=\frac{(n+b)\,M^{n+b}}{\theta^{n+b+1}}\,I_{[M,\infty)}(\theta),\qquad M=\max(a,X_{(n)}),\label{b410:post}
+\end{align}
+a Pareto with shape $n+b$ and scale $M$ (this is the book's (5.5.2), quoted in Example 5.5.2).}
+\passo{Bayes estimator}{Under quadratic loss it is the posterior mean (Theorem 4.4.1):
+\begin{align}
+d_B(\boldsymbol X)&=\int_M^\infty\theta\,\frac{(n+b)M^{n+b}}{\theta^{n+b+1}}d\theta=(n+b)M^{n+b}\,\frac{M^{-(n+b-1)}}{n+b-1}\label{b410:c}\\
+&=\frac{(n+b)\max(a,X_{(n)})}{n+b-1}.\label{b410:d}
+\end{align}}
+\intuicao{Same structure as Question~2: the data move the lower bound to $X_{(n)}$, and the estimator inflates the bound by $(n+b)/(n+b-1)$; a large $b$ (a prior concentrated near $a$) or a large $n$ brings the factor close to one.}
+\refbib{Bolfarine \& Sandoval \S4.4 (Theorem 4.4.1), Example 5.5.2 (pp.~86--87); Greenberg Exercise~2.4.}
+\end{sol}
+
+% -----------------------------------------------------------------------------
+\questao{Bolfarine \& Sandoval 5.11 --- equal-tailed Bayesian interval for a Poisson mean.}
+\fonte{Bolfarine, H. and Sandoval, M. C. (2010), \textit{Introdução à Inferência Estatística}, 2nd ed., SBM, Exercício 5.11, p.~89 --- reproduced verbatim (Portuguese original).}
+\begin{enunciado}\begin{otherlanguage}{brazil}
+\textbf{5.11.} Sejam $X_1,\ldots,X_n$ uma amostra aleatória de tamanho $n$ da distribuição $Poisson(\theta)$, com priori
+\[
+\pi(\theta)=e^{-\theta},\quad\theta>0.
+\]
+Construa um intervalo de confiança Bayesiano simétrico para $\theta$ com $\gamma=0{,}95$. Se $n=10$ e $\sum_{i=1}^nX_i=18$, como fica o intervalo?
+\end{otherlanguage}\end{enunciado}
+\resolespaco
+\begin{sol}
+\begin{notacao}
+\item $X_i\sim\text{Poisson}(\theta)$, $s=\sum_iX_i$; prior $e^{-\theta}=Gama(1,1)$; $\gamma=0.95$ (the book's $0{,}95$), $\alpha=1-\gamma$.
+\item ``Symmetric'' interval (Bolfarine \& Sandoval \S5.5): equal posterior probability $\alpha/2$ in each tail; $\chi^2_{\nu;q}$: $q$-quantile of $\chi^2_\nu$.
+\end{notacao}
+\passo{posterior}{By \eqref{b49:post} of Question~21, $\theta|\boldsymbol X\sim Gama(s+1,n+1)$.}
+\passo{pivot to $\chi^2$}{If $\theta\sim Gama(a,b)$ (rate $b$), then $b\theta\sim Gama(a,1)$ and $2b\theta\sim Gama(a,1/2)=\chi^2_{2a}$. With $a=s+1$, $b=n+1$:
+\begin{align}
+2(n+1)\theta\,|\,\boldsymbol X&\sim\chi^2_{2(s+1)}.\label{b511:chi}
+\end{align}
+Hence, with $q_1=\chi^2_{2(s+1);\alpha/2}$ and $q_2=\chi^2_{2(s+1);1-\alpha/2}$, $P(q_1\le2(n+1)\theta\le q_2|\boldsymbol X)=\gamma$, and
+\begin{align}
+\Big[\frac{q_1}{2(n+1)};\ \frac{q_2}{2(n+1)}\Big]\label{b511:int}
+\end{align}
+is the symmetric Bayesian interval.}
+\passo{numbers}{$n=10$, $s=18$: $2(s+1)=38$, $2(n+1)=22$, $q_1=\chi^2_{38;0.025}=22.8785$, $q_2=\chi^2_{38;0.975}=56.8955$. Substituting into \eqref{b511:int}:
+\begin{align}
+\Big[\frac{22.8785}{22};\ \frac{56.8955}{22}\Big]&=[1.0399;\ 2.5862].\label{b511:num}
+\end{align}
+The posterior mean is $19/11=1.7273$ (MLE $\bar x=1.8$).}
+\intuicao{Given the data, $\theta$ lies in $[1.04, 2.59]$ with probability 0.95, a direct probability statement about $\theta$. Because the gamma posterior is right-skewed, this equal-tailed interval is not the shortest (HPD) one.}
+\refbib{Bolfarine \& Sandoval \S5.5 (pp.~85--87), Definition 5.5.1; Greenberg \S3.2.2 (interval estimates).}
+\end{sol}
+
+% =============================================================================
+\bloco{4}{Morettin \& Singer (2021)}{Apps.~B--C \,\textbullet\, 3 questions}
+
+% -----------------------------------------------------------------------------
+\questao{Morettin \& Singer B.16 --- accept--reject for a truncated gamma.}
+\fonte{Morettin, P. A. and Singer, J. M. (2021), \textit{Estatística e Ciência de Dados} (preliminary version, April 2021), Apêndice B, Exercício 16, p.~478 --- reproduced verbatim (Portuguese original).}
+\begin{enunciado}\begin{otherlanguage}{brazil}
+16) Considere a distribuição gama truncada $\pi(x)\propto x^2\exp(-x)$, $0\le x\le1$. Simule uma amostra de tamanho 1.000 dessa distribuição usando o método da aceitação-rejeição com $g(x)=\exp(-x)$.
+\end{otherlanguage}\end{enunciado}
+\resolespaco
+\begin{sol}
+\begin{notacao}
+\item Target $\pi(x)=x^2e^{-x}/Z$ on $[0,1]$, $Z=\int_0^1x^2e^{-x}dx$; proposal $g(x)=e^{-x}$, $x>0$ (Exp(1)), as the statement says.
+\item $c$: constant with $\pi\le cg$; $N=1{,}000$ accepted draws.
+\end{notacao}
+\passo{bound and acceptance rule}{On $[0,1]$ the ratio is
+\begin{align}
+\frac{\pi(x)}{g(x)}&=\frac{x^2}{Z}\,1(0\le x\le1)\le\frac1Z=c,\label{b16:ratio}\\
+\frac{\pi(x)}{c\,g(x)}&=x^2\,1(x\le1),\label{b16:acc}
+\end{align}
+so a proposal $x\sim\text{Exp}(1)$ is accepted with probability $x^2$ if $x\le1$ and always rejected if $x>1$. The overall acceptance probability is $1/c=Z$.}
+\passo{$Z$ and the true moments}{Integrating by parts, $\int_0^1x^2e^{-x}dx=[-e^{-x}(x^2+2x+2)]_0^1$:
+\begin{align}
+Z&=2-5e^{-1}=2-1.839397=0.160603,\label{b16:Z}\\
+E(x)&=\frac{\int_0^1x^3e^{-x}dx}{Z}=\frac{6-16e^{-1}}{Z}=\frac{6-5.886071}{0.160603}=\frac{0.113929}{0.160603}=0.709383,\label{b16:m}\\
+E(x^2)&=\frac{24-65e^{-1}}{Z}=\frac{24-23.912164}{0.160603}=\frac{0.087836}{0.160603}=0.546917,\label{b16:m2}\\
+\operatorname{Var}(x)&=0.546917-(0.709383)^2=0.546917-0.503225=0.0437.\label{b16:v}
+\end{align}}
+\passo{code (seed 16; function \texttt{ms\_b16})}{}
+\begin{lstlisting}
+acc, tried = [], 0
+while len(acc) < 1000:
+    xg = rng.exponential(1.0)                  # draw from g(x) = exp(-x)
+    tried += 1
+    if xg <= 1 and rng.uniform() <= xg ** 2:   # accept with prob x^2 1(x <= 1)  (Q24.2)
+        acc.append(xg)
+\end{lstlisting}
+\noindent Output: $6{,}644$ proposals for $1{,}000$ acceptances (rate $0.1505$); sample mean $0.7105$, sample variance $0.0443$, against $0.7094$ and $0.0437$ from \eqref{b16:m} and \eqref{b16:v}.
+\passo{comparison}{The number of proposals needed is negative binomial with mean $N/Z=6{,}226.5$ and s.d.\ $\sqrt{N(1-Z)}/Z=180.4$; $6{,}644$ is $2.3$ s.d.\ above the mean, an unlucky but legitimate run. The moments of the accepted draws agree with the truth (mean error $0.0011$, well inside $3\sqrt{0.0437/1000}$).}
+\intuicao{The statement's proposal wastes most draws: 37\% fall above 1 and are rejected outright, and small $x$ are accepted with probability $x^2$. Restricting $g$ to $[0,1]$ (density $e^{-x}/(1-e^{-1})$) would raise the acceptance rate to $Z/(1-e^{-1})=0.2541$ with the same rule.}
+\refbib{Morettin \& Singer \S B.6.1 (amostragem por aceitação-rejeição, pp.~468--470); Greenberg \S5.3.}
+\end{sol}
+
+% -----------------------------------------------------------------------------
+\questao{Morettin \& Singer B.19 --- accept--reject for discrete variables.}
+\fonte{Morettin, P. A. and Singer, J. M. (2021), \textit{Estatística e Ciência de Dados} (preliminary version, April 2021), Apêndice B, Exercício 19, p.~478 --- reproduced verbatim (Portuguese original).}
+\begin{enunciado}\begin{otherlanguage}{brazil}
+19) Considere o método da aceitação-rejeição no caso de variáveis discretas. Especificamente, suponha que queiramos simular valores de uma variável aleatória $X$, com probabilidades $\pi_j=P(X=j)$ e dispomos de um método para simular valores da variável aleatória $Y$, com probabilidades $g_j=P(Y=j)$. Suponha ainda, que exista uma constante $c$, tal que $\pi_j\le cg_j$, para todo $j$. Usando o algoritmo de aceitação-rejeição, mostre que $P(\text{aceitar})=1/c$ e que o número de iterações necessárias para obter $X$ é uma variável aleatória com distribuição geométrica com média $c$. Com esse resultado, mostre que $P(X=j)=\pi_j$.
+\end{otherlanguage}\end{enunciado}
+\resolespaco
+\begin{sol}
+\begin{notacao}
+\item $\pi_j$: target p.m.f.; $g_j$: proposal p.m.f.\ with $g_j>0$ wherever $\pi_j>0$; $c\ge1$ with $\pi_j\le cg_j$ for all $j$.
+\item Each iteration: draw $Y\sim g$ and $U\sim U(0,1)$ independently; accept $X=Y$ if $U\le\pi_Y/(cg_Y)$. $N$: number of iterations until the first acceptance.
+\end{notacao}
+\passo{$P(\text{accept})=1/c$}{Conditioning on $Y$ (the ratio $\pi_j/(cg_j)\le1$ is a valid probability):
+\begin{align}
+P(\text{accept})&=\sum_jP(Y=j)\,P\Big(U\le\frac{\pi_j}{cg_j}\Big)\label{b19:a}\\
+&=\sum_jg_j\,\frac{\pi_j}{cg_j}\label{b19:b}\\
+&=\frac1c\sum_j\pi_j=\frac1c.\label{b19:c}
+\end{align}}
+\passo{$N$ is geometric with mean $c$}{Iterations are independent and each succeeds with probability $1/c$ by \eqref{b19:c}, so
+\begin{align}
+P(N=k)&=\Big(1-\frac1c\Big)^{k-1}\frac1c,\qquad k=1,2,\ldots,\label{b19:geo}\\
+E(N)&=\frac{1}{1/c}=c.\label{b19:EN}
+\end{align}}
+\passo{$P(X=j)=\pi_j$}{In a single iteration,
+\begin{align}
+P(Y=j,\ \text{accept})&=g_j\,\frac{\pi_j}{cg_j}=\frac{\pi_j}{c}.\label{b19:joint}
+\end{align}
+$X=j$ means the first $k-1$ iterations reject and the $k$-th accepts with $Y=j$, for some $k$:
+\begin{align}
+P(X=j)&=\sum_{k=1}^\infty\Big(1-\frac1c\Big)^{k-1}\frac{\pi_j}{c}\label{b19:d}\\
+&=\frac{\pi_j}{c}\cdot\frac{1}{1-(1-1/c)}=\frac{\pi_j}{c}\cdot c=\pi_j.\label{b19:e}
+\end{align}}
+\passo{illustration (added, not in B.19: the numbers of Exercise B.20)}{$\pi=(0.2,0.3,0.1,0.1,0.3)$ on $\{1,\ldots,5\}$ and $g_j=1/5$: the smallest valid constant is $c=\max_j\pi_j/g_j=0.3/0.2=1.5$, so $P(\text{accept})=2/3$ and $E(N)=1.5$. Simulating $10{,}000$ values (seed 19; function \texttt{ms\_b19}) gives mean $N=1.5026$ and frequencies $(0.1993,0.3045,0.0985,0.0995,0.2982)$.}
+\intuicao{Acceptance re-weights the proposal by $\pi_j/g_j$; the constant $c$ only sets how often we must retry, never the shape of the output. That is why the smallest admissible $c=\max_j\pi_j/g_j$ is the best choice.}
+\refbib{Morettin \& Singer \S B.6.1 (pp.~468--470, eq.~(B.14)); Greenberg \S5.3 (continuous proof, p.~67).}
+\end{sol}
+
+% -----------------------------------------------------------------------------
+\questao{Morettin \& Singer C.5 --- chained data (data augmentation) algorithm.}
+\fonte{Morettin, P. A. and Singer, J. M. (2021), \textit{Estatística e Ciência de Dados} (preliminary version, April 2021), Apêndice C, Exercício 5, p.~489 --- reproduced verbatim (Portuguese original).}
+\begin{enunciado}\begin{otherlanguage}{brazil}
+5) \textbf{Algoritmo de Dados Encadeados} (\textit{Chain Data Algorithm})\\
+Numa abordagem um pouco diferente do algoritmos para dados aumentados, iteramos sucessivamente de $p(\mathbf z|\boldsymbol\theta,\mathbf y)$ e $p(\boldsymbol\theta|\mathbf y,\mathbf z)$ para obter uma sequência de realizações $(\mathbf z^{(1)},\boldsymbol\theta^{(1)}),\ldots,(\mathbf z^{(n)},\boldsymbol\theta^{(n)})$ com as simulações de uma variável realizadas condicionalmente aos valores atuais da outra variável. Esperamos que a distribuição de equilíbrio dessa cadeia seja a distribuição conjunta $p(\mathbf z,\boldsymbol\theta|\mathbf y)$. Este algoritmo é um caso especial do amostrador de Gibbs, descrito na Nota de Capítulo 2 do Apêndice B. Normalmente, estaremos interessados nas distribuições marginais.
+
+Para os dados do Exemplo C.2, obtenha as sequências de realizações de $Z$ e $\theta$. Simule $n=200$ valores, desprezando os primeiros 50 valores, conhecidos como \textbf{valores de aquecimento}) (\textit{burn-in}).
+\end{otherlanguage}\end{enunciado}
+\begin{contexto}{Morettin \& Singer, Exemplo C.2, p.~480, excerpt}
+\begin{otherlanguage}{brazil}
+\textbf{Exemplo C.2.} Retomemos o problema da ligação genética discutido no Exemplo B.16, segundo o qual os dados $\mathbf y=(y_1,y_2,y_3,y_4)^\top=(125,18,20,34)^\top$ ocorrem com probabilidades $\pi_1=(2+\theta)/4$, $\pi_2=\pi_3=(1-\theta)/4$, $\pi_4=\theta/4$, $0<\theta<1$. [\ldots] Admitamos que $\mathbf x=(x_1,\ldots,x_5)^\top$ sejam os dados completos que ocorrem, respectivamente, com probabilidades $(1/2,\theta/4,(1-\theta)/4,(1-\theta)/4,\theta/4)$, mas que só observamos $y_1=x_1+x_2$, $y_2=x_3$, $y_3=x_4$ e $y_4=x_5$, [\ldots] Podemos simplificar as expressões acima obtendo
+\[
+L(\theta|\mathbf y)\propto(2+\theta)^{y_1}(1-\theta)^{y_2+y_3}\theta^{y_4},\tag{C.2}
+\]
+e
+\[
+L(\theta|\mathbf X)\propto\theta^{x_2+x_5}(1-\theta)^{x_3+x_4}.\tag{C.3}
+\]
+\end{otherlanguage}
+\end{contexto}
+\resolespaco
+\begin{sol}
+\begin{notacao}
+\item $\mathbf y=(125,18,20,34)$; $\theta\in(0,1)$; latent $Z=x_2$ (the part of $y_1=125$ in the cell of probability $\theta/4$), so $x_3=18$, $x_4=20$, $x_5=34$.
+\item Prior: $\theta\sim U(0,1)$ (flat, so the posterior is proportional to the likelihood (C.2), the target of the book's EM example).
+\item $\theta^{(i)}$, $z^{(i)}$: draws at iteration $i=1,\ldots,200$; the first 50 are burn-in.
+\end{notacao}
+\passo{$p(z|\theta,\mathbf y)$}{Given $y_1=x_1+x_2=125$, each of the 125 outcomes falls in cell 2 with probability proportional to $\theta/4$ against $1/2$ for cell 1:
+\begin{align}
+p_2&=\frac{\theta/4}{1/2+\theta/4}=\frac{\theta}{2+\theta},\label{c5:p2}\\
+Z\,|\,\theta,\mathbf y&\sim\text{Bin}\Big(125,\frac{\theta}{2+\theta}\Big).\label{c5:z}
+\end{align}}
+\passo{$p(\theta|\mathbf y,z)$}{With the flat prior, the posterior is the complete-data likelihood (C.3) with $x_2=z$:
+\begin{align}
+p(\theta|\mathbf y,z)&\propto\theta^{z+34}(1-\theta)^{18+20}=\theta^{z+34}(1-\theta)^{38},\label{c5:t1}\\
+\theta\,|\,\mathbf y,z&\sim\text{Beta}(z+35,\ 39).\label{c5:t}
+\end{align}}
+\passo{algorithm and code (seed 5; function \texttt{ms\_c5})}{Start at $\theta^{(0)}=0.5$ (the book's EM start) and alternate \eqref{c5:z} and \eqref{c5:t}:}
+\begin{lstlisting}
+th = 0.5
+for i in range(200):
+    x2 = rng.binomial(125, th / (2 + th))     # z | theta, y        (Q26.2)
+    th = rng.beta(x2 + 34 + 1, 18 + 20 + 1)   # theta | z, y        (Q26.4)
+    out[i] = x2, th
+keep = out[50:]                                # drop 50 burn-in values
+\end{lstlisting}
+\noindent First five $\theta$ draws: $0.5649,0.5648,0.5233,0.6507,0.6390$. Over the 150 retained draws: mean of $\theta$ $0.6155$ (s.d.\ $0.0523$), mean of $Z$ $29.36$.
+\passo{check against the exact posterior}{Normalising (C.2) numerically gives $E(\theta|\mathbf y)=0.6228$ and s.d.\ $0.0509$; the posterior mode equals the MLE $0.62682$ of Tabela C.1 (flat prior). The chain's mean is $0.0073$ below the exact mean; with 150 draws the naive standard error is $0.0523/\sqrt{150}=0.0043$, and positive autocorrelation inflates it, so the gap is ordinary Monte Carlo error. A longer run would shrink it.}
+\intuicao{EM replaces the latent count by its expectation and maximises; the chained-data algorithm \emph{draws} the latent count and then \emph{draws} $\theta$. Its draws describe the whole posterior (spread included), and its marginal for $\theta$ centres on the same value EM finds.}
+\refbib{Morettin \& Singer \S C.2 (Exemplos C.2--C.3, pp.~480--482) and \S B.7, Nota 2 (O Amostrador de Gibbs, p.~472); Greenberg \S7.1 and \S8.2 (latent data).}
+\end{sol}
+
+\end{document}

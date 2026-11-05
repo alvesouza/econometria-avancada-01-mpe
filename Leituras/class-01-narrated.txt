@@ -1,0 +1,463 @@
+Econometria Avançada, class one. Potential outcomes, the Neyman-Rubin model, and selection bias. A narrated reading.
+
+How to listen.
+
+This is the listening version of the class one notes. It follows the notes part by part and keeps every derivation and every number. Nothing here is a summary. The main source is Angrist and Pischke, Mostly Harmless Econometrics, which these notes call MHE. We use chapter one, Questions about Questions, and chapter two, The Experimental Ideal, printed pages 3 to 18. A few passages come from Wooldridge, Introductory Econometrics, sixth edition.
+
+There are ten teaching parts, followed by seven support parts. The support parts are common mistakes, a spoken formula sheet, how to implement the simulations, a reading route with exercises, a self-test, a glossary, and the whole class in five lines. The last of these is the piece worth replaying.
+
+Every formula is spoken in words. When you hear "y zero i", that is the outcome person i would have without treatment. When you hear "y one i", that is the outcome with treatment. "d i" is the treatment indicator, equal to one if person i is treated and zero if not. "E of something given d equals one" is the expected value, the average, of that thing among the treated.
+
+One scope rule applies throughout. This course follows its own syllabus and does not go beyond it. Several ideas will be named and then deliberately left for later classes: conditioning on covariates and the omitted variable bias formula belong to class two; instrumental variables and the local average treatment effect belong to classes three and four; the Bayesian treatment model in Greenberg's chapter eleven belongs to classes fourteen to sixteen. Each time one of these comes up, you will hear that it is deferred, and why.
+
+These notes follow the draft class plan of the course. No lecture slides were available when they were written, so compare them with the lecture when the slides arrive.
+
+
+Part one. Four questions before any regression. MHE chapter one, printed pages 3 to 7.
+
+Angrist and Pischke organise any research project around four questions. They call them frequently asked questions, because they should be.
+
+The first question is: what is the causal relationship of interest? A causal relationship tells you what would happen in a counterfactual world, a world where some circumstance or policy is different. Their example is the causal effect of schooling on wages: the increase in wages a person would receive if he or she got more schooling. A range of studies put the effect of a college degree at about 40 per cent higher wages on average. That figure is on printed page 3.
+
+The second question is: what experiment would ideally capture this effect? Imagine you have no budget constraint and no ethics committee. Describe the experiment you would run. Ideal experiments are usually hypothetical, but describing one forces you to say exactly which force you want to manipulate and which factors you want to hold constant.
+
+Some questions cannot be answered by any experiment, even in principle. MHE calls these fundamentally unidentified questions. Their example, on printed page 5, is the effect of starting school at an older age on first-grade test scores. Children who start at seven are older when tested. If you instead test everyone at the same age, the children who started earlier have spent more time in school. The problem is an identity: start age equals current age minus time in school. While children are still in school, no experiment can move one of these three while holding the other two fixed. The question is not merely hard. It is unidentified.
+
+The third question is: what is your identification strategy? This is the way a researcher uses observational data, data not produced by a randomised trial, to approximate a real experiment. The example on printed page 6 is Angrist and Krueger's use of compulsory attendance laws and season of birth to study the effect of finishing high school on wages.
+
+The fourth question is: what is your mode of statistical inference? This means the population being studied, the sample used, and the assumptions behind the standard errors.
+
+The rest of this class explains why the answer to question two, a randomised trial, is the benchmark against which every other design is judged.
+
+Wooldridge makes the same point in his section one point four, Causality and the Notion of Ceteris Paribus in Econometric Analysis, printed pages 10 to 14. A causal effect is a ceteris paribus effect: the change in the outcome when one factor changes and everything else relevant is held fixed.
+
+Checklist for part one. You should be able to list the four questions in order. You should be able to explain why the school start-age question is unidentified and not merely difficult. You should be able to say, in one sentence, what an identification strategy is.
+
+
+Part two. The puzzle: do hospitals make people sick? MHE section two point one, printed page 10.
+
+The United States National Health Interview Survey of 2005 asks two questions. The first is whether, during the past 12 months, the respondent was a patient in a hospital overnight. The second asks the respondent to rate his or her own health, on a scale where 1 means excellent and 5 means poor. On this scale a higher number means worse health.
+
+Here is the comparison MHE reports. There are two groups. First, the hospitalised: 7,774 people, with mean health status 2.79 and a standard error of 0.014. Second, those not hospitalised: 90,049 people, with mean health status 2.07 and a standard error of 0.003.
+
+The difference in means is 0.71, in favour of the people who did not go to hospital, with a t statistic of 58.9.
+
+Taken at face value, this says that going to hospital makes people sicker. The obvious objection is that people who go to hospital were less healthy to begin with.
+
+Brazil shows the same pattern. In the National Health Survey of 2013, the Pesquisa Nacional de Saúde, published by IBGE in SIDRA table 5082, the share of people hospitalised for at least 24 hours in the previous 12 months rises with poor self-rated health. It is 4.5 per cent among those who rate their health as very good or good, 8.8 per cent among those who rate it as regular, and 18.8 per cent among those who rate it as bad or very bad. The arrow plausibly runs from poor health to hospital, the reverse of the causal question we wanted to ask.
+
+Now hold on to this. A t statistic of 58.9 says the gap is very precisely estimated. It says nothing at all about whether the gap is the causal effect of hospitals. A bigger sample would make the t statistic larger still, and the gap would still not be causal. Part eight makes this distinction concrete with a simulation.
+
+Checklist for part two. You should be able to state the NHIS numbers: 2.79 against 2.07, a gap of 0.71, a t statistic of 58.9. You should be able to explain why a large t statistic is evidence of precision and not of causality.
+
+
+Part three. Potential outcomes. MHE section two point one, printed page 11.
+
+Treatment is binary. The variable d i equals one if person i is treated, for example hospitalised, and zero if not.
+
+Each person has two potential outcomes. The first is y one i, the health person i would have if he or she goes to hospital. The second is y zero i, the health person i would have without going, whether or not he or she actually went. The individual causal effect of hospital for person i is y one i minus y zero i. This is what we would measure if we could go back in time and change a person's treatment status.
+
+Now the switching equation, which is MHE equation two point one point one. The observed outcome, y i, equals y one i if d i equals one, and y zero i if d i equals zero. In one line: y i equals y zero i, plus the quantity y one i minus y zero i, times d i.
+
+Check it in both cases. If d i equals zero, the second term disappears, and y i equals y zero i. If d i equals one, y i equals y zero i plus y one i minus y zero i, and the two y zeros cancel, leaving y one i. The equation simply switches between the two potential outcomes according to treatment.
+
+This leads to what Holland, in 1986, called the fundamental problem of causal inference. It is cited in MHE footnote 2 on printed page 11. For any one person, we observe only one of the two potential outcomes. The individual effect, y one i minus y zero i, is never seen. We can learn only about averages, and we learn them by comparing people.
+
+The notation already contains two assumptions. They are usually called the stable unit treatment value assumption, SUTVA for short, and go back to Rubin's papers of 1974 and 1977, which MHE cites in the same footnote. MHE chapter two does not use the name. The first assumption is no interference: my outcome does not depend on whether you are treated. It fails with contagion between patients sharing a ward, or when a large training programme changes market wages for everyone. The second is one version of treatment: "hospitalised" means the same thing for every person. When either assumption fails, y one i is not even well defined, because it depends on more than person i's own treatment.
+
+Checklist for part three. You should be able to define y zero i and y one i in words. You should be able to write the switching equation and check it in both cases. You should be able to state the fundamental problem of causal inference. You should be able to name the two parts of SUTVA and give one example of each failing.
+
+
+Part four. Estimands: what we want to know.
+
+There are three averages of the individual effect.
+
+The first is the average treatment effect, ATE. It is the expected value of y one i minus y zero i over the whole population: the effect for a randomly chosen person.
+
+The second is the average treatment effect on the treated, ATT. It is the expected value of y one i minus y zero i, given d i equals one: the effect for those who were in fact treated. MHE introduces it on printed page 11.
+
+The third is the average treatment effect on the untreated, ATU. It is the expected value of y one i minus y zero i, given d i equals zero.
+
+Let pi be the share of the population that is treated, the probability that d i equals one. The law of iterated expectations then gives an identity. ATE equals pi times ATT, plus one minus pi, times ATU. The overall average is a weighted average of the averages in the two groups.
+
+The three estimands coincide when the effect is the same for everyone, or when treatment is unrelated to the size of the effect. Otherwise they differ.
+
+Now a table where both worlds are visible. It is invented for teaching, and it is the same table used in the class one video and in the companion page called The Eight-Person Table. Health is measured on an index from 0 to 10 where, unlike the NHIS scale, a higher number means better health. The four sick people, Ana, Bruno, Carla and Davi, go to hospital. The four healthy people, Elisa, Fábio, Gabi and Hugo, do not.
+
+Here are the eight people, giving health without hospital first, then health with hospital, then the individual effect.
+
+Ana: 3 without, 5 with, an effect of 2. Treated.
+Bruno: 2 without, 5 with, an effect of 3. Treated.
+Carla: 4 without, 6 with, an effect of 2. Treated.
+Davi: 3 without, 4 with, an effect of 1. Treated.
+Elisa: 8 without, 8 with, an effect of 0. Not treated.
+Fábio: 9 without, 8 with, an effect of minus 1. Not treated.
+Gabi: 7 without, 8 with, an effect of 1. Not treated.
+Hugo: 8 without, 9 with, an effect of 1. Not treated.
+
+The observed outcomes are the with-hospital values for the four treated people, which are 5, 5, 6 and 4, and the without-hospital values for the four untreated people, which are 8, 9, 7 and 8.
+
+Now compute the estimands. The eight individual effects sum to 9, so the ATE is 9 divided by 8, which is 1.125. The treated effects are 2, 3, 2 and 1, which average to 2, so the ATT is 2. The untreated effects are 0, minus 1, 1 and 1, which average to 0.25, so the ATU is 0.25. The share treated, pi, is one half. Check the identity: one half times 2, plus one half times 0.25, is 1 plus 0.125, which is 1.125. It holds.
+
+Hospital helps every treated person, and the average effect is positive. But a researcher never sees this whole table. He or she sees only the observed column.
+
+Checklist for part four. You should be able to define ATE, ATT and ATU. You should be able to derive the identity that ATE equals pi times ATT plus one minus pi times ATU. You should be able to compute all three from the eight-person table: 1.125, 2, and 0.25.
+
+
+Part five. The selection bias decomposition. MHE section two point one, printed page 11.
+
+Here is the claim, before the derivation. The naive comparison of treated and untreated people equals the effect on the treated, plus a term called selection bias.
+
+The naive comparison is the expected value of y i given d i equals one, minus the expected value of y i given d i equals zero. It is the difference in average observed outcomes between the treated and the untreated.
+
+Step one. Use the switching equation. Among the treated, the observed outcome is y one i, so the expected value of y i given d i equals one is the expected value of y one i given d i equals one. Among the untreated, the observed outcome is y zero i, so the expected value of y i given d i equals zero is the expected value of y zero i given d i equals zero.
+
+Step two. Add and subtract the same quantity: the expected value of y zero i given d i equals one. This is the untreated health of the people who were treated, a counterfactual that no dataset contains. It is the one unobservable piece in the whole argument.
+
+Step three. Group the four terms in two pairs. The first pair is the expected value of y one i given d i equals one, minus the expected value of y zero i given d i equals one. Because both are conditional on the same group, this is the expected value of y one i minus y zero i given d i equals one, which is the ATT.
+
+The second pair is the expected value of y zero i given d i equals one, minus the expected value of y zero i given d i equals zero. This is selection bias.
+
+So the result is: observed difference equals ATT plus selection bias.
+
+Selection bias is the difference in untreated outcomes between those who were treated and those who were not. Not observed outcomes, and not treated outcomes: untreated potential outcomes. In the hospital case, the sick select into treatment, so the untreated health of the treated is lower than the untreated health of the untreated, and selection bias is negative. As MHE puts it on printed page 12, the selection bias may be so large, in absolute value, that it completely masks a positive treatment effect.
+
+Now the second form of the decomposition, written in terms of the ATE instead of the ATT. Rearrange the identity from part four: ATT equals ATE plus one minus pi, times ATT minus ATU. Substitute this into the decomposition. The result is: observed difference equals ATE, plus selection bias, plus one minus pi times the quantity ATT minus ATU. Call this third term the heterogeneity bias. It appears when the people who choose treatment are those who gain most, or least, from it. This extension is standard, but MHE chapter two does not write it out.
+
+Now plug in the eight-person table. The average observed outcome among the treated is 5, 5, 6 and 4, which averages to 5. Among the untreated it is 8, 9, 7 and 8, which averages to 8. The naive gap is 5 minus 8, which is minus 3.
+
+The selection bias is the untreated health of the treated, which averages 3, minus the untreated health of the untreated, which averages 8. That is minus 5.
+
+Check the first form: ATT plus selection bias is 2 plus minus 5, which is minus 3. It matches.
+
+Check the second form. The heterogeneity term is one half, times 2 minus 0.25, which is 0.875. ATE plus selection bias plus heterogeneity is 1.125 minus 5 plus 0.875, which is minus 3. It matches again.
+
+The data say hospital costs 3 health points. In fact it adds 2 points for the people who were treated. A selection bias of minus 5 swallows the effect and flips its sign.
+
+Which way does the bias go? MHE gives four examples on printed pages 12 to 16. Take them one at a time, each time naming who selects into treatment, the sign of the bias, and what the naive comparison shows.
+
+First, hospitals, the NHIS example. The sick select in. The bias is negative. The naive comparison makes hospitals look harmful.
+
+Second, government-subsidised training programmes. They are meant for workers with low earnings potential, so those workers select in. The bias is negative. Non-experimental comparisons often show trainees earning less than comparison groups, while randomised evaluations mostly find positive effects. This is on printed pages 12 and 13.
+
+Third, hormone replacement therapy. The large non-experimental Nurses Health Study showed better health among users, which implies that healthier women were the users, a positive bias. The randomised trial found few benefits and revealed serious side effects. This is on printed page 12.
+
+Fourth, class size. Weaker students are often deliberately grouped into smaller classes, so the bias is negative, and naive comparisons show students in smaller classes doing worse. The Tennessee STAR experiment and the Angrist and Lavy study both find a strong link between smaller classes and higher achievement. This is on printed pages 13 and 16.
+
+The lesson of the four examples: the sign of selection bias is an economic argument about who chooses treatment. It is not a statistical property that the data reveal on their own.
+
+Checklist for part five. You should be able to derive the decomposition in three steps, naming the counterfactual term you add and subtract. You should be able to state selection bias in words, using untreated potential outcomes. You should be able to derive the ATE form with the heterogeneity term. You should be able to verify both forms on the eight-person table, getting minus 3 each time. You should be able to sign the bias in each of MHE's four examples.
+
+
+Part six. Random assignment solves the selection problem. MHE section two point two, printed page 12.
+
+The claim first. If treatment is assigned at random, selection bias is zero, and the naive comparison recovers the average effect.
+
+Random assignment makes d i independent of the potential outcomes, the pair y zero i and y one i. Now derive the result in three lines.
+
+Line one. The observed difference equals the expected value of y one i given d i equals one, minus the expected value of y zero i given d i equals zero. This is just the switching equation again.
+
+Line two. Because y zero i is independent of d i, its average is the same in both groups. So we can replace the expected value of y zero i given d i equals zero with the expected value of y zero i given d i equals one. The observed difference becomes the expected value of y one i given d i equals one, minus the expected value of y zero i given d i equals one.
+
+Line three. Both terms are now conditional on the same group, so the difference is the expected value of y one i minus y zero i given d i equals one, the ATT. And because the effect is also independent of d i, this equals the unconditional expected value of y one i minus y zero i, the ATE.
+
+So random assignment does two things. It sets selection bias to zero, and it makes the ATT equal the ATE. MHE says it this way: the effect of randomly assigned hospitalisation on the hospitalised is the same as the effect of hospitalisation on a randomly chosen patient. The heterogeneity term from part five also disappears, because independence makes the ATT equal the ATU.
+
+A sharper version of the assumption is worth knowing. For selection bias to be zero, you need only mean independence of y zero i: the average of y zero i is the same in both groups. For the ATT to equal the ATE, you need, in addition, that the average effect is the same in both groups. If the first holds and the second fails, the naive gap recovers the ATT but not the ATE.
+
+Now a caution: unbiased does not mean right every time. Independence holds on average over all possible assignments, not in each one. The eight-person table lets us check this exactly. There are 70 ways to choose four people out of eight to treat. That is 8 choose 4, which is 70.
+
+Here is what happens across all 70 assignments. The average naive gap across all 70 is exactly 1.125, equal to the ATE. But individual assignments range from a gap of minus 3, the self-selection outcome, up to a gap of 5.25. And 17 of the 70 assignments give a gap of zero or less, the wrong sign.
+
+So a single small experiment can land almost anywhere. That spread is what standard errors measure, and it shrinks as the sample grows. Selection bias does not shrink with sample size. That is the subject of part eight.
+
+What random assignment does not deliver. It does not repair a failure of SUTVA. It does not prevent people dropping out of the study, which is attrition. It does not force people to take the treatment they were assigned, which is noncompliance. Noncompliance leads to instrumental variables and the local average treatment effect, which are deferred to classes three and four.
+
+Checklist for part six. You should be able to derive, in three lines, that random assignment makes the naive comparison equal the ATE. You should be able to state the difference between mean independence of y zero and full independence. You should be able to explain, using the 70 assignments, why unbiased does not mean exact.
+
+
+Part seven. A continuous version of the model.
+
+The companion pages let you move parameters continuously, so they need a model with continuous variables. This model is illustrative. It is declared in the notes and is not from MHE. Here it is in words.
+
+Untreated health, y zero i, is normally distributed with mean mu zero and variance sigma squared. Mu zero is set to 5. Define z i as standardised untreated health: y zero i minus mu zero, divided by sigma.
+
+Treated health, y one i, equals y zero i, plus tau, plus gamma times the quantity y zero i minus mu zero.
+
+Treatment, d i, equals one when a latent index exceeds a cutoff c. The latent index is lambda times z i, plus the square root of one minus lambda squared, times an independent standard normal shock, nu i. The cutoff c is the inverse of the standard normal distribution function, evaluated at one minus pi, so that a share pi of the population is treated.
+
+What the parameters mean. Tau is the ATE. Gamma says how the effect varies with untreated health: when gamma is negative, the sick gain more. Lambda is the correlation between standardised untreated health and the latent index: when lambda is negative, the sick select in, and when lambda is zero, treatment is a coin flip. Pi is the share treated.
+
+The latent index is itself standard normal, and its correlation with z i is lambda. So the expected value of z i, given the latent index, is lambda times the index. Using the means of a truncated standard normal, the closed forms follow.
+
+The expected value of z given d equals one is lambda times phi of c, divided by pi. Here phi is the standard normal density.
+
+The expected value of z given d equals zero is minus lambda times phi of c, divided by one minus pi.
+
+Selection bias equals sigma times lambda times phi of c, divided by pi times one minus pi.
+
+The ATT equals tau plus gamma times sigma times the expected value of z given d equals one.
+
+The ATU equals tau plus gamma times sigma times the expected value of z given d equals zero.
+
+The notes check these closed forms against a simulated population of one million people, for three parameter settings.
+
+Setting one, the hospital-like default: tau equals 1, lambda equals minus 0.6, pi equals 0.5, gamma equals minus 0.5, sigma equals 2. The closed forms give an ATE of 1.000, an ATT of 1.479, an ATU of 0.521, a selection bias of minus 1.915, and a naive gap of minus 0.436. The simulation gives 1.002, 1.479, 0.524, minus 1.911 and minus 0.432. Treatment helps on average, yet the naive comparison says it hurts.
+
+Setting two, a coin flip: tau equals 1, lambda equals zero, pi equals 0.3, gamma equals 0.4, sigma equals 2. The closed forms give an ATE, ATT and ATU of exactly 1, a selection bias of zero, and a naive gap of 1. The simulation gives a selection bias of 0.004 and a naive gap of 1.005, which is sampling noise.
+
+Setting three, deterministic positive selection: tau equals 3, lambda equals 1, pi equals 0.95, gamma equals 1, sigma equals 3. The closed forms give an ATT of 3.326, an ATU of minus 3.188, a selection bias of 6.514, and a naive gap of 9.840. The simulation gives 3.327, minus 3.193, 6.519 and 9.846. Here the naive gap more than triples the true effect.
+
+Checklist for part seven. You should be able to say what each of the five parameters controls. You should be able to state the selection bias formula and say why its sign follows the sign of lambda. You should remember that this model is an illustration, not a result from the book.
+
+
+Part eight. Precision is not identification.
+
+Return to the NHIS t statistic of 58.9. A bigger sample shrinks the standard error. Under selection, it shrinks it around the wrong number, so eventually the confidence interval excludes the truth with near certainty.
+
+The notes run 500 simulated studies at each of three sample sizes, 100, 1,000 and 10,000 people. The effect is the same for everyone, tau equals 1, with sigma equals 2 and half the population treated. Each study computes the difference in means, its standard error, and a 95 per cent confidence interval, and records whether the interval contains the true effect of 1.
+
+First, with selection, lambda equal to minus 0.6.
+
+At 100 people, the average estimate is minus 0.899, the average standard error is 0.353, and the share of intervals containing the true effect is 0.2 per cent.
+
+At 1,000 people, the average estimate is minus 0.918, the average standard error is 0.111, and coverage is zero per cent.
+
+At 10,000 people, the average estimate is minus 0.913, the average standard error is 0.035, and coverage is zero per cent.
+
+The closed-form selection bias here is minus 1.915, so the estimates settle near 1 minus 1.915, about minus 0.91.
+
+Now with a coin flip, lambda equal to zero.
+
+At 100 people, the average estimate is 0.995, the average standard error is 0.401, and coverage is 95.6 per cent.
+
+At 1,000 people, the average estimate is 1.003, the average standard error is 0.127, and coverage is 95.6 per cent.
+
+At 10,000 people, the average estimate is 1.000, the average standard error is 0.040, and coverage is 94.8 per cent.
+
+Under selection, coverage is near zero even at 100 people and never recovers. Under random assignment, coverage stays near 95 per cent at every sample size. The companion page called Bigger Sample, Same Bias runs the same experiment with sliders. It also shows that at very small samples, around 10 people, coverage under a coin flip falls a little below 95 per cent, to about 89. That is because 1.96 is a large-sample critical value, and with about 5 people per group a t critical value would be needed.
+
+Checklist for part eight. You should be able to explain why the standard error shrinks with the sample size while the bias does not. You should be able to state what happens to confidence interval coverage under selection as the sample grows.
+
+
+Part nine. A real experiment: Tennessee STAR. MHE section two point two, printed pages 13 to 15.
+
+The design first. STAR stands for Student Teacher Achievement Ratio. It began with the kindergarten cohort of 1985 to 1986, ran for four years, involved about 11,600 children, and cost about 12 million dollars. Students and teachers were randomly assigned within schools to one of three treatments: small classes of 13 to 17 children, regular classes of 22 to 25 children, or regular classes with a full-time teacher's aide.
+
+The first question to ask of any randomised experiment is whether randomisation balanced the groups. MHE table two point two point one, on printed page 14, taken from Krueger's 1999 paper, compares means across the three groups: small, regular, and regular with aide. The last number in each row is the p value of a joint test that the three means are equal.
+
+Free lunch, a measure of family income: 0.47, 0.48 and 0.50, with a joint p value of 0.09.
+
+White or Asian: 0.68, 0.67 and 0.66, with a p value of 0.26.
+
+Age in 1985: 5.44, 5.43 and 5.42, with a p value of 0.32.
+
+Attrition rate, the share lost to follow-up before third grade: 0.49, 0.52 and 0.53, with a p value of 0.02.
+
+Class size in kindergarten: 15.10, 22.40 and 22.80, with a p value below 0.01, reported as zero.
+
+Percentile score in kindergarten: 54.70, 48.90 and 50.00, with a p value below 0.01, reported as zero.
+
+Read the rows in three groups. The pre-treatment characteristics, free lunch, race and age, are balanced, so randomisation appears to have worked. Class size differs sharply, so the treatment took: the experiment did create the intended variation. Attrition differs across groups, which is a potential problem for comparisons in later grades. MHE footnote 3 notes that the kindergarten results, unaffected by attrition, are the most reliable.
+
+Now the results. MHE table two point two point two, on printed page 15, from Krueger's table 5. The dependent variable is the Stanford Achievement Test percentile score, for 5,681 students. Standard errors are robust and allow for correlation within classes. There are four columns.
+
+Column one has no controls. The small class effect is 4.82, with a standard error of 2.19. The regular-with-aide effect is 0.12, with a standard error of 2.23. R squared is 0.01.
+
+Column two adds school fixed effects. The small class effect is 5.37, with a standard error of 1.26. The aide effect is 0.29, with a standard error of 1.13. R squared is 0.25.
+
+Column three adds student characteristics: race, sex, and free lunch status. The small class effect is 5.36, with a standard error of 1.21. The aide effect is 0.53, with a standard error of 1.09. R squared is 0.31.
+
+Column four adds teacher characteristics. The small class effect is 5.37, with a standard error of 1.19. The aide effect is 0.31, with a standard error of 1.07. R squared is 0.31.
+
+The small class effect is about 5 to 6 percentile points, roughly 0.2 standard deviations of the score, and significantly different from zero. The aide effect is small and insignificant. The pattern to notice: adding controls barely moves the estimate, but it shrinks the standard error from 2.19 to 1.21.
+
+Checklist for part nine. You should be able to describe the three arms of STAR. You should be able to say which rows of table two point two point one test randomisation, which show the treatment took, and which signal a threat. You should be able to state the small class effect and explain why its standard error falls across the columns while the estimate does not move.
+
+
+Part ten. Experiments as regressions. MHE section two point three, printed pages 16 to 18.
+
+The claim first. In regression form, selection bias is a correlation between the treatment dummy and the error term, and random assignment removes it.
+
+Suppose, for now, that the effect is the same for everyone: y one i minus y zero i equals a constant, rho. Then rewrite the switching equation as MHE equation two point three point one. y i equals alpha plus rho times d i plus eta i. Here alpha is the expected value of y zero i, rho is the constant effect, and eta i is y zero i minus its expected value, the random part of untreated health.
+
+Take conditional expectations with treatment switched on and off. With d i equal to one, the expected value of y i is alpha plus rho plus the expected value of eta i given d i equals one. With d i equal to zero, it is alpha plus the expected value of eta i given d i equals zero.
+
+Subtract. The difference equals rho, the treatment effect, plus the expected value of eta i given d i equals one, minus the expected value of eta i given d i equals zero. That last difference is selection bias.
+
+Because eta i is just y zero i minus a constant, the difference in its conditional means equals the difference between the expected value of y zero i given d i equals one and the expected value of y zero i given d i equals zero. It is exactly the selection bias of part five. So selection bias is a correlation between the regressor d i and the error eta i. Random assignment kills that correlation, and ordinary least squares of y i on d i estimates rho. A regression on a single dummy simply returns the difference in means.
+
+Wooldridge states the same idea in his section seven point six, More on Policy Analysis and Program Evaluation, printed pages 229 to 230. He writes a model where y equals beta zero plus beta one times a participation dummy plus an error u. Self-selection means the average of u differs between participants and non-participants. That makes participation endogenous and the simple regression estimator biased.
+
+Why add covariates to an experiment at all? MHE equation two point three point two adds a vector of controls, X i, with coefficients gamma: y i equals alpha plus rho times d i plus X i transposed times gamma plus eta i. There are two reasons.
+
+The first reason is conditional random assignment. STAR randomised within schools, not across them, and schools of different types were somewhat more or less likely to have small classes. School fixed effects, a separate intercept for each school, make the comparison clean.
+
+The second reason is precision. Controls that are uncorrelated with d i leave the estimate of rho essentially unchanged, but they explain part of y i. That lowers the residual variance, and so lowers the standard error. This is the 2.19 to 1.21 pattern in STAR. Wooldridge makes the same point in section six point three, in the subsection Adding Regressors to Reduce the Error Variance, printed pages 185 to 186. When a regressor is randomly assigned, a low R squared is no evidence of bias, and extra controls are about a smaller sampling variance, not about unbiasedness.
+
+The notes reproduce the second reason with a simulation. One randomised experiment with 20,000 people, a true effect of 5, and a covariate with a strong effect on the outcome but no relation to treatment. The sample correlation between treatment and the covariate is minus 0.005. The short regression, without the covariate, gives an estimate of 5.16 with a standard error of 0.22. The long regression, with the covariate, gives 5.28 with a standard error of 0.14. The standard error falls by more than a third. The small gap between the two estimates comes from chance imbalance in this one sample, and it shrinks as the sample grows.
+
+A warning that points ahead. If adding controls moves the estimate a lot, something is wrong. Either randomisation failed, or some controls were themselves affected by the treatment. Those are called bad controls, and they belong to class two.
+
+Checklist for part ten. You should be able to derive the regression form and show that selection bias is the difference in conditional means of the error. You should be able to state the two reasons for adding covariates to an experiment. You should be able to explain why controls change the standard error and not the estimate under random assignment.
+
+
+Support part one. Common mistakes.
+
+Each mistake is followed by its correction.
+
+The error is reading a large t statistic as evidence of causality. The correction: a t statistic measures precision. Bias does not shrink with the sample size.
+
+The error is treating selection bias as sampling error. The correction: selection bias is a population quantity, the difference between the expected value of y zero given treated and the expected value of y zero given untreated. It does not average away.
+
+The error is defining selection bias using treated outcomes or observed outcomes. The correction: it is a difference in untreated potential outcomes.
+
+The error is assuming the ATT equals the ATE outside an experiment. The correction: they coincide under random assignment or with homogeneous effects. Otherwise the gap between the naive comparison and the ATE includes one minus pi times ATT minus ATU.
+
+The error is believing that one randomised estimate equals the ATE. The correction: unbiasedness is over assignments. On the eight-person table, one draw can give minus 3 or 5.25 when the ATE is 1.125.
+
+The error is adding controls to fix an experiment. The correction: under random assignment, balanced controls change precision, not the estimand. A large change in the estimate when controls are added signals failed randomisation or bad controls.
+
+The error is forgetting SUTVA. The correction: spillovers between treated and untreated units break the potential outcome notation itself.
+
+The error is signing the bias mechanically. The correction: the sign comes from an argument about who selects into treatment.
+
+
+Support part two. Spoken formula sheet.
+
+Use this for active recall. After each name, pause, say the formula yourself, then listen to the answer.
+
+Formula one, the switching equation, MHE two point one point one. Pause. y i equals y zero i plus the quantity y one i minus y zero i, times d i.
+
+Formula two, the average treatment effect. Pause. The expected value of y one i minus y zero i.
+
+Formula three, the average treatment effect on the treated. Pause. The expected value of y one i minus y zero i, given d i equals one.
+
+Formula four, the average treatment effect on the untreated. Pause. The expected value of y one i minus y zero i, given d i equals zero.
+
+Formula five, the weighting identity. Pause. ATE equals pi times ATT plus one minus pi times ATU.
+
+Formula six, the selection bias decomposition, MHE page 11. Pause. The expected value of y given d equals one, minus the expected value of y given d equals zero, equals the ATT plus selection bias. Selection bias is the expected value of y zero given d equals one, minus the expected value of y zero given d equals zero.
+
+Formula seven, the ATE form. Pause. The naive gap equals ATE plus selection bias plus one minus pi, times ATT minus ATU.
+
+Formula eight, the random assignment result, MHE page 12. Pause. If y zero and y one are independent of d, the naive gap equals the ATT, which equals the ATE.
+
+Formula nine, the regression form, MHE two point three point one. Pause. y i equals alpha plus rho times d i plus eta i, with alpha equal to the expected value of y zero and eta i equal to y zero i minus its expected value.
+
+Formula ten, selection bias in the regression. Pause. The expected value of eta given d equals one, minus the expected value of eta given d equals zero.
+
+Formula eleven, the long regression, MHE two point three point two. Pause. y i equals alpha plus rho times d i plus X i transposed times gamma plus eta i.
+
+Formula twelve, selection bias in the illustrative normal model. Pause. Sigma times lambda times phi of c, divided by pi times one minus pi. With half the population treated, the cutoff c is zero and this becomes 4 times sigma times lambda times phi of zero.
+
+
+Support part three. Implementation. How the simulations work, described and not read as code. The course language is R.
+
+Routine one, the potential outcomes table. Store untreated and treated outcomes for each person, plus the treatment indicator. Build the observed outcome with the switching equation. Compute the ATE as the mean of all individual effects, and the ATT and ATU as the means within each group. Then confirm two things: the naive gap equals the ATT plus selection bias, and the ATE equals the weighted average of the ATT and the ATU. The trap: computing selection bias from observed outcomes instead of untreated outcomes.
+
+Routine two, the exact randomisation distribution. List every way to choose four people out of eight, which is 70 subsets. For each subset, compute the treated group's mean with-treatment outcome minus the untreated group's mean without-treatment outcome. Check that the average of the 70 gaps equals the ATE exactly. The trap: drawing random subsets instead of enumerating them, which gives the right answer only approximately.
+
+Routine three, the selected population. Draw standardised untreated health and an independent shock from standard normals. Build untreated and treated outcomes from the parameters. Treat a person when lambda times standardised health, plus the square root of one minus lambda squared times the shock, exceeds the cutoff for the chosen share treated. Compare the simulated ATT, ATU, selection bias and naive gap with the closed forms. The trap: forgetting the square root term, which changes the share treated and the strength of selection.
+
+Routine four, coverage across sample sizes. For each sample size, repeat many studies. In each, draw a sample, split it by treatment, compute the difference in means and its unpooled standard error, and record whether the interval of the estimate plus or minus 1.96 standard errors contains the true effect. The trap: discarding studies where a group has fewer than two people without saying so. At tiny samples, also remember that 1.96 understates the right critical value.
+
+Routine five, short versus long regression in an experiment. Assign treatment at random. Generate the outcome from the true effect, a covariate and noise. Run ordinary least squares of the outcome on treatment alone, then on treatment and the covariate. Compare the estimates and their standard errors. The trap: reading a difference in the two estimates as bias, when in an experiment it is chance imbalance.
+
+In R, these use base functions: rnorm for normal draws, combn for the 70 subsets, lm for the regressions, and confint for the intervals. The R version of routine three is written out in the notebook but has not been run, because R was not installed on the machine where the notes were built.
+
+
+Support part four. Reading route and exercises.
+
+Read in this order. MHE chapter one, printed pages 3 to 7. MHE section two point one, printed pages 9 to 12. MHE section two point two, printed pages 12 to 16. MHE section two point three, printed pages 16 to 18. Then Wooldridge section one point four, printed pages 10 to 14. Wooldridge section six point three, printed pages 180 to 186. Wooldridge section seven point six, printed pages 229 to 230. For the advanced items, Wooldridge section nine point three, printed pages 285 to 286, and section nine point five b, printed pages 294 to 296.
+
+Exercises, from easiest to hardest. Addresses only; the statements are in the books.
+
+Foundations. Wooldridge chapter one, problems 1 and 2, printed page 15. MHE's NHIS table, printed page 10. Wooldridge chapter one, computer exercises C4 and C5, printed page 16. MHE table two point two point one, printed page 14.
+
+Exam level. MHE table two point two point two, printed page 15. Wooldridge problem 4.12, part two only, printed page 145. Wooldridge computer exercise C6.11, parts one to five, printed page 202. Wooldridge problem 7.6, printed page 234. And one exercise on a different topic, flagged as such: Wooldridge problem 9.5, printed page 305, which is about sample selection rather than selection into treatment.
+
+Advanced. Wooldridge computer exercise C9.10, printed page 308, comparing the experimental and observational job training samples. Wooldridge problem 9.6, printed page 305, a proof about random slopes.
+
+Deferred to classes fourteen to sixteen: Greenberg exercises 11.1 to 11.3, printed pages 180 to 181. They need the Bayesian tools of those classes.
+
+The full plan, with weights and times, is in the practice list for class one in the exercise lists folder.
+
+
+Support part five. Self-test.
+
+Answer each question aloud before the answer plays. Pause after each question.
+
+Question one. In the eight-person table, Ana leaves the treated group. What are the naive gap, the ATT and the selection bias? Pause.
+
+Answer. The treated are Bruno, Carla and Davi. Their mean treated outcome is 5. The untreated mean untreated outcome is 3, 8, 9, 7 and 8, which averages 7. The naive gap is minus 2. The ATT is 3, 2 and 1, averaging 2. The selection bias is the treated group's untreated mean, 3, minus 7, which is minus 4. Check: minus 2 equals 2 plus minus 4.
+
+Question two. Why does random assignment also make the ATT equal the ATE, and not just remove selection bias? Pause.
+
+Answer. Independence of treatment from both potential outcomes implies independence of treatment from their difference, the individual effect. So the average effect among the treated equals the average effect overall.
+
+Question three. In STAR, why include school fixed effects if assignment was random? Pause.
+
+Answer. Assignment was random within schools, not across them. Schools differed in the probability of a small class, so pooling across schools without fixed effects could mix school differences into the comparison. This is on printed page 17.
+
+Question four. In subsidised training programmes, what is the sign of selection bias, and in which direction does the naive comparison err? Pause.
+
+Answer. Participants are selected for low earnings potential, so their untreated earnings are lower than those of non-participants. The bias is negative. Naive comparisons understate the effect and can make it look negative. This is on printed pages 12 and 13.
+
+Question five. The NHIS t statistic is 58.9. If the sample were ten times larger, what would happen to the t statistic, and what would happen to the bias? Pause.
+
+Answer. The standard error would shrink, so the t statistic would grow. The bias would not change at all, because it is a population quantity.
+
+Question six. State the condition under which the naive gap recovers the ATT but not the ATE. Pause.
+
+Answer. Untreated outcomes are mean independent of treatment, so selection bias is zero, but the average effect differs between the treated and the untreated.
+
+
+Support part six. Glossary.
+
+Potential outcome: the outcome a person would have under a given treatment status, whether or not that status is the one he or she actually received.
+
+Switching equation: the identity that writes the observed outcome as the untreated outcome plus the individual effect times the treatment indicator.
+
+Fundamental problem of causal inference: the fact that only one potential outcome is ever observed for each person.
+
+SUTVA: the stable unit treatment value assumption, meaning no interference between units and one version of treatment.
+
+Average treatment effect, ATE: the mean individual effect over the whole population.
+
+Average treatment effect on the treated, ATT: the mean individual effect among those who were treated.
+
+Average treatment effect on the untreated, ATU: the mean individual effect among those who were not treated.
+
+Naive comparison: the difference in mean observed outcomes between treated and untreated people.
+
+Selection bias: the difference in mean untreated potential outcomes between the treated and the untreated.
+
+Heterogeneity bias: one minus the share treated, times the ATT minus the ATU, the extra gap between the naive comparison and the ATE.
+
+Random assignment: assigning treatment so that it is independent of potential outcomes.
+
+Balance check: comparing pre-treatment characteristics across groups to see whether randomisation worked.
+
+Attrition: loss of study participants before outcomes are measured.
+
+Conditional random assignment: randomisation within groups, such as within schools, rather than across the whole sample.
+
+Identification strategy: the way observational data are used to approximate an experiment.
+
+Fundamentally unidentified question: a question no experiment could answer, even in principle.
+
+
+Support part seven. The whole class in five lines.
+
+One. Every person has two potential outcomes, and we only ever see one of them.
+
+Two. The naive comparison of treated and untreated people equals the effect on the treated plus selection bias, the difference in their untreated outcomes.
+
+Three. Selection bias can be large enough to flip the sign of a real effect, as in the hospital puzzle, and a bigger sample does not shrink it.
+
+Four. Random assignment makes treatment independent of potential outcomes, which sets selection bias to zero and makes the effect on the treated equal the average effect.
+
+Five. In a regression, selection bias is a correlation between the treatment dummy and the error. In an experiment, controls buy precision, not unbiasedness.
+
+End of the class one reading.

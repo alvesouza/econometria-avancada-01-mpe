@@ -1,0 +1,364 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>The Change-Point Dial</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,500;8..60,650&family=Public+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: controls rail on the left; the answer, the counts panel and the profile panel on the right; one column under 860px.
+   Colour roles follow poisson-with-breakpoint.pdf: orange = high-rate regime (a..tau), purple = low-rate regime (tau+1..b),
+   green dashed = single rate, magenta = profile likelihood, gold = landmarks. */
+:root{
+  --bg:#f3f5f8; --panel:#ffffff; --ink:#1a2130; --muted:#5a6578; --line:#d7dde7; --soft:#edf0f5;
+  --r1:#c25700; --r2:#6650b0; --full:#17876a; --prof:#c0267a; --mark:#9c7200; --bar:#8b95a7; --warn:#b3362c;
+  --focus:#2b63c4;
+  --display:"Source Serif 4", Georgia, "Times New Roman", serif;
+  --body:"Public Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono:"JetBrains Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#10141b; --panel:#171d27; --ink:#e5e9f0; --muted:#9aa5b8; --line:#2a3342; --soft:#1e2532;
+  --r1:#f0954a; --r2:#a896f2; --full:#4cc49b; --prof:#f26bb0; --mark:#e6be4a; --bar:#6b7588; --warn:#ff7a6e; --focus:#74a3ff; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#10141b; --panel:#171d27; --ink:#e5e9f0; --muted:#9aa5b8; --line:#2a3342; --soft:#1e2532;
+  --r1:#f0954a; --r2:#a896f2; --full:#4cc49b; --prof:#f26bb0; --mark:#e6be4a; --bar:#6b7588; --warn:#ff7a6e; --focus:#74a3ff; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font:15px/1.5 var(--body);margin:0}
+.wrap{max-width:1180px;margin:0 auto;padding-left:max(16px, env(safe-area-inset-left, 0px));padding-right:max(16px, env(safe-area-inset-right, 0px));padding-block:24px 40px}
+header{display:grid;gap:4px;margin-bottom:18px}
+.eyebrow{font:600 12px/1.3 var(--body);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+h1{font:650 clamp(26px,4vw,36px)/1.1 var(--display);margin:0;text-wrap:balance}
+.lede{color:var(--muted);max-width:68ch;margin:0}
+.grid{display:grid;grid-template-columns:320px minmax(0,1fr);gap:20px;align-items:start}
+@media (max-width:860px){.grid{grid-template-columns:minmax(0,1fr)}}
+.rail{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px;display:grid;gap:18px}
+.group{display:grid;gap:12px}
+.group h2{font:600 12px/1.2 var(--body);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:0}
+.ctl{display:grid;gap:4px}
+.ctl .top{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.ctl label{font-weight:600}
+.ctl label i{font-family:var(--display);font-weight:500}
+.ctl output{font:600 14px var(--mono);font-variant-numeric:tabular-nums}
+.ctl p{margin:0;font-size:13px;color:var(--muted)}
+input[type=range]{width:100%;accent-color:var(--ink)}
+input:focus-visible,button:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+.btns{display:flex;flex-wrap:wrap;gap:8px}
+button{font:600 13px var(--body);background:var(--soft);color:var(--ink);border:1px solid var(--line);border-radius:6px;padding:7px 12px;cursor:pointer}
+button:hover{border-color:var(--muted)}
+main{display:grid;gap:16px;min-width:0}
+.answer{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px 18px;display:grid;gap:6px}
+.answer .lab{font-size:13px;color:var(--muted)}
+.answer .big{font:600 clamp(34px,6vw,48px)/1 var(--mono);font-variant-numeric:tabular-nums}
+.answer .verdict{font:500 17px/1.4 var(--display);max-width:62ch}
+.answer .side{font:13px/1.6 var(--mono);color:var(--muted);font-variant-numeric:tabular-nums}
+.note{font-size:13px;color:var(--muted);max-width:72ch;margin:0}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px 16px;min-width:0}
+.panel h3{font:600 15px/1.3 var(--body);margin:0 0 2px}
+.panel .sub{font-size:13px;color:var(--muted);margin:0 0 8px}
+svg{display:block;width:100%;height:auto;max-width:100%}
+svg text{fill:var(--muted);font:12px var(--body)}
+svg .val{font:600 12px var(--mono);fill:var(--ink)}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{font-size:13px;border:1px solid var(--line);border-radius:999px;padding:4px 10px;color:var(--muted)}
+.chip.on{border-color:var(--mark);color:var(--mark);font-weight:600}
+.scroll{overflow-x:auto}
+.wide{min-width:560px}  /* keeps 12px chart text legible on phones; the panel scrolls instead */
+table.ro{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums;min-width:460px}
+table.ro th,table.ro td{padding:5px 6px;border-bottom:1px solid var(--line);font-size:14px;text-align:right;white-space:nowrap}
+table.ro th:first-child,table.ro td:first-child{text-align:left}
+table.ro td{font-family:var(--mono);font-size:13px}
+table.ro td:first-child{font-family:var(--body);font-size:14px}
+.flag{color:var(--warn)}
+footer{margin-top:22px;font-size:13px;color:var(--muted);display:grid;gap:10px}
+footer table{border-collapse:collapse;font-size:12.5px;min-width:760px}
+footer th,footer td{border-bottom:1px solid var(--line);padding:4px 8px;text-align:left;vertical-align:top}
+.k{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:5px;vertical-align:-1px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<div class="wrap">
+<header>
+  <div class="eyebrow">Econometria Avançada · Class 1 · poisson-with-breakpoint.pdf, slides 13–20</div>
+  <h1>The Change-Point Dial</h1>
+  <p class="lede">British coal-mining disasters, 1851–1962. Move the cut year and the sample, and watch the two Poisson rates, the profile likelihood of the cut and the likelihood-ratio statistic respond.</p>
+</header>
+
+<div class="grid">
+<aside class="rail" aria-label="Controls">
+  <div class="group">
+    <h2>The cut</h2>
+    <div class="ctl"><div class="top"><label for="tau">Cut year <i>τ</i></label><output id="o-tau"></output></div>
+      <input id="tau" type="range" min="1851" max="1961" step="1">
+      <p>Last year of the high-rate regime: years a…τ get rate λ₁, years τ+1…b get λ₂.</p></div>
+    <div class="btns"><button id="go-max" type="button">Cut at the profile maximum</button><button id="go-1890" type="button">Cut at 1890</button></div>
+  </div>
+  <div class="group">
+    <h2>The sample</h2>
+    <div class="ctl"><div class="top"><label for="a">First year <i>a</i></label><output id="o-a"></output></div>
+      <input id="a" type="range" min="1851" max="1900" step="1">
+      <p>Start of the years used. Every likelihood, rate and test uses years a…b only.</p></div>
+    <div class="ctl"><div class="top"><label for="b">Last year <i>b</i></label><output id="o-b"></output></div>
+      <input id="b" type="range" min="1901" max="1962" step="1">
+      <p>End of the years used. Trimming the tail changes how much evidence the low-rate regime carries.</p></div>
+  </div>
+  <div class="group">
+    <h2>Weights and intervals</h2>
+    <div class="ctl"><div class="top"><label for="h">Weight window <i>h</i></label><output id="o-h"></output></div>
+      <input id="h" type="range" min="1" max="40" step="1">
+      <p>w(τ) is normalised over the cut years 1890−h…1890+h that lie inside a…b−1. The deck uses h = 5.</p></div>
+    <div class="ctl"><div class="top"><label for="conf">Confidence <i>1−α</i></label><output id="o-conf"></output></div>
+      <input id="conf" type="range" min="0.80" max="0.99" step="0.01">
+      <p>Level of the Wald intervals λ̂ ± z<sub>1−α/2</sub>√(λ̂/n) drawn as bands.</p></div>
+  </div>
+  <button id="reset" type="button">Reset to defaults</button>
+</aside>
+
+<main>
+  <section class="answer" aria-live="polite">
+    <div class="lab" id="ans-lab"></div>
+    <div class="big" id="lr"></div>
+    <div class="verdict" id="verdict"></div>
+    <div class="side" id="side1"></div>
+    <div class="side" id="side2"></div>
+    <div class="chips" id="chips"></div>
+    <p class="note">The statistic is <strong>not</strong> referred to a χ²₁ distribution. The cut τ was chosen by searching over years, so the regularity conditions behind Wilks' theorem fail and 3.84 is not a valid critical value (Bolfarine &amp; Sandoval §6.5).</p>
+  </section>
+
+  <section class="panel">
+    <h3>Yearly disasters and the two fitted rates</h3>
+    <p class="sub"><span class="k" style="background:var(--r1)"></span>λ̂₁ on a…τ &nbsp; <span class="k" style="background:var(--r2)"></span>λ̂₂ on τ+1…b &nbsp; <span class="k" style="background:var(--full)"></span>single rate on a…b (dashed). Bands are the Wald intervals; faded years are outside the sample.</p>
+    <div class="scroll"><svg id="counts" class="wide" viewBox="0 0 720 250" role="img" aria-label="Yearly disaster counts with fitted rates"></svg></div>
+  </section>
+
+  <section class="panel">
+    <h3>Profile log-likelihood of the cut year</h3>
+    <p class="sub">ℓ<sub>p</sub>(τ) − max over every admissible τ in a…b−1. Shaded: the weight window. Dashed gold: τ = 1890, the deck's 40/72 split.</p>
+    <div class="scroll"><svg id="profile" class="wide" viewBox="0 0 720 240" role="img" aria-label="Profile log-likelihood against the cut year"></svg></div>
+  </section>
+
+  <section class="panel">
+    <h3>Fitting the Poisson model, as on slide 14</h3>
+    <p class="sub">Dispersion test: (n−1)s²/ȳ ~ χ²<sub>n−1</sub> under the Poisson model, upper-tail p-value.</p>
+    <div class="scroll"><table class="ro"><thead id="thead"></thead><tbody id="tbl"></tbody></table></div>
+    <p class="note" id="tnote"></p>
+  </section>
+</main>
+</div>
+
+<footer>
+  <div><strong>Belongs to:</strong> Class 1 notes, <code>Notas/L01/</code> (L01-03, coal-mining change point).</div>
+  <div><strong>Model:</strong> y<sub>t</sub> ~ Poisson(λ₁) for t ≤ τ, Poisson(λ₂) for t &gt; τ; λ̂<sub>j</sub> = s<sub>j</sub>/n<sub>j</sub>;
+    ℓ<sub>p</sub>(τ) = s₁ log λ̂₁ − n₁λ̂₁ + s₂ log λ̂₂ − n₂λ̂₂ (with 0·log 0 = 0; the constant −Σ log y<sub>t</sub>! cancels everywhere);
+    single rate ℓ(λ̂) = s log λ̂ − nλ̂; LR = 2{ℓ<sub>p</sub>(τ) − ℓ(λ̂)}; w(τ) = e<sup>ℓ<sub>p</sub>(τ)</sup>/Σ<sub>τ′∈W</sub> e<sup>ℓ<sub>p</sub>(τ′)</sup>.
+    Every value is computed exactly from the 112 counts; z and the χ² tail are numerical (inverse-normal with a Halley step; regularised incomplete gamma).</div>
+  <div><strong>Provenance:</strong> <code>Aula/class-01/materials/poisson-with-breakpoint.pdf</code>, slides 13 (series), 14 (fit table, Wald CI, dispersion test), 17 (model, profile likelihood, w(τ) over 1885–1895), 18 (cut-point table), 19 (LR = 70.0), 20 (rates per cut).
+    Bolfarine &amp; Sandoval (2010), <em>Introdução à Inferência Estatística</em>, §3.4 (pp. 46–49, profile likelihood) and §6.5 (pp. 103–114, generalised likelihood-ratio tests).
+    Data: Jarrett (1979), <em>Biometrika</em> 66, 191–193 (as in Carlin, Gelfand &amp; Smith 1992), 112 yearly counts, n = 112, s = 191, checked against every number on slides 14 and 18.</div>
+  <div class="scroll"><table>
+    <thead><tr><th>Control</th><th>Symbol</th><th>What it is</th><th>Range</th><th>Step</th><th>Default</th><th>Unit</th><th>Source</th><th>What visibly moves</th></tr></thead>
+    <tbody>
+      <tr><td>Cut year</td><td>τ</td><td>last year of the high-rate regime</td><td>a … b−1</td><td>1</td><td>1891</td><td>year</td><td>slides 17–19</td><td>split line, both rate lines, all read-outs</td></tr>
+      <tr><td>First year</td><td>a</td><td>start of the sample used</td><td>1851–1900</td><td>1</td><td>1851</td><td>year</td><td>data span</td><td>sample, profile curve</td></tr>
+      <tr><td>Last year</td><td>b</td><td>end of the sample used</td><td>1901–1962</td><td>1</td><td>1962</td><td>year</td><td>data span</td><td>sample, profile curve</td></tr>
+      <tr><td>Weight window</td><td>h</td><td>w(τ) normalised over τ ∈ [1890−h, 1890+h] ∩ [a, b−1]</td><td>1–40</td><td>1</td><td>5</td><td>years</td><td>slide 17 ("5 years on each side of 1890")</td><td>w(τ) read-out, shaded window</td></tr>
+      <tr><td>Confidence</td><td>1−α</td><td>Wald interval level</td><td>0.80–0.99</td><td>0.01</td><td>0.95</td><td>—</td><td>slide 14</td><td>CI bands</td></tr>
+    </tbody></table></div>
+</footer>
+
+<script id="model">
+// Pure model: no DOM access. check_companions.py runs this block under node.
+const Y0 = 1851, YN = 1962;
+// Jarrett (1979): British coal-mining disasters per year, 1851..1962 (112 values, sum 191).
+const DIS = [4,5,4,1,0,4,3,4,0,6,3,3,4,0,2,6,3,3,5,4,5,3,1,4,4,1,5,5,3,4,2,5,2,2,3,4,2,1,3,2,2,1,1,1,1,3,0,0,1,0,1,1,0,0,3,1,0,3,2,2,0,1,1,1,0,1,0,1,0,0,0,2,1,0,0,0,1,1,0,2,3,3,1,1,2,1,1,1,1,2,4,2,0,0,0,1,4,0,0,0,1,0,0,0,0,0,1,0,0,1,0,1];
+const C1 = [0], C2 = [0];
+DIS.forEach((v,i)=>{ C1.push(C1[i]+v); C2.push(C2[i]+v*v); });
+const S  = (a,b) => C1[b-Y0+1]-C1[a-Y0];   // sum of counts, years a..b inclusive
+const SS = (a,b) => C2[b-Y0+1]-C2[a-Y0];   // sum of squared counts
+const llPois = (s,n) => s>0 ? s*Math.log(s/n) - s : 0;   // s log(s/n) - n(s/n), with 0·log 0 = 0
+
+function Phi(x){ // erfc Chebyshev fit (Numerical Recipes erfcc), |error| < 1.2e-7
+  const z = Math.abs(x)/Math.SQRT2, t = 1/(1+0.5*z);
+  const r = t*Math.exp(-z*z-1.26551223+t*(1.00002368+t*(0.37409196+t*(0.09678418+t*(-0.18628806+t*(0.27886807+t*(-1.13520398+t*(1.48851587+t*(-0.82215223+t*0.17087277)))))))));
+  return x>=0 ? 1-0.5*r : 0.5*r;
+}
+function PhiInv(p){ // Acklam, refined by one Halley step
+  const a=[-39.69683028665376,220.9460984245205,-275.9285104469687,138.3577518672690,-30.66479806614716,2.506628277459239],
+        b=[-54.47609879822406,161.5858368580409,-155.6989798598866,66.80131188771972,-13.28068155288572],
+        c=[-0.007784894002430293,-0.3223964580411365,-2.400758277161838,-2.549732539343734,4.374664141464968,2.938163982698783],
+        d=[0.007784695709041462,0.3224671290700398,2.445134137142996,3.754408661907416];
+  let x, q, r;
+  if(p<0.02425){q=Math.sqrt(-2*Math.log(p));x=(((((c[0]*q+c[1])*q+c[2])*q+c[3])*q+c[4])*q+c[5])/((((d[0]*q+d[1])*q+d[2])*q+d[3])*q+1);}
+  else if(p>1-0.02425){q=Math.sqrt(-2*Math.log(1-p));x=-(((((c[0]*q+c[1])*q+c[2])*q+c[3])*q+c[4])*q+c[5])/((((d[0]*q+d[1])*q+d[2])*q+d[3])*q+1);}
+  else{q=p-0.5;r=q*q;x=(((((a[0]*r+a[1])*r+a[2])*r+a[3])*r+a[4])*r+a[5])*q/(((((b[0]*r+b[1])*r+b[2])*r+b[3])*r+b[4])*r+1);}
+  const e=Phi(x)-p, u=e*Math.sqrt(2*Math.PI)*Math.exp(x*x/2);
+  return x-u/(1+x*u/2);
+}
+function lnGamma(x){ // Lanczos, g = 7
+  const g=[0.99999999999980993,676.5203681218851,-1259.1392167224028,771.32342877765313,-176.61502916214059,12.507343278686905,-0.13857109526572012,9.9843695780195716e-6,1.5056327351493116e-7];
+  x -= 1; let s = g[0]; for(let i=1;i<9;i++) s += g[i]/(x+i);
+  const t = x+7.5; return 0.5*Math.log(2*Math.PI)+(x+0.5)*Math.log(t)-t+Math.log(s);
+}
+function gammaQ(a,x){ // regularised upper incomplete gamma Q(a,x) (Numerical Recipes gser / gcf)
+  if(x<=0) return 1;
+  const lg = lnGamma(a);
+  if(x < a+1){ let ap=a, del=1/a, sum=del;
+    for(let n=0;n<1000;n++){ ap++; del*=x/ap; sum+=del; if(Math.abs(del)<Math.abs(sum)*1e-15) break; }
+    return 1 - sum*Math.exp(-x+a*Math.log(x)-lg); }
+  let b=x+1-a, c=1e300, d=1/b, h=d;
+  for(let i=1;i<1000;i++){ const an=-i*(i-a); b+=2; d=an*d+b; if(Math.abs(d)<1e-300) d=1e-300; c=b+an/c; if(Math.abs(c)<1e-300) c=1e-300; d=1/d; const del=d*c; h*=del; if(Math.abs(del-1)<1e-15) break; }
+  return Math.exp(-x+a*Math.log(x)-lg)*h;
+}
+const chi2sf = (x,k) => gammaQ(k/2, x/2);
+
+// One segment a..b: MLE, Wald CI, dispersion test. Fields left null are undefined for this segment.
+function segment(a, b, z){
+  const n = b-a+1, s = S(a,b), lam = s/n, se = Math.sqrt(lam/n), lo = lam - z*se;
+  const g = {a, b, n, s, lam, se, lo: Math.max(0, lo), hi: lam + z*se, clipped: lo < 0, zero: s === 0, s2: null, idx: null, p: null};
+  if(n >= 2){ g.s2 = Math.max(0, (SS(a,b) - s*s/n)/(n-1)); if(s > 0){ g.idx = g.s2/lam; g.p = chi2sf((n-1)*g.idx, n-1); } }
+  return g;
+}
+
+// p = {a, b, tau, h, conf}. tau is clamped into a..b-1, the admissible cut years.
+function compute(p){
+  const a = p.a, b = p.b, tau = Math.min(Math.max(p.tau, a), b-1);
+  const z = PhiInv(1-(1-p.conf)/2);
+  const taus = [], lp = [];
+  for(let t=a; t<b; t++){ taus.push(t); lp.push(llPois(S(a,t), t-a+1) + llPois(S(t+1,b), b-t)); }
+  let im = 0; lp.forEach((v,i)=>{ if(v > lp[im]) im = i; });
+  const lmax = lp[im], l0 = llPois(S(a,b), b-a+1), i = tau-a;
+  const wlo = Math.max(1890-p.h, a), whi = Math.min(1890+p.h, b-1);
+  let w = null, wstate;
+  if(wlo > whi) wstate = "empty";
+  else if(tau < wlo || tau > whi) wstate = "outside";
+  else { let m = -Infinity; for(let t=wlo; t<=whi; t++) m = Math.max(m, lp[t-a]);
+         let den = 0; for(let t=wlo; t<=whi; t++) den += Math.exp(lp[t-a]-m);
+         w = Math.exp(lp[i]-m)/den; wstate = "in"; }
+  return {a, b, tau, z, taus, lp, lmax, argmax: taus[im], l0,
+    // LR >= 0 exactly (lambda1 = lambda2 is feasible); max() only removes float noise that would print as "-0.0".
+    LR: Math.max(0, 2*(lp[i]-l0)), LRmax: Math.max(0, 2*(lmax-l0)), gap: lp[i]-lmax, w, wstate, wlo, whi,
+    full: segment(a,b,z), s1: segment(a,tau,z), s2: segment(tau+1,b,z)};
+}
+
+const f = (x,d) => x.toFixed(d);
+const fp = x => x < 0.0005 ? "< 0.001" : x.toFixed(3);
+// Every number the page prints, as the exact string it prints. check_companions.py compares these.
+function readouts(p){
+  const m = compute(p), o = {tau: String(m.tau), LR1: f(m.LR,1), LR2: f(m.LR,2), LRmax: f(m.LRmax,2), argmax: String(m.argmax),
+    gap: f(m.gap,2), z: f(m.z,3),
+    w: m.wstate === "in" ? f(m.w,3) : m.wstate === "outside" ? "τ outside window" : "no τ in window",
+    ratio: m.s2.zero ? (m.s1.zero ? "undefined (both rates 0)" : "∞ (λ̂₂ = 0)") : f(m.s1.lam/m.s2.lam,3)};
+  for(const k of ["full","s1","s2"]){ const g = m[k];
+    o[k+"_n"] = String(g.n); o[k+"_s"] = String(g.s); o[k+"_lam"] = f(g.lam,3); o[k+"_se"] = f(g.se,3);
+    o[k+"_ci"] = `(${f(g.lo,3)}${g.clipped||g.zero?"*":""}, ${f(g.hi,3)})`;
+    o[k+"_s2"] = g.s2 === null ? "n/a (n = 1)" : f(g.s2,3);
+    o[k+"_idx"] = g.idx !== null ? f(g.idx,3) : g.s2 === null ? "n/a (n = 1)" : "n/a (ȳ = 0)";
+    o[k+"_p"] = g.p !== null ? fp(g.p) : o[k+"_idx"]; }
+  return o;
+}
+</script>
+
+<script>
+const D = {tau:1891, a:1851, b:1962, h:5, conf:0.95};
+const el = id => document.getElementById(id);
+
+function niceTicks(lo, hi, n){
+  const span = hi-lo, step0 = span/n, mag = Math.pow(10, Math.floor(Math.log10(step0)));
+  const step = [1,2,2.5,5,10].map(k=>k*mag).find(s=>s>=step0);
+  const t=[]; for(let v=Math.ceil(lo/step)*step; v<=hi+1e-9; v+=step) t.push(+v.toFixed(10));
+  return t;
+}
+
+function read(){
+  const a = parseInt(el("a").value), b = parseInt(el("b").value);
+  el("tau").min = a; el("tau").max = b-1;
+  const tau = Math.min(Math.max(parseInt(el("tau").value), a), b-1);
+  el("tau").value = tau;
+  return {a, b, tau, h: parseInt(el("h").value), conf: parseFloat(el("conf").value)};
+}
+
+function drawCounts(m){
+  const W=720, H=250, L=40, R=14, T=12, B=40, ymax=6.5;
+  const x = yr => L + (yr-(Y0-0.5))/(YN-Y0+1)*(W-L-R);
+  const y = v => T + (1 - v/ymax)*(H-T-B);
+  let s = "";
+  [0,1,2,3,4,5,6].forEach(t=>{ s += `<line x1="${L}" x2="${W-R}" y1="${y(t)}" y2="${y(t)}" stroke="var(--line)"/><text x="${L-8}" y="${y(t)+4}" text-anchor="end">${t}</text>`; });
+  [1860,1880,1900,1920,1940,1960].forEach(t=>{ s += `<text x="${x(t)}" y="${H-B+16}" text-anchor="middle">${t}</text>`; });
+  s += `<text x="${(L+W-R)/2}" y="${H-6}" text-anchor="middle">year</text>`;
+  s += `<text transform="translate(12 ${(T+H-B)/2}) rotate(-90)" text-anchor="middle">disasters per year</text>`;
+  DIS.forEach((v,i)=>{ const yr = Y0+i, inS = yr>=m.a && yr<=m.b;
+    s += `<rect x="${x(yr)-1.6}" y="${y(v)}" width="3.2" height="${y(0)-y(v)}" fill="var(--bar)" opacity="${inS?0.9:0.25}"/>`; });
+  const band = (g, col) => {
+    const x0 = x(g.a-0.5), x1 = x(g.b+0.5);
+    return `<rect x="${x0}" y="${y(g.hi)}" width="${x1-x0}" height="${Math.max(0.8, y(g.lo)-y(g.hi))}" fill="${col}" opacity="0.18"/>`+
+           `<line x1="${x0}" x2="${x1}" y1="${y(g.lam)}" y2="${y(g.lam)}" stroke="${col}" stroke-width="2.5"/>`; };
+  s += `<line x1="${x(m.a-0.5)}" x2="${x(m.b+0.5)}" y1="${y(m.full.lam)}" y2="${y(m.full.lam)}" stroke="var(--full)" stroke-width="1.6" stroke-dasharray="6 4"/>`;
+  s += band(m.s1, "var(--r1)") + band(m.s2, "var(--r2)");
+  const xs = x(m.tau+0.5);
+  s += `<line x1="${xs}" x2="${xs}" y1="${T}" y2="${y(0)}" stroke="var(--ink)" stroke-dasharray="3 3"/>`;
+  s += `<text class="val" x="${m.tau>1940?xs-5:xs+5}" y="${T+12}" text-anchor="${m.tau>1940?"end":"start"}">τ = ${m.tau}</text>`;
+  s += `<line x1="${L}" x2="${W-R}" y1="${y(0)}" y2="${y(0)}" stroke="var(--muted)"/>`;
+  el("counts").innerHTML = s;
+}
+
+function drawProfile(m){
+  const W=720, H=240, L=48, R=14, T=16, B=40;
+  const x0 = m.taus[0]-0.5, x1 = m.taus[m.taus.length-1]+0.5;
+  const x = t => L + (t-x0)/(x1-x0)*(W-L-R);
+  const gaps = m.lp.map(v=>v-m.lmax), gmin = Math.min(...gaps);
+  const lo = gmin > -1 ? -1 : gmin*1.05;
+  const y = v => T + (v/lo)*(H-T-B);
+  let s = "";
+  if(m.wstate !== "empty") s += `<rect x="${x(m.wlo-0.5)}" y="${T}" width="${x(m.whi+0.5)-x(m.wlo-0.5)}" height="${H-T-B}" fill="var(--mark)" opacity="0.10"/>`;
+  niceTicks(lo, 0, 5).forEach(t=>{ s += `<line x1="${L}" x2="${W-R}" y1="${y(t)}" y2="${y(t)}" stroke="var(--line)"/><text x="${L-8}" y="${y(t)+4}" text-anchor="end">${t===0?"0":(t<0?"−":"")+Math.abs(t)}</text>`; });
+  niceTicks(x0+0.5, x1-0.5, 6).filter(t=>Number.isInteger(t)).forEach(t=>{ s += `<text x="${x(t)}" y="${H-B+16}" text-anchor="middle">${t}</text>`; });
+  s += `<text x="${(L+W-R)/2}" y="${H-6}" text-anchor="middle">cut year τ</text>`;
+  s += `<text transform="translate(12 ${(T+H-B)/2}) rotate(-90)" text-anchor="middle">ℓp(τ) − max</text>`;
+  if(1890 >= m.taus[0] && 1890 <= m.taus[m.taus.length-1])
+    s += `<line x1="${x(1890)}" x2="${x(1890)}" y1="${T}" y2="${H-B}" stroke="var(--mark)" stroke-width="1.5" stroke-dasharray="5 4"/><text x="${x(1890)-4}" y="${H-B-6}" text-anchor="end" style="fill:var(--mark)">1890</text>`;
+  s += `<path d="${m.taus.map((t,i)=>(i?"L":"M")+x(t).toFixed(1)+" "+y(gaps[i]).toFixed(1)).join("")}" fill="none" stroke="var(--prof)" stroke-width="1.6"/>`;
+  if(m.taus.length <= 40) m.taus.forEach((t,i)=>{ s += `<circle cx="${x(t)}" cy="${y(gaps[i])}" r="2.6" fill="var(--prof)"/>`; });
+  const xa = x(m.argmax);
+  s += `<circle cx="${xa}" cy="${y(0)}" r="6" fill="none" stroke="var(--mark)" stroke-width="2"/>`;
+  s += `<text class="val" x="${xa}" y="${T-4}" text-anchor="${m.argmax>m.taus[0]+0.85*(x1-x0)?"end":"middle"}">max ${m.argmax}</text>`;
+  s += `<circle cx="${x(m.tau)}" cy="${y(m.gap)}" r="5" fill="var(--ink)"/>`;
+  el("profile").innerHTML = s;
+}
+
+function update(){
+  const p = read(), m = compute(p), o = readouts(p);
+  el("o-tau").textContent = p.tau; el("o-a").textContent = p.a; el("o-b").textContent = p.b;
+  el("o-h").textContent = p.h; el("o-conf").textContent = p.conf.toFixed(2);
+  el("ans-lab").innerHTML = `Likelihood-ratio statistic 2{ℓ<sub>p</sub>(τ) − ℓ(λ̂)} at τ = ${m.tau}, two rates versus one on ${m.a}–${m.b}`;
+  el("lr").textContent = o.LR1;
+  el("verdict").innerHTML = `Splitting at ${m.tau} raises the log-likelihood by ${f(m.LR/2,2)} over a single rate. ` +
+    (m.argmax === m.tau ? `This is the best cut in ${m.a}–${m.b - 1}.` : `The best cut is ${m.argmax}, with LR ${o.LRmax}.`);
+  const dmax = m.tau - m.argmax, d90 = m.tau - 1890;
+  const rel = (d, what) => d === 0 ? `at ${what}` : `${Math.abs(d)} year${Math.abs(d)===1?"":"s"} ${d>0?"after":"before"} ${what}`;
+  el("side1").textContent = `LR ${o.LR2} (2 dp) · w(τ) = ${o.w} · ℓp(τ) − max = ${o.gap} · λ̂₁/λ̂₂ = ${o.ratio}`;
+  el("side2").textContent = `τ is ${rel(dmax, "the profile maximum " + m.argmax)}; ${rel(d90, "the 1890 split")}.`;
+  const chips = [
+    [m.argmax === m.tau, `τ at the profile maximum (${m.argmax})`],
+    [m.tau === 1890, "τ = 1890: the deck's 40/72 split"],
+    [m.wstate === "in", m.wstate === "empty" ? "weight window empty: no admissible τ in 1890 ± h" : `τ inside the weight window ${m.wlo}–${m.whi}`],
+  ];
+  el("chips").innerHTML = chips.map(([on,t])=>`<span class="chip${on?" on":""}">${on?"● ":"○ "}${t}</span>`).join("");
+  el("go-1890").disabled = !(1890 >= m.a && 1890 <= m.b-1);
+  el("thead").innerHTML = `<tr><th></th><th>${m.a}–${m.b}</th><th style="color:var(--r1)">${m.a}–${m.tau}</th><th style="color:var(--r2)">${m.tau+1}–${m.b}</th></tr>`;
+  const row = (lab, key) => `<tr><td>${lab}</td>${["full","s1","s2"].map(k=>`<td>${o[k+"_"+key]}</td>`).join("")}</tr>`;
+  el("tbl").innerHTML = row("n (years)", "n") + row("s<sub>n</sub> (disasters)", "s") + row("λ̂ = ȳ (per year)", "lam") +
+    row("SE = √(λ̂/n)", "se") + row(`${Math.round(p.conf*100)}% CI`, "ci") + row("s²", "s2") + row("s²/ȳ", "idx") + row("dispersion p-value", "p");
+  const flags = ["full","s1","s2"].map(k=>m[k]).filter(g=>g.clipped||g.zero);
+  el("tnote").innerHTML = `z = ${o.z}. ` + (flags.length
+    ? `<span class="flag">* Lower bound shown as 0:</span> ${flags.map(g=>g.zero?`${g.a}–${g.b} has no disasters, so λ̂ = 0 and the Wald interval collapses to a point`:`on ${g.a}–${g.b} λ̂ − z·SE is negative and a rate cannot be`).join("; ")}.`
+    : "No interval reaches below 0.");
+  drawCounts(m); drawProfile(m);
+}
+function reset(){ ["a","b","h","conf"].forEach(k=>el(k).value=D[k]); el("tau").min=D.a; el("tau").max=D.b-1; el("tau").value=D.tau; update(); }
+["tau","a","b","h","conf"].forEach(k=>el(k).addEventListener("input", update));
+el("reset").addEventListener("click", reset);
+el("go-max").addEventListener("click", ()=>{ el("tau").value = compute(read()).argmax; update(); });
+el("go-1890").addEventListener("click", ()=>{ el("tau").value = 1890; update(); });
+reset();
+</script>

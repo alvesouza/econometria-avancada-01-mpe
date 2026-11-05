@@ -1,0 +1,615 @@
+Advanced Econometrics, Class 1. Review of basic ingredients. Narrated study notes, part 1 of 3.
+
+How to listen.
+
+This is a listening version of the finished study notes for Class 1 of the course Econometria Avançada, in the professional master's in economics at Insper, taught by Hedibert Freitas Lopes. It carries the same content as the written notes, re-voiced for the ear. Every formula is spoken in words, the way you would dictate it to someone writing on a board, and then its meaning is said in plain language.
+
+The narration comes in three files. Part 1, this file, covers the map of the class, then the likelihood and the properties of an estimator, then a model that fails, two models that fit, and a first prior. Part 2 covers judging estimators by mean squared error, Monte Carlo and the bootstrap, then Gaussian linear regression, the autoregressive and vector autoregressive review, and the p-value against the evidence. Part 3 holds the support material: the pitfalls, the spoken formula sheet, the implementation described as a sequence of steps, the reading route and exercises, a self-test, a glossary, and the whole class in five lines.
+
+A word on the three layers the notes use. The U layer is intuition: pictures and stories that make a result feel obvious. The C layer is the course layer: the definitions and results of the slide decks and of Bolfarine and Sandoval, with their numbering. That is what is examinable. The G layer is graduate material: results that are named or proved for completeness but are not examinable. Each time a G item comes up, the narration says so out loud.
+
+A word on scope. The course program limits what this class develops. The Gibbs sampler for the switch-point model, ridge, lasso, elastic net, the horseshoe, hierarchical models, Bayes factors for composite hypotheses, Dickey-Fuller tests, ARCH and GARCH models, impulse responses, structural vector autoregressions and cross-validation all belong to later classes. They are named here only to say where they live. And the final exam has no code: expect derivations and the reading of printed output.
+
+The books are cited by short names. Bolfarine and Sandoval, 2010, is the main reference for estimation and testing. Greenberg, first edition, is the Bayesian reference. Wooldridge, sixth edition, covers regression. Tsay, Analysis of Financial Time Series, third edition, covers time series. ISLP is An Introduction to Statistical Learning with Python, 2023. And Izbicki and Mendonça, 2020, is the statistical learning text in Portuguese, cited as AME.
+
+
+Part zero. The map of Class 1.
+
+This part covers the map note, which sets out the one claim of the class, the reading order, the numbers to memorize, the scope, and the errata found in the sources.
+
+The one claim. A likelihood picks the estimator; the sampling rule decides how it behaves. The same function, theta to the power s, times one minus theta to the power n minus s, gives one maximum likelihood estimator and one posterior. But it gives different biases and different p-values depending on whether the number of trials n or the number of successes s was fixed in advance.
+
+Estimators are judged by their sampling distribution, through the mean squared error, which equals the variance plus the squared bias. That sampling distribution can be worked out exactly, by Monte Carlo simulation, or by the bootstrap. And the bootstrap fails exactly where the statistic lives on the edge of the support.
+
+Models are judged by what they predict and by what they assume. One Poisson rate fails the coal-mining data's test that the mean equals the variance, and two rates fit. The R squared cannot choose a regression. A first-order autoregression has an equilibrium distribution only when the absolute value of phi is less than one.
+
+And a p-value is not the evidence. A p-value of 0.036 can sit beside a posterior probability of the alternative of only 0.31. And a search over 32 specifications makes significance likely by construction.
+
+The one result to hold has three links in a chain. First, the likelihood of theta given the data picks the estimator theta hat. Second, the sampling distribution of theta hat is set by the design of the experiment, and you get it exactly, by Monte Carlo, or by the bootstrap. Third, the verdict is the mean squared error of theta hat, which equals the variance of theta hat plus the squared bias of theta hat.
+
+The first arrow obeys the likelihood principle. The second does not. That one fact explains five things in this class: the stopping-rule paradox of section 1; the biased but better sample maximum in the uniform example of section 5; the bootstrap's failure at the edge of the support, also in section 5; the searched likelihood-ratio statistic that is not chi-squared with one degree of freedom, in section 3; and the minimum of 32 p-values that is not itself a p-value, in section 8.
+
+The reading order has five parts and three support notes. Part one, likelihood and the properties of an estimator, has two sections: sampling rules, and the Poisson maximum likelihood estimator. Part two, a model that fails, two that fit, and a first prior, has the coal-mining change point and the first Bayesian Poisson example. Part three, judging estimators, has one long section on mean squared error, Monte Carlo and the bootstrap. Part four, regression and time series, has Gaussian linear regression and the autoregressive and vector autoregressive review. Part five, evidence, has p-hacking. The support notes are the formula sheet, the pitfalls, and the Python implementation.
+
+Now the numbers and cases to have memorized. Ten of them.
+
+First. With one success, and theta equal to 0.1, the expected value of s over N under inverse sampling is 0.256, against 0.100 under the binomial. Same estimator, different bias.
+
+Second. With one success in ten trials, testing the null that theta equals one half, the binomial p-value is 0.0107 and the negative binomial p-value is 0.0020. Same data, different evidence against the null.
+
+Third. The efficiency of the sample variance as an estimator of a Poisson rate is one over one plus two lambda, which is 0.2 at lambda equal to 2. It needs five times the data.
+
+Fourth. Coal mining. The rates before and after the break are 3.125 and 0.917. The best cut is the year 1891, with normalised weight 0.251. The likelihood-ratio statistic is 70.0. One rate is rejected, and the exact year is not pinned down: the years 1889 to 1892 together carry 0.696.
+
+Fifth. The coal posterior on 1851 to 1891 has mean 3.084, mode 3.060 and standard deviation 0.273, against a maximum likelihood estimate of 3.098. That is shrinkage toward the prior mean of 2.
+
+Sixth. The four mean squared errors for the uniform example, with theta equal to 3 and n equal to 10, are 2.325, 0.136, 0.300 and 0.075. So the ranking is: estimator four beats estimator two, which beats estimator three, which beats estimator one.
+
+Seventh. The bootstrap point mass is one minus the quantity one minus one over n, raised to the n, which tends to 0.632. So the bootstrap is inconsistent for the sample maximum.
+
+Eighth. Boston housing overfit. The in-sample R squared is 1.0000, the out-of-sample R squared is 0.052, and the root mean squared errors are 47.13 against 4.48. The R squared cannot select a model.
+
+Ninth. A first-order autoregression with phi equal to 0.9 has equilibrium variance 5.263 times sigma squared and a half-life of 6.58 periods. At phi equal to one, the variance is t times sigma squared.
+
+Tenth. Tsay's Example 8.3 has eigenvalues 0.8 and 0.5, mean vector one and two, and a covariance matrix equal to one ninth times the matrix with rows 25, 20 and 20, 40. It is stationary despite a diagonal coefficient of 1.1.
+
+And for p-hacking: one minus 0.95 to the 32nd power is 0.806; a p-value of 0.036 sits beside a posterior probability of 0.31; and prior odds of 20 to 1 are needed to reach a posterior of 0.9.
+
+The scope, said once in full. Examinable, the C layer: what the decks and Bolfarine's assigned sections state. That covers the likelihood, the maximum likelihood estimator, and the observed and expected information for the Bernoulli, binomial, negative binomial, Poisson and uniform models; sufficiency, unbiasedness, consistency and Cramér-Rao efficiency; the mean squared error and the four uniform estimators; Monte Carlo; the nonparametric and parametric bootstrap; the dispersion test, the profile likelihood and the generalized likelihood-ratio test; the exponential to gamma update; ordinary least squares in matrix form, least squares equal to maximum likelihood, the R squared, the adjusted R squared, Mallows' C p, AIC, BIC and best subset selection; the first-order autoregression's moments, estimation, equilibrium law and unit root; the autoregression of order p as a regression; the first-order vector autoregression's stationarity, mean and covariance; the family-wise error, Bonferroni, and the Bayes factor against the p-value.
+
+Named only, the G layer: Haldane's estimator and its proof, the uniformly minimum variance unbiased estimator and Rao-Blackwell, invariance and the delta method beyond the deck, the integrated change-point likelihood, the best multiple of the sample maximum, exact Clopper-Pearson intervals, and the Bayesian sample-size criterion.
+
+Belonging to later classes and not developed here: the Gibbs switch-point model, Classes 3 and 4; ridge, lasso, elastic net, the normal-gamma and horseshoe priors, Classes 3 and 4; the hierarchical beta-binomial page, Classes 3 and 4; Bayes factors for composite hypotheses, Classes 3 and 4; Dickey-Fuller tests and ARCH and GARCH, Class 8; impulse responses and structural vector autoregressions, Class 9; cross-validation, Class 2.
+
+The errata found while writing the notes. Four of them.
+
+One. Bolfarine and Sandoval, Table 1.1, printed page 12, prints the mean squared error of the sample maximum as theta squared over 662 at n equal to 10, and theta squared over 2312 at n equal to 20. Their own formula 17 gives theta squared over 66 and theta squared over 231, and the ratio column should read 0.36, 0.18, 0.059 and 0.017. The book's conclusion is unaffected.
+
+Two. The handwritten mean squared error note states the ranking of the four uniform estimators for n greater than or equal to 2, with strict inequalities. It holds strictly only for n greater than or equal to 3, because at n equal to 2 the mean squared error of the sample maximum equals that of twice the sample mean, both theta squared over 6. The same page writes the definition of the mean squared error with the expected value of theta in place of theta.
+
+Three. The p-hacking deck, slide 5, counts two to the fifth, which is 32, specifications. Its own table of options has three times three times three times two times three, which is 162 combinations, for which the independent-test rate of at least one false positive is 0.9998. And the 0.81 is itself an upper bound, because the specifications share the same 30 students.
+
+Four, minor items. The handwritten Poisson table rounds the probability of a count of 3 at lambda equal to 2, which is 0.18045, to 0.181. The bootstrap example page prints the upper limit of the sigma squared interval first. And the economics deck misnames the authors of Brodeur and others, 2016.
+
+Finally, the position of Class 1 in the course. In Class 2, statistical learning, the mean squared error becomes prediction error and its bias-variance split; the regression optimism, two p sigma squared over n, becomes validation and cross-validation; the iid Bernoulli becomes logistic regression; and the Poisson rate becomes Poisson regression. In Classes 3 and 4, Bayesian learning, the beta and gamma updates become conjugate analysis, the integrated change point becomes Gibbs sampling, the Bayes factor becomes model probabilities, and the prior weight a over n plus a becomes shrinkage. In Classes 5 and 6, causal inference, the regression machinery and the sign flip of the human development index in the abstention example become omitted-variable bias, instrumental variables, difference in differences and regression discontinuity. In Class 7, the robust standard errors become weighted and generalized least squares and Student t errors, and the likelihood toolkit becomes Tobit and probit. In Class 8, the first-order autoregression becomes ARMA models with forecasts, the unit root becomes Dickey-Fuller tests, and the Ljung-Box test on squared returns becomes ARCH, GARCH and stochastic volatility. In Class 9, the first-order vector autoregression becomes the vector autoregression of order p, impulse responses and structural models, and shrinkage becomes the Bayesian vector autoregression.
+
+Recap of part zero. One likelihood, many sampling distributions. Judge estimators by mean squared error. Judge models by what they predict and assume. And never mistake a p-value for evidence.
+
+
+Part one, section 1. Sampling rules: same likelihood, different sampling distributions.
+
+This section covers the deck mle sampling rules, slides 1 to 11; Bolfarine and Sandoval, section 1.3, printed pages 4 to 6, section 2.1, printed pages 15 to 18, section 3.1, printed pages 35 to 37, section 3.2.2, printed pages 44 to 45, and Definition 6.3.1 on printed page 100; and Greenberg section 2.2, printed pages 14 to 17.
+
+The claim, before the derivations. Bernoulli trials, a binomial count, and a negative binomial waiting time give the same likelihood for theta, up to a constant. So the maximum likelihood estimator, the observed information, the plug-in standard error, the Wald interval and the Bayesian posterior are all identical. What differs is which of s and n is random. That changes the exact distribution of theta hat, and with it the bias, the exact variance, the coverage and the p-values. With one success in ten trials, theta hat equals 0.1 under both designs. Under inverse sampling, though, its mean is 0.256, and the one-sided p-value against theta equal to one half is 0.0020 instead of 0.0107.
+
+The notation. Theta is the success probability, between zero and one. y sub i is the outcome of trial i, one for success, zero for failure. n is the number of trials: fixed for the Bernoulli and binomial designs, a random capital N for the negative binomial. s is the number of successes, the sum of the y's: a random capital S for the binomial, fixed for the negative binomial. L of theta is the likelihood, and lowercase l of theta is the log-likelihood. J of theta, the observed information, is minus the second derivative of the log-likelihood. I of theta, the expected or Fisher information of the whole sample, is the expected value of J. And a and b are the parameters of a beta prior.
+
+One point one. The intuition: one coin, two experimenters.
+
+Two researchers watch the same ten tosses: nine tails and then a head on the tenth toss. The first had decided in advance to toss ten times and count heads. The second had decided to toss until the first head, and it happened to arrive on toss ten. The data are identical, the likelihoods are proportional, and the maximum likelihood estimate is one tenth for both. But they ran different experiments. If either of them repeated the experiment, the set of outcomes that could have happened would differ: counts from zero to ten for the first, waiting times one, two, three and onward for the second.
+
+Hold this sentence: every frequentist property is a statement about outcomes that did not happen. Bias, standard error, coverage and p-values average over the experiment's sample space. The likelihood only looks at the outcome that did happen. The rest of the deck sorts the quantities into those two kinds.
+
+One point two. Three sampling rules, one likelihood. This is slide 1.
+
+Three rules. Under the Bernoulli rule, with n fixed, the y's are iid Bernoulli with parameter theta, and the probability of the data is the product over i of theta to the y sub i times one minus theta to the one minus y sub i. Under the binomial rule, with n fixed, the count S is binomial with parameters n and theta, and the probability of the data is n choose s, times theta to the s, times one minus theta to the n minus s. Under the negative binomial rule, with s fixed, N is the number of trials until the s-th success, and the probability is n minus one choose s minus one, times theta to the s, times one minus theta to the n minus s.
+
+Collect the Bernoulli product by adding exponents. Equation 1: the likelihood of theta given y equals theta raised to the sum of the y's, times one minus theta raised to the sum of one minus y, which is theta to the s times one minus theta to the n minus s.
+
+The other two differ from equation 1 only by a factor that does not contain theta. Equation 2: the binomial likelihood is n choose s times theta to the s times one minus theta to the n minus s, which is proportional to theta to the s times one minus theta to the n minus s. Equation 3: the negative binomial likelihood is n minus one choose s minus one times the same kernel, again proportional to theta to the s times one minus theta to the n minus s.
+
+Why that coefficient for the negative binomial? It counts the arrangements in which the s-th success falls exactly on trial n: the last trial is a success, and s minus one successes fall among the first n minus one trials.
+
+The likelihood principle, slide 1. Equations 1, 2 and 3 are in the same equivalence class, so any likelihood-based or Bayesian inference about theta is the same. But the random quantity is different, S against N, so the sampling distribution of anything computed from the likelihood is different.
+
+This likelihood is Bolfarine's equation 1.3.1, printed page 5, and Definition 3.1.1, printed page 35: the joint probability of the observed sample, read as a function of theta.
+
+One point three. The maximum likelihood estimator and the observed information are the same function of the data. This is slide 2.
+
+Take logs of equation 1. The constants in equations 2 and 3 only add the log of a binomial coefficient, which vanishes on differentiation. Equation 4: the log-likelihood, l of theta, equals s times log theta plus n minus s times log of one minus theta.
+
+Differentiate equation 4 to get the score. Equation 5: l prime of theta equals s over theta minus n minus s over one minus theta.
+
+Set equation 5 to zero. This is Bolfarine's likelihood equation 3.1.3, printed page 36. Four steps. First, s over theta hat equals n minus s over one minus theta hat. Second, cross-multiply: s times one minus theta hat equals n minus s times theta hat. Third, expand: s minus s theta hat equals n theta hat minus s theta hat. Fourth, the s theta hat terms cancel, and equation 6 is the boxed result: theta hat equals s over n.
+
+The second-order check, Bolfarine's 3.1.4. Differentiate equation 5 once more and change sign. Equation 7: the observed information J of theta equals s over theta squared plus n minus s over one minus theta, squared. It is positive, so equation 6 is a maximum.
+
+Now evaluate equation 7 at the estimate, substituting theta hat equals s over n and one minus theta hat equals n minus s over n. The first term becomes s over s squared over n squared, which is n squared over s. The second becomes n squared over n minus s. Put them over a common denominator: n squared times n minus s, plus n squared times s, all over s times n minus s, which is n cubed over s times n minus s. Divide numerator and denominator by n squared. Equation 8, boxed: J of theta hat equals n cubed over s times n minus s, which equals n over theta hat times one minus theta hat.
+
+With one success in ten trials: J of theta hat equals 1000 over 1 times 9, which is 111.1, and equals 10 over 0.1 times 0.9.
+
+What is the same and what is not. Equations 4 to 8 contain only the numbers s and n, so they are identical in all three experiments. Which of s and n is random is the only difference. For the Bernoulli and binomial designs, n is fixed, S is random, and the estimator is capital S over n. For the negative binomial, s is fixed, N is random, and the estimator is s over capital N.
+
+One point four. The binomial: theta hat equals S over n. This is slide 3.
+
+The exact distribution. S, the sum of the Y's, is binomial with parameters n and theta, and theta hat takes the value k over n exactly when S equals k. Equation 9: the probability that theta hat equals k over n is n choose k, times theta to the k, times one minus theta to the n minus k, for k from zero to n.
+
+Since the expected value of S is n theta and the variance of S is n theta times one minus theta, from Bolfarine section 1.1.3, printed page 2, equation 10 follows: the expected value of theta hat is n theta over n, which is theta, so the estimator is unbiased; and the variance of theta hat is n theta times one minus theta over n squared, which is theta times one minus theta, over n.
+
+The expected, or Fisher, information. Take the expectation of equation 7 with S random, substituting n theta for the expected value of S and n times one minus theta for the expected value of n minus S. Equation 11: I of theta equals n theta over theta squared, plus n times one minus theta over one minus theta squared, which is n over theta plus n over one minus theta, which is n over theta times one minus theta.
+
+The variance in equation 10 equals one over I of theta from equation 11, so S over n attains the Cramér-Rao bound, Bolfarine Theorem 2.1.1, printed page 18.
+
+The asymptotics, Bolfarine 3.2.3, printed page 44, where the central limit theorem and the maximum likelihood theory coincide. Equation 12: theta hat is approximately normal, with mean theta and variance theta times one minus theta over n.
+
+And a remark: Bernoulli or binomial makes no difference. S is sufficient, and the order of the y's carries no information about theta.
+
+One point five. The negative binomial: theta hat equals s over N. This is slide 4.
+
+The exact distribution. From equation 3, with n replaced by the random N equal to m. Equation 13: the probability that N equals m is m minus one choose s minus one, times theta to the s, times one minus theta to the m minus s, for m equal to s, s plus one, and so on. And theta hat equals s over m exactly when N equals m, so the probability that theta hat equals s over m is equation 13.
+
+Its support is the set one, s over s plus one, s over s plus two, and so on. It never reaches zero, and it piles up near zero.
+
+The Fisher information. Now s is fixed and N is random. Use the expected value of N, which is s over theta, so the expected value of N minus s is s over theta minus s, which is s times one minus theta over theta. Substitute into equation 7 with n replaced by N. I of theta equals s over theta squared, plus s times one minus theta over theta, divided by one minus theta squared, which is s over theta squared plus s over theta times one minus theta. Put both terms over theta squared times one minus theta. Equation 14: I of theta equals s times one minus theta plus s theta, over theta squared times one minus theta, which is s over theta squared times one minus theta.
+
+The asymptotics, as s grows. Equation 15: theta hat is approximately normal with mean theta and variance theta squared times one minus theta over s.
+
+One point six. The same answer via the delta method. This is slide 5.
+
+N is the sum of s iid geometric waiting times, each with mean one over theta and variance one minus theta over theta squared. By the central limit theorem, equation 16: N is approximately normal with mean s over theta and variance s times one minus theta over theta squared.
+
+Take g of x equal to s over x, so g prime of x is minus s over x squared. Evaluate at the mean, x equal to s over theta. Equation 17: g prime equals minus s over s over theta squared, which is minus s theta squared over s squared, which is minus theta squared over s.
+
+The delta method, Bolfarine 3.2.4, printed page 44, says the variance of g of N is approximately g prime of the mean, squared, times the variance of N. Substitute equation 17 and the variance in equation 16: minus theta squared over s, squared, times s times one minus theta over theta squared. That is theta to the fourth over s squared, times s times one minus theta over theta squared, which is theta squared times one minus theta over s. That is equation 15 again, and it equals one over I of theta from equation 14.
+
+The plug-in check, a remark on slide 5. Put theta hat equal to s over n into equation 15, writing theta squared as s over n, squared. Then theta hat squared times one minus theta hat over s equals s over n squared times one minus theta hat over s, which is s over n times one minus theta hat over n, which is theta hat times one minus theta hat over n. Call that equation 18. It is the plug-in variance from equation 12, and both equal one over J of theta hat from equation 8.
+
+The lesson. The plug-in standard errors coincide, so the Wald intervals are identical. The exact distributions, equations 9 and 13, are not. The asymptotic standard error depends only on the likelihood's curvature, and the curvature does not depend on the sampling rule.
+
+One point seven. Bias: binomial against negative binomial. This is slide 6.
+
+Under the binomial, the expected value of S over n is theta exactly, by equation 10.
+
+Under the negative binomial, one over x is strictly convex, so Jensen's inequality gives equation 19: the expected value of s over N is strictly greater than s over the expected value of N, which is s over s over theta, which is theta. So theta hat equal to s over N is biased upward.
+
+A closed form for one success, the geometric case. Put s equal to one in equation 13: the probability that N equals m is theta times one minus theta to the m minus one. Then the expected value of one over N is the sum over m from one onward of one over m times theta times one minus theta to the m minus one, which equals theta over one minus theta, times the sum over m of one minus theta to the m, over m.
+
+Use the series: the sum over m from one onward of x to the m over m equals minus log of one minus x, for x less than one in absolute value. Take x equal to one minus theta, so one minus x is theta. Equation 20, boxed: the expected value of one over N equals theta over one minus theta, times minus log theta, which is minus theta log theta, over one minus theta.
+
+The worked number at theta equal to 0.1. Minus log of 0.1 is 2.302585. So the expected value of theta hat is 0.1 times 2.302585 over 0.9, which is 0.2302585 over 0.9, which is 0.2558, about 0.256. That is more than twice theta.
+
+Haldane, 1945. This is a G-layer result, named and proved but not examinable. For s at least 2, the estimator s minus one over N minus one is exactly unbiased. The proof takes two lines and is not on the slide. Since s minus one over m minus one, times m minus one choose s minus one, equals m minus two choose s minus two, the expected value of s minus one over N minus one equals the sum over m from s onward of m minus two choose s minus two, times theta to the s, times one minus theta to the m minus s. Pull out one theta and shift the index to m prime equal to m minus one. What remains is theta times the sum over m prime from s minus one onward of m prime minus one choose s minus two, times theta to the s minus one, times one minus theta to the m prime minus s plus one. That last sum is equation 13 for s minus one successes summed over its whole support, so it equals one, and the expectation equals theta.
+
+The moral of slide 6: unbiasedness is a property of the sampling rule, not of the likelihood. s over N and S over n are the same function of the data, the same maximum likelihood estimator, and only one of them is unbiased.
+
+One point eight. Worked: the deck's two data sets. This is slides 7 to 9.
+
+Everything is evaluated at theta equal to theta hat. The asymptotic standard error comes from equation 18: the square root of 0.1 times 0.9 over 10, which is the square root of 0.009, which is 0.0949; and the square root of 0.4 times 0.6 over 10, which is the square root of 0.024, which is 0.1549. The exact moments of s over N are the sums over m of s over m times the probability that N equals m, and of s over m squared times that probability, over equation 13, computed in the Python note.
+
+Now the table, walked row by row, for four columns: one success in ten trials under the binomial and under the negative binomial, then four successes in ten trials under each.
+
+Theta hat is 0.100 for both designs with one success, and 0.400 for both with four.
+
+The asymptotic standard error is 0.095 for both with one success, and 0.155 for both with four.
+
+The exact expected value of theta hat is 0.100 under the binomial and 0.256 under the negative binomial with one success; and 0.400 under the binomial and 0.461 under the negative binomial with four.
+
+The exact standard deviation of theta hat is 0.095 under the binomial and 0.281 under the negative binomial with one success; and 0.155 under the binomial and 0.178 under the negative binomial with four.
+
+The Wald 95 per cent interval is the same for both designs: from minus 0.086 to 0.286 with one success, and from 0.096 to 0.704 with four.
+
+The Wald arithmetic in view. 0.1 plus or minus 1.96 times 0.0949 is 0.1 plus or minus 0.1859, which is minus 0.086 to 0.286. And 0.4 plus or minus 1.96 times 0.1549 is 0.4 plus or minus 0.3036, which is 0.096 to 0.704.
+
+The figure for this section shows the two exact probability mass functions. With one success and theta equal to 0.1, the binomial S over n puts mass 0.35 at zero, 0.39 at 0.1 and 0.19 at 0.2. The negative binomial s over N has a dense comb of small masses accumulating near zero, plus isolated masses at one third, one half, and 0.1 at exactly one; its mean, 0.256, is marked. With four successes and theta equal to 0.4, the binomial is roughly symmetric around 0.4, while the negative binomial is right-skewed with mean 0.461.
+
+In words. With one success, the binomial theta hat lives on the grid zero, 0.1, up to one, and is centred at 0.1. The inverse-sampling theta hat cannot be zero. It has 10 per cent probability of being exactly one, which is a success on the first trial, and the rest is a comb accumulating near zero. That gives a mean of 0.256 and a standard deviation three times the asymptotic one. With four successes the two shapes are closer, but the negative binomial is still visibly right-skewed.
+
+Read the table bottom-up. The asymptotic standard error is blind to the sampling rule; the exact distribution is not. And with one success the Wald interval leaves the interval from zero to one, so the asymptotics are useless at this sample size whichever rule produced the data. That is slide 9.
+
+One point nine. The classic consequence: p-values. This is slide 10.
+
+Test the null hypothesis that theta equals one half against the alternative that theta is less than one half. This is the example of Lindley and Phillips, 1976. The p-value is Bolfarine's nível descritivo, Definition 6.3.1, printed page 100, which the book defines as "o menor nível de significância alfa para o qual a hipótese nula H zero seria rejeitada": the smallest significance level at which the null would be rejected. It is the null probability of a result at least as extreme as the one observed, and what counts as extreme is defined by the sample space.
+
+Under the binomial, with n equal to 10 fixed, extreme means few successes: the p-value is the probability that S is at most s, given n and theta equal to one half. Under the negative binomial, with s fixed, extreme means many trials: the p-value is the probability that N is at least n, given s and theta equal to one half.
+
+One success in ten trials. Binomial: the probability that S is at most one equals 10 choose 0 plus 10 choose 1, over 2 to the 10th, which is 1 plus 10 over 1024, which is 11 over 1024, which is 0.0107.
+
+Negative binomial: N at least 10 means the first 9 trials were all failures. So the p-value is 0.5 to the 9th, which is 1 over 512, which is 0.0020.
+
+Four successes in ten trials. Binomial: the probability that S is at most 4 equals 1 plus 10 plus 45 plus 120 plus 210, over 1024, which is 386 over 1024, which is 0.377.
+
+Negative binomial: N at least 10 means at most 3 successes in the first 9 trials. So the p-value is the probability that a binomial with 9 trials and probability one half is at most 3, which is 1 plus 9 plus 36 plus 84, over 512, which is 130 over 512, which is 0.254.
+
+Summing up: with one success, the binomial p-value is 0.0107 and the negative binomial p-value is 0.0020. With four successes, they are 0.377 and 0.254.
+
+Same data, same likelihood, different evidence against the null, because the reference set of unobserved outcomes depends on the experimenter's intentions. At the 1 per cent level the first experimenter does not reject and the second does, on identical tosses.
+
+One point ten. The Bayesian contrast. This is slide 11 and Greenberg section 2.2.
+
+Take a beta prior for theta with parameters a and b, whose density is proportional to theta to the a minus one times one minus theta to the b minus one. Bayes' theorem in proportional form, Greenberg equation 2.3, printed page 14, gives, under any of equations 1, 2 or 3: the posterior of theta given the data is proportional to a constant c times theta to the s times one minus theta to the n minus s, times theta to the a minus one times one minus theta to the b minus one, which is proportional to theta to the a plus s minus one, times one minus theta to the b plus n minus s minus one.
+
+The constant c is one, or n choose s, or n minus one choose s minus one, and it cancels in the normalisation. Hence equation 21: theta given the data is beta with parameters a plus s and b plus n minus s, and the posterior mean is a plus s over a plus b plus n.
+
+This is Greenberg's beta-Bernoulli result, printed page 16, and his equation 2.5, printed page 17. It splits equation 21 as a weighted average of the prior mean and the maximum likelihood estimate. Equation 22: a plus s over a plus b plus n equals a plus b over a plus b plus n, times the prior mean a over a plus b, plus n over a plus b plus n, times the estimate s over n.
+
+Worked, with a uniform prior, a and b both equal to one. With one success: beta of 1 plus 1 and 1 plus 9, which is beta of 2 and 10, with mean 2 over 12, which is 0.167. With four successes: beta of 5 and 7, with mean 5 over 12, which is 0.417. Check with equation 22, using prior mean one half and prior weight 2 over 12: 2 over 12 times 0.5, plus 10 over 12 times 0.1, is 0.0833 plus 0.0833, which is 0.167. It checks.
+
+The take-home of slide 11. The stopping rule is irrelevant to the posterior: it enters only through the binomial constants, which cancel. Likelihood-based conclusions obey the likelihood principle; the frequentist properties of theta hat, namely bias, exact variance, p-values and coverage, do not.
+
+One point eleven. Worked: the site's Bernoulli code, part one of the file bernoulli iid logistic.
+
+The data are 1, 1, 1, 1, 0, 0, 0, 1, 1, 1: so n is 10 and s is 7.
+
+The maximum likelihood estimate and Wald intervals. Theta hat is 7 over 10, which is 0.7, and by equation 18 the standard error is the square root of 0.7 times 0.3 over 10, the square root of 0.021, which is 0.1449. Three intervals. At 90 per cent, z is 1.645, the margin is 0.2384, and the interval runs from 0.462 to 0.938. At 95 per cent, z is 1.960, the margin is 0.2840, and the interval runs from 0.416 to 0.984. At 99 per cent, z is 2.576, the margin is 0.3733, and the interval runs from 0.327 to 1.073. The 99 per cent interval again leaves the interval from zero to one.
+
+Bayes with a beta prior with parameters 3 and 3. The prior mean is 0.5 and the prior standard deviation is the square root of 9 over 36 times 7, which is 0.189. By equation 21, the posterior is beta of 3 plus 7 and 3 plus 3, which is beta of 10 and 6. Its mean is 10 over 16, which is 0.625. Its standard deviation is the square root of 10 times 6 over 16 squared times 17, which is the square root of 0.013787, which is 0.117. The 95 per cent credible interval runs from 0.384 to 0.837. The posterior predictive probability that the next trial is a success equals the posterior mean, 0.625. Compared with the maximum likelihood estimate of 0.7, the estimate is shrunk toward the prior mean 0.5, with weight 6 over 16 on the prior, by equation 22.
+
+A bridge to Class 2. Part two of the same file gives each trial a regressor x sub i, and lets the probability that y sub i equals one, given x sub i, be one over one plus e to the minus alpha plus beta x sub i. The y's are then independent but not identically distributed, equation 1 no longer applies, and the maximum likelihood estimate, alpha hat equal to 2.877 and beta hat equal to 17.995 in the file's comments, has no closed form. That is the logistic regression of Class 2, section 4.
+
+One point twelve. Intuition: how many trials? From the page optimal sample size.
+
+The Wald margin of error, E, equals the normal quantile z at one minus alpha over two, times the square root of theta times one minus theta over n. Solve for n. Equation 23: n must be at least z squared times theta times one minus theta, over E squared.
+
+Theta times one minus theta is at most one quarter, with equality at theta equal to one half, the vertex of the parabola. So the worst case is n at least z squared over four E squared. With the page's rounding of z to about 2, this becomes n at least one over E squared: n at least 400 for a margin of 0.05, and n at least 10,000 for a margin of 0.01. With z equal to 1.96 exactly, equation 23 gives 1.96 squared times 0.25 over 0.05 squared, which is 384.1, so n equals 385. The page's Bayesian alternative, the average-length criterion of M'Lan, Joseph and Wolfson, 2008, with a beta prior, is named only. It belongs with the priors of Classes 3 and 4.
+
+One point thirteen. Graduate layer: what the deck does not settle. None of this is examinable.
+
+Which answer is right? Nothing in this deck says. The frequentist answer depends on the design by construction. The likelihood principle, Birnbaum, 1962, says it should not. The deck states the conflict and lets the numbers make it.
+
+Optional stopping. "Toss until the p-value drops below 0.05" is a sampling rule with its own sample space. The likelihood and the posterior ignore it; the nominal p-value does not. The p-hacking version of this point comes in section 8.
+
+Exact intervals, Clopper-Pearson for the binomial, repair the coverage problem with one success. They are named only; they are not in the deck.
+
+Spoken checklist for section 1. You should be able to write the Bernoulli, binomial and negative binomial likelihoods and show they share one kernel. You should be able to derive the maximum likelihood estimator s over n and the observed information n over theta hat times one minus theta hat. You should be able to derive the Fisher information under both designs, n over theta times one minus theta and s over theta squared times one minus theta, and recover the second by the delta method. You should be able to show with Jensen that s over N is biased upward and compute 0.256 at theta equal to 0.1. You should be able to compute the four p-values, 0.0107, 0.0020, 0.377 and 0.254. And you should be able to state why the beta posterior does not depend on the stopping rule.
+
+
+Part one, section 2. The Poisson maximum likelihood estimator: the sample mean is sufficient-based, unbiased, consistent and efficient.
+
+This section covers the Poisson with breakpoint deck, slides 1 to 12; the handwritten class 1 Poisson notes, pages 1 to 5; and Bolfarine and Sandoval section 1.1.4, printed pages 2 to 3, section 2.1, printed pages 15 to 19, section 2.2, printed pages 20 to 22, section 3.1, printed pages 35 to 36, section 3.2.2, printed pages 44 to 45, and section 3.7, printed page 52.
+
+The claim. For iid Poisson counts the likelihood depends on the data only through s sub n, the sum of the y's, and its maximiser is the sample mean. The sample mean passes all four classical tests: sufficiency, Bolfarine Example 2.2.3; unbiasedness; consistency, because its variance lambda over n tends to zero; and efficiency, because its variance equals the Cramér-Rao bound lambda over n. The sample variance, s squared, is also unbiased for lambda, but its variance is lambda over n plus two lambda squared over n minus one, so it is only one over one plus two lambda efficient, which is 20 per cent at lambda equal to 2. In practice it needs five times the data.
+
+The notation. y sub i is the count in period i, here the coal-mining disasters in year i. n is the number of periods. Lambda is the occurrence rate, and both the mean and the variance of y sub i equal lambda. s sub n is the total count. y bar sub n, equal to s sub n over n, is the sample mean. s squared, the sum of squared deviations from the mean divided by n minus one, is the sample variance. And capital N, the number of Monte Carlo replications, is 1000.
+
+Two point one. The Poisson model. Slide 2, and Bolfarine section 1.1.4, printed pages 2 to 3.
+
+Equation 1: y one to y n, given lambda, are iid Poisson with rate lambda, and the probability of y sub i given lambda is lambda to the y sub i times e to the minus lambda, over y sub i factorial, with lambda positive.
+
+The mean and variance, derived. For the mean, drop the k equal zero term, cancel k against k factorial, and use the fact that the sum over j from zero of lambda to the j over j factorial is e to the lambda. Equation 2: the expected value of y is the sum over k from one of k times lambda to the k e to the minus lambda over k factorial, which is lambda e to the minus lambda times the sum over k from one of lambda to the k minus one over k minus one factorial, which is lambda e to the minus lambda times e to the lambda, which is lambda.
+
+The factorial moment works the same way: the expected value of y times y minus one is lambda squared e to the minus lambda times the sum over k from two of lambda to the k minus two over k minus two factorial, which is lambda squared. So the expected value of y squared is lambda squared plus lambda. Substitute into the variance, the expected value of y squared minus the squared mean. Equation 3: the variance of y is lambda squared plus lambda, minus lambda squared, which is lambda.
+
+Equidispersion, the mean equal to the variance equal to lambda, is the model's testable fingerprint. It is what the dispersion test of section 3 checks, and what fails on the full coal series.
+
+Two point two. Worked: the probabilities on slide 3, from the handwritten page 1 and the class 1 Poisson web page.
+
+For lambda equal to 1, each probability is e to the minus one, 0.36788, divided by k factorial. At k equal to 0 it is 0.368; at 1, 0.368; at 2, 0.36788 over 2, which is 0.184; at 3, 0.36788 over 6, which is 0.061. The four sum to 0.981.
+
+For lambda equal to 2, each probability is 2 to the k times e to the minus 2, which is 0.13534, over k factorial. At k equal to 0 it is 0.135; at 1, 2 times 0.13534, which is 0.271; at 2, 4 over 2 times 0.13534, again 0.271; at 3, 8 over 6 times 0.13534, which is 0.180. The four sum to 0.857.
+
+So the probability of a count of 2 at lambda equal to 2 is 0.271, and the probability of at most 3 is 0.857, as on the web page. The handwritten table rounds the last entry to 0.181; the exact value is 0.18045.
+
+The figure shows the Poisson probability mass function for lambda equal to 1, 2 and 3. For integer lambda, the two bars at k equal to lambda minus one and k equal to lambda are always equal, because the ratio of the probability at k to the probability at k minus one is lambda over k. As lambda grows, the mass moves right and spreads, which is the variance equal to lambda seen directly.
+
+Two point three. Likelihood and sufficiency. Slide 4, handwritten page 2, Bolfarine section 2.2.
+
+Multiply equation 1 over i and collect exponents. Equation 4: the joint probability of y one to y n given lambda is the product over i of lambda to the y sub i e to the minus lambda over y sub i factorial, which is lambda to the s sub n times e to the minus n lambda, over the product of the y sub i factorials.
+
+As a function of lambda, equation 5: the likelihood equals a constant c times lambda to the s sub n times e to the minus n lambda, where one over c is the product of the factorials, a constant.
+
+The likelihood depends on the data only through s sub n and n, so s sub n is a sufficient statistic for lambda. Equation 5 has exactly the form of the Neyman factorisation criterion, Bolfarine Theorem 2.2.1, equation 2.2.2, printed page 22: h of y is the constant c, and g of T is lambda to the T times e to the minus n lambda, with T equal to s sub n. This is Bolfarine Example 2.2.4.
+
+Now by the definition, Bolfarine Definition 2.2.1, printed page 20: the conditional distribution of the sample given T must not depend on lambda. This is Bolfarine Example 2.2.3, printed page 21. A sum of independent Poissons is Poisson, so T is Poisson with rate n lambda. For a sample whose sum is t, divide equation 4 by the probability that T equals t. Equation 6: the probability of the sample given T equals t is lambda to the t e to the minus n lambda over the product of factorials, divided by n lambda to the t times e to the minus n lambda over t factorial. That is t factorial over the product of factorials, times lambda to the t over n to the t lambda to the t, which is t factorial over y one factorial up to y n factorial, times one over n raised to the t.
+
+Equation 6 is free of lambda. It is the multinomial with t trials and equal probabilities one over n: given the total, the counts are spread over the n years like balls dropped uniformly into n boxes, which tells nothing about the rate.
+
+Two point four. The maximum likelihood estimator is the sample mean. Slide 5, handwritten page 3.
+
+Take logs of equation 5. Equation 7: the log-likelihood equals log c plus s sub n log lambda minus n lambda.
+
+Differentiate to get the score. Equation 8: l prime of lambda equals s sub n over lambda minus n.
+
+Set equation 8 to zero, Bolfarine 3.1.3, printed page 36. s sub n over lambda hat equals n, so equation 9, boxed: lambda hat equals s sub n over n, the sample mean.
+
+Is it a maximum? Bolfarine 3.1.4. Differentiate equation 8 again. Equation 10: l double prime of lambda equals minus s sub n over lambda squared, which is negative whenever s sub n is positive. So equation 9 is a maximum, and indeed the global one, since the log-likelihood is strictly concave.
+
+An edge case not on the slides. If s sub n is zero, equation 7 becomes log c minus n lambda, which increases as lambda falls toward zero. On the open space of positive lambda the maximum likelihood estimator does not exist; it would sit on the boundary. This happens with probability e to the minus n lambda, negligible for the coal data but not for small n lambda.
+
+Two point five. Unbiasedness and consistency. Slides 5 and 6, handwritten pages 3 and 4, Bolfarine section 3.7.
+
+Unbiased. Take the expectation of equation 9 and use equation 2. Equation 11: the expected value of lambda hat equals one over n times the sum of the expected values, which is one over n times n lambda, which is lambda.
+
+The variance, by independence and equation 3. Equation 12: the variance of lambda hat is one over n squared times the sum of the variances, which is n lambda over n squared, which is lambda over n, and that tends to zero as n grows.
+
+Unbiased with vanishing variance means the mean squared error, variance plus squared bias, is lambda over n plus zero, which tends to zero. So lambda hat converges to lambda in probability: lambda hat is consistent.
+
+In Bolfarine's form, Definition 3.7.1, printed page 52, consistency means the limit of the probability that the estimate misses theta by more than epsilon is zero. Chebyshev's inequality, his Example 3.7.1, with equations 11 and 12, gives equation 13: the probability that lambda hat misses lambda by more than epsilon is at most the variance over epsilon squared, which is lambda over n epsilon squared, and that tends to zero.
+
+The central limit theorem, slide 6, Bolfarine 3.2.3, printed page 44. Equation 14: lambda hat is approximately normal with mean lambda and variance lambda over n, and the standard error of lambda hat is the square root of lambda hat over n.
+
+The interactive companion, the Change-Point Dial, draws each segment's rate with its Wald band, lambda hat plus or minus z times the square root of lambda hat over n sub j, from equation 14. Moving the cut year or the sample window changes n sub j, and the bands widen or narrow like the square root of one over n in equation 12.
+
+Two point six. Efficiency: the Cramér-Rao bound. Slide 7, handwritten pages 4 and 5, Bolfarine section 2.1.
+
+An unbiased estimator is efficient if its variance equals the Cramér-Rao lower bound. Bolfarine Definition 2.1.1, printed page 15, defines efficiency as the lower bound divided by the variance. Equation 15: the Cramér-Rao lower bound is one over I of lambda, where I of lambda is n times the expected value of the squared derivative of the log density of one observation with respect to lambda.
+
+Here I of lambda is the expected Fisher information of the sample: n times the information of one observation, Bolfarine 2.1.6, printed page 17. The bound itself is Bolfarine Theorem 2.1.1, printed page 18: the variance of an unbiased estimator is at least one over n times the Fisher information of one observation.
+
+For one Poisson observation, the log density is y log lambda minus lambda minus log y factorial, so equation 16: its derivative with respect to lambda is y over lambda minus one.
+
+Substitute equation 16 into equation 15 and expand the square. I of lambda equals n times the expected value of y squared over lambda squared, minus two y over lambda, plus one; which is n times the quantity one over lambda squared times the expected value of y squared, minus two over lambda times the expected value of y, plus one.
+
+Substitute the expected value of y squared, which is the variance plus the squared mean, lambda plus lambda squared, or lambda times lambda plus one; and the expected value of y, which is lambda. Equation 17: I of lambda equals n times the quantity lambda times lambda plus one over lambda squared, minus two, plus one; which is n times the quantity lambda plus one over lambda, minus one; which is n over lambda.
+
+Compare with equation 12. Equation 18, boxed: I of lambda equals n over lambda, which equals one over the variance of the maximum likelihood estimator. So the efficiency of lambda hat equals one over I of lambda, divided by the variance, which is lambda over n divided by lambda over n, which is one.
+
+The maximum likelihood estimator is efficient. Bolfarine's route, Example 2.1.2, printed page 19, uses the second derivative instead. Differentiate equation 16: the second derivative of the log density is minus y over lambda squared. Its expectation is minus lambda over lambda squared, which is minus one over lambda. So the lower bound is lambda over n. Same bound.
+
+The bound checks efficiency; it does not build estimators. In Bolfarine's words, printed page 19, "a desigualdade da informação … não é um método de construção de estimadores": the information inequality is not a method for constructing estimators. The maximum likelihood estimator is the construction, and equation 18 is the certificate.
+
+Two point seven. A competitor: the sample variance. Slide 8.
+
+By equation 3, the variance of y sub i is lambda too, so s squared is also unbiased for lambda, since the expected value of s squared is sigma squared for any iid sample, and here sigma squared is lambda. Its variance, slide 8, is equation 19: the variance of s squared given lambda equals lambda over n plus two lambda squared over n minus one, which is greater than lambda over n, the Cramér-Rao bound.
+
+Where equation 19 comes from. This derivation is G layer, not on the slide. For any iid sample, the variance of s squared equals mu four over n, minus sigma to the fourth times n minus three over n times n minus one, where mu four is the fourth central moment. Every cumulant of a Poisson equals lambda, and mu four equals kappa four plus three kappa two squared, so mu four is lambda plus three lambda squared. Substitute this and sigma to the fourth equal to lambda squared. The variance of s squared is lambda plus three lambda squared over n, minus lambda squared times n minus three over n times n minus one. Collect the lambda squared terms: lambda over n, plus lambda squared times the quantity three times n minus one, minus n minus three, over n times n minus one. The numerator simplifies to 2n, so this is lambda over n plus lambda squared times 2n over n times n minus one, which is lambda over n plus two lambda squared over n minus one.
+
+The efficiency of s squared. Divide the bound by equation 19. Equation 20: the efficiency of s squared is lambda over n, divided by lambda over n plus two lambda squared over n minus one. Multiply the numerator and the denominator by n over lambda. Equation 21: the efficiency is one over one plus two lambda times n over n minus one, which tends, as n grows, to the boxed value one over one plus two lambda.
+
+At lambda equal to 2, equation 21 gives one over one plus four, which is 0.2. At n equal to 10, equation 20 gives 0.2 over 0.2 plus 8 ninths, which is 0.2 over 1.0889, which is 0.184.
+
+Reading equation 21. The bigger the rate, the worse s squared does. It spends the data estimating spread, which carries information about lambda only through the model's restriction that the variance equals the mean, and that information is much noisier than the mean's.
+
+Two point eight. Worked: the Monte Carlo exercise. Slides 8 to 12.
+
+The design, slide 8. Lambda is 2, there are 1000 replications, and n takes the values 10, 50 and 200. For each n: draw n iid Poisson draws with rate 2, a thousand times, and record the sample mean and the sample variance of each replication. The deck's R code fills a matrix with Poisson draws, takes row means and row variances; the Python port is in the Python note.
+
+Slide 10, the deck's table, walked row by row. The theoretical rows come from equations 12, 19 and 20; the Monte Carlo rows are the deck's simulation.
+
+For the sample mean, at n equal to 10, 50 and 200: the Monte Carlo means are 2.003, 1.994 and 1.998. The Monte Carlo variances are 0.193, 0.038 and 0.011. The theoretical variances are 0.200, 0.040 and 0.010. The efficiency is 1 in every column, both by Monte Carlo and in theory.
+
+For the sample variance, at n equal to 10, 50 and 200: the Monte Carlo means are 2.036, 1.990 and 1.994. The Monte Carlo variances are 1.245, 0.187 and 0.051. The theoretical variances are 1.089, 0.203 and 0.050. The Monte Carlo efficiencies are 0.161, 0.214 and 0.197. The theoretical efficiencies are 0.184, 0.197 and 0.199.
+
+The theoretical rows, arithmetic. For the sample mean, equation 12 gives 2 over 10, which is 0.200; 2 over 50, which is 0.040; and 2 over 200, which is 0.010. For the sample variance, equation 19 gives: at n equal to 10, 0.2 plus 8 ninths, which is 0.2 plus 0.8889, which is 1.089; at n equal to 50, 0.04 plus 8 over 49, which is 0.04 plus 0.1633, which is 0.203; at n equal to 200, 0.01 plus 8 over 199, which is 0.01 plus 0.0402, which is 0.050. The theoretical efficiency then follows from equation 20: 0.2 over 1.089 is 0.184; 0.04 over 0.203 is 0.197; 0.01 over 0.050 is 0.199.
+
+The Monte Carlo efficiency is the bound over the Monte Carlo variance of s squared: 0.2 over 1.245 is 0.161; 0.04 over 0.187 is 0.214; and 0.01 over 0.051 is 0.196, which is 0.197 on the slide, where the unrounded variance was used.
+
+The figure shows three histograms of 1000 Monte Carlo values of lambda hat at n equal to 10, 50 and 200, each overlaid with the normal density with mean lambda and variance lambda over n. The support is the grid zero, one over n, two over n, and so on, so the histogram at n equal to 10 is lumpy. It is already centred at 2 with the predicted spread. By n equal to 200 the normal curve and the histogram are indistinguishable, and the spread has shrunk by the square root of 200 over 10, which is 4.5. The figure's own seed gives Monte Carlo variances of 0.182, 0.041 and 0.011; the deck's run gave 0.193, 0.038 and 0.011. Both scatter around lambda over n, as Monte Carlo should.
+
+Slide 12: one long sequence and the coverage of a window of plus or minus 0.25. The deck's Monte Carlo reports the probability that lambda hat is within 0.25 of lambda as about 0.420, 0.799 and 0.984 for n equal to 10, 50 and 200. These can be checked exactly, because n times lambda hat, which is s sub n, is Poisson with rate n lambda; and approximately with equation 14.
+
+At n equal to 10: the deck's Monte Carlo gives 0.420; the exact Poisson with rate 20 gives 0.424; the normal approximation, two times Phi of 0.25 over the square root of 2 over n, minus one, is two Phi of 0.559 minus one, which is 0.424; and Chebyshev's lower bound, one minus 2 over n times 0.25 squared, is one minus 3.2, which is minus 2.2, an empty statement.
+
+At n equal to 50: Monte Carlo 0.799; exact 0.789; normal, two Phi of 1.250 minus one, 0.789; Chebyshev, one minus 0.64, which is 0.36.
+
+At n equal to 200: Monte Carlo 0.984; exact 0.987; normal, two Phi of 2.500 minus one, 0.988; Chebyshev, one minus 0.16, which is 0.84.
+
+Chebyshev proves consistency but is far too crude to quantify it. At n equal to 10 its bound is vacuous, while the true probability is 0.42. Use equation 14 for numbers, and equation 13 only for the limit.
+
+The second figure shows the running mean along one sequence of 2000 Poisson draws with rate 2, against n on a log scale, with a band at lambda plus or minus two times the square root of lambda over n. One path, not a distribution. Early on the running mean jumps with every draw, wandering between 1.5 and 3. Later it stays inside the funnel, whose width falls like one over the square root of n. This is consistency seen pathwise.
+
+Slide 10's verdict. Both estimators are unbiased; the maximum likelihood estimator attains the bound lambda over n; the sample variance has efficiency about one over one plus two lambda, which is 0.2, so it needs about 5 times more data to match the sample mean.
+
+Two point nine. Beyond the slides. All three items are G layer, named, not examinable here.
+
+Invariance. The maximum likelihood estimator of a function g of lambda is g of lambda hat. For example, e to the minus y bar estimates the probability of a zero count, e to the minus lambda, and the square root of n times e to the minus y bar minus e to the minus lambda converges to a normal with mean zero and variance lambda e to the minus two lambda, by Bolfarine 3.2.4, Example 3.2.5, printed page 45.
+
+The uniformly minimum variance unbiased estimator. The sample mean is the unique minimum variance unbiased estimator of lambda, by Lehmann-Scheffé, Bolfarine section 2.5, printed pages 29 to 32. Rao-Blackwellising the indicator that the first count is zero gives n minus one over n, raised to the s sub n, for e to the minus lambda: an unbiased competitor to e to the minus y bar.
+
+Poisson regression. Let lambda depend on covariates through log lambda sub i equal to x sub i transposed beta. The score, equation 8, becomes the sum over i of x sub i times y sub i minus lambda sub i, and the coefficients read as rate ratios. That is Class 2, section 6.
+
+Spoken checklist for section 2. You should be able to derive the Poisson mean and variance, and say why equidispersion is the fingerprint. You should be able to show sufficiency of the total count both by factorisation and by the definition, through the multinomial. You should be able to derive the maximum likelihood estimator, check the second-order condition, and state the edge case of a zero total. You should be able to prove unbiasedness, compute the variance lambda over n, and prove consistency with Chebyshev. You should be able to derive the Fisher information n over lambda and certify efficiency. You should be able to state the variance of s squared and its limiting efficiency one over one plus two lambda, 0.2 at lambda equal to 2. And you should be able to explain why Chebyshev is vacuous at n equal to 10 while the true coverage is 0.42.
+
+
+Part two, section 3. Coal-mining disasters: one Poisson rate does not fit; two do, and the break is around 1890.
+
+This section covers the Poisson with breakpoint deck, slides 13 to 21; the data of Jarrett, 1979, for 1851 to 1962; Bolfarine and Sandoval section 3.4, printed pages 46 to 47, on the profile likelihood, and section 6.5, printed pages 103 to 108, on the generalized likelihood-ratio test; and Greenberg section 7.1.1, printed pages 93 to 94, as a forward link.
+
+The claim. The 112 yearly counts have mean 1.705 and variance 2.714. That is overdispersed: the ratio of variance to mean is 1.59, and the dispersion test has a p-value below 0.001. So a single lambda is rejected by the model's own fingerprint, the mean equal to the variance. Splitting at 1890 gives two series that each pass the test, with rates 3.125 and 0.917 and Wald intervals far apart. Profiling the two rates out of a two-regime likelihood puts the cut at tau equal to 1891, with weight 0.251; the years 1889 to 1892 together carry 0.696. The likelihood-ratio statistic against one rate is 70.0. The cut was searched for, so the statistic is not referred to a chi-squared with one degree of freedom, but no reference distribution rescues the single-rate model.
+
+The notation. y sub t is the number of disasters in year t, observed between zero and six. n and s are the years and total disasters in the full sample, 112 and 191. Tau is the cut year, defined as the last year of the high-rate regime, between 1851 and 1961. n one and s one are the years and disasters up to tau; n two and s two after tau; they add up to 112 and 191. Lambda one and lambda two are the rates before and after the cut. l sub p of tau is the profile log-likelihood of tau. w of tau is the normalised profile likelihood over a window of cut years. And D is the dispersion statistic, n minus one times s squared over y bar.
+
+Three point one. Intuition: the series. Slide 13.
+
+The figure shows vertical bars of yearly disaster counts from 1851 to 1962, with three horizontal lines at the maximum likelihood estimates: a dashed line at 1.705 over the whole period, a line at 3.125 over 1851 to 1890, and a line at 0.917 over 1891 to 1962.
+
+The eye does the change-point analysis before the algebra does. Before about 1890, years with three or more disasters are the norm. After it, most years have zero or one. The dashed full-period line at 1.705 sits between the two clouds and describes neither. Everything that follows puts numbers on that impression.
+
+Three point two. Worked: one Poisson per period. Slide 14.
+
+Each period applies the estimate lambda hat equal to s sub n over n and the Wald interval lambda hat plus or minus 1.96 times the square root of lambda hat over n, from equations 9 and 14 of section 2. Three periods.
+
+The full period, 1851 to 1962. n is 112 and the total is 191. Lambda hat is 191 over 112, which is 1.705. The standard error is the square root of 0.015227, which is 0.123. The 95 per cent interval is 1.705 plus or minus 0.242, from 1.464 to 1.947. The sample variance is 2.714, the ratio of variance to mean is 1.592, and the dispersion test p-value is below 0.001.
+
+The early period, 1851 to 1890. n is 40 and the total is 125. Lambda hat is 125 over 40, which is 3.125. The standard error is the square root of 0.078125, which is 0.280. The interval is 3.125 plus or minus 0.548, from 2.577 to 3.673. The sample variance is 2.574, the ratio 0.824, and the p-value 0.774.
+
+The late period, 1891 to 1962. n is 72 and the total is 66. Lambda hat is 66 over 72, which is 0.917. The standard error is the square root of 0.012731, which is 0.113. The interval is 0.917 plus or minus 0.221, from 0.696 to 1.138. The sample variance is 1.063, the ratio 1.160, and the p-value 0.168.
+
+The rate falls from about 3.1 to about 0.9 disasters a year, and the two intervals are nowhere near each other: the lower end of the first, 2.577, against the upper end of the second, 1.138.
+
+Three point three. The dispersion test. Slide 14.
+
+Under the Poisson model the variance equals the mean equals lambda, so the ratio s squared over y bar should be near one. Equation 1: the statistic D, equal to n minus one times s squared over y bar, is approximately chi-squared with n minus one degrees of freedom under the Poisson model.
+
+The logic is the Gaussian fact that n minus one times s squared over sigma squared is chi-squared with n minus one degrees of freedom, Bolfarine Theorem 5.1, printed page 73, with sigma squared, which equals lambda, replaced by its estimate y bar. For counts it is an approximation. The deck reports the upper-tail p-value, the probability that a chi-squared with n minus one degrees of freedom exceeds D: a test against overdispersion.
+
+The arithmetic. For 1851 to 1962: D equals 111 times 2.7142 over 1.7054, which is 176.7, and the probability that a chi-squared with 111 degrees of freedom exceeds 176.7 is 0.00007, below 0.001. For 1851 to 1890: D equals 39 times 2.5737 over 3.125, which is 32.1, with a tail probability on 39 degrees of freedom of 0.774. For 1891 to 1962: D equals 71 times 1.0634 over 0.9167, which is 82.4, with a tail probability on 71 degrees of freedom of 0.168.
+
+Overdispersion is a symptom of a change in rate, slide 21. The full series fails, and each part is consistent with the Poisson.
+
+Why a mixture inflates the variance: the law of total variance. Let year t's rate be lambda one, 3.125, with weight pi equal to 40 over 112, and lambda two, 0.917, otherwise. Equation 2: the variance of y equals the expected value of the conditional variance plus the variance of the conditional mean, which is the expected value of lambda plus pi times one minus pi times the squared difference of the two rates.
+
+Substitute the numbers: 1.705 plus 40 over 112 times 72 over 112 times 3.125 minus 0.917 squared, which is 1.705 plus 0.3571 times 0.6429 times 4.876, which is 1.705 plus 1.120, which is 2.825.
+
+The excess over the mean, 1.12, is the between-regime term. The sample confirms the mechanism. Its own split of n minus one times s squared into the within sum, the sum of n sub j minus one times s sub j squared, plus the between sum, the sum of n sub j times the squared gap between each segment's mean and the overall mean, is 301.3 equals 175.9 plus 125.4. And the between part alone, 125.4 over 111, which is 1.13, is what pushes s squared from about 1.6 up to 2.714.
+
+Observed against fitted frequencies, slide 15. Under a Poisson with rate 1.705, the share of zero years is e to the minus 1.705, which is 0.182; the data have 33 out of 112, which is 0.295. The share of years with four or more disasters is 0.094 under the model, against 20 out of 112, which is 0.179, in the data. Too few zeros and too few large counts in the model is the signature of a mixture of two rates. The two separate fits have no such gap.
+
+Relative likelihoods, slide 16. The ratio of the likelihood at lambda to the likelihood at lambda hat equals lambda over lambda hat, raised to s sub n, times e to the minus n times lambda minus lambda hat, from equation 5 of section 2. Evaluate each part's relative likelihood at the full-period value 1.705. For 1851 to 1890: the log of the ratio equals 125 times the log of 1.705 over 3.125, minus 40 times 1.705 minus 3.125, which is 125 times minus 0.6057, plus 56.79, which is minus 18.92. That is a ratio of 6 times 10 to the minus 9. For 1891 to 1962 the same computation gives minus 15.81, a ratio of 1.4 times 10 to the minus 7. The full-period likelihood sits in between, supported by neither.
+
+Three point four. The two-regime model and its profile likelihood. Slide 17 and Bolfarine section 3.4.
+
+Equation 3: y sub t, given lambda one, lambda two and tau, is Poisson with rate lambda one for years 1851 up to tau, and Poisson with rate lambda two for years tau plus one up to 1962.
+
+The log-likelihood is the sum of two Poisson log-likelihoods, one per segment. Equation 4: l of lambda one, lambda two and tau equals s one log lambda one, minus n one lambda one, plus s two log lambda two, minus n two lambda two, minus the sum of the log factorials of the counts. The segment sizes and totals depend on tau.
+
+Step one: fix tau and maximise over the rates. Equation 4 separates, so each rate solves its own likelihood equation. Equation 5: the derivative with respect to lambda j is s sub j over lambda j minus n sub j, which is zero when lambda j hat of tau equals s sub j over n sub j, for j equal to one and two.
+
+Step two: substitute equation 5 back into equation 4. This is Bolfarine's verossimilhança perfilada, the profile likelihood, written g of theta two given x equals l of theta one hat of theta two, theta two, given x, printed page 47, with theta two equal to tau and theta one the pair of rates. Equation 6: l sub p of tau equals s one log lambda one hat minus n one times s one over n one, plus s two log lambda two hat minus n two times s two over n two, plus a constant; which is s one log lambda one hat minus s one, plus s two log lambda two hat minus s two, plus a constant.
+
+Since s one plus s two equals 191 for every tau, the minus s terms add to the constant minus 191. Only s one log lambda one hat plus s two log lambda two hat moves with tau. The slide writes equation 6 with n one lambda one hat and n two lambda two hat in place of s one and s two, which is the same expression. A segment with zero disasters uses the convention that zero times log zero is zero.
+
+Step three: normalise over a window of candidate cuts. The slide uses the window 1885 to 1895, five years on each side of 1890. Equation 7: w of tau equals e to the l sub p of tau, divided by the sum over the window of e to the l sub p of tau prime.
+
+What w of tau is, slide 17. It is the posterior of tau under a uniform prior on tau when the two rates are profiled out, that is, plugged in at their maximum likelihood estimates, rather than integrated out. Section 3.8 shows the integrated version.
+
+Three point five. Worked: the cut points around 1890. Slide 18.
+
+One row in full, tau equal to 1891. The first segment has 41 years and 127 disasters; the second has 71 years and 191 minus 127, which is 64 disasters. By equation 5, lambda one hat is 127 over 41, which is 3.0976, and lambda two hat is 64 over 71, which is 0.9014, with ratio 3.436. By equation 6, dropping the constant: l sub p of 1891 equals 127 times log 3.0976, minus 127, plus 64 times log 0.9014, minus 64; which is 127 times 1.13062, minus 127, plus 64 times minus 0.10380, minus 64; which is 143.588 minus 127 minus 6.643 minus 64, which is minus 54.055.
+
+This is the maximum over all tau, so its gap from the maximum is zero. Every other row is computed the same way, and all are reproduced to three decimals in the Python note.
+
+The table, walked year by year. For each cut, the segment sizes, then the two rates, their ratio, the gap of the profile log-likelihood from its maximum, and the weight.
+
+1885: sizes 35 and 77; rates 3.229 and 1.013; ratio 3.187; gap minus 3.50; weight 0.008.
+1886: sizes 36 and 76; rates 3.250 and 0.974; ratio 3.338; gap minus 1.02; weight 0.091.
+1887: sizes 37 and 75; rates 3.216 and 0.960; ratio 3.350; gap minus 0.87; weight 0.105.
+1888: sizes 38 and 74; rates 3.158 and 0.959; ratio 3.291; gap minus 1.89; weight 0.038.
+1889: sizes 39 and 73; rates 3.154 and 0.932; ratio 3.386; gap minus 0.49; weight 0.154.
+1890: sizes 40 and 72; rates 3.125 and 0.917; ratio 3.409; gap minus 0.26; weight 0.194.
+1891, the maximum: sizes 41 and 71; rates 3.098 and 0.901; ratio 3.436; gap zero; weight 0.251.
+1892: sizes 42 and 70; rates 3.048 and 0.900; ratio 3.386; gap minus 0.94; weight 0.098.
+1893: sizes 43 and 69; rates 3.000 and 0.899; ratio 3.339; gap minus 1.86; weight 0.039.
+1894: sizes 44 and 68; rates 2.955 and 0.897; ratio 3.294; gap minus 2.74; weight 0.016.
+1895: sizes 45 and 67; rates 2.911 and 0.896; ratio 3.251; gap minus 3.59; weight 0.007.
+
+The weight, arithmetic. Equation 7 needs only the gaps d sub tau: w of tau equals e to the d sub tau divided by the sum of e to the d over the window. The eleven terms, from the unrounded gaps, are 0.030, 0.362, 0.420, 0.150, 0.613, 0.772, 1, 0.389, 0.156, 0.065 and 0.028, and they sum to 3.985. Exponentiating the rounded gaps instead gives 3.983. So w of 1891 is 1 over 3.985, which is 0.251, and w of 1890 is 0.772 over 3.985, which is 0.194.
+
+The figure has two panels. On the left, the profile log-likelihood minus its maximum for every cut from 1851 to 1961, rising from about minus 34 to a peak of zero at 1891 and falling again, with a dashed horizontal line at minus 34.99 for the single-rate model and the window 1885 to 1895 shaded. On the right, bars of w of tau for 1885 to 1895, highest at 1891 with 0.251, then 1890 at 0.194 and 1889 at 0.154.
+
+The profile is high and bumpy around 1885 to 1895. Its local dips match single years: a cut just after a year with zero or with three or more disasters assigns that year to the wrong regime, and the profile pays for it, slide 20. Far from the peak it falls 20 to 35 log units. The dashed line, the single-rate fit, lies below every two-regime cut. That is unavoidable: one rate is the special case lambda one equal to lambda two of equation 3, so it can never fit better.
+
+What the data can and cannot say, slides 19 and 20. The maximum is at 1891 with weight 0.251. The years 1889 to 1892 together carry 0.154 plus 0.194 plus 0.251 plus 0.098, which is 0.696. The data locate the change around 1890 but cannot pin down the exact year. Across all eleven cuts the rates barely move, lambda one hat near 3 and lambda two hat near 0.9: the rate fell by a factor of about 3.4.
+
+Three point six. The likelihood-ratio statistic. Slide 19 and Bolfarine section 6.5.
+
+The single-rate fit. With lambda hat equal to 191 over 112, which is 1.70536, and the same constant as equation 6: l of lambda hat equals 191 times log 1.70536, minus 191, which is 191 times 0.53377 minus 191, which is 101.951 minus 191, which is minus 89.049.
+
+The statistic is twice the gap between the two maximised log-likelihoods. Equation 8: LR equals two times the quantity l sub p of 1891 minus l of lambda hat, which is two times minus 54.055 minus minus 89.049, which is two times 34.994, which is 69.99, about 70.0.
+
+A compact form. Write both fits with equation 6. The minus s terms and the single-rate minus 191 cancel, because s one plus s two is 191. Equation 9: LR equals two times the quantity s one log of lambda one hat over lambda hat, plus s two log of lambda two hat over lambda hat; which is two times 143.588 minus 6.643 minus 101.951, which is 69.99.
+
+Equation 9 is the two-sample version of Bolfarine's Poisson generalized likelihood-ratio test, Example 6.5.5, printed page 108, where the null value lambda zero is fixed instead of estimated: minus two log lambda of x equals minus two times the quantity minus n times lambda zero minus x bar, plus the sum of x sub i times log of lambda zero over x bar.
+
+In Bolfarine's terms, equation 6.5.1, printed page 103, the test statistic lambda of x is the supremum of the likelihood over the null set divided by the supremum over the whole parameter space, and LR equals minus two log lambda of x, with the null set being lambda one equal to lambda two. Wilks' theorem, Theorem 6.5.1, printed page 108, says that under regularity, minus two log lambda of X converges to a chi-squared, with degrees of freedom equal to the difference in free parameters.
+
+Why 70.0 is not referred to a chi-squared with one degree of freedom. Wilks needs a regular problem, and three things break it here. First, the cut tau was chosen to maximise the statistic over about 111 candidates, so 70.0 is a maximum of likelihood-ratio statistics, not one of them. Second, under the null, lambda one equal to lambda two, the cut tau is not identified, since every tau gives the same likelihood. Third, tau is discrete. No standard chi-squared count of parameters applies.
+
+It does not matter here. Had 1890 been fixed in advance, with LR equal to 69.47 at tau equal to 1890, the chi-squared with one degree of freedom would be legitimate and the p-value about 8 times 10 to the minus 17. Even a chi-squared tail with two degrees of freedom at 70.0 is 6 times 10 to the minus 16. The evidence is overwhelming on any reading.
+
+The interactive companion, the Change-Point Dial, lets you drag the cut year and watch the two rate lines, the profile curve's marker and the likelihood-ratio read-out: 70.0 at 1891, not referred to a chi-squared with one degree of freedom. Changing the weight window h moves w of 1891 away from 0.251 at the slide's h equal to 5. At tau equal to 1890 the per-segment dispersion read-outs reproduce the p-values 0.774 and 0.168: each part is consistent with a Poisson.
+
+Three point seven. What the slides conclude. Slides 20 and 21. Four conclusions.
+
+One. For iid Poisson data, the sample mean is sufficient-based, unbiased, consistent and efficient.
+
+Two. A single Poisson does not fit the coal-mining series. Overdispersion is the symptom of a change in rate.
+
+Three. Splitting gives two well-fitting Poissons, with rates about 3.1 and about 0.9, and the profile likelihood points to a change around 1890 to 1891.
+
+Four, the deck's last bullet, the next step: a Bayesian change-point model, the joint posterior of tau, lambda one and lambda two given the data, which integrates rather than profiles the rates.
+
+Three point eight. Graduate layer: profiling against integrating. A forward link to Classes 3 and 4, not examinable.
+
+The model on the slide's last bullet is Greenberg's switch-point model, section 7.1.1, printed pages 93 to 94: the counts are Poisson with rate theta one up to year k and Poisson with rate theta two after, as in his equation 7.3, with gamma priors on theta one and theta two and a uniform prior on k, one over n for each year, as in his equation 7.4. There it is sampled by Gibbs. That belongs to Classes 3 and 4 and is not developed here.
+
+The integrated likelihood of tau in closed form. Use the prior of section 4, each lambda j exponential with rate a, independently, and that section's gamma integral. For each segment, the integral from zero to infinity of lambda to the s sub j, times e to the minus n sub j lambda, times a e to the minus a lambda, d lambda, equals a times the integral of lambda to the s sub j times e to the minus n sub j plus a, times lambda, which equals a times the gamma function of s sub j plus one, over n sub j plus a, raised to s sub j plus one.
+
+So, with a uniform prior on tau, equation 10: the posterior of tau given y is proportional to the product over the two segments of a times gamma of s sub j plus one, over n sub j plus a, raised to s sub j plus one.
+
+Profiling keeps the height of each segment's likelihood at its peak. Integrating keeps its area: roughly height times width, where the width is about the square root of two pi lambda j hat over n sub j, weighted by the prior. On the coal data with a equal to one half, the two give the same answer. Equation 10 normalised over 1885 to 1895 gives 0.008, 0.089, 0.104, 0.038, 0.153, 0.194, 0.251, 0.099, 0.040, 0.017 and 0.007, against the table's weights. Both segments are long, and the width factor hardly changes across the window. The two routes part ways when a segment is short or the prior is informative, which is when the uncertainty about a rate is itself large. That uncertainty is exactly what profiling ignores.
+
+Spoken checklist for section 3. You should be able to compute the three period estimates, standard errors and Wald intervals. You should be able to state and compute the dispersion test, and explain overdispersion through the law of total variance. You should be able to write the two-regime likelihood, profile out the rates, and compute l sub p of 1891 equal to minus 54.055. You should be able to normalise the profile into weights and read 0.251 and 0.696. You should be able to compute the likelihood-ratio statistic 70.0 two ways. And you should be able to give the three reasons it is not referred to a chi-squared with one degree of freedom, and why the conclusion survives anyway.
+
+
+Part two, section 4. First Bayesian example: exponential prior plus Poisson likelihood equals gamma posterior, shrunk toward the prior.
+
+This section covers the handwritten notes class 1 Poisson with exponential prior, pages 1 to 4; the class 1 Poisson web page, with the 1851 to 1891 data; Greenberg section 2.2, printed pages 12 to 18; and, as a G-layer link, Bolfarine section 4.4, Theorem 4.4.1 on printed page 63 and Example 4.4.2 on printed page 67.
+
+The claim. The prior, lambda exponential with rate a equal to one half, encodes "about 2 disasters a year, variance 4". Multiplied by the Poisson likelihood, lambda to the s sub n times e to the minus n lambda, it gives a posterior with kernel lambda to the s sub n times e to the minus a plus n, times lambda, which is a gamma with shape s sub n plus one and rate a plus n. On the 1851 to 1891 coal data, with n equal to 41 and s sub n equal to 127, the posterior mean is 128 over 41.5, which is 3.084; the mode is 127 over 41.5, which is 3.060; and the standard deviation is the square root of 128 over 41.5, which is 0.273; against the maximum likelihood estimate of 127 over 41, which is 3.098. The prior is weak, worth half a year of data, but it still pulls both summaries a little to the left of the estimate. That pull is shrinkage.
+
+The notation. Lambda is the Poisson rate in disasters per year. a is the rate parameter of the exponential prior, here one half. The counts are y one to y n, with n equal to 41 for 1851 to 1891. s sub n, the total, is 127. p of lambda and p of lambda given y are the prior and posterior densities; Greenberg writes pi. G of alpha and beta is the gamma distribution with shape alpha and rate beta. And capital Gamma is the gamma function, with gamma of k plus one equal to k factorial.
+
+Four point one. Intuition: some pre-existing knowledge about lambda. Handwritten page 1.
+
+The page opens with a sketch. Before seeing the data, the researcher thinks lambda is probably around 2 to 3, surely positive, and unlikely above 5. The Bayesian move is to write that belief down as a density and let the data update it. The handwritten notes pick a deliberately simple shape: "An easy to handle density is the Exponential density."
+
+Equation 1: p of lambda given a equals a times e to the minus a lambda, for positive lambda.
+
+The handwritten page writes only the kernel, e to the minus a lambda. The normalising factor a is visible in its page 4 plot, where the prior starts at 0.5, which is a, at lambda equal to zero. The exponential's shape is not the hump of the sketch: its mode is zero. The choice trades shape for algebra, and section 4.5 shows the price is small here.
+
+One integral does all the work in this section. Equation 2: the integral from zero to infinity of lambda to the k times e to the minus b lambda, d lambda, equals gamma of k plus one over b to the k plus one, for k greater than minus one and b positive.
+
+The proof. Substitute u equal to b lambda, so d lambda is d u over b. The integral becomes the integral of u over b to the k, times e to the minus u, d u over b, which is b to the minus k plus one, times the integral of u to the k e to the minus u, which is gamma of k plus one over b to the k plus one.
+
+The prior moments. Apply equation 2 with b equal to a, taking k equal to one for the mean and k equal to two for the second moment. Equation 3: the expected value of lambda is a times gamma of 2 over a squared, which is one over a. The expected value of lambda squared is a times gamma of 3 over a cubed, which is two over a squared. And the variance is two over a squared minus one over a squared, which is one over a squared.
+
+Calibrating a, handwritten page 1: "If we believe E of lambda is approximately 2 and are happy with V of lambda approximately 4, then a equals one half is a reasonable choice." Indeed equation 3 gives one over a equal to 2 and one over a squared equal to 4. The prior standard deviation is 2, and the central 95 per cent of the prior runs from minus 2 log 0.975, which is 0.051, to minus 2 log 0.025, which is 7.38. That is a vague statement about the rate.
+
+Four point two. Bayes' theorem. Greenberg section 2.2, printed pages 13 to 14.
+
+For a parameter theta and data y, Greenberg's equation 2.2 says the posterior of theta given y equals f of y given theta times pi of theta, divided by f of y, where f of y is the integral of f of y given theta times pi of theta over theta. And since f of y does not involve theta, his equation 2.3, our equation 4, says the posterior is proportional to f of y given theta times pi of theta.
+
+Posterior is proportional to likelihood times prior. The likelihood is "not a p.d.f. for theta", in Greenberg's words on printed page 14. It is the data density read as a function of theta, the same object the maximum likelihood estimator maximises in section 2. The prior supplies what the data do not, and the normaliser f of y can be recovered at the end from the kernel's family.
+
+Four point three. The posterior is gamma. Handwritten page 2.
+
+"The Bayesian approach allows us to combine different sources of information." Equation 5: the likelihood, L of lambda given the data, is proportional to lambda to the s sub n times e to the minus n lambda. And the prior is proportional to e to the minus a lambda. The likelihood is equation 5 of section 2 without its constant; the prior is equation 1 without its constant a.
+
+Substitute both into equation 4. Equation 6: the posterior is proportional to lambda to the s sub n e to the minus n lambda, times e to the minus a lambda, which is lambda to the s sub n times e to the minus a plus n, times lambda.
+
+Normalise. By equation 2, with k equal to s sub n and b equal to a plus n, the area under the kernel is gamma of s sub n plus one over a plus n, raised to s sub n plus one. Divide by it. Equation 7: the posterior density equals a plus n to the s sub n plus one, over gamma of s sub n plus one, times lambda to the s sub n plus one minus one, times e to the minus a plus n, times lambda.
+
+Compare with the gamma density on handwritten page 3: X is gamma with shape alpha and rate beta if and only if its density is beta to the alpha over gamma of alpha, times x to the alpha minus one, times e to the minus beta x. Equation 7 is that density with alpha equal to s sub n plus one and beta equal to a plus n. Equation 8, boxed: lambda given the data is gamma with shape s sub n plus one and rate a plus n.
+
+Conjugacy, read off the parameters. The exponential prior with rate a is a gamma with shape one and rate a. The posterior adds the event count s sub n to the shape and the exposure n to the rate. So the prior acts like one disaster observed over a, that is half a year, of earlier data. This is Greenberg's reading of the beta prior's parameters as prior heads and tails, printed page 17, transposed to counts.
+
+Four point four. Posterior summaries. Handwritten page 3.
+
+The gamma facts follow from equation 2 exactly as equation 3 did. Equation 9: the mean of X is alpha over beta, the variance is alpha over beta squared, and the mode is alpha minus one over beta, for alpha at least one. The mode comes from setting to zero the derivative of the log density, alpha minus one times log x minus beta x plus a constant: alpha minus one over x minus beta equals zero.
+
+Substitute alpha equal to s sub n plus one and beta equal to a plus n from equation 8, then put a equal to one half. Equation 10: the posterior mean is s sub n plus one over a plus n, which at a equal to one half is s sub n plus one over n plus one half. Equation 11: the posterior mode is s sub n over a plus n, which is s sub n over n plus one half. Equation 12: the posterior variance is s sub n plus one over a plus n squared, which is s sub n plus one over n plus one half, squared.
+
+Four point five. Worked: coal mining, 1851 to 1891. Handwritten pages 3 and 4.
+
+The data are the 41 counts on the site's R page: n equals 41 and s sub n equals 127, a mean of 3.097561. Substitute into equations 10 to 12. The posterior mean is 127 plus one over 41 plus 0.5, which is 128 over 41.5, which is 3.0843, about 3.084. The posterior mode is 127 over 41.5, which is 3.0602, about 3.060. The posterior standard deviation is the square root of 128 over 41.5, which is 11.3137 over 41.5, which is 0.2726, about 0.273.
+
+"Recall that" the maximum likelihood estimate is s sub n over n, 127 over 41, which is 3.098.
+
+Compare three summaries. The maximum likelihood estimate, s sub n over n, is 3.098, with standard error the square root of 3.098 over 41, which is 0.275, and Wald 95 per cent interval from 2.559 to 3.636. The posterior mode, s sub n over n plus a, is 3.060. The posterior mean, s sub n plus one over n plus a, is 3.084, with posterior standard deviation 0.273 and equal-tail 95 per cent interval from 2.573 to 3.641.
+
+The intervals are computed in the notes, not on the handwritten page: the Wald one from equation 14 of section 2, the posterior one from the 2.5 and 97.5 per cent quantiles of a gamma with shape 128 and rate 41.5. Numerically the two intervals almost coincide. Their readings differ: a probability statement about lambda given the data, against a coverage statement about the procedure.
+
+The figure shows the prior, the normalised likelihood and the posterior on the range zero to six. The exponential prior decays from 0.5 at zero. The likelihood, normalised as a gamma with shape 128 and rate 41, and the posterior, gamma with shape 128 and rate 41.5, are nearly identical narrow peaks of height about 1.46 near 3.1, with vertical lines at the estimate 3.098 and the slightly smaller posterior mean 3.084.
+
+The posterior is a slightly shifted copy of the normalised likelihood. Over the region where the likelihood lives, roughly 2.3 to 4, the prior is almost flat, falling from 0.16 to 0.07, so it can only tilt the likelihood a little toward smaller values. Compare Greenberg's Figure 2.2, printed page 18, where 10 observations leave the prior visible and 50 bury it.
+
+The handwritten page 4 says it this way: "In this example, the prior information is small when compared to the information in the likelihood. Still E of lambda given the data and the Mode of lambda given the data are a little bit to the left of lambda hat MLE. This is what we call shrinkage."
+
+Four point six. Shrinkage as a weighted average.
+
+Split equation 10 the way Greenberg splits the beta-binomial mean in his equation 2.5, printed page 17. Equation 13: s sub n plus one over n plus a equals the prior weight, a over n plus a, times the prior mean, one over a, plus the data weight, n over n plus a, times the maximum likelihood estimate, s sub n over n.
+
+The check: a over n plus a times one over a is one over n plus a, and n over n plus a times s sub n over n is s sub n over n plus a. They add to equation 10.
+
+The coal numbers. The prior weight is 0.5 over 41.5, which is 0.01205, and the data weight is 41 over 41.5, which is 0.98795. So 0.01205 times 2, plus 0.98795 times 3.09756, is 0.02410 plus 3.06024, which is 3.08434. It checks.
+
+The mode shrinks toward the prior's mode, which is zero. Equation 14: s sub n over n plus a equals n over n plus a times s sub n over n, which is 0.98795 times 3.09756, which is 3.06024.
+
+Both summaries sit left of the estimate because the prior centre, 2 for the mean and zero for the mode, is left of 3.098. The pull is proportional to the prior weight a over n plus a, which vanishes like one over n. With 41 years of data and a prior worth half a year, it is about 1 per cent.
+
+Why this matters later. The same prior weight versus data weight structure is behind every shrinkage estimator in the course: the normal-mean posterior, ridge, and the hierarchical models of Classes 3 and 4. There the prior weight is not negligible.
+
+Four point seven. Graduate layer: links outward. Named, not examinable here.
+
+Which summary to report? The posterior mean is the Bayes estimator under quadratic loss, Bolfarine Theorem 4.4.1, printed page 63. The mode is the maximum a posteriori value. Loss functions and their estimators are Greenberg section 3.2.1, in Classes 3 and 4.
+
+The general conjugate result. With a gamma prior with shape a and rate b, Bolfarine equation 4.4.12, his Example 4.4.2, printed page 67, gets lambda given the data gamma with shape equal to the sum of the counts plus a, and rate n plus b, with posterior mean the sum plus a over n plus b. Our case is shape one and rate a. Beware the letter clash: the handwritten a is Bolfarine's b.
+
+More data do not cure a wrong model. On all 112 years, with a total of 191, equation 10 gives 192 over 112.5, which is 1.707, next to the estimate 1.705. Both are confident estimates of a single rate that section 3 showed does not exist. The prior regularises estimates; it does not test the likelihood.
+
+Next. The posterior predictive for next year's count, a negative binomial, Greenberg section 3.2.3, and the change-point posterior that integrates the two rates with these same gamma integrals, equation 10 of section 3, are Classes 3 and 4.
+
+Spoken checklist for section 4. You should be able to derive the prior moments of the exponential from the one gamma integral, and calibrate a equal to one half. You should be able to multiply likelihood and prior, recognise the gamma kernel, and state the posterior, gamma with shape s sub n plus one and rate a plus n. You should be able to give the posterior mean, mode and variance, and compute 3.084, 3.060 and 0.273. You should be able to write the posterior mean as a weighted average with prior weight a over n plus a, and compute that weight, about 1 per cent. And you should be able to say why more data do not rescue a wrong model.
+
+
+Recap of part 1. One kernel, theta to the s times one minus theta to the n minus s, gives one estimate and one posterior, but the sampling rule sets the bias, 0.1 against 0.256, and the p-value, 0.0107 against 0.0020. The Poisson sample mean is sufficient-based, unbiased, consistent and efficient; the sample variance is only one over one plus two lambda efficient. On the coal series, overdispersion rejects one rate; two rates, 3.125 and 0.917, fit; the profile likelihood puts the break at 1891 with weight 0.251; and the likelihood-ratio statistic of 70.0 is not chi-squared with one degree of freedom, but it does not need to be. An exponential prior turns the Poisson likelihood into a gamma posterior, with mean 3.084 shrunk about 1 per cent toward the prior. Part 2 continues with mean squared error, Monte Carlo and the bootstrap.

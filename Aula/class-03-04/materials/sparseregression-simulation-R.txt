@@ -1,0 +1,41 @@
+#install.packages("bayesreg") 
+library("bayesreg")
+
+set.seed(123456)
+n    = 200
+kmax = 100
+sig  = 0.1
+beta = c(1,2,3,rep(0,kmax-3))
+X1   = matrix(rnorm(n*kmax),n,kmax)
+y    = X1%*%beta + rnorm(n,0,sig)
+
+# Ridge, Laplace and horseshoe priors
+ks   = c(10,20,40,50,kmax)
+M0   = 1000
+M    = 1000
+skip = 1
+
+pdf(file="output1.pdf",width=12)
+par(mfrow=c(2,3))
+for (k in ks){
+  X      = X1[,1:k]
+  data1  = data.frame(y=y,X=X)
+  fit.r  = bayesreg(y~X,data=data1,model="normal",prior="ridge",n.samples=M,burnin=M0,thin=skip)
+  fit.l  = bayesreg(y~X,data=data1,model="normal",prior="lasso",n.samples=M,burnin=M0,thin=skip)
+  fit.h  = bayesreg(y~X,data=data1,model="normal",prior="horseshoe",n.samples=M,burnin=M0,thin=skip)
+
+  names = c("ridge","lasso","horseshoe")
+  for (i in 1:3){
+    boxplot(cbind(fit.r$beta[i,],fit.l$beta[i,],fit.h$beta[i,]),main=names[i],outline=FALSE)
+    abline(h=beta[i],col=2,lwd=2)
+  }
+  range = range(fit.r$beta[4:k,],fit.l$beta[4:k,],fit.h$beta[4:k,])
+  boxplot(t(fit.r$beta[4:k,]),outline=FALSE,ylim=range)
+  abline(h=0,col=2,lwd=2)
+  title(paste("n=",n,"- k=",k,sep=""))
+  boxplot(t(fit.l$beta[4:k,]),outline=FALSE,ylim=range)
+  abline(h=0,col=2,lwd=2)
+  boxplot(t(fit.h$beta[4:k,]),outline=FALSE,ylim=range)
+  abline(h=0,col=2,lwd=2)
+}
+dev.off()

@@ -1,0 +1,369 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>The Two-Gaussian Classifier</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,500;8..60,650&family=Public+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: controls rail on the left, the answer then two panels on the right; one column under 860px.
+   Colour roles: blue = class 1, orange = class 2, red = misclassified mass, gold = landmark (equal-variance midpoint). */
+:root{
+  --bg:#f4f6f9; --panel:#ffffff; --ink:#18202d; --muted:#586377; --line:#d8dee8; --soft:#eef1f6;
+  --c1:#2b63c4; --c2:#c76f1c; --err:#c63a30; --mark:#a87b00;
+  --focus:#2b63c4;
+  --display:"Source Serif 4", Georgia, "Times New Roman", serif;
+  --body:"Public Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono:"JetBrains Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#10141b; --panel:#171d27; --ink:#e5e9f0; --muted:#9aa5b8; --line:#2a3342; --soft:#1e2532;
+  --c1:#74a3ff; --c2:#f0a04b; --err:#ff6e61; --mark:#e9c04a; --focus:#74a3ff; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#10141b; --panel:#171d27; --ink:#e5e9f0; --muted:#9aa5b8; --line:#2a3342; --soft:#1e2532;
+  --c1:#74a3ff; --c2:#f0a04b; --err:#ff6e61; --mark:#e9c04a; --focus:#74a3ff; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font:15px/1.5 var(--body);margin:0}
+.wrap{max-width:1180px;margin:0 auto;padding-left:max(16px, env(safe-area-inset-left, 0px));padding-right:max(16px, env(safe-area-inset-right, 0px));padding-block:24px 40px}
+header{display:grid;gap:4px;margin-bottom:18px}
+.eyebrow{font:600 12px/1.3 var(--body);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+h1{font:650 clamp(26px,4vw,36px)/1.1 var(--display);margin:0;text-wrap:balance}
+.lede{color:var(--muted);max-width:68ch;margin:0}
+.grid{display:grid;grid-template-columns:320px minmax(0,1fr);gap:20px;align-items:start}
+@media (max-width:860px){.grid{grid-template-columns:minmax(0,1fr)}}
+.rail{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px;display:grid;gap:18px}
+.group{display:grid;gap:12px}
+.group h2{font:600 12px/1.2 var(--body);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:0}
+.group h2 .nt{text-transform:none;letter-spacing:0;font-weight:500;margin-left:6px}
+.ctl{display:grid;gap:4px}
+.ctl .top{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.ctl label{font-weight:600}
+.ctl label i{font-family:var(--display);font-weight:500}
+.ctl output{font:600 14px var(--mono);font-variant-numeric:tabular-nums}
+.ctl p{margin:0;font-size:13px;color:var(--muted)}
+input[type=range]{width:100%;accent-color:var(--ink)}
+input:focus-visible,button:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+button{font:600 13px var(--body);background:var(--soft);color:var(--ink);border:1px solid var(--line);border-radius:6px;padding:7px 12px;cursor:pointer}
+button:hover{border-color:var(--muted)}
+main{display:grid;gap:16px;min-width:0}
+.answer{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px 18px;display:grid;gap:6px}
+.answer .lab{font-size:13px;color:var(--muted)}
+.answer .big{font:600 clamp(34px,6vw,48px)/1 var(--mono);font-variant-numeric:tabular-nums}
+.answer .verdict{font:500 17px/1.4 var(--display);max-width:62ch}
+.answer .ident{font:13px/1.6 var(--mono);color:var(--muted);font-variant-numeric:tabular-nums;overflow-x:auto;white-space:nowrap}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px 16px;min-width:0}
+.panel h3{font:600 15px/1.3 var(--body);margin:0 0 2px}
+.panel .sub{font-size:13px;color:var(--muted);margin:0 0 8px}
+svg{display:block;width:100%;height:auto;max-width:100%}
+svg text{fill:var(--muted);font:12px var(--body)}
+svg .val{font:600 12px var(--mono);fill:var(--ink)}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{font-size:13px;border:1px solid var(--line);border-radius:999px;padding:4px 10px;color:var(--muted)}
+.chip.on{border-color:var(--mark);color:var(--mark);font-weight:600}
+table.ro{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums}
+table.ro td{padding:5px 4px;border-bottom:1px solid var(--line);font-size:14px}
+table.ro td:last-child{text-align:right;font-family:var(--mono)}
+footer{max-width:1180px;margin:0 auto;padding-left:max(16px, env(safe-area-inset-left, 0px));padding-right:max(16px, env(safe-area-inset-right, 0px));padding-block:0 40px;font-size:13px;color:var(--muted);display:grid;gap:10px}
+footer p{margin:0;max-width:110ch}
+.scroll{overflow-x:auto}
+footer table{border-collapse:collapse;font-size:12.5px;min-width:820px}
+footer th,footer td{border-bottom:1px solid var(--line);padding:4px 8px;text-align:left;vertical-align:top}
+.k{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:5px;vertical-align:-1px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <div class="eyebrow">Econometria Avançada · Class 2 · logisticregression-discriminantanalysis.pdf slides 42–52 · ISLP §4.4</div>
+  <h1>The Two-Gaussian Classifier</h1>
+  <p class="lede">Two normal populations, a prior and a cost of each mistake. The Bayes rule allocates <i>x</i> to class 1 where π₁<i>c</i>₂₁<i>p</i>₁(<i>x</i>) beats π₂<i>c</i>₁₂<i>p</i>₂(<i>x</i>). Unequal variances bend the boundary into a quadratic with two cut-offs; equal variances straighten it into one.</p>
+</header>
+
+<div class="grid">
+<aside class="rail" aria-label="Controls">
+  <div class="group">
+    <h2>Class 1 <span class="nt"><i>x</i> | <i>y</i> = 1 ~ N(μ₁, σ₁²)</span></h2>
+    <div class="ctl"><div class="top"><label for="mu1">Mean, class 1 <i>μ</i>₁</label><output id="o-mu1"></output></div>
+      <input id="mu1" type="range" min="-5" max="10" step="0.1">
+      <p>Centre of the class-1 population; moves its density and drags the cut-offs with it.</p></div>
+    <div class="ctl"><div class="top"><label for="s1">SD, class 1 <i>σ</i>₁</label><output id="o-s1"></output></div>
+      <input id="s1" type="range" min="0.5" max="10" step="0.1">
+      <p>Spread of class 1. When it differs from σ₂ the log-likelihood ratio is quadratic in <i>x</i>.</p></div>
+  </div>
+  <div class="group">
+    <h2>Class 2 <span class="nt"><i>x</i> | <i>y</i> = 2 ~ N(μ₂, σ₂²)</span></h2>
+    <div class="ctl"><div class="top"><label for="mu2">Mean, class 2 <i>μ</i>₂</label><output id="o-mu2"></output></div>
+      <input id="mu2" type="range" min="-5" max="10" step="0.1">
+      <p>Centre of the class-2 population. Equal means and equal SDs make the classes indistinguishable.</p></div>
+    <div class="ctl"><div class="top"><label for="s2">SD, class 2 <i>σ</i>₂</label><output id="o-s2"></output></div>
+      <input id="s2" type="range" min="0.5" max="10" step="0.1">
+      <p>Spread of class 2. Set it equal to σ₁ to get the linear (LDA) rule.</p></div>
+  </div>
+  <div class="group">
+    <h2>The decision</h2>
+    <div class="ctl"><div class="top"><label for="pi1">Prior, class 1 <i>π</i>₁</label><output id="o-pi1"></output></div>
+      <input id="pi1" type="range" min="0.01" max="0.99" step="0.01">
+      <p>Share of class 1 in the population, π₂ = 1 − π₁. At 0.50 with equal costs the Bayes rule is the ML rule.</p></div>
+    <div class="ctl"><div class="top"><label for="lr">Cost ratio <i>c</i>₂₁/<i>c</i>₁₂</label><output id="o-lr"></output></div>
+      <input id="lr" type="range" min="-100" max="100" step="1">
+      <p>How much worse it is to send a true class 1 to class 2 than the reverse. Log scale from 0.1 to 10; the middle is exactly 1.</p></div>
+  </div>
+  <button id="reset" type="button">Reset to defaults</button>
+</aside>
+
+<main>
+  <section class="answer" aria-live="polite">
+    <div class="lab">Total misclassification probability &nbsp;π₁<i>p</i>₂₁ + π₂<i>p</i>₁₂ under the Bayes rule</div>
+    <div class="big" id="perr"></div>
+    <div class="verdict" id="verdict"></div>
+    <div class="ident" id="ident1"></div>
+    <div class="ident" id="ident2"></div>
+    <div class="ident" id="ident3"></div>
+    <div class="chips" id="chips"></div>
+  </section>
+
+  <section class="panel">
+    <h3>Weighted densities and the allocation regions</h3>
+    <p class="sub"><span class="k" style="background:var(--c1)"></span>π₁<i>p</i>₁(<i>x</i>), class-1 region tinted blue &nbsp; <span class="k" style="background:var(--c2)"></span>π₂<i>p</i>₂(<i>x</i>), class-2 region tinted orange &nbsp; <span class="k" style="background:var(--err)"></span>mass on the wrong side: its area is the total error &nbsp; <span class="k" style="background:var(--mark)"></span>(μ₁ + μ₂)/2. <span id="offnote"></span></p>
+    <svg id="dens" viewBox="0 0 720 300" role="img" aria-label="Prior-weighted class densities with allocation regions and cut-offs"></svg>
+  </section>
+
+  <section class="panel">
+    <h3>Posterior probability of class 1 and the cost-adjusted threshold</h3>
+    <p class="sub">Allocate to class 1 where P(<i>y</i> = 1 | <i>x</i>) is above the dashed line 1/(1 + <i>c</i>₂₁/<i>c</i>₁₂); the curve crosses it exactly at the cut-offs.</p>
+    <svg id="post" viewBox="0 0 720 240" role="img" aria-label="Posterior probability of class 1 against x with the decision threshold"></svg>
+  </section>
+
+  <section class="panel">
+    <h3>Every term</h3>
+    <p class="sub">Probabilities; costs in units of <i>c</i>₁₂ (so <i>c</i>₁₂ = 1, <i>c</i>₂₁ = the cost ratio).</p>
+    <table class="ro"><tbody id="tbl"></tbody></table>
+  </section>
+</main>
+</div>
+
+<footer>
+  <p><strong>Belongs to:</strong> Class 2 notes, <code>Notas/L02/</code> (discriminant analysis, <code>L02-05-discriminant-analysis.md</code>).</p>
+  <p><strong>Model:</strong> <i>x</i> | <i>y</i> = <i>k</i> ~ N(μ<sub><i>k</i></sub>, σ<sub><i>k</i></sub>²), priors π₁, π₂ = 1 − π₁. Discriminant function <i>h</i>(<i>x</i>) = log <i>p</i>(<i>x</i> | <i>y</i> = 1) − log <i>p</i>(<i>x</i> | <i>y</i> = 2) (slide 49).
+    Bayes rule with costs: allocate to class 1 iff <i>h</i>(<i>x</i>) &gt; log(π₂<i>c</i>₁₂ / (π₁<i>c</i>₂₁)), where <i>c<sub>ij</sub></i> is the cost of allocating to <i>i</i> when the truth is <i>j</i> (slide 51). The deck prints the cost-free threshold log(π₂/π₁) on slide 49; the cost version is the rule that minimises the Bayes risk <i>r</i>(<i>d</i>, π) = Σ π<sub><i>k</i></sub> Σ <i>c<sub>jk</sub></i> <i>p<sub>jk</sub></i> of slides 51–52.
+    Written out, <i>h</i>(<i>x</i>) − log(π₂<i>c</i>₁₂/(π₁<i>c</i>₂₁)) = <i>a</i><i>x</i>² + <i>b</i><i>x</i> + <i>c</i> with <i>a</i> = 1/(2σ₂²) − 1/(2σ₁²), <i>b</i> = μ₁/σ₁² − μ₂/σ₂², <i>c</i> = μ₂²/(2σ₂²) − μ₁²/(2σ₁²) + log(σ₂/σ₁) − log(π₂<i>c</i>₁₂/(π₁<i>c</i>₂₁)) (slide 45 for the ML case).
+    The cut-offs are its exact roots (two, one when σ₁ = σ₂, or none); <i>p<sub>ij</sub></i> = ∫ φ<sub><i>i</i></sub>(<i>x</i>) <i>p</i>(<i>x</i> | <i>y</i> = <i>j</i>) d<i>x</i> (slide 50) is a sum of normal-CDF differences, with Φ evaluated by its Taylor series below |<i>z</i>| = 3 and the Laplace continued fraction above (absolute error below 1e-14).
+    Defaults are the deck's example μ₁ = 1, μ₂ = 5, σ₁ = 6, σ₂ = 2.5 (slide 46); its equal-variance case σ₁ = σ₂ = 6 is slide 47; the Mahalanobis form of the linear rule is slide 48.</p>
+  <p><strong>Books:</strong> ISLP (James et al., 2023) §4.4 Generative Models for Classification, pp. 146–161: LDA for <i>p</i> = 1 (§4.4.1, pp. 147–150), QDA (§4.4.3, pp. 156–158).</p>
+  <div class="scroll"><table>
+    <thead><tr><th>Control</th><th>Symbol</th><th>What it is</th><th>Range</th><th>Step</th><th>Default</th><th>Unit</th><th>Source</th><th>What visibly moves</th></tr></thead>
+    <tbody>
+      <tr><td>Mean, class 1</td><td>μ₁</td><td>centre of class 1</td><td>−5 to 10</td><td>0.1</td><td>1</td><td>—</td><td>slide 46</td><td>density, cut-offs</td></tr>
+      <tr><td>Mean, class 2</td><td>μ₂</td><td>centre of class 2</td><td>−5 to 10</td><td>0.1</td><td>5</td><td>—</td><td>slide 46</td><td>density, cut-offs</td></tr>
+      <tr><td>SD, class 1</td><td>σ₁</td><td>spread of class 1</td><td>0.5 to 10</td><td>0.1</td><td>6</td><td>—</td><td>slide 46</td><td>shape; quadratic vs linear rule</td></tr>
+      <tr><td>SD, class 2</td><td>σ₂</td><td>spread of class 2</td><td>0.5 to 10</td><td>0.1</td><td>2.5</td><td>—</td><td>slide 46</td><td>shape</td></tr>
+      <tr><td>Prior, class 1</td><td>π₁</td><td>population share of class 1</td><td>0.01 to 0.99</td><td>0.01</td><td>0.50</td><td>—</td><td>slide 42 (ML rule = equal priors)</td><td>weighted densities, threshold</td></tr>
+      <tr><td>Cost ratio</td><td><i>c</i>₂₁/<i>c</i>₁₂</td><td>relative cost of missing class 1</td><td>0.1 to 10, log slider 10<sup><i>s</i>/100</sup>, <i>s</i> = −100…100 (1 exactly at <i>s</i> = 0)</td><td>1 in <i>s</i></td><td>1</td><td>—</td><td>slides 51–52</td><td>threshold, expected cost</td></tr>
+    </tbody></table></div>
+  <p><strong>Left out on purpose:</strong> the level of the costs (only their ratio moves the rule; expected cost is reported in units of <i>c</i>₁₂), more than two classes, and the multivariate case (slide 48), which this one-dimensional picture cannot show.</p>
+</footer>
+
+<script id="model">
+// Pure model: no DOM. check_companions.py runs these under node and compares them with scipy.
+const SQRT2PI = Math.sqrt(2*Math.PI);
+const phi = z => Math.exp(-0.5*z*z)/SQRT2PI;
+// Standard normal CDF. |z| < 3: Phi(z) - 1/2 = phi(z) * sum z^(2n+1)/(2n+1)!! (all terms one sign, no cancellation in the sum).
+// |z| >= 3: upper tail = phi(z) / (z + 1/(z + 2/(z + 3/(z + ...)))), the Laplace continued fraction, 300 levels.
+function Phi(z){
+  if(z === Infinity) return 1;
+  if(z === -Infinity) return 0;
+  const a = Math.abs(z);
+  let q;
+  if(a < 3){
+    let term = a, sum = a;
+    for(let n = 1; n < 400; n++){ term *= a*a/(2*n + 1); sum += term; if(term < 1e-17*sum) break; }
+    q = 0.5 - phi(a)*sum;
+  } else {
+    let t = a; for(let k = 300; k >= 1; k--) t = a + k/t;
+    q = phi(a)/t;
+  }
+  return z >= 0 ? 1 - q : q;
+}
+// P(lo < X < hi) for X ~ N(mu, s^2), taking the difference in the tail where it is small.
+function intervalProb(lo, hi, mu, s){
+  const zl = (lo - mu)/s, zh = (hi - mu)/s;
+  return zl > 0 ? Phi(-zl) - Phi(-zh) : Phi(zh) - Phi(zl);
+}
+const costRatio = s => Math.pow(10, s/100);
+
+// Bayes rule for controls p = {mu1, mu2, s1, s2, pi1, lr}; lr is the log-slider position, ratio = 10^(lr/100).
+// R1 / R2 are lists of [lo, hi] intervals (possibly infinite) allocated to class 1 / class 2.
+function rule(p){
+  const r = costRatio(p.lr), pi2 = 1 - p.pi1, k = Math.log(pi2/(p.pi1*r));
+  const a = 1/(2*p.s2*p.s2) - 1/(2*p.s1*p.s1);
+  const b = p.mu1/(p.s1*p.s1) - p.mu2/(p.s2*p.s2);
+  const c = p.mu2*p.mu2/(2*p.s2*p.s2) - p.mu1*p.mu1/(2*p.s1*p.s1) + Math.log(p.s2/p.s1) - k;
+  const I = Infinity, all = [[-I, I]];
+  let kind, roots = [], R1, R2, touch = null;
+  if(p.s1 === p.s2 && p.mu1 === p.mu2){           // identical densities: sign of c alone decides
+    kind = "flat"; R1 = c >= 0 ? all : []; R2 = c >= 0 ? [] : all;
+  } else if(p.s1 === p.s2){                        // equal variances: linear rule, one cut-off
+    kind = "linear"; const x0 = -c/b; roots = [x0];
+    if(b > 0){ R1 = [[x0, I]]; R2 = [[-I, x0]]; } else { R1 = [[-I, x0]]; R2 = [[x0, I]]; }
+  } else {
+    const D = b*b - 4*a*c;
+    if(D > 0){
+      kind = "quadratic";
+      const q = -0.5*(b + (b >= 0 ? 1 : -1)*Math.sqrt(D));   // stable roots: q/a and c/q
+      roots = [q/a, c/q].sort((u, v) => u - v);
+      const [r1, r2] = roots;
+      if(a > 0){ R1 = [[-I, r1], [r2, I]]; R2 = [[r1, r2]]; } else { R1 = [[r1, r2]]; R2 = [[-I, r1], [r2, I]]; }
+    } else {
+      kind = "none"; if(D === 0) touch = -b/(2*a);
+      R1 = a > 0 ? all : []; R2 = a > 0 ? [] : all;
+    }
+  }
+  return {r, k, a, b, c, kind, roots, R1, R2, touch};
+}
+
+// Every read-out the page displays.
+function compute(p){
+  const ru = rule(p), pi2 = 1 - p.pi1;
+  const mass = (R, mu, s) => R.reduce((t, [lo, hi]) => t + intervalProb(lo, hi, mu, s), 0);
+  const p21 = mass(ru.R2, p.mu1, p.s1), p12 = mass(ru.R1, p.mu2, p.s2);
+  const p11 = mass(ru.R1, p.mu1, p.s1), p22 = mass(ru.R2, p.mu2, p.s2);
+  const err = p.pi1*p21 + pi2*p12, cost = p.pi1*ru.r*p21 + pi2*p12;
+  const mid = (p.mu1 + p.mu2)/2;
+  let near = null; ru.roots.forEach(x => { if(near === null || Math.abs(x - mid) < Math.abs(near - mid)) near = x; });
+  return Object.assign(ru, {pi2, p21, p12, p11, p22, err, cost, mid, near, dmid:near === null ? null : near - mid, thr:1/(1 + ru.r)});
+}
+// Posterior P(y = 1 | x) = 1/(1 + exp(-(h(x) + log(pi1/pi2)))); overflow gives 0 or 1, never NaN.
+function posterior(x, p, ru){
+  const h = ru.a*x*x + ru.b*x + ru.c + ru.k;
+  return 1/(1 + Math.exp(-(h + Math.log(p.pi1/(1 - p.pi1)))));
+}
+const wdens = (x, mu, s, w) => w*phi((x - mu)/s)/s;
+</script>
+
+<script>
+const D = {mu1:1, mu2:5, s1:6, s2:2.5, pi1:0.5, lr:0};
+const ids = Object.keys(D);
+const el = id => document.getElementById(id);
+const f3 = x => (x < 0 ? "−" : "") + Math.abs(x).toFixed(3);
+const f4 = x => x.toFixed(4);
+const pct = x => (100*x).toFixed(2) + "%";
+const fr = r => r.toPrecision(3);
+const read = () => { const p = {}; ids.forEach(k => p[k] = parseFloat(el(k).value)); return p; };
+
+function xRange(p){
+  return [Math.floor(Math.min(p.mu1 - 4*p.s1, p.mu2 - 4*p.s2)/5)*5, Math.ceil(Math.max(p.mu1 + 4*p.s1, p.mu2 + 4*p.s2)/5)*5];
+}
+function shadeRegions(m, X, lo, hi, T, Hb){
+  let s = "";
+  [[m.R1, "var(--c1)"], [m.R2, "var(--c2)"]].forEach(([R, col]) => R.forEach(([a, b]) => {
+    const u = Math.max(a, lo), v = Math.min(b, hi);
+    if(v > u) s += `<rect x="${X(u).toFixed(1)}" y="${T}" width="${(X(v) - X(u)).toFixed(1)}" height="${Hb - T}" fill="${col}" opacity="0.08"/>`;
+  }));
+  return s;
+}
+function cutLines(m, X, lo, hi, T, Hb, labels){
+  let s = "";
+  m.roots.filter(x => x >= lo && x <= hi).forEach((x, i) => {
+    s += `<line x1="${X(x).toFixed(1)}" x2="${X(x).toFixed(1)}" y1="${T}" y2="${Hb}" stroke="var(--ink)" stroke-width="1.5"/>`;
+    if(labels) s += `<text class="val" x="${X(x).toFixed(1)}" y="${T + 12 + 14*i}" text-anchor="${X(x) > 600 ? "end" : "start"}" dx="${X(x) > 600 ? -4 : 4}">x = ${f3(x)}</text>`;
+  });
+  return s;
+}
+
+function drawDens(p, m){
+  const svg = el("dens"), W = 720, H = 300, L = 50, Rm = 14, T = 10, Bm = 40, [lo, hi] = xRange(p), N = 900;
+  const ymax = 1.12*Math.max(p.pi1/(p.s1*SQRT2PI), m.pi2/(p.s2*SQRT2PI));
+  const X = v => L + (v - lo)/(hi - lo)*(W - L - Rm), Y = v => T + (1 - v/ymax)*(H - T - Bm), Hb = H - Bm;
+  const f1 = x => wdens(x, p.mu1, p.s1, p.pi1), f2 = x => wdens(x, p.mu2, p.s2, m.pi2);
+  const pts = (f, a, b) => { const n = Math.max(2, Math.ceil(N*(b - a)/(hi - lo))); return Array.from({length:n + 1}, (_, i) => { const x = a + (b - a)*i/n; return [x, f(x)]; }); };
+  const line = q => q.map((d, i) => (i ? "L" : "M") + X(d[0]).toFixed(1) + " " + Y(d[1]).toFixed(1)).join("");
+  const area = (f, R) => R.map(([a, b]) => { const u = Math.max(a, lo), v = Math.min(b, hi); if(v <= u) return "";
+    return `<path d="${line(pts(f, u, v))}L${X(v).toFixed(1)} ${Y(0)}L${X(u).toFixed(1)} ${Y(0)}Z" fill="var(--err)" opacity="0.35"/>`; }).join("");
+  let s = shadeRegions(m, X, lo, hi, T, Hb);
+  const step = (hi - lo) > 40 ? 10 : 5;
+  for(let t = Math.ceil(lo/step)*step; t <= hi; t += step) s += `<text x="${X(t)}" y="${Hb + 16}" text-anchor="middle">${t}</text>`;
+  s += `<line x1="${L}" x2="${W - Rm}" y1="${Hb}" y2="${Hb}" stroke="var(--muted)"/>`;
+  s += `<text x="${(L + W - Rm)/2}" y="${H - 4}" text-anchor="middle">x</text>`;
+  s += `<text x="14" y="${(T + Hb)/2}" text-anchor="middle" transform="rotate(-90 14 ${(T + Hb)/2})">πₖ pₖ(x)</text>`;
+  s += area(f1, m.R2) + area(f2, m.R1);
+  s += `<path d="${line(pts(f1, lo, hi))}" fill="none" stroke="var(--c1)" stroke-width="2.2"/><path d="${line(pts(f2, lo, hi))}" fill="none" stroke="var(--c2)" stroke-width="2.2"/>`;
+  s += `<line x1="${X(m.mid).toFixed(1)}" x2="${X(m.mid).toFixed(1)}" y1="${T + 30}" y2="${Hb}" stroke="var(--mark)" stroke-width="1.5" stroke-dasharray="2 3"/>`;
+  s += `<text x="${X(m.mid).toFixed(1)}" y="${Hb - 6}" text-anchor="${X(m.mid) > 600 ? "end" : "start"}" dx="${X(m.mid) > 600 ? -4 : 4}" style="fill:var(--mark)">(μ₁+μ₂)/2</text>`;
+  s += cutLines(m, X, lo, hi, T, Hb, true);
+  svg.innerHTML = s;
+  const off = m.roots.filter(x => x < lo || x > hi);
+  el("offnote").textContent = off.length ? `Cut-off off the chart at x = ${off.map(f3).join(", ")}.` : "";
+}
+
+function drawPost(p, m){
+  const svg = el("post"), W = 720, H = 240, L = 50, Rm = 14, T = 10, Bm = 36, [lo, hi] = xRange(p), N = 900;
+  const X = v => L + (v - lo)/(hi - lo)*(W - L - Rm), Y = v => T + (1 - v)*(H - T - Bm), Hb = H - Bm;
+  let s = shadeRegions(m, X, lo, hi, T, Hb);
+  [0, 0.25, 0.5, 0.75, 1].forEach(t => { s += `<line x1="${L}" x2="${W - Rm}" y1="${Y(t)}" y2="${Y(t)}" stroke="var(--line)"/><text x="${L - 6}" y="${Y(t) + 4}" text-anchor="end">${t}</text>`; });
+  const step = (hi - lo) > 40 ? 10 : 5;
+  for(let t = Math.ceil(lo/step)*step; t <= hi; t += step) s += `<text x="${X(t)}" y="${Hb + 16}" text-anchor="middle">${t}</text>`;
+  s += `<text x="${(L + W - Rm)/2}" y="${H - 2}" text-anchor="middle">x</text>`;
+  s += `<text x="14" y="${(T + Hb)/2}" text-anchor="middle" transform="rotate(-90 14 ${(T + Hb)/2})">P(y = 1 | x)</text>`;
+  const d = Array.from({length:N + 1}, (_, i) => { const x = lo + (hi - lo)*i/N; return (i ? "L" : "M") + X(x).toFixed(1) + " " + Y(posterior(x, p, m)).toFixed(1); }).join("");
+  s += `<line x1="${L}" x2="${W - Rm}" y1="${Y(m.thr)}" y2="${Y(m.thr)}" stroke="var(--muted)" stroke-width="1.5" stroke-dasharray="6 4"/>`;
+  s += `<text x="${W - Rm - 4}" y="${Y(m.thr) - 5}" text-anchor="end">threshold ${f3(m.thr)}</text>`;
+  s += `<path d="${d}" fill="none" stroke="var(--c1)" stroke-width="2.2"/>`;
+  s += cutLines(m, X, lo, hi, T, Hb, false);
+  svg.innerHTML = s;
+}
+
+function describe(p, m){
+  if(m.kind === "flat") return `No cut-off: the two populations are identical, so <i>x</i> carries no information. `
+    + (m.c === 0 ? "Both allocations have the same expected cost; the page sends every <i>x</i> to <strong>class 1</strong>."
+      : `Every <i>x</i> goes to <strong>class ${m.c > 0 ? 1 : 2}</strong>, the class with the larger prior × cost of missing it. The error is then π${m.c > 0 ? "₂" : "₁"} = ${f4(m.c > 0 ? m.pi2 : p.pi1)}.`);
+  if(m.kind === "none"){
+    const cls = m.R1.length ? 1 : 2;
+    return `No cut-off: π₁<i>c</i>₂₁<i>p</i>₁(<i>x</i>) ${cls === 1 ? "exceeds" : "stays below"} π₂<i>c</i>₁₂<i>p</i>₂(<i>x</i>) at every <i>x</i>${m.touch !== null ? ` (they touch only at x = ${f3(m.touch)})` : ""}, so every <i>x</i> is allocated to <strong>class ${cls}</strong>. The error is then π${cls === 1 ? "₂" : "₁"} = ${f4(cls === 1 ? m.pi2 : p.pi1)}.`;
+  }
+  if(m.kind === "linear"){
+    const left = m.R1[0][0] === -Infinity;
+    return `Linear rule (σ₁ = σ₂): allocate to class 1 when <i>x</i> ${left ? "&lt;" : "&gt;"} ${f3(m.roots[0])}, to class 2 otherwise.`;
+  }
+  const [r1, r2] = m.roots;
+  return m.a > 0
+    ? `Quadratic rule (σ₁ &gt; σ₂): allocate to class 1 when <i>x</i> &lt; ${f3(r1)} or <i>x</i> &gt; ${f3(r2)}, to class 2 in between. The wider class wins both tails.`
+    : `Quadratic rule (σ₁ &lt; σ₂): allocate to class 1 when ${f3(r1)} &lt; <i>x</i> &lt; ${f3(r2)}, to class 2 outside. The wider class wins both tails.`;
+}
+function midSide(m){
+  if(m.near === null) return "no cut-off to compare with the midpoint";
+  if(Math.abs(m.dmid) < 5e-4) return `cut-off exactly at the midpoint (μ₁+μ₂)/2 = ${f3(m.mid)}`;
+  return `${m.kind === "linear" ? "cut-off" : "nearest cut-off"} sits ${f3(Math.abs(m.dmid))} to the ${m.dmid < 0 ? "left" : "right"} of the midpoint (μ₁+μ₂)/2 = ${f3(m.mid)}`;
+}
+
+function update(){
+  const p = read(), m = compute(p);
+  el("o-mu1").textContent = p.mu1.toFixed(1); el("o-mu2").textContent = p.mu2.toFixed(1);
+  el("o-s1").textContent = p.s1.toFixed(1); el("o-s2").textContent = p.s2.toFixed(1);
+  el("o-pi1").textContent = p.pi1.toFixed(2); el("o-lr").textContent = fr(m.r);
+  el("perr").textContent = pct(m.err);
+  el("verdict").innerHTML = describe(p, m);
+  el("ident1").textContent = `π₁p₂₁ + π₂p₁₂ = ${p.pi1.toFixed(2)} × ${f4(m.p21)} + ${m.pi2.toFixed(2)} × ${f4(m.p12)} = ${f4(m.err)}`;
+  el("ident2").textContent = `expected cost = π₁c₂₁p₂₁ + π₂c₁₂p₁₂ = ${f4(m.cost)}  (units of c₁₂)`;
+  el("ident3").textContent = `landmark: ${midSide(m)}`;
+  const ml = p.pi1 === 0.5 && p.lr === 0;
+  const chips = [[ml, "ML rule: π₁ = 0.5 and c₂₁ = c₁₂"], [p.s1 === p.s2, "σ₁ = σ₂: linear rule"],
+    [ml && p.s1 === p.s2 && p.mu1 !== p.mu2, "landmark: single cut-off at (μ₁+μ₂)/2"], [m.kind === "none" || m.kind === "flat", "no cut-off: one class everywhere"]];
+  el("chips").innerHTML = chips.map(([on, t]) => `<span class="chip${on ? " on" : ""}">${on ? "● " : "○ "}${t}</span>`).join("");
+  const rows = [
+    ["Threshold log(π₂c₁₂ / (π₁c₂₁))", f3(m.k)], ["Posterior threshold 1/(1 + c₂₁/c₁₂)", f3(m.thr)],
+    ["Cut-offs", m.roots.length ? m.roots.map(f3).join(", ") : "none"],
+    ["p₂₁ = P(allocate to 2 | class 1)", f4(m.p21)], ["p₁₂ = P(allocate to 1 | class 2)", f4(m.p12)],
+    ["p₁₁ = P(correct | class 1)", f4(m.p11)], ["p₂₂ = P(correct | class 2)", f4(m.p22)],
+    ["Total misclassification π₁p₂₁ + π₂p₁₂", f4(m.err)], ["Expected cost (units of c₁₂)", f4(m.cost)]];
+  el("tbl").innerHTML = rows.map(([k, v]) => `<tr><td>${k}</td><td>${v}</td></tr>`).join("");
+  drawDens(p, m); drawPost(p, m);
+}
+function reset(){ ids.forEach(k => el(k).value = D[k]); update(); }
+ids.forEach(k => el(k).addEventListener("input", update));
+el("reset").addEventListener("click", reset);
+reset();
+</script>
+</body>
+</html>

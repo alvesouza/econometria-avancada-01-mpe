@@ -1,0 +1,300 @@
+Advanced Econometrics. Topic narration: the bootstrap. Narrated study notes, part 2 of 2.
+
+How to listen. This file continues the bootstrap topic narration. Part 1 covered part one, the idea: the sampling distribution, the plug-in principle and the empirical distribution, the nonparametric algorithm, the bootstrap standard error, and percentile and normal intervals, in sections 1 to 3; and part two, where the bootstrap breaks: the uniform example, the probability one minus one minus one over n to the n, the failure for the sample maximum, and the parametric repair, in sections 4 to 6. Equations 1 to 11 were numbered there.
+
+This file holds part three, section 7, bootstrap bands for a regression curve on the motorcycle data, and section 8, how many resamples to use; then part four, the support material: pitfalls, a spoken formula sheet, routines and reading route, a glossary, a true or false self-test with pause cues, and the whole topic in five lines. Every formula is spoken in words, and each section closes with a spoken checklist.
+
+Part three. The bootstrap on a regression curve, and in practice.
+
+Section 7. Bootstrap confidence bands for a regression curve: the motorcycle example.
+
+This section covers the Class 2 note on cross-validation and the motorcycle data, sections 2, 3, 7 and 8, which follow the motorcycle polynomial regression deck, slides 2 to 5 and 11, and the site's class page, section 8; ISLP section 5.2, printed pages 212 to 214, equation 5.8; ISLP section 7.1, printed pages 290 and 291, equations 7.1 and 7.2 with footnote 1; and the Class 2 pitfalls and Python notes.
+
+The claim, before the work. Once a polynomial order has been chosen, the bootstrap draws an uncertainty band around the fitted curve: resample the data pairs, refit the same order on each resample, and read off, at each x, the spread of the B fitted values. The textbook formula band assumes one error variance for every x. Resampling pairs does not, so on data whose noise changes with x, like the motorcycle data, the two bands disagree, the bootstrap one wider where the noise is large. And the bootstrap band holds the chosen order fixed, so it leaves out the uncertainty of having chosen it.
+
+Seven point one. The data and the chosen fit. Class 2 note, sections 2 and 3.
+
+The data are the mcycle set from the R package MASS: head acceleration in a simulated motorcycle crash, used to test helmets, Silverman 1985. The x variable is time after impact, in milliseconds; the y variable is head acceleration, in units of g. The site keeps the first 132 rows, so n is 132, and standardises both variables.
+
+The plot, slide 3, is flat and tight before impact, then shows a deep dip, a rebound and a noisy tail. The note stresses the point that matters here: the noise variance is far from constant.
+
+The model, equation 12, ISLP equation 7.1, printed page 290: y i is equal to beta zero, plus beta one times x i, plus beta two times x i squared, and so on up to beta d times x i to the d, plus an error epsilon i. It is a linear model in the betas, fitted by ordinary least squares on the columns x, x squared, up to x to the d.
+
+Every criterion on the site, adjusted R squared, BIC, leave-one-out cross-validation and 10-fold cross-validation, lands on order d equal to 12. Adjusted R squared peaks at 0.7798 there. Since y is standardised, adjusted R squared is one minus sigma hat squared over the variance of y, which is one, so the residual variance at order 12 is one minus 0.7798, which is 0.2202, and sigma hat is its square root, 0.4693. Call this equation 13.
+
+Keep ISLP's warning in mind, printed page 290: degrees above 3 or 4 give "very strange shapes", "especially near the boundary of the X variable."
+
+Seven point two. The pairs bootstrap. Slide 11.
+
+With the order fixed at 12, for b from 1 to B equal to 1,000:
+
+Step one. Draw n equal to 132 indices with replacement from 1 to 132.
+
+Step two. Take the pairs, x and y together, at those indices. This is ISLP's rule from section 2 point 5: when an observation is included, both its X and its Y come with it.
+
+Step three. Refit the order-12 polynomial, equation 12, on those pairs.
+
+Step four. Keep the whole fitted curve, f hat star b, evaluated on a grid of x values.
+
+Slide 11 draws all 1,000 bootstrap curves in grey under the red order-12 fit to the original data. The grey cloud is the band, before any quantile is taken.
+
+Seven point three. Two ways to read the cloud.
+
+The percentile band, pointwise. At each x on the grid, keep the 2.5 per cent and the 97.5 per cent quantiles of the 1,000 bootstrap fitted values at that x. Joining these points across x gives the 95 per cent percentile band: equation 5 of section 3, applied at every x.
+
+The bootstrap standard error at x. Equation 14, ISLP 5.8 applied to a fitted value: the bootstrap standard error of f hat at x is the square root of one over B minus one, times the sum over r from 1 to B of the squared distance between f hat star r at x and the average of the B bootstrap fitted values at x. It is equation 4 again, computed separately at each point of the grid.
+
+Seven point four. The formula alternative. ISLP equation 7.2 and footnote 1, printed page 291.
+
+Let l zero be the vector one, x zero, x zero squared, up to x zero to the d, the row of the design at the point x zero. Let C hat be sigma hat squared times the inverse of X transposed X, the estimated covariance matrix of the coefficients.
+
+Equation 15. The estimated variance of the fitted value at x zero is l zero transposed, times C hat, times l zero. The formula band is the fit at x zero plus or minus two times the square root of that variance.
+
+Seven point five. Why the two bands disagree on these data.
+
+Equation 15 uses one sigma hat squared, 0.2202 at order 12, for every x: it assumes the same error variance everywhere. Resampling pairs does not assume that. Each resample carries the quiet pre-impact points and the noisy tail in their own proportions, so the refitted curves wobble little where the data are quiet and a lot where they are noisy. With mcycle's heteroskedasticity, the two bands disagree, the bootstrap one being wider where the noise is large.
+
+The Class 2 Python note checks both sides of this. On homoskedastic data the bootstrap standard error and the formula standard error agree to within 10 per cent. On the heteroskedastic stand-in below, the bootstrap band is wider than the formula band in the noisy region.
+
+Seven point six. Worked: the reproducible stand-in. Class 2 note, section 8.
+
+The mcycle data are not in the repository, so the notes run every step on a simulated stand-in built to look like slide 3: n equal to 132, a flat start, a dip to about minus 2 and a rebound to about plus 1.3 in standardised units, with noise standard deviation 0.15 before the dip and 0.45 after. It is seeded and reproducible. Its numbers are not the site's.
+
+The right panel of the note's cross-validation figure shows the stand-in data, the order-12 fit, a pairs-bootstrap 95 per cent percentile band from B equal to 1,000 resamples, and the plus or minus two standard error formula band. Two lessons are visible at once. In the noisy tail after the dip, the bootstrap band is wider than the constant-variance formula band. And at both ends of the x range the band flares: the boundary misbehaviour ISLP warns about for high degrees.
+
+Why the ends flare. The leverage of point i, h i i, measures how far its x lies from the centre of the design. The leverages add up to d plus one, so their average is d plus one over n, which at d equal to 12 and n equal to 132 is 13 over 132, which is 0.0985. But they are largest at the two ends of the x range, which is exactly where a degree-12 polynomial is least trustworthy. A resample that happens to drop or duplicate an end point moves the curve a lot there.
+
+Seven point seven. What the band does not cover. Class 2 note, section 7, and the Class 2 pitfalls note, items 5 and 14.
+
+The order was chosen on the same data, and it is held at 12 in every resample. So the band shows the uncertainty of the order-12 fit given that order, and leaves out the uncertainty of having chosen 12 rather than 10, 11 or 13. The note marks the fix as graduate material, not examinable: re-running the cross-validation inside each resample would put model-selection uncertainty in, and would widen the band. The pitfalls note gives the general rule: the data that chose the model cannot also grade it.
+
+Spoken checklist for section 7. You should be able to describe the mcycle data, n equal to 132, and the chosen order 12, with sigma hat squared 0.2202 and sigma hat 0.4693 from adjusted R squared 0.7798. You should be able to list the four steps of the pairs bootstrap with B equal to 1,000, and build the pointwise percentile band and the bootstrap standard error at each x, equation 14. You should be able to dictate the formula band, equation 15, and say what it assumes. You should be able to explain why the bootstrap band is wider in the noisy tail and why both bands flare at the ends, with the average leverage 13 over 132, 0.0985. And you should be able to say what the band leaves out: the choice of the order.
+
+Section 8. How many resamples?
+
+This section covers ISLP section 5.2, printed page 214; Morettin and Singer, section 10.5, chapter note 3, printed page 340; the Class 1 note, sections 7, 10 and 12; and the Class 1 Python note, section 5.
+
+The claim, before the work. B controls only the simulation approximation of section 2 point 7: how closely the average over B resamples matches the exact bootstrap answer. The Monte Carlo error of a bootstrap standard error falls like one over the square root of B, and a few hundred to a thousand resamples already make it small. No value of B repairs the statistical approximation: a bunched sample, or the point mass at the maximum, stays exactly as wrong with a million resamples as with a thousand.
+
+Eight point one. What the sources use.
+
+ISLP, printed page 214, repeats the procedure "B times for some large value of B", and uses 1,000 bootstrap data sets for alpha. The Class 1 deck uses B equal to 1,000 for the uniform estimators and for the point-mass shares, and the Class 2 deck uses 1,000 pairs resamples for the motorcycle band. The site's bootstrap example and its correlation page each draw 10,000 resamples. The Class 1 Python note uses 20,000 for its point-mass check. And Morettin and Singer, printed page 340: "A experiência indica que um valor razoável para o número de amostras bootstrap é B igual a 200", experience indicates that a reasonable number of bootstrap samples is B equal to 200, citing Efron and Tibshirani, 1993.
+
+Eight point two. Sizing the simulation error of a standard error.
+
+Equation 16. The Class 1 note's rule for the Monte Carlo study: the standard deviation of a sample standard deviation computed from N draws is roughly the standard deviation itself over the square root of two times N minus one. A bootstrap standard error is exactly such a sample standard deviation, of B replicates, so the same rule applies with B in place of N.
+
+At B equal to 1,000: one over the square root of 1,998, about 2.2 per cent of the standard error. That is the deck's "accurate to roughly plus or minus 2 per cent". At B equal to 200, the arithmetic gives one over the square root of 398, about 5 per cent. At B equal to 10,000, one over the square root of 19,998, about 0.7 per cent.
+
+So Morettin and Singer's 200 is enough for a standard error to within about 5 per cent, and the deck's 1,000 brings it to about 2 per cent. The note adds a caution from the deck's own Monte Carlo table: the skewed beta shape of the maximum makes the max-based standard deviations noisier than this normal-based rule suggests; the largest gap there, 0.290 against 0.274, was about 2.6 such units.
+
+Eight point three. Sizing the simulation error of a share or a quantile.
+
+Equation 17. The Monte Carlo standard error of a share p estimated from B resamples is the square root of p times one minus p, over B. For the point-mass share near 0.632 at B equal to 1,000, that is about 0.015, the unit section 5 used to read the deck's 0.666, 0.622 and 0.632. At B equal to 20,000 it is about 0.0034.
+
+A percentile interval, equation 5, reads the tails of the replicates. With B equal to 1,000, each 2.5 per cent tail holds about 25 replicates; with B equal to 200, about 5. That arithmetic says a percentile interval wants more resamples than a standard error does, which fits the site's choice of 10,000 on its interval pages.
+
+Eight point four. What more resamples cannot fix.
+
+Two cases from part two make the point. At n equal to 10, the deck's bootstrap standard deviation of the sample mean was 0.117 against an exact 0.274, because the ten draws lay between 1.35 and 2.33. More resamples would only pin down 0.117 more precisely. And for the maximum, more resamples move the observed share from the deck's 0.666 toward the exact 0.651 at n equal to 10, not toward zero. The point mass is a property of the empirical distribution, not of the simulation.
+
+The rule to carry: B buys precision about the bootstrap answer; only n, or a better model as in the parametric bootstrap, buys accuracy about the truth.
+
+Eight point five. A word on another kind of resampling.
+
+Morettin and Singer's section B.6, "Métodos de reamostragem", printed pages 467 to 471, is not about the bootstrap: it covers accept-reject sampling and weighted resampling, which belong to the Monte Carlo topic. The one contrast worth keeping: the bootstrap resamples the observed data with equal weights, one over n each, while weighted resampling resamples simulated draws with importance weights, the target density over the proposal density, normalised to sum to one.
+
+Spoken checklist for section 8. You should be able to say what B controls and what it cannot control. You should be able to quote the resample counts in the sources: 1,000 in ISLP and the decks, 10,000 on the site's pages, 20,000 in the Python check, and Morettin and Singer's 200. You should be able to size the simulation error of a standard error with equation 16, about 2.2 per cent at B equal to 1,000, and of a share with equation 17, about 0.015 near 0.632 at B equal to 1,000. And you should be able to name two errors no B can fix: the bunched ten draws and the point mass at the maximum.
+
+Part four. Support material.
+
+Pitfalls. Each said as the error, then the correction. Drawn from the Class 1 pitfalls note, item 12 and block D, the Class 2 pitfalls note, items 5, 14 and 15, and the sections above.
+
+Pitfall one. The error is to believe that the bootstrap always works if n is large. The correction: for the maximum of a uniform sample, the resampled maximum equals the observed one with probability one minus one minus one over n to the n, which is 0.651 at n equal to 10, 0.634 at n equal to 100, and tends to 0.632. The true law of the maximum is continuous. The shape is wrong at every n, and the bootstrap is inconsistent there.
+
+Pitfall two. The error is to read a wrong bootstrap standard error as a bias with a fixed sign. The correction: for the maximum, the deck's bootstrap standard deviation is too small at n equal to 50, 0.041 against 0.058, and too large at n equal to 100, 0.036 against 0.029. The fault is the point mass, a wrong shape, not a consistent under- or overstatement.
+
+Pitfall three. The error is to treat the two failures of the uniform example as one. The correction: at n equal to 10, all four bootstrap standard deviations are too small because the ten draws lie between 1.35 and 2.33; that is a small-sample problem, and it fades for the mean-based estimators. The failure for the maximum does not fade. "The bootstrap cannot recover what the sample does not contain."
+
+Pitfall four. The error is to think more resamples fix a bad bootstrap. The correction: B controls only the simulation error, about 2.2 per cent of a standard error at B equal to 1,000. The statistical error, set by the sample, is untouched by B.
+
+Pitfall five. The error is to resample from the empirical distribution when the statistic lives on the edge of the support. The correction: the empirical distribution has no mass beyond its own maximum. Resample from the fitted uniform on zero to theta hat instead: the parametric bootstrap.
+
+Pitfall six. The error is to trust the parametric bootstrap unconditionally. The correction: it reproduces the plug-in standard deviation, the exact formula evaluated at theta hat, and so it tracks the truth only as long as theta hat is close to theta. At n equal to 10, with theta hat 2.568 against theta 3, its standard deviations are still low. And it needs the model to be right.
+
+Pitfall seven. The error is to resample X and Y separately in a regression or in a covariance-based statistic. The correction: resample whole observations, the pairs. ISLP: if an observation is in the bootstrap data set, "both its X and Y values are included."
+
+Pitfall eight. The error is to read the pairs-bootstrap band around the order-12 motorcycle fit as including the uncertainty of choosing the order. The correction: every resample refits order 12; the selection step is outside the loop. Putting the cross-validation inside each resample would widen the band.
+
+Pitfall nine. The error is to expect the bootstrap band and the formula band, fit plus or minus two square roots of l zero transposed C hat l zero, to agree on any data. The correction: the formula uses one sigma hat squared for every x. On data whose noise changes with x, the pairs bootstrap carries the quiet and the noisy regions in their own proportions, and the two bands differ, the bootstrap one wider in the noisy region. On homoskedastic data they agree to within about 10 per cent.
+
+Pitfall ten. The error is to impose a symmetric normal interval on a skewed bootstrap distribution. The correction: near a bound, a correlation at 0.95, or for a variance, the sampling law is skewed. The percentile interval follows the skew of the replicates; the plus or minus two standard errors interval does not.
+
+Pitfall eleven. The error is to read an interval printed upper limit first as if it ran the other way. The correction: the site's bootstrap example prints the chi-square interval for sigma squared as 1.3206221 then 0.5934305; the interval runs from 0.593 to 1.321.
+
+Pitfall twelve. The error is to forget that the bootstrap standard error divides by B minus one. The correction: equation 4, ISLP 5.8, is the ordinary sample standard deviation of the B replicates, with divisor B minus one, centred at the average of the replicates, not at the original estimate.
+
+Spoken formula sheet. How to use it: after each prompt, pause the audio, say the formula out loud, then play on and hear the answer.
+
+Equation 1, ISLP 5.6. The minimum-variance share alpha for two assets X and Y. Pause now.
+Answer: alpha is equal to sigma Y squared minus sigma X Y, all over sigma X squared plus sigma Y squared minus two times sigma X Y. With 1, 1.25 and 0.5, alpha is 0.6.
+
+Equation 2, ISLP 5.7. Its plug-in estimate. Pause now.
+Answer: alpha hat is the same expression with every variance and the covariance replaced by its sample estimate.
+
+Equation 3. The empirical distribution function at t. Pause now.
+Answer: F hat n of t is one over n times the number of observations less than or equal to t: mass one over n on each observation.
+
+Equation 4, ISLP 5.8. The bootstrap standard error. Pause now.
+Answer: the square root of one over B minus one, times the sum over r from 1 to B of the squared distance between the replicate theta hat star r and the average of the B replicates.
+
+Equation 5. The 95 per cent percentile interval. Pause now.
+Answer: from the 2.5 per cent quantile to the 97.5 per cent quantile of the B replicates.
+
+Equation 6. The normal interval. Pause now.
+Answer: theta hat plus or minus two times the bootstrap standard error.
+
+Equation 7. The exact standard deviations of the four estimators of the uniform bound. Pause now.
+Answer: for the sample mean, theta over the square root of 12 n; for the maximum, theta times the square root of n over n plus one squared times n plus two; for twice the mean, theta over the square root of 3 n; for n plus one over n times the maximum, theta over the square root of n times n plus two.
+
+Equation 8. The probability that a given observation is not in a bootstrap sample. Pause now.
+Answer: one minus one over n, raised to the n, which tends to e to the minus one, about 0.368.
+
+Equation 9. The probability that it is in the sample, and so that the bootstrap maximum equals the sample maximum. Pause now.
+Answer: one minus the quantity one minus one over n, to the n: 0.651 at n equal to 10, 0.636 at 50, 0.634 at 100, tending to one minus e to the minus one, about 0.632.
+
+Equation 10. The exact nonparametric distribution function of the resampled maximum. Pause now.
+Answer: the empirical distribution function at t, raised to the n. It jumps by equation 9 at the sample maximum. The parametric version is t over theta hat, to the n; the true one is t over theta, to the n.
+
+Equation 11. The plug-in standard deviation. Pause now.
+Answer: the exact formula of equation 7 with theta replaced by theta hat equal to estimator four. At n equal to 10 and theta hat 2.568: 0.234 for estimator four and 0.213 for the maximum.
+
+Equation 12, ISLP 7.1. Polynomial regression of order d. Pause now.
+Answer: y i equals beta zero plus beta one x i plus beta two x i squared, up to beta d x i to the d, plus epsilon i; linear in the betas.
+
+Equation 13. The residual variance of the order-12 motorcycle fit from adjusted R squared. Pause now.
+Answer: one minus 0.7798, which is 0.2202, so sigma hat is 0.4693.
+
+Equation 14. The bootstrap standard error of the fitted curve at x. Pause now.
+Answer: the square root of one over B minus one, times the sum over r of the squared distance between f hat star r at x and the average of the B bootstrap fits at x.
+
+Equation 15, ISLP 7.2. The formula band at x zero. Pause now.
+Answer: the fit at x zero plus or minus two times the square root of l zero transposed times C hat times l zero, where l zero is one, x zero, up to x zero to the d, and C hat is sigma hat squared times the inverse of X transposed X.
+
+Equation 16. The simulation error of a standard error from B replicates. Pause now.
+Answer: roughly the standard error over the square root of two times B minus one; about 2.2 per cent at B equal to 1,000.
+
+Equation 17. The simulation error of a share p from B resamples. Pause now.
+Answer: the square root of p times one minus p over B; about 0.015 near 0.632 at B equal to 1,000.
+
+Routines, described, not read as code. From the Class 1 and Class 2 Python notes.
+
+Routine one, the nonparametric bootstrap standard error. Inputs: the sample and a function that computes the statistic. Draw a B by n array of indices with replacement, compute the statistic on each row, and take the standard deviation of the B results with divisor B minus one. The trap: resample whole observations, never columns separately.
+
+Routine two, the point-mass check. On a seeded sample of 100 uniform draws, with maximum 2.969, draw 20,000 resamples and count the share whose maximum equals the sample maximum exactly. It must be within four Monte Carlo standard errors of 0.634. The trap: compare with exact equality, since the resampled maximum is one of the original values.
+
+Routine three, the parametric bootstrap. Compute estimator four, 2.999 on that sample; draw 20,000 samples of size 100 from the uniform on zero to it; compute estimator four on each. Its standard deviation must match the plug-in formula within 3 per cent, and no replicate may equal the estimate. The trap: draw from the fitted model, not from the data.
+
+Routine four, the pairs-bootstrap band. Fix the order at 12; for each of 1,000 resamples of the 132 index positions, refit the polynomial and predict on a grid of 200 x values. Take the 2.5 and 97.5 per cent quantiles at each grid point, and compare with the formula band from sigma hat squared times the inverse of X transposed X. The trap: on homoskedastic data the two should agree within about 10 per cent; on the heteroskedastic stand-in the bootstrap band is wider in the noisy region.
+
+Reading route, addresses only. ISLP section 5.2, printed pages 212 to 214, with Figure 5.11 on printed page 215. ISLP section 7.1, printed pages 290 and 291, for equations 7.1 and 7.2. Bolfarine and Sandoval, section 1.1.5, printed page 3, Example 1.3.8, printed page 11, and Table 1.1, printed page 12. Morettin and Singer, section 10.5, chapter note 3, printed pages 339 and 340. Practice, by number and printed page only: ISLP Exercise 5.1, printed page 224; ISLP Exercise 5.2, printed pages 224 and 225; ISLP Exercise 5.9, printed pages 227 and 228; Bolfarine Exercise 1.6, printed page 13.
+
+Glossary, one sentence per term.
+
+Sampling distribution: the distribution of an estimator over repeated samples from the same population.
+
+Standard error: the standard deviation of that sampling distribution.
+
+Empirical distribution: the distribution that puts mass one over n on each observed value.
+
+Plug-in principle: compute the quantity you need under a stand-in for the unknown population, the empirical distribution or a fitted model.
+
+Bootstrap sample: n draws with replacement from the data, or from a fitted model in the parametric case.
+
+Bootstrap replicate: the statistic computed on one bootstrap sample, marked with a star.
+
+Nonparametric bootstrap: resampling the observed data.
+
+Parametric bootstrap: drawing resamples from the fitted parametric model.
+
+Pairs bootstrap: resampling whole observations, x and y together, in a regression.
+
+Percentile interval: the interval between two quantiles of the bootstrap replicates, 2.5 and 97.5 per cent for 95 per cent.
+
+Normal interval: the estimate plus or minus two bootstrap standard errors.
+
+Point mass: positive probability on a single value; the bootstrap maximum has one of about 0.632 at the sample maximum.
+
+Inconsistent bootstrap: a bootstrap whose distribution does not approach the true sampling distribution as n grows.
+
+Leverage: the diagonal element h i i of the hat matrix, largest at the ends of the x range.
+
+Self-test. Eighteen statements, true or false. After each one, pause the audio, decide, and say why; then play on for the answer.
+
+Question 1. In ISLP's investment example, the bootstrap standard error of alpha hat from one data set is 0.087, close to the 0.083 obtained from 1,000 fresh samples of the population. Pause now.
+Answer: true. ISLP, printed page 214.
+
+Question 2. A bootstrap sample of size n is drawn from the data without replacement. Pause now.
+Answer: false. It is drawn with replacement; without replacement it would only reorder the sample and the statistic would never change.
+
+Question 3. The empirical distribution puts mass one over n on each observation and no mass above the sample maximum. Pause now.
+Answer: true. That second property is the root of the failure for the maximum.
+
+Question 4. The bootstrap standard error of ISLP equation 5.8 is the sample standard deviation of the B replicates, with divisor B minus one. Pause now.
+Answer: true. Morettin and Singer define the bootstrap standard error of the median the same way.
+
+Question 5. In a regression bootstrap, X and Y should be resampled independently of each other. Pause now.
+Answer: false. Whole observations are resampled; both the X and the Y of a drawn observation are included.
+
+Question 6. The probability that a given observation appears in a bootstrap sample of size n is one over n. Pause now.
+Answer: false. One over n is the chance on a single draw. Over n draws it is one minus the quantity one minus one over n, to the n.
+
+Question 7. As n grows, the probability in question 6 tends to one minus one over e, about 0.632. Pause now.
+Answer: true. One minus one over n, to the n, tends to e to the minus one, about 0.368.
+
+Question 8. At n equal to 10, the exact probability that the bootstrap maximum equals the sample maximum is 0.651. Pause now.
+Answer: true. One minus 0.9 to the 10th. The deck observed 0.666 with 1,000 resamples, about one Monte Carlo standard error away.
+
+Question 9. As n grows, the nonparametric bootstrap distribution of the sample maximum approaches its true sampling distribution. Pause now.
+Answer: false. Its point mass at the sample maximum tends to 0.632, not to zero, while the true law is continuous. The bootstrap is inconsistent here.
+
+Question 10. In the deck, the nonparametric bootstrap standard deviation of the maximum is too small at every sample size. Pause now.
+Answer: false. It is too small at n equal to 50, 0.041 against 0.058, but too large at n equal to 100, 0.036 against 0.029. The error has no fixed direction.
+
+Question 11. At n equal to 10, all four bootstrap standard deviations in the deck are far too small because the ten draws happen to lie between 1.35 and 2.33. Pause now.
+Answer: true. A small-sample problem that fades for the mean-based estimators as n grows.
+
+Question 12. Raising B from 1,000 to 100,000 would bring the deck's n equal to 10 bootstrap standard deviation of the sample mean close to the exact 0.274. Pause now.
+Answer: false. B removes only simulation noise; it would pin down a value near 0.117 more precisely.
+
+Question 13. The parametric bootstrap for the uniform bound draws resamples from the uniform on zero to estimator four, and converges to the plug-in standard deviation. Pause now.
+Answer: true. At n equal to 10 and theta hat 2.568, the plug-in values are 0.234 for estimator four and 0.213 for the maximum; the deck's simulation gave 0.234 and 0.213.
+
+Question 14. The parametric bootstrap needs no assumption about the model. Pause now.
+Answer: false. It needs the model to be right. It is the nonparametric one that needs nothing about the model.
+
+Question 15. A percentile interval can be asymmetric around the estimate, while the normal interval, plus or minus two bootstrap standard errors, cannot. Pause now.
+Answer: true. The percentile interval follows the shape of the replicates; the normal interval imposes symmetry.
+
+Question 16. On data whose noise variance changes with x, the pairs-bootstrap band and the formula band, fit plus or minus two square roots of l zero transposed C hat l zero, will generally differ. Pause now.
+Answer: true. The formula uses one sigma hat squared for every x; resampling pairs keeps the quiet and noisy regions in their own proportions.
+
+Question 17. The pairs-bootstrap band around the order-12 motorcycle fit includes the uncertainty of having chosen order 12 from the same data. Pause now.
+Answer: false. Every resample refits order 12; the selection is outside the loop.
+
+Question 18. With B equal to 1,000, the simulation error of a bootstrap standard error is roughly 2.2 per cent of its value. Pause now.
+Answer: true. One over the square root of two times 999, the deck's "accurate to roughly plus or minus 2 per cent."
+
+The whole topic in five lines.
+
+One. The bootstrap replaces the unknown population by the empirical distribution, mass one over n on each observation, and resamples it with replacement; the standard deviation of the replicates is the bootstrap standard error, and their quantiles give the percentile interval.
+
+Two. It works for smooth statistics: ISLP's alpha gets 0.087 against a true 0.083, and the site's bootstrap interval for a normal mean matches the exact t interval.
+
+Three. A given observation is in a bootstrap sample with probability one minus one minus one over n to the n, which tends to 0.632, so the resampled maximum sits on the sample maximum 63 per cent of the time, and the nonparametric bootstrap is inconsistent for the maximum at every n.
+
+Four. The parametric bootstrap, resampling from the fitted uniform on zero to theta hat, gives the right shape and the plug-in standard deviation, provided the model is right and theta hat is close to theta.
+
+Five. On a regression curve, the pairs bootstrap draws a band that respects unequal noise but holds the chosen order fixed; and more resamples buy precision about the bootstrap answer, never accuracy the sample cannot give.
+
+End of part 2, and of the bootstrap topic narration.

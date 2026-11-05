@@ -1,0 +1,339 @@
+Advanced Econometrics, Classes 5 and 6. Introduction to causal inference. Narrated study notes, part 2 of 3: the designs.
+
+How to listen. This is the second of three files narrating the study notes for Classes 5 and 6. Part 1 covered the map, Simpson's paradox and causal graphs, potential outcomes, omitted variables and bad controls, and errors in variables. This file covers the three designs that supply variation when no set of observed controls will do: section 5, instrumental variables; section 6, difference in differences; and section 7, regression discontinuity. Part 3 holds the support material. As before, math is spoken in words, the U layer is intuition, the C layer is examinable, and each G item, graduate material that is named or proved but not examinable, is flagged out loud. The final exam has no code: expect the identification arguments and the reading of the site's printouts for Card, Card and Krueger, and the minimum legal drinking age.
+
+
+Part three, section 5. Instrumental variables: a variable that moves the treatment and nothing else identifies the effect as a ratio.
+
+This section covers slides pages 17 to 20: section 9, the instrumental-variables graph and examples, page 17; section 9.1, the bivariate Gaussian two-equation system, the reduced form and the two-stage estimator, pages 17 and 18; section 9.2, the regression of y on x and z, pages 18 and 19; section 9.3, examples including Card's college proximity, page 19; and section 9.4, Bayesian instrumental-variables papers, page 20. It covers the site's Card example and its data, 3,010 men in 1976. It covers MHE section 4.1, pages 84 to 96: equations 4.1.1 to 4.1.3 on pages 85 and 86, two-stage least squares in equations 4.1.6 to 4.1.9 on pages 89 and 90, the Wald estimator in equations 4.1.11 to 4.1.13 on pages 94 and 95, and Table 4.1.2 on page 96; and section 4.4.1, Theorem 4.4.1, the local average treatment effect, page 114, G layer only. It covers Wooldridge sections 15.1 to 15.3, pages 462 to 478: equations 15.9 to 15.13 on pages 465 and 466, equations 15.19 and 15.20 on page 469, Example 15.3 on page 470, Example 15.4 and Table 15.1 on pages 473 and 474, and the weak-instrument rule on page 478; and section 15.5a, page 481. And Greenberg section 11.2, pages 173 and 174.
+
+The claim, before the derivations. When the treatment x shares unobserved causes with the outcome y, ordinary least squares converges to beta one plus a confounding term. An instrument z that shifts x, which is relevance, delta one not equal to zero, and touches y only through x, which is exclusion, the covariance of z and u equal to zero, identifies beta one as the covariance of z and y over the covariance of z and x: the reduced form over the first stage. With a binary instrument this is the Wald estimator; with covariates it is two-stage least squares. Simply adding z to the outcome regression does not work. The price is variance, since the instrumental-variables standard error is one over the absolute correlation of x and z times larger, and fragility, since a weak first stage magnifies any exclusion violation. In Card's data: least squares 0.0747, instrumental variables 0.1315 with standard error 0.0550, and a first-stage F of 13.26.
+
+From here on, IV means instrumental variables, OLS means ordinary least squares, and two-stage least squares is said in full.
+
+The notation, the slides', with MHE and Wooldridge letters where they differ. x sub i is the treatment, schooling; MHE calls it s sub i and Wooldridge y two. y sub i is the outcome, the log wage. z sub i is the instrument, for i from one to n. The outcome equation is y sub i equals beta zero plus beta one x sub i plus epsilon y sub i. The treatment, or first-stage, equation is x sub i equals delta zero plus delta one z sub i plus epsilon x sub i. The two errors are bivariate normal with mean zero, variances sigma squared of x and sigma squared of y, and covariance sigma x y, which equals rho sigma x sigma y. z sub i is independent of both errors, and sigma squared of z is its variance. The reduced form is y sub i equals theta zero plus theta one z sub i plus u sub i, with u sub i normal with variance tau squared. Phi is a direct effect of z on y, an exclusion violation, used in point six and in the companion; p is the probability that z equals one for a binary instrument. In MHE, rho is the causal schooling coefficient of equation 4.1.2; in this note rho is always the error correlation, and MHE's coefficient is written beta one.
+
+Five point one. The intuition: the IV graph and the examples. Slide page 17.
+
+The graph: the instrument goes into the treatment T, the treatment goes into the outcome O, and an unmeasured confounder C goes into both T and O. The slide: "IV: Instrumental variable; T: Treatment, Program, Policy, Risk factors; C: Unmeasured confounders; O: Outcome." The instrument opens a causal path into T and has no arrow into O or into C.
+
+The slide's table of examples, read row by row as confounder, treatment, outcome and instrument. First: maternal characteristics; smoking during pregnancy; low birth weight; cigarette taxes. Second: smoking, caffeine and alcohol; body mass index; Parkinson's disease; a variant of the FTO gene. Third: prognostic factors; catheter use; mortality; the share of patients with a catheter at the facility. Fourth: ability; education; earnings; mother's education. Fifth: proximity; a tutoring programme; grade point average; library hours.
+
+The path from the instrument through T to O is a chain, and no path from the instrument to O through anything else exists. The instrument and the outcome are dependent only through T. That is the whole argument.
+
+Five point two. Course layer: the two-equation system and the IV ratio. Slides pages 17 and 18.
+
+Equation 1: y sub i equals beta zero plus beta one x sub i plus epsilon y sub i. Equation 2: x sub i equals delta zero plus delta one z sub i plus epsilon x sub i. The slide's two switches: rho equal to zero means no endogeneity; delta one equal to zero means no instrument.
+
+Why OLS fails. The OLS slope of y on x converges to the covariance of x and y over the variance of x. From equation 2, the variance of x is delta one squared sigma squared of z plus sigma squared of x, and the covariance of x with epsilon y equals the covariance of the two errors, rho sigma x sigma y. Substitute equation 1 into the covariance. Equation 3: the probability limit of the OLS beta one equals the covariance of x with beta zero plus beta one x plus epsilon y, over the variance of x, which is beta one plus rho sigma x sigma y over delta one squared sigma squared of z plus sigma squared of x.
+
+The reduced form. Substitute equation 2 into equation 1, slide page 18. y sub i equals beta zero plus beta one times delta zero plus delta one z sub i plus epsilon x sub i, plus epsilon y sub i. Collect: beta zero plus beta one delta zero, plus beta one delta one times z sub i, plus beta one epsilon x sub i plus epsilon y sub i. So, equation 4: theta zero equals beta zero plus beta one delta zero; theta one equals beta one delta one; and tau squared equals beta one squared sigma squared of x plus sigma squared of y plus two beta one rho sigma x sigma y.
+
+The reduced-form error, beta one epsilon x sub i plus epsilon y sub i, is independent of z sub i. So OLS of y on z is consistent for theta one, and OLS of x on z is consistent for delta one.
+
+The two-stage estimator, slide page 18, in three steps. First, obtain delta one hat from the treatment equation. Second, obtain theta one hat from the outcome-on-instrument regression. Third, since theta one equals beta one delta one by equation 4, with delta one not zero: equation 5, beta one hat IV equals theta one hat over delta one hat. That is the estimated covariance of z and y over the estimated variance of z, divided by the estimated covariance of z and x over the estimated variance of z. The variances cancel, leaving the estimated covariance of z and y over the estimated covariance of z and x. In words: the effect of z on y over the effect of z on x.
+
+The covariance route, Wooldridge equation 15.9, page 465, and MHE equation 4.1.3, page 86. Take the covariance of equation 1 with z: the covariance of z and y equals beta one times the covariance of z and x plus the covariance of z and epsilon y. Exogeneity sets the last term to zero, and relevance makes the covariance of z and x, which is delta one sigma squared of z, non-zero. So, equation 6: beta one equals the covariance of z and y over the covariance of z and x.
+
+The sample analogue, Wooldridge equation 15.10, is beta one hat equals the sum of z sub i minus z bar times y sub i minus y bar, over the sum of z sub i minus z bar times x sub i minus x bar. With z equal to x it is OLS, Wooldridge page 465.
+
+Two assumptions, one checkable. Relevance, delta one not zero, is a regression of x on z: "something you can check in the data", MHE page 86. Exclusion, the covariance of z and epsilon y equal to zero, involves the unobserved error and is argued, not tested. MHE adds that exclusion "really has two parts": z as good as randomly assigned, and no effect on y except through x, page 86.
+
+The slide's page 18 sentence, "z into x into y is a fork", describes a chain. The conclusion, y independent of z given x when rho equals zero, is Rule 1 of section 1.
+
+Five point three. Course layer: why adding z to the outcome regression does not work. Slides pages 18 and 19, and Greenberg page 173.
+
+Three steps. First, condition one error on the other. For the bivariate normal pair, slide page 18, equation 7: epsilon y sub i given epsilon x sub i is normal with mean sigma x y over sigma squared of x times epsilon x sub i, and variance sigma squared of y times one minus rho squared. Equivalently, epsilon y sub i equals sigma x y over sigma squared of x times epsilon x sub i, plus omega sub i, with omega sub i normal with mean zero and variance sigma squared of y times one minus rho squared.
+
+Second, replace epsilon x sub i by its value from equation 2, x sub i minus delta zero minus delta one z sub i. Then epsilon y sub i equals sigma x y over sigma squared of x times x sub i minus delta zero minus delta one z sub i, plus omega sub i.
+
+Third, substitute into equation 1 and collect, slide page 19. Equation 8: y sub i equals beta zero minus sigma x y over sigma squared of x times delta zero; plus beta one plus sigma x y over sigma squared of x, times x sub i; plus minus sigma x y over sigma squared of x times delta one, times z sub i; plus omega sub i.
+
+Omega sub i is independent of x sub i and z sub i, so equation 8 is the population regression of y on x and z. The coefficient on x is beta one plus sigma x y over sigma squared of x, biased whenever rho is not zero. The slide: "In words, by simply including the instrumental variable z sub i in the outcome regression will not suffice to estimate beta one", page 19. Greenberg, section 11.2, page 173, reaches the same expression and concludes that from y given x alone "beta s is not identifiable. We have no way of separating beta s from beta s plus sigma 12 over sigma 22." The instrument must be used through the first stage, not beside it.
+
+Five point four. Course layer: the Wald estimator. MHE section 4.1.2, pages 94 to 96.
+
+Take a binary z with the probability that z equals one equal to p, and the model y sub i equals alpha plus beta one s sub i plus eta sub i, equation 4.1.11.
+
+The covariance with a dummy. The expected value of y z is p times the expected value of y given z equal to one. The expected value of y is p times the expected value of y given z equal to one, plus one minus p times the expected value of y given z equal to zero. So the covariance of y and z, the expected value of y z minus the expected value of y times the expected value of z, equals p times the mean of y at z equal to one, minus p times the quantity p times the mean at one plus one minus p times the mean at zero. That simplifies to the mean of y at z equal to one minus the mean at z equal to zero, times p times one minus p.
+
+The same holds for the covariance of s and z. Substitute both into equation 6; p times one minus p cancels, MHE equation 4.1.12. Equation 9: beta one equals the expected value of y sub i given z sub i equal to one minus the expected value given z sub i equal to zero, over the expected value of s sub i given z sub i equal to one minus the expected value given z sub i equal to zero.
+
+The direct route, equation 4.1.13: the expected value of y sub i given z sub i equals alpha plus beta one times the expected value of s sub i given z sub i, because the expected value of eta sub i given z sub i is zero. Take the difference at z equal to one and z equal to zero, and divide.
+
+The worked example, MHE Table 4.1.2, page 96: Angrist and Krueger's quarter of birth, the 1980 census, 329,509 men. The log weekly wage is 5.8916 for those born in the first or second quarter and 5.9051 for those born in the third or fourth, a difference of minus 0.01349, standard error 0.00337. Years of education are 12.6881 and 12.8394, a difference of minus 0.1514, standard error 0.0162. The Wald estimate is minus 0.01349 over minus 0.1514, which is 0.0891, standard error 0.0210, against OLS of 0.0703, standard error 0.0005.
+
+On the Card data without controls: the mean log wage is 6.311401 near a college and 6.155494 not near; mean schooling is 13.527034 and 12.698015. So the Wald estimate is 6.311401 minus 6.155494, over 13.527034 minus 12.698015, which is 0.155907 over 0.829019, which is 0.1881, against a no-controls OLS of 0.0521, from the Python note, section 5. The controls of point seven matter: region and race shift both college proximity and wages.
+
+Five point five. Course layer: two-stage least squares. MHE section 4.1.1, pages 89 to 91, and Wooldridge sections 15.2 and 15.3, pages 471 to 477.
+
+With exogenous covariates X sub i, Wooldridge's z one to z k minus one, and an instrument z sub i, equation 10 has two parts. The structural equation, MHE 4.1.6: y sub i equals X sub i transposed alpha plus beta one s sub i plus eta sub i. The first stage: s sub i equals X sub i transposed pi one zero plus pi one one z sub i plus xi one i.
+
+Substitute the first stage into the structural equation, MHE 4.1.7. y sub i equals X sub i transposed alpha plus beta one times X sub i transposed pi one zero plus pi one one z sub i plus xi one i, plus eta sub i. Collect: X sub i transposed times alpha plus beta one pi one zero, plus beta one pi one one times z sub i, plus beta one xi one i plus eta sub i.
+
+That is the reduced form, with z coefficient pi two one equal to beta one pi one one, so beta one equals pi two one over pi one one: indirect least squares, MHE 4.1.5. Two-stage least squares: regress s sub i on X sub i and z sub i, form the fitted s hat sub i, then regress y sub i on X sub i and s hat sub i, MHE 4.1.9. With one instrument, two-stage least squares, IV and indirect least squares are exactly equal; the Python note, section 5, checks all three on the Card data. The second-stage OLS standard errors are wrong, because they use y minus beta hat times s hat instead of y minus beta hat times s; software computes the right ones, MHE page 91.
+
+The requirements in Wooldridge's statement, equations 15.29 to 15.31: the covariance of each exogenous variable with the structural error is zero, and pi k is not zero, where pi k is the partial correlation of the excluded instrument with y two given the included exogenous variables.
+
+Five point six. Course layer: the price and the fragility of IV. Wooldridge pages 466 to 470, and 478.
+
+The asymptotic variance, under the expected value of u squared given z equal to sigma squared, Wooldridge equation 15.12. Equation 11: the asymptotic variance of the IV beta one is sigma squared over n times sigma squared of x times rho x z squared. The estimated standard error, equation 15.13, is the square root of sigma hat squared over the total sum of squares of x times the R squared of x on z.
+
+OLS has sigma squared over the total sum of squares of x; IV divides further by an R squared that is less than one. "The IV variance is always larger than the OLS variance (when OLS is valid)", Wooldridge page 466. The ratio of standard errors is one over the absolute correlation of x and z.
+
+The bias with an imperfect instrument, Wooldridge equations 15.19 and 15.20, page 469. Equation 12: the probability limit of the IV beta one is beta one plus the correlation of z and u over the correlation of z and x, times sigma u over sigma x. The probability limit of the OLS beta one is beta one plus the correlation of x and u times sigma u over sigma x.
+
+A small correlation of z and u divided by a small correlation of z and x can exceed the OLS bias. With the correlation of z and x equal to 0.2, IV is less biased only if the correlation of z and u is under one fifth of the correlation of x and u, Wooldridge page 470; the book's sentence repeats "correlation of z and u" where it means the correlation of x and u. In the companion's parametrisation, a direct effect phi of z on y gives a probability limit of the IV estimator equal to beta one plus phi over delta one.
+
+When relevance fails. Wooldridge Example 15.3, page 470: mother's packs per day regressed on the cigarette price gives a coefficient of 0.0003, standard error 0.0008, with an R squared of 0.0000. Using the price as an instrument anyway gives a packs coefficient of plus 2.99, standard error 8.70, which is "meaningless because cigprice fails the one requirement of an IV that we can always test". This is also the slide's example C, page 19.
+
+Weak instruments. The Staiger and Stock, and Stock and Yogo, rule, Wooldridge page 478: proceed with standard IV inference if the first-stage absolute t statistic exceeds the square root of 10, about 3.2, with one instrument, or if the F statistic exceeds 10 with several. And it is "not the overall F statistic": only the excluded instruments count.
+
+The figure for this section. The curves are exact probability limits, calibrated to the Card data's moments after partialling out the site's 14 controls, so the marked points reproduce 0.0747 and 0.1315. On the left, the probability limits are plotted against the error correlation rho from minus 0.9 to 0.9. IV is a flat line at 0.1315. OLS and the long regression of y on x and z are rising lines that nearly coincide, crossing IV at rho equal to zero. The Card point sits at rho equal to minus 0.285, with OLS at 0.0747. On the right, the absolute asymptotic bias is plotted against the first-stage coefficient delta one, with a direct effect phi of 0.005. The IV bias, phi over delta one, explodes as delta one goes to zero, while the OLS bias stays near 0.057. The F equal to 10 boundary, at delta one equal to 0.276, and Card's 0.320 are marked.
+
+How to read it. On the left, IV is flat because it does not depend on rho; OLS crosses it only at rho equal to zero. The long regression is no better than OLS. Here they almost coincide, because the instrument explains only delta one squared sigma squared of z, which is 0.017, of a schooling variance of 3.746. The Card point at rho equal to minus 0.285 means the data imply OLS below IV. On the right, with an exclusion violation of only 0.005 log points, IV is less biased than OLS to the right of delta one equal to about 0.09, and much worse to the left. Card's first stage, 0.320, is barely past the F equal to 10 line, which is at 0.276 with 3,010 observations.
+
+The interactive companion for this section is The Instrument Dial. You move beta one, the endogeneity rho, the first stage delta one, an exclusion violation phi, and n, and watch the OLS, IV and long-regression probability limits with their 95 per cent bands, the IV bias phi over delta one, and the first-stage F against 10. The defaults reproduce Card.
+
+Five point seven. Course layer: the worked example, Card's college proximity. Slide page 19, the site's Card example, and Wooldridge Example 15.4.
+
+The outcome is the log wage; the treatment is years of education; the instrument is an indicator for growing up near a four-year college. The controls are experience, experience squared, a dummy for black, living in a metropolitan area, living in the south, living in a metropolitan area in 1966, and the regional dummies for 1966. n is 3,010. The site's printout is reproduced in the Python note, section 5.
+
+Walk the printout step by step.
+
+OLS, the coefficient on education: 0.0746933, standard error 0.0034983. Wooldridge Table 15.1 rounds it to 0.075, standard error 0.003.
+
+The first stage, the instrument's coefficient in the education equation: 0.320, standard error 0.088, t statistic 3.64, R squared 0.477, Wooldridge page 473.
+
+The first-stage F equals t squared: 3.64 squared, about 13.256. The site prints "Weak instruments 13.256".
+
+The reduced form, the instrument's coefficient in the log-wage equation: 0.04207, computed.
+
+Indirect least squares equals IV: 0.04207 over 0.31990, which is 0.1315, by equation 5.
+
+IV by two-stage least squares, the coefficient on education: 0.1315038, standard error 0.0549637. Wooldridge Table 15.1 gives 0.132, standard error 0.055.
+
+The 95 per cent confidence interval: 0.1315 plus or minus 1.96 times 0.0550, which runs from 0.024 to 0.239, Wooldridge page 474.
+
+The Wu-Hausman test: 1.168, with p-value 0.280, from the site.
+
+With controls selected by BIC, the site's section 4: IV gives 0.1365294, standard error 0.0495914, with a first-stage F of 16.621.
+
+The readings. Four of them.
+
+First, IV is almost twice OLS, Wooldridge page 474, and its standard error is 0.0549637 over 0.0034983, which is 15.7 times larger. The slide rounds to 0.075 and 0.132, with standard errors 0.003 and 0.055, "twenty times as big!", and intervals from 0.069 to 0.081 and from 0.022 to 0.242; the latter is 0.132 plus or minus two times 0.055. "Larger CIs: price paid for consistent estimator of the return to (endogenous) education", page 19.
+
+Second, the first stage passes the rule of thumb, with t equal to 3.64, above 3.2, and F equal to 13.26, above 10, but not by much, as the right panel of the figure shows.
+
+Third, Wu-Hausman, Wooldridge section 15.5a, page 481, adds the first-stage residual, v two hat, to the OLS equation and tests it: t squared is 1.168, p-value 0.28. OLS and IV are not statistically distinguishable here, despite the factor of two, because the IV interval is so wide.
+
+Fourth, why might IV exceed OLS? Omitted ability, MHE page 45, predicts OLS above the truth, but the data say the opposite, with an implied rho of minus 0.285. Measurement error in education, note four, biases OLS down, and IV with an instrument independent of that error removes it, Wooldridge page 480. The heterogeneous-effects reading comes next.
+
+Five point eight. G layer: heterogeneous effects, the local average treatment effect. MHE section 4.4.1, Theorem 4.4.1, page 114. Not examinable beyond the statement.
+
+With individual effects and potential treatments d one i and d zero i, the treatment status if z sub i is one or zero, assume four things. A1, independence: z sub i is independent of all potential outcomes and treatments. A2, exclusion: y sub i of d and zero equals y sub i of d and one. A3, a first stage: the expected value of d one i minus d zero i is not zero. A4, monotonicity: d one i is at least d zero i for all i, or the reverse for all i. Then the expected value of y sub i given z sub i equal to one minus that given z sub i equal to zero, over the expected value of d sub i given z sub i equal to one minus that given z sub i equal to zero, equals the expected value of y one i minus y zero i given d one i greater than d zero i.
+
+That is the average effect on compliers, those whose treatment the instrument changes. It is proved in MHE pages 114 and 115, but it is not on the slides. For Card, the compliers are men whose schooling depended on having a college nearby, plausibly those with high marginal returns.
+
+Bayesian IV, also G layer: Greenberg section 11.2, pages 173 and 174, has the system of equations 11.9 and 11.10 with a Wishart prior and a Gibbs sampler; slide page 20 lists Hahn, He and Lopes 2018, and Lopes and Polson 2014. These are tools of Classes 3 and 4, named only.
+
+A link to Class 2: in the log-level reading, 0.1315 is about 13.2 per cent per year of schooling, and exactly e to the 0.1315 minus one, which is 14.1 per cent.
+
+Practice for this section, with the statements in the books. Wooldridge computer exercises 15.C3, page 492, and 15.C5, page 493, both on the Card data. MHE Table 4.1.1, page 92, Table 4.1.2, page 96, and Table 4.1.3, page 97, as worked examples. Greenberg exercises 11.1 to 11.4, pages 180 and 181, for the Bayesian versions.
+
+Recap of section 5. OLS under endogeneity converges to beta one plus rho sigma x sigma y over the variance of x. An instrument that is relevant and excluded identifies beta one as the reduced form over the first stage, the covariance of z and y over the covariance of z and x. Adding z to the outcome regression leaves the bias sigma x y over sigma squared of x. With a binary instrument the ratio is the Wald estimator, 0.0891 in MHE Table 4.1.2; with covariates it is two-stage least squares. IV costs variance, a factor of one over the absolute correlation of x and z, and a weak first stage turns a tiny exclusion violation into a large bias, phi over delta one. Card: OLS 0.0747, IV 0.1315 with standard error 0.0550, first-stage F 13.26, Wu-Hausman p-value 0.28.
+
+Checklist. You should be able to derive the OLS probability limit under endogeneity, the reduced form, and the IV ratio by both the two-stage and the covariance routes. You should be able to show why the regression of y on x and z keeps a biased x coefficient. You should be able to derive the Wald estimator from the covariance with a dummy, and compute MHE's 0.0891. You should be able to describe two-stage least squares and why its second-stage standard errors are wrong. You should be able to state the IV variance, the imperfect-instrument bias formula, and the weak-instrument rule. And you should be able to read Card's printout line by line.
+
+Part three, section 6. Difference in differences: subtract the control group's change, and assume it is the treated group's counterfactual change.
+
+This section covers slides pages 21 to 25: section 10, Huntington-Klein's back-door story and the causal graphs, pages 21 and 22; section 10.1, the two-strategy table and the regression of y t i on beta zero plus beta one P t plus beta two T i plus beta three P t T i plus covariates, page 22; and section 10.2, the Card and Krueger data, the classical R output on page 24, and the Bayesian R code on page 25. It covers the site's Card and Krueger example and its data file, 384 stores in two periods. It covers MHE section 5.2, pages 169 to 176: equations 5.2.1 and 5.2.2 on page 170, Table 5.2.1 on page 171, Figure 5.2.1 on page 172, the Card and Krueger 2000 follow-up on page 172, and the regression version, equation 5.2.3, with its parameter map, on page 175. And Wooldridge section 13.2, pages 407 to 411, with equations 13.10 and 13.11 on page 410, and Table 13.3 on page 411.
+
+The claim, before the derivations. A before and after comparison of the treated mixes the policy with everything else that changed over time. A treated and control comparison mixes it with permanent group differences. The difference of the two differences removes both, under one assumption: without the policy, both groups would have moved in parallel, MHE equation 5.2.1. The four cell means and the saturated regression with an interaction, MHE 5.2.3, give the same number. On the site's Card and Krueger file, New Jersey's employment rose by 0.467 full-time equivalents while Pennsylvania's fell by 2.283, so the difference in differences is 2.750, with standard error 1.731 and t statistic 1.59: no sign that the higher minimum wage cut employment.
+
+From here on, DiD means difference in differences, and FTE means full-time-equivalent employment.
+
+The notation. y sub i s t is the FTE employment of store i in state s and period t. T sub i, the treatment variable, is one for New Jersey, the treated state, and zero for Pennsylvania, the control. P sub t, the time variable, is one for November 1992, after, and zero for February 1992, before. y bar sub T t is the mean of group T in period t. In MHE, gamma sub s is the state effect, lambda sub t the period effect, and d sub s t the treatment dummy, equal to T sub i times P sub t. MHE calls the causal effect beta in equation 5.2.2; here it is written delta, to keep beta for the regression of equation 6. Wooldridge uses d T, d 2, delta zero, beta one and delta one in equation 13.10. And capital Delta is a differential trend, treated minus control, that would have occurred without the policy.
+
+Six point one. The intuition: two back doors, one design. Slides pages 21 and 22.
+
+The slides follow Huntington-Klein. An office switches from cubicles to an open plan on 1 January 2017, and productivity Y rises, but "the economy also improved from 2016 to 2017", page 21. In a graph with X into Y, and Time into both X and Y, the before and after difference picks up "the way that Y may have changed over Time for reasons unrelated to Treatment". Adding a never-treated control group closes the Time back door but opens another. Treatment T now also depends on being in the treated group, and the groups may differ: T comes out of Time and Y comes out of Time; T comes out of In Treated Group and Y comes out of In Treated Group, page 22. "We can close both back-door paths through Time and In Treated Group using Difference-in-Differences": difference within group over time, then across groups.
+
+Six point two. Course layer: the identifying assumption. MHE section 5.2, page 170.
+
+The potential outcomes are y one i s t, under a high minimum wage, and y zero i s t, under a low one. Common trends, equation 1: the expected value of y zero i s t given s and t equals gamma sub s plus lambda sub t.
+
+In MHE's words: "In the absence of a minimum wage change, employment is determined by the sum of a time-invariant state effect and a year effect that is common across states." With a constant effect, the expected value of y one i s t minus y zero i s t given s and t equal to delta, equation 2: y sub i s t equals gamma sub s plus lambda sub t plus delta d sub s t plus epsilon sub i s t, with the expected value of epsilon given s and t equal to zero.
+
+Three steps.
+
+First, the control state's change. Pennsylvania is never treated, so d is zero in both periods. From equation 2, equation 3: the expected value of y in Pennsylvania in November minus the expected value in Pennsylvania in February equals gamma for Pennsylvania plus lambda for November, minus gamma for Pennsylvania plus lambda for February, which is lambda November minus lambda February.
+
+Second, the treated state's change. New Jersey has d equal to one in November only. Equation 4: the expected value in New Jersey in November minus that in New Jersey in February equals gamma for New Jersey plus lambda November plus delta, minus gamma for New Jersey plus lambda February, which is lambda November minus lambda February plus delta.
+
+Third, equation 4 minus equation 3. The state effects cancelled inside each change, and the common trend cancels now. Equation 5: the New Jersey change minus the Pennsylvania change equals delta.
+
+MHE prints the population difference on page 170 with the brackets in the opposite order, the Pennsylvania change minus the New Jersey change, which as written equals minus beta, not beta. The order in equation 5 is the one MHE uses for the regression parameter on page 175.
+
+The sentence to remember: "The key identifying assumption here is that employment trends would be the same in both states in the absence of treatment", MHE page 171. Groups may differ in level, gamma sub s; they may not differ in trend. Like ignorability, this is about an unobserved counterfactual: New Jersey's November employment without the increase.
+
+Six point three. Course layer: the slides' two strategies and the regression. Slide page 22, and Wooldridge Table 13.3.
+
+Strategy one: the change of the treated over time minus the change of the control over time. Strategy two: the treated minus control gap after, minus the treated minus control gap before. They are the same four numbers rearranged. Wooldridge page 410: "the estimate does not depend on how we do the differencing".
+
+The regression, slide page 22, Wooldridge equation 13.10, and MHE equation 5.2.3. Equation 6: y sub t i equals beta zero plus beta one P sub t plus beta two T sub i plus beta three P sub t T sub i, plus x sub t i transposed gamma, plus epsilon sub t i.
+
+The cell means without covariates. Set P sub t and T sub i to zero or one in equation 6, and walk the four cells. The control group before: beta zero. The control group after: beta zero plus beta one. So the control's change is beta one. The treated group before: beta zero plus beta two. The treated group after: beta zero plus beta one plus beta two plus beta three. So the treated's change is beta one plus beta three. The treated minus control gap is beta two before and beta two plus beta three after. And the difference of differences, either way, is beta three.
+
+This is Wooldridge Table 13.3, page 411, where Wooldridge's delta zero is our beta one, his beta one is our beta two, and his delta one is our beta three. Four cells, four parameters: the model is saturated. So least squares reproduces the four sample means exactly, and equation 7, Wooldridge equation 13.11: beta three hat equals y bar one one minus y bar one zero, minus the quantity y bar zero one minus y bar zero zero.
+
+The regression adds standard errors, more groups and periods, and covariates, slide page 23.
+
+Six point four. Course layer: the worked example, the site's Card and Krueger file.
+
+"On April 1, 1992, New Jersey raised the state minimum wage from 4.25 dollars to 5.05 dollars while the minimum wage in Pennsylvania stays the same at 4.25 dollars", slide page 24. There are 384 restaurants observed in February and November 1992, 768 rows: 309 New Jersey stores and 75 Pennsylvania stores. Treatment equal to one is New Jersey: its pre-period mean matches MHE's New Jersey column. The slide's phrase "NJ (0) and PA (1)" is a slip.
+
+The cell means, from the site's output and the Python note, section 6. Pennsylvania, the control: 23.380 in February 1992 and 21.097 in November, a change B of 21.097 minus 23.380, which is minus 2.283. New Jersey, the treated: 20.431 in February and 20.897 in November, a change A of 20.897 minus 20.431, which is plus 0.467. The New Jersey minus Pennsylvania gap: 20.431 minus 23.380, which is minus 2.949, in February; and 20.897 minus 21.097, which is minus 0.199, in November.
+
+Strategy one: A minus B equals 0.4666667 minus minus 2.2833333, which is 2.7500000. The site prints those three numbers, 0.4666667, minus 2.2833333 and 2.7500000. Strategy two: minus 0.199 minus minus 2.949, which is 2.750.
+
+The regression, the site's linear model of the outcome on time, treatment and their interaction. Read it coefficient by coefficient. The intercept equals the control's before mean: 23.380, standard error 1.098, t statistic 21.29, p-value below 2 times 10 to the minus 16. Time equals B: minus 2.283, standard error 1.553, t minus 1.47, p-value 0.142. Treatment equals the New Jersey minus Pennsylvania gap before: minus 2.949, standard error 1.224, t minus 2.41, p-value 0.016. The interaction equals the DiD: 2.750, standard error 1.731, t 1.59, p-value 0.113. The residual standard error is 9.511 on 764 degrees of freedom, and the R squared is 0.0076. Every coefficient is a cell-mean contrast from the table of point three.
+
+Compare MHE Table 5.2.1, page 171, Card and Krueger's own Table 3, using all available observations. Pennsylvania goes from 23.33 to 21.17, a change of minus 2.16. New Jersey goes from 20.44 to 21.03, a change of plus 0.59. The printed DiD is 2.76, standard error 1.36; from the rounded entries, 0.59 minus minus 2.16 is 2.75. The site's balanced 384-store file gives almost the same point estimate with a larger standard error, 1.731, because the pooled least squares formula ignores that each store appears twice.
+
+The sign is the finding. A competitive labour market predicts that employment falls in New Jersey relative to Pennsylvania. The DiD is positive, "the opposite of what we might expect if a higher minimum wage pushes businesses up the labor demand curve", MHE page 171. Statistically, the 95 per cent interval, 2.75 plus or minus 1.96 times 1.731, runs from minus 0.64 to 6.14. It includes zero but excludes any sizeable job loss.
+
+The figure for this section. On the left, the four cell means are drawn using the data file, as in MHE Figure 5.2.1, page 172. Pennsylvania falls from 23.38 to 21.10, and New Jersey rises from 20.43 to 20.90. New Jersey's counterfactual is a dashed line falling parallel to Pennsylvania's, to 20.431 plus minus 2.283, which is 18.147, and a double arrow of 2.75 separates counterfactual from actual. On the right, the effect implied by DiD minus an assumed differential trend Delta is plotted: if equation 1 fails by a differential trend Delta, the estimate of equation 5 is delta plus Delta, so the effect is 2.75 minus Delta. It is a falling line, from 4.75 at Delta equal to minus 2 to minus 3.25 at Delta equal to 6, with a band of plus or minus 1.96 times 1.731, crossing zero at Delta equal to 2.75.
+
+How to read it. The dashed line is the whole assumption made visible: New Jersey would have lost 2.28 FTE per store, as Pennsylvania did. On the right, the band already contains zero at Delta equal to zero, which is the interval from minus 0.64 to 6.14. A differential trend of 2.75, the size of the estimate itself, centres it on zero, and only a Delta above 6.14 would turn the data into significant evidence of job loss. Card and Krueger's 2000 payroll data, MHE page 172 and Figure 5.2.2, show substantial differential swings between the two states in other years, so "Pennsylvania may not provide a very good measure of counterfactual employment rates in New Jersey".
+
+Six point five. Course layer: checking and extending. MHE pages 172 to 178. Three points.
+
+Pre-trends. With several pre-periods, equation 1 predicts parallel lines before the policy. MHE's Bavaria example, Figure 5.2.3, page 174, is the encouraging case.
+
+More groups, and continuous intensity. y sub i s t equals gamma sub s plus lambda sub t plus beta times f a sub s times d sub t, plus epsilon sub i s t, MHE 5.2.4, page 175. Card, 1992, uses the fraction of teenagers affected by the federal minimum as the treatment intensity.
+
+Logs against levels, MHE footnote 7, page 171: "if there is a common trend in logs, there will not be one in levels and vice versa". The assumption is scale-dependent.
+
+Six point six. G layer: the slides' Bayesian version, slide page 25. Not examinable.
+
+The R code draws beta from a normal with mean beta hat and covariance s squared times the inverse of X transposed X, with s squared equal to the sum of squared residuals over n minus 4. It plots the four cell posteriors and the posterior of beta four, the interaction. This is a flat-prior normal approximation, so the posterior is centred at 2.750 with standard deviation 1.731, and the posterior probability that beta four is positive is about Phi of 2.750 over 1.731, which is Phi of 1.589, which is 0.944, from the Python note, section 6. The snippet uses a beta one computed earlier in the session. Posterior simulation and priors belong to Classes 3 and 4.
+
+Links worth keeping. DiD's estimand is an effect on the treated: the effect on New Jersey stores. Differencing removes fixed effects but amplifies measurement error, MHE page 169. And in Class 7, panel fixed effects and hierarchical models generalise gamma sub s plus lambda sub t.
+
+Practice for this section, with the statements in the books. Wooldridge problems 13.2, page 425, and 13.6, page 426, and computer exercise 13.C3, page 427, on the incinerator data of Wooldridge Example 13.3. And MHE Table 5.2.1, page 171, as a worked example.
+
+Recap of section 6. Before and after mixes the policy with time; treated against control mixes it with group differences. Under common trends, the difference of the two changes is the effect, with the state effects and the common trend both cancelling. The saturated regression with an interaction reproduces the four cells, and its interaction coefficient is the DiD. Card and Krueger: Pennsylvania minus 2.283, New Jersey plus 0.467, DiD 2.750 with standard error 1.731, an interval from minus 0.64 to 6.14. A differential trend Delta moves the answer one for one.
+
+Checklist. You should be able to state common trends as gamma sub s plus lambda sub t, and derive the DiD equal to delta in three steps. You should be able to map the four regression coefficients onto the four cell means. You should be able to compute the Card and Krueger DiD both ways from the cell means and read the site's regression output. You should be able to explain why the positive sign matters, and what a differential trend does to the estimate. And you should be able to name the checks: pre-trends, intensity designs, and the scale dependence of the assumption.
+
+Part three, section 7. Regression discontinuity: when a rule switches treatment on at a cutoff, the jump in the outcome is the effect at the cutoff.
+
+This section covers slides pages 26 to 38, section 11, after Angrist and Pischke, Mastering 'Metrics, chapter 4, pages 147 to 164: birthdays and funerals, pages 26 and 27; the treatment indicator and sharp regression discontinuity, page 28; the regression of y a on alpha plus rho D a plus gamma a, with rho hat equal to 7.7, page 29; nonlinearity mistaken for a discontinuity, page 30; linear against quadratic with interactions, page 31; the R script replicating Figure 4.5, page 33; the Bayesian version, pages 34 and 35; nonparametric regression discontinuity, page 36; the NBA draft, pages 36 and 37; and the references, page 38. It covers the site's example on age, motor-vehicle accidents and internal causes, with its data file of 48 monthly cells. And it covers MHE section 6.1, pages 189 to 195, equations 6.1.1 to 6.1.7, and section 6.2, pages 196 to 198, fuzzy regression discontinuity, equation 6.2.5, G layer only.
+
+From here on, RD means regression discontinuity, MLDA means the minimum legal drinking age, and MVA means motor-vehicle accidents.
+
+The claim, before the derivations. In a sharp design, treatment is a deterministic, discontinuous function of a running variable: D sub a equals one when a is at least 21. So treated and untreated never share a value of a. Ignorability holds trivially, while positivity fails by construction. Identification comes instead from continuity: if the expected value of y zero given a is smooth at the cutoff, the jump in the expected value of y given a there is the expected value of y one minus y zero at a equal to a zero, MHE equation 6.1.7. Estimating it means modelling the trend on each side, linear, quadratic with interactions, or locally linear in a window, and the trend model is where RD goes wrong: curvature can masquerade as a jump. On the site's MLDA data, motor-vehicle deaths jump by 4.53 per 100,000 at 21, standard error 0.77, or 3.41 residual standard deviations; deaths from internal causes do not, 0.39 with standard error 0.60.
+
+The notation, the slides', with MHE's in parentheses where it differs. a, MHE's x sub i, is the running variable, age in years. a zero, MHE's x zero, is the cutoff, 21. D sub a, MHE's d sub i, is the treatment, legal access to alcohol. y sub a, MHE's y sub i, is the death rate per 100,000 in the 30-day cell at age a; y zero and y one are the potential outcomes without and with treatment. Rho is the jump, the causal effect at the cutoff. Gamma, MHE's beta, is the slope of the trend; gamma one, gamma two, delta one and delta two are the quadratic and interaction terms of slide page 31. b, MHE's capital Delta, is the bandwidth, the half-width of the window from a zero minus b to a zero plus b. And sigma hat is the residual standard deviation.
+
+Seven point one. The intuition: birthdays and funerals. Slides pages 26 to 28.
+
+"Human behavior is constrained by rules", page 26: class sizes capped at 32, pensions from age 62, and the United States minimum legal drinking age of 21. Daily deaths of Americans aged 20 to 22, from 1997 to 2003, spike on and right after the 21st birthday: "This spike adds about 100 deaths to a baseline level of about 150 per day", page 27. By month of age, "few rates to the left of the age-21 cutoff are above 95, few of those to the right are below 95", page 28.
+
+Seven point two. Course layer: the sharp design. Slide page 28, and MHE section 6.1, page 189.
+
+Equation 1: D sub a equals one if a is at least 21, and zero if a is below 21. In MHE, equation 6.1.1, d sub i is the indicator that x sub i is at least x zero.
+
+The slide's three properties. Treatment is a deterministic function of a: "once we know a, we know D sub a". It is a discontinuous one: "no matter how close a gets to the cutoff, D sub a remains unchanged until the cutoff is reached". And a is the running variable. Sharp RD: "treatment switches cleanly off or on as the running variable passes a cutoff". The site's code sets the over-21 indicator to one where age is strictly greater than 21; no cell sits exactly at 21, so strictly greater and greater-or-equal agree.
+
+Why regression still matters, slide page 29. "Mortality clearly changes with the running variable, a, for reasons unrelated to the MLDA": internal-cause deaths rise through the late teens, external-cause deaths fall. "RD gets its name from the practice of using regression models to implement this control."
+
+Seven point three. Course layer: the linear model. Slide page 29, and MHE equation 6.1.2, page 190.
+
+Assume a linear untreated trend and a constant effect, MHE page 190. Equation 2: the expected value of y zero given a is alpha plus gamma a, and y one equals y zero plus rho.
+
+The observed mean. By equation 1, the observed outcome is y equals y zero plus y one minus y zero times D sub a, which is y zero plus rho D sub a. Take expectations given a and substitute equation 2. Equation 3: the expected value of y sub a given a equals alpha plus gamma a plus rho D sub a, so y sub a equals alpha plus rho D sub a plus gamma a plus epsilon sub a.
+
+The slide: "The negative slope, captured by gamma, reflects smoothly declining death rates among young people as they mature. The parameter rho captures the jump in deaths at age 21. The regression generates an estimate of rho equal to 7.7", page 29. That is for all deaths in Mastering 'Metrics. The site's file has the two components of Figure 4.5, motor-vehicle accidents and internal causes, worked in point six.
+
+What makes equation 3 identify anything. D sub a is perfectly determined by a, yet it is not collinear with it. RD "distinguishes the nonlinear and discontinuous function, the indicator that x sub i is at least x zero, from the smooth and (in this case) linear function, x sub i", MHE page 190. Everything rests on the trend being correctly modelled on both sides.
+
+Seven point four. Course layer: identification without functional form. MHE equation 6.1.7, page 193.
+
+If the expected values of y zero and of y one given a are continuous at a zero, then just below the cutoff everyone is untreated, and just above everyone is treated. So the expected value of y for a between a zero minus Delta and a zero is approximately the expected value of y zero at a equal to a zero; and the expected value of y for a between a zero and a zero plus Delta is approximately the expected value of y one at a equal to a zero.
+
+Subtract and let the window shrink. Equation 4: the limit, as Delta goes to zero, of the expected value of y just above the cutoff minus the expected value of y just below it equals the expected value of y one minus y zero at a equal to a zero.
+
+The estimand is an average effect at the cutoff, valid without the constant-effect assumption of equation 2, MHE page 193, and valid only there: RD says nothing about 25-year-olds. Since no age has both treated and untreated cells, RD "turns on our willingness to extrapolate across covariate values, at least in a neighborhood of the discontinuity", MHE page 190.
+
+Seven point five. Course layer: polynomials and interactions. Slides pages 30 and 31, and MHE equations 6.1.4 to 6.1.6, page 192.
+
+Different trends on each side. Model both conditional means with polynomials in a tilde, which is a minus a zero. The expected value of y zero given a is alpha plus gamma one a tilde plus gamma two a tilde squared. The expected value of y one given a is alpha plus rho plus gamma one superscript one times a tilde plus gamma two superscript one times a tilde squared.
+
+Combine with the identity: the expected value of y given a equals the expected value of y zero given a, plus the expected value of y one minus y zero given a, times D sub a, MHE page 192. That gives alpha plus gamma one a tilde plus gamma two a tilde squared, plus D sub a times the quantity rho plus gamma one superscript one minus gamma one, times a tilde, plus gamma two superscript one minus gamma two, times a tilde squared.
+
+Name the differences delta k equals gamma k superscript one minus gamma k. That is the slide's quadratic regression with interactions, page 31. Equation 5: y sub a equals alpha plus rho D sub a, plus gamma one times a minus a zero, plus gamma two times a minus a zero squared, plus delta one times a minus a zero times D sub a, plus delta two times a minus a zero squared times D sub a, plus epsilon sub a.
+
+Centring at a zero makes rho the jump at the cutoff. At a tilde equal to some c greater than zero, the effect is rho plus delta one c plus delta two c squared, MHE page 192. The site's code does not centre. It regresses on age, age squared, the over-21 indicator times age, and the over-21 indicator times age squared, and recovers the jump as the right limit minus the left limit: the over-21 coefficient, plus 21 times the coefficient on over-21 times age, plus 441 times the coefficient on over-21 times age squared. It is the same number.
+
+The danger, slide page 30, and MHE Figure 6.1.1, panel C, page 191: "nonlinearity mistaken for a discontinuity". A sharp turn in a smooth expected value of y zero, fitted with straight lines, produces a spurious jump. Gelman and Imbens, 2019, cited on slide page 38, warn the other way: high-order global polynomials give erratic jumps. Hence windows, point seven.
+
+Seven point six. Course layer: the worked example, the site's MLDA data.
+
+There are 48 monthly cells, ages 19.07 to 22.93, deaths per 100,000. These are fits on all cells, and the Python note, section 7, reproduces every number.
+
+The linear model, equation 3, for MVA: the fitted MVA rate is 95.4814 minus 3.1488 a plus 4.534 D sub a. The two fitted limits at 21: the left limit is 95.4814 minus 3.1488 times 21, which is 95.4814 minus 66.1248, which is 29.3566. The right limit is 29.3566 plus 4.534, which is 33.8906.
+
+Now the four fits, one at a time, each with the jump, its standard error, the residual standard deviation, the jump in residual standard deviations, which the site labels "stdevs", and the t statistic.
+
+MVA, linear: jump 4.534, standard error 0.768; residual standard deviation 1.3293; 4.534 over 1.3293 is 3.411 standard deviations; t statistic 5.90.
+
+MVA, quadratic with interactions: jump 4.663, standard error 1.155; residual standard deviation 1.3292; 3.508 standard deviations; t statistic 4.04.
+
+Internal causes, linear: jump 0.392, standard error 0.596; residual standard deviation 1.0318; 0.380 standard deviations; t statistic 0.66.
+
+Internal causes, quadratic with interactions: jump 1.073; residual standard deviation 1.0458; 1.026 standard deviations. No t statistic is reported.
+
+The readings. Three of them.
+
+First, MVA jumps, robustly. Linear and quadratic agree, 4.53 against 4.66. The curvature terms cost precision, the standard error going from 0.77 to 1.15, without moving the estimate. A 4.5-point rise on a left limit of 29.4 is about 15 per cent.
+
+Second, internal causes do not jump, on the full sample. Deaths from disease should not respond to legal drinking, so a jump of 0.39, standard error 0.60, there is a built-in placebo outcome that supports the design. The quadratic gives 1.07, and some narrow windows give more, as point seven shows.
+
+Third, the slide's "stdevs" legend divides the jump by the residual standard deviation, a scale-free size; it is not a t statistic. In the slide's page 33 code, the linear legend for the internal causes uses delta over sigma one, which is the MVA jump over the internal-cause standard deviation, 4.394. The site page corrects it to delta one over sigma one, which is 0.380.
+
+Seven point seven. Course layer: local linear regression and the bandwidth. Slide page 36, and MHE page 193.
+
+The slide, page 36: "For observations in the window from a zero minus b to a zero plus b, for small b, nonlinear trends need not concern us at all. Strategy: comparing averages in a narrow window just to the left and just to the right of the cutoff. High variance: very narrow window, few observations, too imprecise estimates. Trade-off: bias reduction near the boundary against the increased variance." The estimator is equation 3, or equation 5 with linear terms only, on the cells whose distance from a zero is at most b. MHE, page 193, describes it as weighted least squares with more weight near the cutoff; the uniform window is the simplest kernel.
+
+MVA, linear with separate slopes, by bandwidth, from the Python note, section 7. With b equal to 0.5 years: jump 4.772, standard error 1.291. With b equal to 1.0: jump 4.759, standard error 1.123. With b equal to 2.0, which is all cells: jump 4.534, standard error 0.751.
+
+Placebo cutoffs, with the same estimator and b equal to one, at ages where no rule changes. At a zero equal to 20: 0.828, standard error 1.096. At a zero equal to 22: minus 0.103, standard error 1.106. Neither is distinguishable from zero.
+
+The jump survives every specification. Narrowing the window from all 48 cells to one year on either side moves rho hat by a quarter of a death and widens the standard error by half; fake cutoffs show nothing. That stability, not any one number, is the RD evidence. MHE page 193: "Hopefully, as you zero in on x zero with fewer and fewer controls, the estimated effect of d sub i remains stable."
+
+The figure for this section. On the left are the monthly death rates against age from 19 to 23: motor-vehicle accidents near 27 to 36, and internal causes near 16 to 24, with circles left of 21 and squares to the right. Solid linear fits and dashed quadratic-with-interactions fits are drawn on each side; this is the site's two figures in one. The MVA fit jumps up at 21; the internal-cause fit barely moves. On the right are the local linear estimates of the jump, with separate slopes, with bands of plus or minus 1.96 standard errors, against the bandwidth from 0.40 to 2.00 years in steps of 0.05. The MVA estimate stays between about 4.2 and 5.7, with a band that narrows as the window widens. The internal-cause estimate falls from about 1.4 to 0.4, with a band covering zero.
+
+How to read it. On the left, the discontinuity is visible by eye for MVA and absent for internal causes, and the two specifications nearly coincide. On the right, the bias and variance trade-off of slide page 36 is literal: narrow windows give wide bands. The MVA band stays well above zero at every bandwidth; its lower edge never falls below 1.5. The internal-cause band covers zero at most bandwidths, but not for b between 0.90 and 1.10, which is 22 to 26 cells, where rho hat is about 1.6 to 1.9 with a lower edge of 0.17 to 0.28. Scanning 33 bandwidths of a noisy placebo outcome turns up a "significant" window. Report the whole curve, not the bandwidth that looks best.
+
+The interactive companion for this section is The Discontinuity Window. You choose the outcome, the bandwidth b, the polynomial order, separate slopes on or off, and the cutoff a zero, which you can move off 21 for a placebo test. You watch the fitted pieces, rho hat plus or minus 1.96 standard errors, the jump in residual standard deviations, and rho hat against every bandwidth. Buttons reset to the site's linear and quadratic fits.
+
+Seven point eight. G layer: beyond the sharp parametric design. Not examinable. Three items.
+
+First, the slides' Bayesian version, pages 34 and 35, draws beta from a normal with mean beta hat and covariance sigma hat squared times the inverse of X transposed X, with sigma hat squared the maximum likelihood variance, and plots the posteriors of the left and right limits at 21 for each model. It is a flat-prior normal approximation; Classes 3 and 4.
+
+Second, fuzzy RD is IV, MHE section 6.2, pages 196 to 198. When crossing the cutoff changes only the probability of treatment, the jump in y divided by the jump in the probability that d equals one given x, MHE equation 6.2.5, is a Wald estimator, as in section 5, point four, with the indicator of x at least x zero as the instrument. Named only; not on the slides.
+
+Third, Bayesian nonparametric RD, slides pages 36 and 37: Branson and coauthors, 2019, use Gaussian-process regression on 1,238 NBA draftees, and find that "the treatment effect of being a second-round pick significantly reduces the number of games played". Data-driven bandwidths, Imbens and Kalyanaraman 2012, and Calonico, Cattaneo and Titiunik 2014, are in the reference list, page 38. Named only.
+
+Links worth keeping. In RD, positivity fails by design, and equation 4 is a conditional average treatment effect at a equal to a zero. Fuzzy RD is instrumental variables. In Class 2, the choice of polynomial order and overfitting is the same trade-off as the bandwidth here. RD is a site topic beyond the syllabus table, and in scope.
+
+Practice for this section, worked examples in the book: MHE Figure 6.1.2, page 195, Lee's 2008 elections study, and Table 6.2.1, page 202, Angrist and Lavy's class-size study, a fuzzy RD.
+
+Recap of section 7. In a sharp design, treatment switches on at a cutoff of the running variable, so positivity fails and identification rests on continuity of the untreated mean. The jump at the cutoff is the average effect there, and only there. The linear model gives 4.534 for motor-vehicle deaths at 21, or 3.411 residual standard deviations; quadratic with interactions gives 4.663; local linear with bandwidth one gives 4.76. Internal causes and fake cutoffs show nothing on the full sample, but one narrow window of the placebo outcome does, so report the whole bandwidth curve.
+
+Checklist. You should be able to define a sharp design and say why positivity fails. You should be able to derive the linear RD regression from the potential outcomes. You should be able to state and explain the continuity argument, equation 4, and what population the estimand describes. You should be able to write the centred quadratic with interactions and say why centring makes rho the jump. You should be able to compute the left and right limits from the site's linear fit and read the four-fit printout. And you should be able to explain the bandwidth trade-off, the placebo checks, and the danger of picking one window.
+
+Recap of part 2. Each design replaces the unavailable list of confounders with an assumption about variation. Instruments assume the instrument moves the treatment and nothing else: Card, 0.1315 against OLS 0.0747. Difference in differences assumes parallel trends: Card and Krueger, plus 2.75 FTE. Regression discontinuity assumes a smooth counterfactual at the cutoff: plus 4.53 deaths per 100,000 at 21. None of these assumptions can be checked from the data; each can only be stress-tested, with first-stage F statistics, pre-trends, placebo outcomes and placebo cutoffs. Part 3 holds the pitfalls, the spoken formula sheet, the implementation, the reading route, the self-test, the glossary, and the unit in five lines.
+

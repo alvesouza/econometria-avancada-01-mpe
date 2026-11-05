@@ -1,0 +1,202 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>The Factor-Volatility Dial</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,500;8..60,650&family=Public+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: controls rail left; answer, correlation curve and covariance ellipse right; one column under 860px.
+   Colour roles: --main = the current state, --ref = the static (h = 1) reference, --mark = landmarks. */
+:root{
+  --bg:#f3f5f8; --panel:#ffffff; --ink:#1a2130; --muted:#5a6578; --line:#d7dde7; --soft:#edf0f5;
+  --main:#1f5f8b; --ref:#6b7a88; --warn:#b4521a; --mark:#9c7200; --focus:#2b63c4;
+  --display:"Source Serif 4", Georgia, "Times New Roman", serif;
+  --body:"Public Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono:"JetBrains Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#10141b; --panel:#171d27; --ink:#e5e9f0; --muted:#9aa5b8; --line:#2a3342; --soft:#1e2532;
+  --main:#6fb0e0; --ref:#9aa5b8; --warn:#f0954a; --mark:#e6be4a; --focus:#74a3ff; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#10141b; --panel:#171d27; --ink:#e5e9f0; --muted:#9aa5b8; --line:#2a3342; --soft:#1e2532;
+  --main:#6fb0e0; --ref:#9aa5b8; --warn:#f0954a; --mark:#e6be4a; --focus:#74a3ff; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font:15px/1.5 var(--body);margin:0}
+.wrap{max-width:1180px;margin:0 auto;padding-left:max(16px, env(safe-area-inset-left, 0px));padding-right:max(16px, env(safe-area-inset-right, 0px));padding-block:24px 40px}
+header{display:grid;gap:4px;margin-bottom:18px}
+.eyebrow{font:600 12px/1.3 var(--body);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+h1{font:650 clamp(26px,4vw,36px)/1.1 var(--display);margin:0}
+.lede{color:var(--muted);max-width:72ch;margin:0}
+.grid{display:grid;grid-template-columns:320px minmax(0,1fr);gap:20px;align-items:start}
+@media (max-width:860px){.grid{grid-template-columns:minmax(0,1fr)}}
+.rail{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px;display:grid;gap:16px}
+.ctl{display:grid;gap:4px}
+.ctl .top{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.ctl label{font-weight:600}
+.ctl output{font:600 14px var(--mono);font-variant-numeric:tabular-nums}
+.ctl p{margin:0;font-size:13px;color:var(--muted)}
+input[type=range]{width:100%;accent-color:var(--ink)}
+input:focus-visible,button:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+.btns{display:flex;flex-wrap:wrap;gap:8px}
+button{font:600 13px var(--body);background:var(--soft);color:var(--ink);border:1px solid var(--line);border-radius:6px;padding:7px 12px;cursor:pointer}
+button:disabled{opacity:.5;cursor:default}
+main{display:grid;gap:16px;min-width:0}
+.answer{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px 18px;display:grid;gap:6px}
+.answer .lab{font-size:13px;color:var(--muted)}
+.answer .big{font:600 clamp(26px,5vw,44px)/1.15 var(--body);font-variant-numeric:tabular-nums}
+.answer .verdict{font:500 16px/1.45 var(--body);max-width:66ch}
+.answer .side{font:13px/1.6 var(--mono);color:var(--muted);font-variant-numeric:tabular-nums}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px 16px;min-width:0}
+.panel h3{font:600 15px/1.3 var(--body);margin:0 0 2px}
+.panel .sub{font-size:13px;color:var(--muted);margin:0 0 8px}
+svg{display:block;width:100%;height:auto;max-width:100%}
+svg text{fill:var(--muted);font:12px var(--body)}
+.two{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr);gap:16px}
+@media (max-width:1000px){.two{grid-template-columns:minmax(0,1fr)}}
+.scroll{overflow-x:auto}
+footer{margin-top:22px;font-size:13px;color:var(--muted);display:grid;gap:10px}
+footer table{border-collapse:collapse;font-size:12.5px;min-width:760px}
+footer th,footer td{border-bottom:1px solid var(--line);padding:4px 8px;text-align:left;vertical-align:top}
+</style>
+
+<div class="wrap">
+<header>
+  <div class="eyebrow">Econometria Avançada · Class 9 · BVAR-part2.pdf slides 15, 22 and 38 (factor model, simulation exercise, factor stochastic volatility)</div>
+  <h1>The Factor-Volatility Dial</h1>
+  <p class="lede">One common factor drives two series: y<sub>it</sub> = β<sub>i</sub> f<sub>t</sub> + ε<sub>it</sub>, f<sub>t</sub> ~ N(0, h<sub>t</sub>), ε<sub>it</sub> ~ N(0, ψ<sub>i</sub>). Then Σ<sub>t</sub> = h<sub>t</sub>ββ′ + Ψ and ρ<sub>t</sub> = β₁β₂h<sub>t</sub> / √((β₁²h<sub>t</sub> + ψ₁)(β₂²h<sub>t</sub> + ψ₂)). In factor SV the factor log-variance λ<sub>t</sub> = log h<sub>t</sub> follows an AR(1); here you move it by hand. Notes: L09-05 §2, L09-07 §5.</p>
+</header>
+
+<div class="grid">
+<aside class="rail" aria-label="Controls">
+  <div class="ctl"><div class="top"><label for="b1">β₁</label><output id="o-b1"></output></div>
+    <input id="b1" type="range" min="-1.5" max="1.5" step="0.01"><p>how strongly series 1 moves with the common factor</p></div>
+  <div class="ctl"><div class="top"><label for="b2">β₂</label><output id="o-b2"></output></div>
+    <input id="b2" type="range" min="-1.5" max="1.5" step="0.01"><p>how strongly series 2 moves with the common factor</p></div>
+  <div class="ctl"><div class="top"><label for="p1">ψ₁</label><output id="o-p1"></output></div>
+    <input id="p1" type="range" min="0" max="1" step="0.01"><p>series 1's own (idiosyncratic) variance</p></div>
+  <div class="ctl"><div class="top"><label for="p2">ψ₂</label><output id="o-p2"></output></div>
+    <input id="p2" type="range" min="0" max="1" step="0.01"><p>series 2's own (idiosyncratic) variance</p></div>
+  <div class="ctl"><div class="top"><label for="lam">λ<sub>t</sub> = log h<sub>t</sub></label><output id="o-lam"></output></div>
+    <input id="lam" type="range" min="-6" max="3" step="0.05"><p>today's factor log-variance: calm markets to the left, turmoil to the right</p></div>
+  <div class="btns"><button id="go0">λ = 0 (static model)</button><button id="gohalf">half-limit point</button><button id="reset">Reset</button></div>
+</aside>
+
+<main>
+  <section class="answer" aria-live="polite">
+    <div class="lab">Conditional correlation ρ<sub>t</sub> between the two series</div>
+    <div class="big" id="ans"></div>
+    <div class="verdict" id="verdict"></div>
+    <div class="side" id="side"></div>
+  </section>
+  <div class="two">
+    <section class="panel"><h3>ρ<sub>t</sub> against the factor log-variance λ<sub>t</sub></h3>
+      <p class="sub">curve: the model's exact expression on 400 points · dot: now · gold: λ = 0 and the half-limit point</p>
+      <svg id="curve" viewBox="0 0 520 320" role="img" aria-label="Correlation against factor log-variance"></svg></section>
+    <section class="panel"><h3>Two-standard-deviation ellipse of (y₁, y₂)</h3>
+      <p class="sub">solid: now · dashed: at λ = 0</p>
+      <svg id="ell" viewBox="0 0 300 300" role="img" aria-label="Covariance ellipse"></svg></section>
+  </div>
+</main>
+</div>
+
+<footer>
+  <div>Provenance: model y<sub>t</sub> | f<sub>t</sub> ~ N(βf<sub>t</sub>, Σ<sub>t</sub>), f<sub>t</sub> ~ N(0, H<sub>t</sub>), BVAR-part2.pdf slide 38 (Pitt and Shephard 1999), with Ω = ββ′ + Σ from slide 15. Defaults: series 1 and 3 of the simulation exercise on slide 22 (β = 0.99 and 0.90 on factor 1; ψ = 0.01 and 0.10) and the static model's factor variance h = 1 (λ = 0). The half-limit point solves (1 + a₁/h)(1 + a₂/h) = 4 with a<sub>i</sub> = ψ<sub>i</sub>/β<sub>i</sub>² (closed form). Unit-free: variances in the units of the standardised series.</div>
+  <div class="scroll"><table>
+    <thead><tr><th>Control</th><th>Symbol</th><th>Range</th><th>Step</th><th>Default</th><th>Source</th><th>What moves</th></tr></thead>
+    <tbody>
+      <tr><td>Loading 1</td><td>β₁</td><td>−1.5–1.5</td><td>0.01</td><td>0.99</td><td>slide 22, row 1</td><td>curve, ellipse, ρ</td></tr>
+      <tr><td>Loading 2</td><td>β₂</td><td>−1.5–1.5</td><td>0.01</td><td>0.90</td><td>slide 22, row 3</td><td>curve, ellipse, ρ</td></tr>
+      <tr><td>Idiosyncratic variance 1</td><td>ψ₁</td><td>0–1</td><td>0.01</td><td>0.01</td><td>slide 22</td><td>curve, ellipse, ρ</td></tr>
+      <tr><td>Idiosyncratic variance 2</td><td>ψ₂</td><td>0–1</td><td>0.01</td><td>0.10</td><td>slide 22</td><td>curve, ellipse, ρ</td></tr>
+      <tr><td>Factor log-variance</td><td>λ<sub>t</sub></td><td>−6–3</td><td>0.05</td><td>0</td><td>slide 38; static FA h = 1</td><td>dot on curve, ellipse, ρ</td></tr>
+    </tbody></table></div>
+  <div>Landmarks: λ = 0 (static factor model); the half-limit point where |ρ| is half its h → ∞ limit. Belongs to Notas/L09 (L09-05, L09-07). Verified by companions/check_companions.py.</div>
+</footer>
+
+<script id="model">
+// Pure model: no DOM access. check_companions.py runs this block under node.
+const LMIN = -6, LMAX = 3;
+function moments(p, lam){
+  const h = Math.exp(lam), v1 = p.b1*p.b1*h + p.p1, v2 = p.b2*p.b2*h + p.p2, c = p.b1*p.b2*h;
+  return {h, v1, v2, c, rho: (v1 > 0 && v2 > 0) ? c/Math.sqrt(v1*v2) : NaN};
+}
+// lambda at which |rho| reaches half its h -> infinity limit; null when the curve is flat.
+function halfPoint(p){
+  if(p.b1 === 0 || p.b2 === 0) return null;
+  const a1 = p.p1/(p.b1*p.b1), a2 = p.p2/(p.b2*p.b2);
+  if(a1 === 0 && a2 === 0) return null;
+  const x = (a1 === 0 || a2 === 0) ? 3/(a1 + a2) : (-(a1 + a2) + Math.sqrt((a1 + a2)*(a1 + a2) + 12*a1*a2))/(2*a1*a2);
+  return -Math.log(x);                                  // x = 1/h
+}
+const f3 = x => { const s = x.toFixed(3); return s === "-0.000" ? "0.000" : s; };
+const fsh = (num, den) => den > 0 ? (100*num/den).toFixed(1) + "%" : "n/a (zero variance)";
+// p = {b1, b2, p1, p2, lam}. Every number the page prints, as the string it prints.
+function readouts(p){
+  const m = moments(p, p.lam), m0 = moments(p, 0), hp = halfPoint(p);
+  const limit = (p.b1 === 0 || p.b2 === 0) ? 0 : Math.sign(p.b1*p.b2);
+  return {ans: Number.isNaN(m.rho) ? "n/a (a series has zero variance)" : f3(m.rho),
+    rho0: Number.isNaN(m0.rho) ? "n/a" : f3(m0.rho), h: m.h.toPrecision(3), lam: p.lam.toFixed(2),
+    v1: f3(m.v1), v2: f3(m.v2), cov: f3(m.c), share1: fsh(p.b1*p.b1*m.h, m.v1), share2: fsh(p.b2*p.b2*m.h, m.v2),
+    limit: String(limit), half: hp === null ? "none (ρ does not depend on h)" : hp.toFixed(3),
+    side: hp === null ? "flat" : (Math.abs(p.lam - hp) < 1e-9 ? "at" : (p.lam > hp ? "above" : "below"))};
+}
+</script>
+<script>
+const DEF = {b1:0.99, b2:0.90, p1:0.01, p2:0.10, lam:0};
+let S = Object.assign({}, DEF);
+const $ = id => document.getElementById(id);
+const IDS = ["b1","b2","p1","p2","lam"];
+function syncInputs(){ for(const k of IDS) $(k).value = String(k === "lam" ? Math.round(S.lam*20)/20 : S[k]); }
+function drawCurve(){
+  const W = 520, Hh = 320, x0 = 46, x1 = 505, y0 = 16, y1 = 286;
+  const X = l => x0 + (l - LMIN)/(LMAX - LMIN)*(x1 - x0), Y = r => y0 + (1 - r)/2*(y1 - y0);
+  let g = "";
+  for(const r of [-1, -0.5, 0, 0.5, 1]) g += `<line x1="${x0}" x2="${x1}" y1="${Y(r)}" y2="${Y(r)}" stroke="var(--line)"/><text x="${x0-6}" y="${Y(r)+4}" text-anchor="end">${r}</text>`;
+  for(const l of [-6, -4, -2, 0, 2]) g += `<text x="${X(l)}" y="${Hh-16}" text-anchor="middle">${l}</text>`;
+  g += `<text x="${(x0+x1)/2}" y="${Hh-2}" text-anchor="middle">λ = log h</text>`;
+  const pts = [];
+  for(let i=0;i<400;i++){ const l = LMIN + i*(LMAX - LMIN)/399, r = moments(S, l).rho; if(!Number.isNaN(r)) pts.push(X(l).toFixed(1) + "," + Y(r).toFixed(1)); }
+  if(pts.length) g += `<polyline fill="none" stroke="var(--main)" stroke-width="2.2" points="${pts.join(" ")}"/>`;
+  g += `<line x1="${X(0)}" x2="${X(0)}" y1="${y0}" y2="${y1}" stroke="var(--mark)" stroke-dasharray="4 4"/>`;
+  const hp = halfPoint(S);
+  if(hp !== null && hp >= LMIN && hp <= LMAX){ const r = moments(S, hp).rho; g += `<circle cx="${X(hp)}" cy="${Y(r)}" r="5" fill="none" stroke="var(--mark)" stroke-width="2"/>`; }
+  const r = moments(S, S.lam).rho;
+  if(!Number.isNaN(r)) g += `<circle cx="${X(S.lam)}" cy="${Y(r)}" r="6" fill="var(--main)"/>`;
+  $("curve").innerHTML = g;
+}
+function ellipse(v1, v2, c, sc){
+  const pts = [];
+  const a = Math.sqrt(Math.max(v1, 0)), b = (a > 0) ? c/a : 0, d = Math.sqrt(Math.max(v2 - b*b, 0));
+  for(let i=0;i<=120;i++){ const t = 2*Math.PI*i/120, u = Math.cos(t), w = Math.sin(t);
+    pts.push((150 + sc*2*a*u).toFixed(1) + "," + (150 - sc*2*(b*u + d*w)).toFixed(1)); }
+  return pts.join(" ");
+}
+function drawEll(){
+  const m = moments(S, S.lam), m0 = moments(S, 0);
+  const R = 2*Math.sqrt(Math.max(m.v1, m.v2, m0.v1, m0.v2, 1e-6)), sc = 130/R;
+  let g = `<line x1="10" x2="290" y1="150" y2="150" stroke="var(--line)"/><line y1="10" y2="290" x1="150" x2="150" stroke="var(--line)"/>`;
+  g += `<polyline fill="none" stroke="var(--ref)" stroke-dasharray="5 4" stroke-width="1.5" points="${ellipse(m0.v1, m0.v2, m0.c, sc)}"/>`;
+  g += `<polyline fill="none" stroke="var(--main)" stroke-width="2.2" points="${ellipse(m.v1, m.v2, m.c, sc)}"/>`;
+  g += `<text x="286" y="144" text-anchor="end">y₁</text><text x="156" y="20">y₂</text><text x="12" y="290">axes ±${R.toPrecision(3)}</text>`;
+  $("ell").innerHTML = g;
+}
+function render(){
+  const o = readouts(S);
+  for(const k of ["b1","b2","p1","p2"]) $("o-"+k).textContent = S[k].toFixed(2);
+  $("o-lam").textContent = `${o.lam} (h = ${o.h})`;
+  $("ans").textContent = o.ans;
+  const where = o.side === "flat" ? "ρ does not move with the factor here." :
+    (o.side === "at" ? "You are at the half-limit point." : `You are ${o.side} the half-limit point λ = ${o.half}.`);
+  $("verdict").textContent = `At the static model (λ = 0) ρ = ${o.rho0}; as the factor's variance grows ρ heads to ${o.limit}. ${where}`;
+  $("side").textContent = `Var(y₁) = ${o.v1} · Var(y₂) = ${o.v2} · Cov = ${o.cov} · factor share of Var(y₁) ${o.share1}, of Var(y₂) ${o.share2}`;
+  $("gohalf").disabled = o.side === "flat" || !(parseFloat(o.half) >= -6 && parseFloat(o.half) <= 3);
+  drawCurve(); drawEll();
+}
+for(const k of IDS) $(k).addEventListener("input", () => { S[k] = Math.round(parseFloat($(k).value)*100)/100; render(); });
+$("go0").addEventListener("click", () => { S.lam = 0; syncInputs(); render(); });
+$("gohalf").addEventListener("click", () => { const hp = halfPoint(S); if(hp !== null){ S.lam = Math.min(LMAX, Math.max(LMIN, hp)); syncInputs(); render(); } });
+$("reset").addEventListener("click", () => { S = Object.assign({}, DEF); syncInputs(); render(); });
+syncInputs(); render();
+</script>
+</html>

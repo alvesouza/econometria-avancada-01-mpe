@@ -1,0 +1,297 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>The Instrument Dial</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,500;8..60,650&family=Public+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: controls rail on the left, the answer then two panels on the right; one column under 860px.
+   Colour roles (as the L05 figures): orange = OLS (the estimator that breaks), green = IV (the one that survives),
+   violet = y on (x, z), blue = the true effect beta1, gold = landmarks (rho = 0, F = 10). */
+:root{
+  --bg:#f4f6f9; --panel:#ffffff; --ink:#18202d; --muted:#586377; --line:#d8dee8; --soft:#eef1f6;
+  --ols:#b4521a; --iv:#2f6b4f; --long:#8a5fb4; --truth:#1f5f8b; --mark:#a87b00; --focus:#1f5f8b;
+  --display:"Source Serif 4", Georgia, "Times New Roman", serif;
+  --body:"Public Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono:"JetBrains Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#10141b; --panel:#171d27; --ink:#e5e9f0; --muted:#9aa5b8; --line:#2a3342; --soft:#1e2532;
+  --ols:#f0954f; --iv:#5fc28f; --long:#c19cf0; --truth:#74a9e8; --mark:#e9c04a; --focus:#74a9e8; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#10141b; --panel:#171d27; --ink:#e5e9f0; --muted:#9aa5b8; --line:#2a3342; --soft:#1e2532;
+  --ols:#f0954f; --iv:#5fc28f; --long:#c19cf0; --truth:#74a9e8; --mark:#e9c04a; --focus:#74a9e8; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font:15px/1.5 var(--body);margin:0}
+.wrap{max-width:1180px;margin:0 auto;padding-left:max(16px, env(safe-area-inset-left, 0px));padding-right:max(16px, env(safe-area-inset-right, 0px));padding-block:24px 40px}
+header{display:grid;gap:4px;margin-bottom:18px}
+.eyebrow{font:600 12px/1.3 var(--body);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+h1{font:650 clamp(26px,4vw,36px)/1.1 var(--display);margin:0;text-wrap:balance}
+.lede{color:var(--muted);max-width:68ch;margin:0}
+.grid{display:grid;grid-template-columns:320px minmax(0,1fr);gap:20px;align-items:start}
+@media (max-width:860px){.grid{grid-template-columns:minmax(0,1fr)}}
+.rail{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px;display:grid;gap:18px}
+.group{display:grid;gap:12px}
+.group h2{font:600 12px/1.2 var(--body);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:0}
+.ctl{display:grid;gap:4px}
+.ctl .top{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.ctl label{font-weight:600}
+.ctl label i{font-family:var(--display);font-weight:500}
+.ctl output{font:600 14px var(--mono);font-variant-numeric:tabular-nums}
+.ctl p{margin:0;font-size:13px;color:var(--muted)}
+input[type=range]{width:100%;accent-color:var(--ink)}
+input:focus-visible,button:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+button{font:600 13px var(--body);background:var(--soft);color:var(--ink);border:1px solid var(--line);border-radius:6px;padding:7px 12px;cursor:pointer}
+button:hover{border-color:var(--muted)}
+main{display:grid;gap:16px;min-width:0}
+.answer{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px 18px;display:grid;gap:6px}
+.answer .lab{font-size:13px;color:var(--muted)}
+.answer .big{font:600 clamp(26px,5vw,40px)/1.1 var(--mono);font-variant-numeric:tabular-nums;display:flex;flex-wrap:wrap;gap:6px 22px}
+.answer .big .iv{color:var(--iv)} .answer .big .ols{color:var(--ols)}
+.answer .verdict{font:500 17px/1.4 var(--display);max-width:62ch}
+.answer .ident{font:13px/1.6 var(--mono);color:var(--muted);font-variant-numeric:tabular-nums;overflow-x:auto;white-space:nowrap}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px 16px;min-width:0}
+.panel h3{font:600 15px/1.3 var(--body);margin:0 0 2px}
+.panel .sub{font-size:13px;color:var(--muted);margin:0 0 8px}
+svg{display:block;width:100%;height:auto;max-width:100%}
+svg text{fill:var(--muted);font:12px var(--body)}
+svg .val{font:600 12px var(--mono);fill:var(--ink)}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{font-size:13px;border:1px solid var(--line);border-radius:999px;padding:4px 10px;color:var(--muted)}
+.chip.on{border-color:var(--mark);color:var(--mark);font-weight:600}
+table.ro{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums}
+table.ro td{padding:5px 4px;border-bottom:1px solid var(--line);font-size:14px}
+table.ro td:last-child{text-align:right;font-family:var(--mono)}
+footer{max-width:1180px;margin:0 auto;padding-left:max(16px, env(safe-area-inset-left, 0px));padding-right:max(16px, env(safe-area-inset-right, 0px));padding-block:0 40px;font-size:13px;color:var(--muted);display:grid;gap:10px}
+footer p{margin:0;max-width:110ch}
+.scroll{overflow-x:auto}
+footer table{border-collapse:collapse;font-size:12.5px;min-width:820px}
+footer th,footer td{border-bottom:1px solid var(--line);padding:4px 8px;text-align:left;vertical-align:top}
+.k{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:5px;vertical-align:-1px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <div class="eyebrow">Econometria Avançada · Classes 5+6 · notes-on-causal-inference.pdf pp. 17–19 · W §15.1 pp. 462–470 · MHE §4.1 pp. 84–86</div>
+  <h1>The Instrument Dial</h1>
+  <p class="lede">Schooling <i>x</i> is endogenous: its error ε<sup>x</sup> is correlated with the wage error ε<sup>y</sup>. An instrument <i>z</i> moves <i>x</i> by δ₁ and reaches <i>y</i> only through <i>x</i>, unless φ ≠ 0. Move the endogeneity, the first stage and the exclusion violation, and watch which estimator stays on the true effect β₁. Defaults reproduce Card's OLS 0.0747 and IV 0.1315.</p>
+</header>
+
+<div class="grid">
+<aside class="rail" aria-label="Controls">
+  <div class="group">
+    <h2>Structure</h2>
+    <div class="ctl"><div class="top"><label for="b1">True effect <i>β</i>₁</label><output id="o-b1"></output></div>
+      <input id="b1" type="range" min="-0.1" max="0.4" step="0.0001">
+      <p>Causal effect of one more year of schooling on log wage. Every plim line moves with it.</p></div>
+    <div class="ctl"><div class="top"><label for="rho">Endogeneity <i>ρ</i></label><output id="o-rho"></output></div>
+      <input id="rho" type="range" min="-0.9" max="0.9" step="0.0001">
+      <p>Correlation between the schooling error and the wage error (unobserved ability). At ρ = 0 OLS is consistent.</p></div>
+  </div>
+  <div class="group">
+    <h2>The instrument</h2>
+    <div class="ctl"><div class="top"><label for="d1">First stage <i>δ</i>₁</label><output id="o-d1"></output></div>
+      <input id="d1" type="range" min="-1.5" max="1.5" step="0.0001">
+      <p>Extra years of schooling for men who grew up near a college. At δ₁ = 0 there is no instrument.</p></div>
+    <div class="ctl"><div class="top"><label for="phi">Exclusion violation <i>φ</i></label><output id="o-phi"></output></div>
+      <input id="phi" type="range" min="-0.1" max="0.1" step="0.0001">
+      <p>Direct effect of the instrument on log wage, bypassing schooling. IV is off by φ/δ₁.</p></div>
+  </div>
+  <div class="group">
+    <h2>Data</h2>
+    <div class="ctl"><div class="top"><label for="n">Sample size <i>n</i></label><output id="o-n"></output></div>
+      <input id="n" type="range" min="100" max="20000" step="10">
+      <p>Moves the 95% bands and the first-stage F, never the plims.</p></div>
+  </div>
+  <button id="reset" type="button">Reset to Card defaults</button>
+</aside>
+
+<main>
+  <section class="answer" aria-live="polite">
+    <div class="lab">Asymptotic bias, plim − β₁ (log points per year of schooling)</div>
+    <div class="big"><span class="iv" id="biv"></span><span class="ols" id="bols"></span></div>
+    <div class="verdict" id="verdict"></div>
+    <div class="ident" id="ident1"></div>
+    <div class="ident" id="ident2"></div>
+    <div class="ident" id="ident3"></div>
+    <div class="chips" id="chips"></div>
+  </section>
+
+  <section class="panel">
+    <h3>Probability limits against the endogeneity ρ</h3>
+    <p class="sub"><span class="k" style="background:var(--ols)"></span>OLS of <i>y</i> on <i>x</i> &nbsp; <span class="k" style="background:var(--iv)"></span>IV with <i>z</i> &nbsp; <span class="k" style="background:var(--long)"></span><i>x</i>-coefficient when <i>z</i> is added to the outcome regression &nbsp; <span class="k" style="background:var(--truth)"></span>β₁. Shaded: plim ± 1.96 asymptotic SE at the current <i>n</i>.</p>
+    <svg id="plims" viewBox="0 0 720 300" role="img" aria-label="Plims of OLS, IV and the long regression against rho, with bands"></svg>
+  </section>
+
+  <section class="panel">
+    <h3>Absolute bias against the first stage δ₁</h3>
+    <p class="sub">With φ ≠ 0 the IV bias is |φ|/|δ₁| and explodes as the first stage weakens. Dotted gold line: δ₁ where the first-stage F equals 10 at the current <i>n</i> (W p. 478). <span id="offnote"></span></p>
+    <svg id="bias" viewBox="0 0 720 260" role="img" aria-label="Absolute bias of IV and OLS against the first-stage coefficient"></svg>
+  </section>
+
+  <section class="panel">
+    <h3>Every term</h3>
+    <table class="ro"><tbody id="tbl"></tbody></table>
+  </section>
+</main>
+</div>
+
+<footer>
+  <p><strong>Belongs to:</strong> Classes 5+6 notes, <code>Notas/L05/</code> (instrumental variables, <code>L05-05-instrumental-variables.md</code>).</p>
+  <p><strong>Model:</strong> <i>x</i> = δ₁<i>z</i> + ε<sup>x</sup>, <i>y</i> = β₁<i>x</i> + φ<i>z</i> + ε<sup>y</sup>, with Var(<i>z</i>) = σ<sub>z</sub>², Var(ε<sup>x</sup>) = σ<sub>x</sub>², Var(ε<sup>y</sup>) = σ<sub>y</sub>², Corr(ε<sup>x</sup>, ε<sup>y</sup>) = ρ and <i>z</i> uncorrelated with both errors (the two-equation system of slide p. 18, intercepts dropped; φ is the exclusion violation of W eq. 15.19, p. 469).
+    Exact probability limits: OLS = β₁ + (ρσ<sub>x</sub>σ<sub>y</sub> + φδ₁σ<sub>z</sub>²)/(δ₁²σ<sub>z</sub>² + σ<sub>x</sub>²); IV = Cov(<i>z</i>, <i>y</i>)/Cov(<i>z</i>, <i>x</i>) = β₁ + φ/δ₁ (slide p. 18, W eq. 15.9, MHE eq. 4.1.3); coefficient on <i>x</i> in the OLS of <i>y</i> on (<i>x</i>, <i>z</i>) = β₁ + ρσ<sub>y</sub>/σ<sub>x</sub> = β₁ + σ<sub>xy</sub>/σ<sub>x</sub>² (slide p. 19; Greenberg §11.2, p. 173).
+    Asymptotic SEs under homoskedasticity: OLS √(Var(<i>y</i> − b<i>x</i>)/(<i>n</i> Var <i>x</i>)) at its plim b; IV √(Var(<i>y</i> − b<sub>IV</sub><i>x</i>)/(<i>n</i> Var(<i>x</i>) <i>R</i>²<sub>xz</sub>)) (W eq. 15.12, p. 466). First-stage F ≈ <i>n R</i>²<sub>xz</sub>/(1 − <i>R</i>²<sub>xz</sub>) with <i>R</i>²<sub>xz</sub> = δ₁²σ<sub>z</sub>²/Var(<i>x</i>).</p>
+  <p><strong>Calibration:</strong> σ<sub>z</sub> = 0.402558, σ<sub>x</sub> = 1.935373, σ<sub>y</sub> = 0.387296 and the defaults β₁ = 0.1315, δ₁ = 0.3199, ρ = −0.2851, <i>n</i> = 3010 are sample moments of <code>card.csv</code> (log wage, education, nearc4) after partialling out the 14 controls of the site's <code>example1-iv-card.html</code>, computed in <code>Notas/L05/L05_python_checks.py</code>. At the defaults the page gives the site's OLS 0.0747 and IV 0.1315 (W Table 15.1, p. 474: .075 and .132). The negative ρ is what the Card numbers imply: OLS below IV.</p>
+  <div class="scroll"><table>
+    <thead><tr><th>Control</th><th>Symbol</th><th>What it is</th><th>Range</th><th>Step</th><th>Default</th><th>Unit</th><th>Source</th><th>What visibly moves</th></tr></thead>
+    <tbody>
+      <tr><td>True effect</td><td>β₁</td><td>causal return to schooling</td><td>−0.10 to 0.40</td><td>0.0001</td><td>0.1315</td><td>log points / year</td><td>card.csv (site IV estimate)</td><td>every plim line</td></tr>
+      <tr><td>Endogeneity</td><td>ρ</td><td>Corr(ε<sup>x</sup>, ε<sup>y</sup>)</td><td>−0.9 to 0.9</td><td>0.0001</td><td>−0.2851</td><td>—</td><td>card.csv implied</td><td>OLS and long-regression plims; marker</td></tr>
+      <tr><td>First stage</td><td>δ₁</td><td>effect of <i>z</i> on <i>x</i></td><td>−1.5 to 1.5</td><td>0.0001</td><td>0.3199</td><td>years</td><td>card.csv; W p. 473 (.320)</td><td>IV bias, F, IV band</td></tr>
+      <tr><td>Exclusion violation</td><td>φ</td><td>direct effect of <i>z</i> on <i>y</i></td><td>−0.10 to 0.10</td><td>0.0001</td><td>0</td><td>log points</td><td>W eq. 15.19</td><td>IV plim and bias curve</td></tr>
+      <tr><td>Sample size</td><td><i>n</i></td><td>observations</td><td>100 to 20000</td><td>10</td><td>3010</td><td>—</td><td>card.csv</td><td>bands, F, F = 10 line</td></tr>
+    </tbody></table></div>
+  <p><strong>Left out on purpose:</strong> the error scales σ<sub>z</sub>, σ<sub>x</sub>, σ<sub>y</sub> (fixed at Card's values; only ratios matter for the plims), heteroskedasticity, several instruments, and finite-sample IV bias, which the asymptotic formulas here do not show.</p>
+</footer>
+
+<script id="model">
+// Pure model: no DOM. check_companions.py runs these under node and compares them with numpy.
+const SZ = 0.402558, SX = 1.935373, SY = 0.387296;
+function compute(p){
+  const varx = p.d1*p.d1*SZ*SZ + SX*SX;
+  const cxe = p.rho*SX*SY;                                  // Cov(x, e_y) = Cov(e_x, e_y)
+  const cxy = p.b1*varx + p.phi*p.d1*SZ*SZ + cxe;
+  const vary = p.b1*p.b1*varx + p.phi*p.phi*SZ*SZ + SY*SY + 2*p.b1*p.phi*p.d1*SZ*SZ + 2*p.b1*cxe;
+  const ols = cxy/varx;
+  const hasIV = p.d1 !== 0;
+  const iv = hasIV ? p.b1 + p.phi/p.d1 : null;
+  const longx = p.b1 + p.rho*SY/SX, longz = p.phi - p.rho*(SY/SX)*p.d1;
+  const R2 = p.d1*p.d1*SZ*SZ/varx, F = p.n*R2/(1 - R2);
+  const seOls = Math.sqrt((vary - cxy*cxy/varx)/(p.n*varx));
+  const seIv = hasIV ? Math.sqrt((vary - 2*iv*cxy + iv*iv*varx)/(p.n*varx*R2)) : null;
+  const d10 = Math.sqrt((10/(p.n + 10))*SX*SX/(SZ*SZ*(1 - 10/(p.n + 10))));   // |delta1| where F = 10
+  return {varx, cxy, vary, ols, iv, hasIV, longx, longz, R2, F, seOls, seIv, d10,
+          biasOls: ols - p.b1, biasIv: hasIV ? iv - p.b1 : null};
+}
+</script>
+
+<script>
+const D = {b1:0.1315, rho:-0.2851, d1:0.3199, phi:0, n:3010};
+const ids = Object.keys(D);
+const el = id => document.getElementById(id);
+const sg = (x, d) => (x < 0 ? "−" : "+") + Math.abs(x).toFixed(d);
+const f4 = x => (x < 0 ? "−" : "") + Math.abs(x).toFixed(4);
+const read = () => { const p = {}; ids.forEach(k => p[k] = parseFloat(el(k).value)); return p; };
+
+function axisY(lo, hi, X0, X1, Y, s){
+  const span = hi - lo, step = span > 0.6 ? 0.2 : span > 0.3 ? 0.1 : span > 0.12 ? 0.05 : 0.02;
+  for(let t = Math.ceil(lo/step)*step; t <= hi + 1e-12; t += step){
+    s += `<line x1="${X0}" x2="${X1}" y1="${Y(t).toFixed(1)}" y2="${Y(t).toFixed(1)}" stroke="var(--line)"/><text x="${X0 - 6}" y="${(Y(t) + 4).toFixed(1)}" text-anchor="end">${f4(t).replace(/0+$/,"").replace(/\.$/,"")}</text>`;
+  }
+  return s;
+}
+
+function drawPlims(p, m){
+  const svg = el("plims"), W = 720, H = 300, L = 58, R = 14, T = 12, B = 40, N = 181;
+  const rs = Array.from({length:N}, (_, i) => -0.9 + 1.8*i/(N - 1));
+  const at = rs.map(r => compute(Object.assign({}, p, {rho:r})));
+  let vals = [p.b1];
+  at.forEach(c => { vals.push(c.ols - 1.96*c.seOls, c.ols + 1.96*c.seOls, c.longx); if(c.hasIV) vals.push(c.iv - 1.96*c.seIv, c.iv + 1.96*c.seIv); });
+  vals = vals.filter(Number.isFinite);
+  let lo = Math.min(...vals), hi = Math.max(...vals);
+  const cap = Math.max(0.6, 4*(Math.max(...at.map(c => Math.abs(c.ols))) + 0.05));
+  lo = Math.max(lo, p.b1 - cap); hi = Math.min(hi, p.b1 + cap);
+  const pad = 0.06*(hi - lo || 1); lo -= pad; hi += pad;
+  const X = r => L + (r + 0.9)/1.8*(W - L - R), Y = v => T + (hi - Math.min(hi, Math.max(lo, v)))/(hi - lo)*(H - T - B);
+  let s = axisY(lo, hi, L, W - R, Y, "");
+  [-0.9, -0.6, -0.3, 0, 0.3, 0.6, 0.9].forEach(t => s += `<text x="${X(t).toFixed(1)}" y="${H - B + 16}" text-anchor="middle">${t === 0 ? "0" : (t < 0 ? "−" : "") + Math.abs(t).toFixed(1)}</text>`);
+  s += `<text x="${(L + W - R)/2}" y="${H - 4}" text-anchor="middle">ρ = Corr(εˣ, εʸ)</text>`;
+  s += `<text x="14" y="${(T + H - B)/2}" text-anchor="middle" transform="rotate(-90 14 ${(T + H - B)/2})">probability limit</text>`;
+  const band = (f, g, col) => `<path d="${rs.map((r, i) => (i ? "L" : "M") + X(r).toFixed(1) + " " + Y(f(at[i])).toFixed(1)).join("")}${rs.slice().reverse().map((r, j) => "L" + X(r).toFixed(1) + " " + Y(g(at[N - 1 - j])).toFixed(1)).join("")}Z" fill="${col}" opacity="0.14"/>`;
+  const line = (f, col, dash) => `<path d="${rs.map((r, i) => (i ? "L" : "M") + X(r).toFixed(1) + " " + Y(f(at[i])).toFixed(1)).join("")}" fill="none" stroke="${col}" stroke-width="2.3"${dash ? ` stroke-dasharray="${dash}"` : ""}/>`;
+  s += `<line x1="${X(0)}" x2="${X(0)}" y1="${T}" y2="${H - B}" stroke="var(--mark)" stroke-dasharray="2 3"/><text x="${X(0) + 4}" y="${T + 12}" style="fill:var(--mark)">ρ = 0</text>`;
+  s += band(c => c.ols - 1.96*c.seOls, c => c.ols + 1.96*c.seOls, "var(--ols)");
+  if(m.hasIV) s += band(c => c.iv - 1.96*c.seIv, c => c.iv + 1.96*c.seIv, "var(--iv)");
+  s += `<line x1="${L}" x2="${W - R}" y1="${Y(p.b1).toFixed(1)}" y2="${Y(p.b1).toFixed(1)}" stroke="var(--truth)" stroke-width="1.5" stroke-dasharray="6 4"/>`;
+  s += line(c => c.longx, "var(--long)", "7 4") + line(c => c.ols, "var(--ols)");
+  if(m.hasIV) s += line(c => c.iv, "var(--iv)");
+  const cx = X(p.rho).toFixed(1);
+  s += `<line x1="${cx}" x2="${cx}" y1="${T}" y2="${H - B}" stroke="var(--ink)" stroke-width="1"/>`;
+  s += `<circle cx="${cx}" cy="${Y(m.ols).toFixed(1)}" r="5" fill="var(--ols)"/>`;
+  if(m.hasIV) s += `<circle cx="${cx}" cy="${Y(m.iv).toFixed(1)}" r="5" fill="var(--iv)"/>`;
+  s += `<text class="val" x="${Number(cx) > 560 ? Number(cx) - 6 : Number(cx) + 6}" y="${T + 26}" text-anchor="${Number(cx) > 560 ? "end" : "start"}">ρ = ${f4(p.rho)}</text>`;
+  svg.innerHTML = s;
+}
+
+function drawBias(p, m){
+  const svg = el("bias"), W = 720, H = 260, L = 58, R = 14, T = 12, B = 40, N = 300, dmax = 1.5, dmin = 0.01;
+  const ds = Array.from({length:N}, (_, i) => dmin + (dmax - dmin)*i/(N - 1));
+  const sgn = p.d1 < 0 ? -1 : 1;
+  const at = ds.map(d => compute(Object.assign({}, p, {d1:sgn*d})));
+  const olsB = at.map(c => Math.abs(c.biasOls)), ivB = at.map(c => Math.abs(c.biasIv));
+  const hi = Math.max(0.02, 1.25*Math.max(...olsB, Math.abs(p.phi)/1.5), Math.min(4*Math.max(...olsB, 0.01), Math.abs(m.biasIv ?? 0)*1.3 || 0));
+  const X = d => L + (d - 0)/dmax*(W - L - R), Y = v => T + (1 - Math.min(v, hi)/hi)*(H - T - B);
+  let s = axisY(0, hi, L, W - R, Y, "");
+  [0, 0.25, 0.5, 0.75, 1, 1.25, 1.5].forEach(t => s += `<text x="${X(t).toFixed(1)}" y="${H - B + 16}" text-anchor="middle">${t}</text>`);
+  s += `<text x="${(L + W - R)/2}" y="${H - 4}" text-anchor="middle">|δ₁| (years of schooling per unit of z)</text>`;
+  s += `<text x="14" y="${(T + H - B)/2}" text-anchor="middle" transform="rotate(-90 14 ${(T + H - B)/2})">|plim − β₁|</text>`;
+  const path = (arr, col) => `<path d="${ds.map((d, i) => (i ? "L" : "M") + X(d).toFixed(1) + " " + Y(arr[i]).toFixed(1)).join("")}" fill="none" stroke="${col}" stroke-width="2.3"/>`;
+  if(m.d10 <= dmax){ s += `<line x1="${X(m.d10).toFixed(1)}" x2="${X(m.d10).toFixed(1)}" y1="${T}" y2="${H - B}" stroke="var(--mark)" stroke-dasharray="2 3"/><text x="${(X(m.d10) + 4).toFixed(1)}" y="${T + 12}" style="fill:var(--mark)">F = 10 (|δ₁| = ${m.d10.toFixed(3)})</text>`; }
+  s += path(olsB, "var(--ols)") + path(ivB, "var(--iv)");
+  const ad = Math.abs(p.d1);
+  if(ad >= dmin && ad <= dmax){
+    s += `<line x1="${X(ad).toFixed(1)}" x2="${X(ad).toFixed(1)}" y1="${T}" y2="${H - B}" stroke="var(--ink)"/>`;
+    s += `<circle cx="${X(ad).toFixed(1)}" cy="${Y(Math.abs(m.biasOls)).toFixed(1)}" r="5" fill="var(--ols)"/>`;
+    if(m.hasIV) s += `<circle cx="${X(ad).toFixed(1)}" cy="${Y(Math.abs(m.biasIv)).toFixed(1)}" r="5" fill="var(--iv)"/>`;
+  }
+  svg.innerHTML = s;
+  el("offnote").textContent = ad < dmin ? (m.hasIV ? `Current |δ₁| = ${ad.toFixed(4)} is left of the chart.` : "δ₁ = 0: no first stage, IV is not defined.") : "";
+}
+
+function describe(p, m){
+  if(!m.hasIV) return `<strong>No instrument.</strong> With δ₁ = 0 the instrument does not move schooling, Cov(<i>z</i>, <i>x</i>) = 0 and the IV ratio is not defined; OLS is ${Math.abs(m.biasOls) < 5e-5 ? "consistent here because ρ = 0" : "off by " + sg(m.biasOls, 4)}.`;
+  const weak = m.F < 10 ? ` The first stage is <strong>weak</strong> (F = ${m.F.toFixed(2)} &lt; 10), so the asymptotic band understates the uncertainty.` : "";
+  const ivOk = Math.abs(m.biasIv) < 5e-5, olsOk = Math.abs(m.biasOls) < 5e-5;
+  let t;
+  if(ivOk && olsOk) t = "Both estimators are consistent: no endogeneity, valid instrument. OLS wins on precision.";
+  else if(ivOk) t = `IV is consistent; OLS is ${m.biasOls > 0 ? "too high" : "too low"} by ${Math.abs(m.biasOls).toFixed(4)}. The price of IV is a SE ${(m.seIv/m.seOls).toFixed(1)} times larger.`;
+  else if(Math.abs(m.biasIv) < Math.abs(m.biasOls)) t = `The exclusion restriction fails (φ ≠ 0), but IV is still closer to β₁ than OLS (|${f4(m.biasIv)}| vs |${f4(m.biasOls)}|).`;
+  else t = `The exclusion violation, divided by a first stage of ${f4(p.d1)}, makes IV <strong>worse</strong> than OLS (|${f4(m.biasIv)}| vs |${f4(m.biasOls)}|).`;
+  return t + weak;
+}
+
+function update(){
+  const p = read(), m = compute(p);
+  el("o-b1").textContent = f4(p.b1); el("o-rho").textContent = f4(p.rho); el("o-d1").textContent = f4(p.d1);
+  el("o-phi").textContent = f4(p.phi); el("o-n").textContent = String(p.n);
+  el("biv").textContent = m.hasIV ? "IV " + sg(m.biasIv, 4) : "IV not defined";
+  el("bols").textContent = "OLS " + sg(m.biasOls, 4);
+  el("verdict").innerHTML = describe(p, m);
+  el("ident1").textContent = `plim OLS = ${f4(m.ols)} (SE ${m.seOls.toFixed(4)})   plim IV = ${m.hasIV ? f4(m.iv) + " (SE " + m.seIv.toFixed(4) + ")" : "not defined"}   y on (x, z): ${f4(m.longx)} on x`;
+  el("ident2").textContent = `IV − β₁ = φ/δ₁ = ${m.hasIV ? f4(p.phi) + " / " + f4(p.d1) + " = " + f4(m.biasIv) : "not defined (δ₁ = 0)"}`;
+  el("ident3").textContent = `first-stage R²(x, z) = ${m.R2.toFixed(5)}   F ≈ n R²/(1 − R²) = ${m.F.toFixed(2)}   F = 10 needs |δ₁| ≥ ${m.d10.toFixed(4)}`;
+  const chips = [[p.rho === 0, "ρ = 0: no endogeneity"], [p.phi === 0, "φ = 0: exclusion holds"],
+    [p.d1 === 0, "δ₁ = 0: no instrument"], [m.F < 10, "F < 10: weak instrument"]];
+  el("chips").innerHTML = chips.map(([on, t]) => `<span class="chip${on ? " on" : ""}">${on ? "● " : "○ "}${t}</span>`).join("");
+  const rows = [
+    ["Var(x) = δ₁²σz² + σx²", m.varx.toFixed(4)], ["Cov(x, y)", f4(m.cxy)],
+    ["plim OLS of y on x", f4(m.ols)], ["plim IV = β₁ + φ/δ₁", m.hasIV ? f4(m.iv) : "not defined"],
+    ["y on (x, z): coefficient on x = β₁ + ρσy/σx", f4(m.longx)], ["y on (x, z): coefficient on z = φ − ρ(σy/σx)δ₁", f4(m.longz)],
+    ["Asymptotic SE, OLS", m.seOls.toFixed(4)], ["Asymptotic SE, IV", m.hasIV ? m.seIv.toFixed(4) : "not defined"],
+    ["SE ratio IV / OLS", m.hasIV ? (m.seIv/m.seOls).toFixed(2) : "not defined"],
+    ["First-stage F", m.F.toFixed(2)]];
+  el("tbl").innerHTML = rows.map(([k, v]) => `<tr><td>${k}</td><td>${v}</td></tr>`).join("");
+  drawPlims(p, m); drawBias(p, m);
+}
+function reset(){ ids.forEach(k => el(k).value = D[k]); update(); }
+ids.forEach(k => el(k).addEventListener("input", update));
+el("reset").addEventListener("click", reset);
+reset();
+</script>
+</body>
+</html>

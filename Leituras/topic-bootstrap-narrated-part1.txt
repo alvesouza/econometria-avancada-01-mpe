@@ -1,0 +1,369 @@
+Advanced Econometrics. Topic narration: the bootstrap. Narrated study notes, part 1 of 2.
+
+How to listen. This is a topic narration that gathers in one place everything the course says about the bootstrap. It draws on the Class 1 note on comparing estimators, mean squared error and the bootstrap, sections 9 to 12; the Class 2 note on cross-validation and the motorcycle data, section 7 and the worked stand-in of section 8; the formula, pitfall and Python notes of both classes; ISLP, An Introduction to Statistical Learning with Applications in Python, section 5.2, printed pages 212 to 214, with Figure 5.11 on printed page 215; Bolfarine and Sandoval, section 1.1.5, printed page 3, and Table 1.1, printed page 12; and Morettin and Singer, Estatística e Ciência de Dados, section 10.5, chapter note 3, "Bootstrap", printed pages 339 and 340.
+
+There are two files. Part 1, this one, holds part one, the idea: why we need a sampling distribution, the plug-in principle and the empirical distribution, the nonparametric algorithm, the bootstrap standard error, and percentile and normal intervals. It also holds part two, where the bootstrap breaks: the uniform example, the probability that an observation lands in a bootstrap sample, why the nonparametric bootstrap fails for the sample maximum, and the parametric bootstrap that repairs it. Part 2 holds part three, bootstrap bands for a regression curve on the motorcycle data and how many resamples to use, and part four, the support material: pitfalls, a spoken formula sheet, routines and reading route, a glossary, a true or false self-test, and the whole topic in five lines.
+
+Every formula is spoken in words. Each section opens by naming its sources and printed pages and closes with a spoken checklist. Equations are numbered in order across both files, so the formula sheet at the end can call them back by number.
+
+A scope note, said once here and again where it bites. The course treats the bootstrap as the ISLP section does and as the Class 1 and Class 2 decks do: the nonparametric bootstrap, the bootstrap standard error, the percentile band, the parametric bootstrap, and the failure at the edge of the support. Refinements you may meet elsewhere, such as bias-corrected intervals, are not in the notes, and this narration does not develop them.
+
+The claim of the whole topic, before the work. When we hold one sample, the bootstrap estimates the sampling distribution of a statistic by replacing the unknown population with the empirical distribution, which puts mass one over n on each observation, and then resampling from it with replacement. The standard deviation of the resampled statistic is the bootstrap standard error, and its quantiles give a percentile interval. This works for smooth statistics like the sample mean. It fails for a statistic that lives on the edge of the support, like the sample maximum of a uniform sample, because a bootstrap sample contains the observed maximum with probability one minus the quantity one minus one over n, to the n, which tends to one minus one over e, about 0.632. That point mass never goes away. Resampling from the fitted model instead, the parametric bootstrap, repairs it. And for a regression curve, resampling pairs gives a band that respects unequal noise, but holds the chosen model fixed.
+
+Part one. The idea.
+
+Section 1. The problem the bootstrap solves: a sampling distribution from one sample.
+
+This section covers ISLP section 5.2, printed pages 212 and 213, with Figures 5.9 and 5.10; and the Class 1 note on comparing estimators, sections 7 and 9, which set the Monte Carlo study beside the bootstrap.
+
+The claim, before the work. Every estimator has a sampling distribution: the spread of values it would take over repeated samples from the same population. Its standard deviation is the standard error. If we could draw fresh samples from the population, a simulation would give that distribution directly. In practice we cannot, because we hold one data set. The bootstrap is the device that imitates "drawing fresh samples" using only the sample in hand.
+
+One point one. What the bootstrap is for. ISLP, printed page 212.
+
+ISLP opens the section by calling the bootstrap "a widely applicable and extremely powerful statistical tool that can be used to quantify the uncertainty associated with a given estimator or statistical learning method." Its first example is the standard errors of linear regression coefficients, and ISLP immediately says that case is not where the bootstrap earns its place, since standard software already prints those standard errors. The power of the method, in ISLP's words, is that it "can be easily applied to a wide range of statistical learning methods, including some for which a measure of variability is otherwise difficult to obtain."
+
+Keep that framing. The bootstrap is a way of getting a standard error, and more generally a sampling distribution, when no formula is at hand.
+
+One point two. The toy example: the minimum-variance investment share. ISLP equations 5.6 and 5.7, printed page 212.
+
+Two assets have random returns X and Y. We invest a fraction alpha of our money in X and the remaining one minus alpha in Y, and we want the alpha that minimises the risk, the variance of alpha times X plus one minus alpha times Y.
+
+Equation 1, ISLP 5.6. The minimising share alpha is equal to sigma Y squared minus sigma X Y, all over sigma X squared plus sigma Y squared minus two times sigma X Y. Here sigma X squared is the variance of X, sigma Y squared the variance of Y, and sigma X Y the covariance of X and Y. ISLP states it with "one can show" and leaves the proof as Exercise 5.1, printed page 224.
+
+The three population quantities are unknown. So we estimate each one from past returns and substitute. Equation 2, ISLP 5.7: alpha hat is equal to sigma hat Y squared minus sigma hat X Y, all over sigma hat X squared plus sigma hat Y squared minus two times sigma hat X Y.
+
+That substitution is already the plug-in idea, applied to a formula: wherever the formula needs a population quantity, put in its sample counterpart. Section 2 applies the same idea to the whole distribution.
+
+One point three. The ideal experiment: simulation from the true population. ISLP printed pages 212 and 213.
+
+ISLP sets the population values: sigma X squared equal to 1, sigma Y squared equal to 1.25, and sigma X Y equal to 0.5. Check the true alpha from equation 1. The numerator is 1.25 minus 0.5, which is 0.75. The denominator is 1 plus 1.25 minus two times 0.5, which is 2.25 minus 1, which is 1.25. So alpha is 0.75 over 1.25, which is 0.6. That is the value ISLP marks with a vertical line.
+
+Figure 5.9 shows four simulated data sets, each of 100 pairs of returns. The four estimates of alpha are 0.576, 0.532, 0.657 and 0.651. ISLP says the estimate "resulting from each simulated data set ranges from 0.532 to 0.657." So the estimate moves by more than a tenth from one sample to the next. That movement is what a standard error has to measure.
+
+Now repeat the experiment 1,000 times: simulate 100 pairs, compute alpha hat by equation 2, keep it. That gives 1,000 estimates, alpha hat one to alpha hat 1,000. Their average, alpha bar, is one over 1,000 times the sum of the 1,000 estimates, and ISLP reports 0.5996, "very close to" 0.6. Their standard deviation is the square root of one over 1,000 minus one, times the sum of squared distances between each estimate and alpha bar, and ISLP reports 0.083.
+
+ISLP's reading: "for a random sample from the population, we would expect" alpha hat "to differ from" alpha "by approximately 0.08, on average." The left panel of Figure 5.10 is the histogram of these 1,000 estimates.
+
+This is a Monte Carlo study, the same tool the Class 1 note uses in its section 7 to check the four estimators of a uniform bound at theta equal to 3 and n equal to 10, with 1,000 replications. It needs the population, because every replication draws a fresh sample from it.
+
+One point four. Why the ideal experiment is unavailable. ISLP printed page 213.
+
+ISLP says it plainly: "In practice, however, the procedure for estimating" the standard error "outlined above cannot be applied, because for real data we cannot generate new samples from the original population." The Class 1 note says the same thing in four words: Monte Carlo needs theta. And in practice we hold one sample.
+
+The bootstrap answer, in ISLP's words: "Rather than repeatedly obtaining independent data sets from the population, we instead obtain distinct data sets by repeatedly sampling observations from the original data set."
+
+One point five. The result, before the method. ISLP printed page 214, Figure 5.10.
+
+ISLP builds 1,000 bootstrap estimates of alpha from a single data set of 100 pairs. Their histogram, the centre panel of Figure 5.10, "looks very similar to" the left panel, the one built from 1,000 fresh samples of the true population. The bootstrap standard error is 0.087, against 0.083 from the 1,000 simulated data sets. The right panel puts both sets of estimates side by side as boxplots, and their spreads are similar.
+
+So in this example the bootstrap, using only data a researcher could actually hold, recovers the standard error that would otherwise need the unknown population: 0.087 against 0.083.
+
+Hold that agreement in mind. Part two shows a case where the same procedure, applied in the same way, gives the wrong shape at every sample size.
+
+Spoken checklist for section 1. You should be able to say what a sampling distribution and a standard error are. You should be able to state ISLP equation 5.6 for the minimum-variance share and check that sigma X squared 1, sigma Y squared 1.25 and sigma X Y 0.5 give alpha equal to 0.6. You should be able to describe the ideal Monte Carlo experiment, 1,000 fresh samples of 100 pairs, with mean 0.5996 and standard deviation 0.083, and say why it cannot be run on real data. And you should be able to quote the bootstrap result: 0.087 from a single data set, against 0.083.
+
+Section 2. The plug-in principle, the empirical distribution, and the nonparametric bootstrap.
+
+This section covers ISLP section 5.2, printed pages 213 and 214, equation 5.8, and Figure 5.11 on printed page 215; Morettin and Singer, section 10.5, chapter note 3, printed pages 339 and 340; and the Class 1 note, section 9, with the Class 1 formula note, entry 30.
+
+The claim, before the work. The sampling distribution of a statistic depends on the unknown population distribution, call it F. The bootstrap replaces F by the empirical distribution of the sample, F hat n, and computes the sampling distribution under F hat n instead. Drawing a sample of size n from F hat n is the same as drawing n observations with replacement from the data. The standard deviation of the statistic across many such resamples is the bootstrap standard error.
+
+Two point one. The plug-in principle.
+
+Section 1 already plugged in once: equation 2 replaced each population variance and covariance in equation 1 by its sample counterpart. The plug-in principle does the same thing one level up. The standard error of an estimator is itself a feature of the population: it is what the spread of the estimator would be if we could sample again and again from F. Since F is unknown, plug in the best available stand-in for F, and compute the spread under the stand-in.
+
+There are two stand-ins, and they define the two bootstraps of this topic. Plug in the empirical distribution of the data, and you get the nonparametric bootstrap, this section. Plug in the fitted model, a parametric family with its parameter replaced by an estimate, and you get the parametric bootstrap, section 6. The Class 1 note calls the second one's target "the plug-in standard deviation": the theoretical standard deviation formula evaluated at the estimate instead of the true parameter.
+
+Two point two. The empirical distribution.
+
+Equation 3. The empirical distribution function F hat n, at a point t, is equal to one over n times the number of observations that are less than or equal to t. Equivalently, F hat n is the discrete distribution that puts mass one over n on each observed value x one to x n. If a value appears twice in the data, it carries mass two over n.
+
+Two facts about F hat n matter later, and the second one decides part two. First, it is the natural estimate of F: for each t it is a sample proportion, so it converges to F at t as n grows. Second, it lives only on the observed points. It puts no mass anywhere the data did not reach, and in particular none above the largest observation.
+
+Two point three. Drawing from F hat n is resampling with replacement.
+
+A draw from a distribution that puts mass one over n on each of the n observations is a draw of one observation, each equally likely. Drawing n such values independently is drawing n observations from the data with replacement. ISLP, printed page 214: "The sampling is performed with replacement, which means that the same observation can occur more than once in the bootstrap data set."
+
+Why with replacement. Drawing n of n without replacement just reorders the sample, so every resample would give the same value of the statistic and no spread at all. With replacement, some observations appear twice or more and others not at all, and that variation is what imitates sampling variation.
+
+Two point four. The algorithm, step by step. Class 1 note, section 9; ISLP printed page 214.
+
+Step one. From the observed sample x one to x n, draw n values with replacement. Call them x star one to x star n, the first bootstrap sample. The star always marks a bootstrap quantity.
+
+Step two. Compute the statistic on the bootstrap sample. Call the result theta hat star one, the first bootstrap replicate.
+
+Step three. Repeat steps one and two B times, independently, to get B replicates, theta hat star one up to theta hat star B.
+
+Step four. Use the B replicates as an approximation to the sampling distribution of theta hat: their standard deviation is the bootstrap standard error, and their quantiles give the percentile interval of section 3.
+
+In the Class 1 deck, B is 1,000, and the statistic is each of four estimators of the bound of a uniform distribution, computed on the same resample. In ISLP, B is 1,000 and the statistic is alpha hat.
+
+Two point five. A small picture: ISLP Figure 5.11, printed page 215.
+
+The original data set Z has n equal to 3 observations, each a pair. Observation 1 has X equal to 4.3 and Y equal to 2.4. Observation 2 has X equal to 2.1 and Y equal to 1.1. Observation 3 has X equal to 5.3 and Y equal to 2.8.
+
+The first bootstrap data set, Z star one, contains observation 3, then observation 1, then observation 3 again. ISLP's description, printed page 214: it "contains the third observation twice, the first observation once, and no instances of the second observation." The second, Z star two, contains observations 2, 3 and 1, each once. The last one shown, Z star B, contains observation 2 twice and observation 1 once. Each bootstrap data set gives its own estimate: alpha hat star one, alpha hat star two, and so on to alpha hat star B.
+
+One more sentence from ISLP carries a rule we will need for regression: "if an observation is contained in" the bootstrap data set, "then both its X and Y values are included." The unit that is resampled is the whole observation, the pair, never the X and the Y separately. Resampling X and Y separately would destroy their covariance, which is exactly what alpha hat depends on. Section 7 calls this the pairs bootstrap.
+
+Two point six. The bootstrap standard error. ISLP equation 5.8, printed page 214; Class 1 note equation 30.
+
+Equation 4. The bootstrap standard error of theta hat, written S E sub B, is equal to the square root of one over B minus one, times the sum over r from 1 to B of the squared distance between the replicate theta hat star r and the average of all B replicates. The average of the replicates is one over B times the sum over r prime from 1 to B of theta hat star r prime.
+
+Said as a recipe: average the B replicates; subtract that average from each replicate; square; add up; divide by B minus one; take the square root. It is nothing more than the ordinary sample standard deviation of the B replicates. ISLP: "This serves as an estimate of the standard error of" theta hat "estimated from the original data set."
+
+Compare it with the Monte Carlo standard deviation of section 1. The formula is the same, but the inputs differ. In Monte Carlo, each replicate comes from a fresh sample of the true population. In the bootstrap, each replicate comes from a resample of the one data set. The bootstrap swaps the population for the sample, and keeps everything else.
+
+Two point seven. Two approximations, kept apart.
+
+The bootstrap standard error from equation 4 approximates the true standard error through two separate steps, and the failures in part two are easier to read if they are kept apart.
+
+The first is a statistical approximation: the standard deviation of the statistic under F hat n stands in for the standard deviation under F. How good it is depends on how well the sample represents the population, and on whether the statistic is smooth enough for a small error in F hat n to produce only a small error in its distribution. No amount of computing improves this step.
+
+The second is a simulation approximation: with finite B, equation 4 estimates the standard deviation under F hat n with Monte Carlo noise. That noise shrinks as B grows, and section 8 sizes it.
+
+The Class 1 note's motto belongs to the first step: "The bootstrap cannot recover what the sample does not contain."
+
+Two point eight. The same algorithm in Morettin and Singer: the bootstrap standard error of the median. Section 10.5, chapter note 3, printed pages 339 and 340.
+
+Morettin and Singer place the bootstrap in the chapter notes of their chapter on trees and forests. Their motivation, printed page 339: with growing computing power, standard errors and biases can be obtained "sem recorrer a uma teoria", without resorting to a theory, which "muitas vezes pode ser muito complicada ou simplesmente não existir", is often very complicated or simply does not exist. They credit the method to B. Efron, 1979.
+
+Their example is the population median, estimated by the sample median of x one to x n, a statistic whose standard error has no simple exact formula. The four steps are the ones of section 2 point 4. First, draw a simple random sample with replacement, of size n, from the data: the bootstrap sample. With five observations, x one to x five, one bootstrap sample is, for example, x four, x three, x three, x one, x two, so x three appears twice and x five not at all. Second, repeat to get B independent bootstrap samples. Third, compute the sample median on each, giving B bootstrap replicates; the book numbers this list as its equation 10.7. Fourth, the bootstrap estimator of the standard error of the median is the square root of the sum over b of the squared distance between each replicate and their average, divided by B minus one. In the book's words, it "é o desvio padrão amostral do conjunto" 10.7, the sample standard deviation of the replicates. That is equation 4 again, with the median in place of alpha hat.
+
+And the general case, in one line from the book: for any estimator theta hat equal to t of the data, replace the median by t in the algorithm.
+
+Spoken checklist for section 2. You should be able to state the plug-in principle: compute the quantity you need under a stand-in for the unknown F. You should be able to define the empirical distribution, mass one over n on each observation, and explain why drawing from it is resampling with replacement. You should be able to list the four steps of the nonparametric algorithm, and walk ISLP's three-observation picture, in which the first resample holds observation 3 twice, observation 1 once and observation 2 not at all, and Morettin and Singer's median example. You should be able to dictate equation 4, ISLP 5.8, and say that it is the sample standard deviation of the replicates. You should be able to say why pairs are resampled whole. And you should be able to separate the statistical approximation, fixed by the sample, from the simulation approximation, fixed by B.
+
+Section 3. From a standard error to an interval: percentile and normal intervals.
+
+This section covers the Class 2 note on cross-validation, section 7, for the percentile band; ISLP equation 7.2 and its footnote, printed page 291, for the plus or minus two standard errors rule; and the Class 1 note, section 12.2 on the site page bootstrap example, and section 12.3 on the site page correlation bivariate Gaussian.
+
+The claim, before the work. The B replicates give two kinds of interval. The percentile interval reads its limits straight off the quantiles of the replicates, so it follows whatever shape, skewed or not, the bootstrap distribution has. The normal interval takes the estimate plus or minus two bootstrap standard errors, so it is symmetric by construction. When the bootstrap distribution is close to normal the two agree, and on the site's example for a normal mean both agree with the exact t interval. When the true sampling distribution is skewed, as for a variance or a correlation near its bound, they part.
+
+Three point one. The percentile interval. Class 2 note, section 7.
+
+Equation 5. The 95 per cent percentile interval runs from the 2.5 per cent quantile of the B replicates to the 97.5 per cent quantile of the B replicates.
+
+Said as a recipe: sort the B replicates from smallest to largest; cut off the lowest two and a half per cent and the highest two and a half per cent; the interval is what remains. With B equal to 1,000, that is roughly from the 25th smallest replicate to the 25th largest.
+
+The Class 2 note uses exactly this on a regression curve, pointwise: at each value of x, keep the 2.5 per cent and 97.5 per cent quantiles of the bootstrap fitted values at that x. Section 7 develops it.
+
+Three point two. The normal interval.
+
+Equation 6. The normal interval is the estimate theta hat plus or minus two times the bootstrap standard error from equation 4.
+
+Where the two comes from. It is the rounded 97.5 per cent point of the standard normal distribution, the same rule ISLP uses for its formula band in equation 7.2 and footnote 1, printed page 291: the fit plus or minus two standard errors, an approximate 95 per cent band. The normal interval simply replaces the formula standard error with the bootstrap one. The notes do not name a separate rule for it; this is that same plus or minus two standard errors rule, fed by equation 4. ISLP's own reading of a standard error, printed page 213, is the same idea in words: the estimate is expected to differ from the truth "by approximately" one standard error, "on average."
+
+What it assumes. The normal interval borrows only the spread from the bootstrap and imposes a symmetric bell shape. The percentile interval borrows the whole shape.
+
+Three point three. Worked: the site's bootstrap example. Class 1 note, section 12.2.
+
+The data are fifty listed values, assumed to be normal with mean mu and variance sigma squared. The summaries, all reproduced in Python for the notes: mu hat, the sample mean, is 0.10006. The maximum likelihood estimate of sigma squared, dividing by n, is 0.8334424, so sigma hat is 0.9129307. The median absolute deviation is 0.7508248.
+
+The exact t interval for mu. The 97.5 per cent point of the t distribution with 49 degrees of freedom is 2.00958. The standard error is sigma hat over the square root of 50, which is 0.91293 over 7.0711, about 0.1291. Times 2.00958, that is 0.25945. So the interval is 0.10006 plus or minus 0.25945, which runs from minus 0.15939 to 0.35951.
+
+A small caution on that calculation. The page plugs in sigma hat with divisor n, where the textbook t statistic uses s, with divisor n minus one. At n equal to 50 that is a 1 per cent difference.
+
+The exact interval for sigma squared. It uses the chi-square distribution with 49 degrees of freedom. The lower limit is 50 times 0.83344, divided by the 97.5 per cent point of that chi-square, which is about 70.22; the upper limit is the same numerator, divided by the 2.5 per cent point, about 31.55. The interval runs from 0.593 to 1.321. The page prints it as "1.3206221 0.5934305", upper limit first, because its code divides by the 0.025 quantile first. Read it in the right order.
+
+The bootstrap side. The page draws 10,000 resamples. Its conclusion, which the note confirms: for mu, the bootstrap interval is almost identical to the exact one. For sigma squared, the bootstrap distribution looks Gaussian, while the exact sampling distribution is a skewed chi-square, and the gap closes as n grows.
+
+Two lessons. For a smooth, nearly normal statistic like the sample mean, percentile, normal and exact intervals all agree, and the bootstrap needs no formula to get there. For a variance, the exact law is skewed and the bootstrap from fifty points does not fully reproduce the skew, so a bootstrap interval for sigma squared should be read with care at that sample size.
+
+Three point four. A bounded parameter near its edge. Class 1 note, section 12.3.
+
+The page on the bivariate Gaussian correlation takes x and y standard bivariate normal with correlation rho. It maximises the likelihood of rho numerically through a transformation, rho equal to e to the gamma minus one, over e to the gamma plus one, so that gamma is unconstrained. It simulates n equal to 30 pairs with rho equal to 0.95, and bootstraps both the maximum likelihood estimate and the sample correlation 10,000 times. No numbers are printed.
+
+The points to keep. The two estimators differ, because the maximum likelihood estimate uses the known unit variances. And a bounded parameter near its edge, a correlation at 0.95 that can never exceed 1, gives a skewed bootstrap distribution. There a symmetric normal interval is the wrong shape, and the percentile interval follows the skew. The note calls this a milder cousin of the failure for the maximum in section 5: in both, the trouble comes from an edge.
+
+Spoken checklist for section 3. You should be able to define the 95 per cent percentile interval, equation 5, and say which replicates bound it when B is 1,000. You should be able to define the normal interval, equation 6, and say what shape it imposes. You should be able to rebuild the site's exact t interval for mu: 0.10006 plus or minus 2.00958 times 0.91293 over the square root of 50, from minus 0.15939 to 0.35951, and give the chi-square interval for sigma squared, 0.593 to 1.321, in the right order. And you should be able to say where the bootstrap matched the exact answer, the mean, and where it did not, the variance and the correlation near its bound.
+
+Part two. Where the bootstrap breaks, and the repair.
+
+Section 4. The test case: four estimators of a uniform bound, and their bootstrap standard deviations.
+
+This section covers the Class 1 note on comparing estimators, sections 3, 4 and 9, which follow the comparing estimators deck, slides 2 to 4 and 13 to 17; Bolfarine and Sandoval, section 1.1.5, printed page 3, Example 1.3.8 and equations 1.3.14 and 1.3.15, printed page 11, and Table 1.1, printed page 12.
+
+The claim, before the work. For a sample from the uniform distribution on zero to theta, the Class 1 deck applies the nonparametric bootstrap of section 2 to four estimators of theta and compares the bootstrap standard deviations with the exact ones. Two separate failures show up. At n equal to 10, all four bootstrap standard deviations are far too small, because the ten draws happen to be bunched: a small-sample problem that fades for the estimators built on the mean. For the two estimators built on the sample maximum, the bootstrap is wrong at every sample size, in no fixed direction. That second failure is the subject of section 5.
+
+Four point one. The model. Bolfarine section 1.1.5, printed page 3.
+
+X is uniform on the interval zero to theta when its density is one over theta for x between zero and theta, and zero otherwise; Bolfarine writes it as one over theta times the indicator function of the interval zero to theta. The book stresses the feature that matters here, printed page 3: "o suporte da variável X", the support of X, "depende do parâmetro theta", depends on the parameter. For the normal, exponential, binomial and Poisson models, the book adds, this does not happen.
+
+The same page gives the two moments. The expected value of X is theta over two, and the variance of X is theta squared over twelve.
+
+Four point two. The four estimators and their exact standard deviations. Class 1 note, section 3.
+
+Estimator one is the sample mean, x bar. Estimator two is the sample maximum. Estimator three is twice the sample mean. Estimator four is n plus one over n, times the sample maximum.
+
+For the sample mean. By independence, its variance is one over n squared times n times theta squared over twelve, which is theta squared over 12 n. So its standard deviation is theta over the square root of 12 n. Twice the mean has variance four times that, theta squared over 3 n, and standard deviation theta over the square root of 3 n.
+
+For the maximum. The maximum is below t exactly when every draw is, so the probability that the maximum is at most t is t over theta, to the n, for t between zero and theta. Differentiating in t, its density is n times t to the n minus one, over theta to the n. That is Bolfarine equation 1.3.14, printed page 11. So the maximum divided by theta follows the beta law with parameters n and one, and its moments come from one integral: the expected value of u to the k is n over n plus k. With k equal to one and two, the expected value of u is n over n plus one, and of u squared is n over n plus two. Their difference gives the variance of u: n over n plus two, minus n over n plus one squared, which simplifies to n over n plus one squared times n plus two.
+
+Scaling back by theta, Bolfarine equation 1.3.15: the expected value of the maximum is n over n plus one times theta, and its variance is n theta squared over n plus one squared times n plus two. Estimator four multiplies by n plus one over n, which makes it unbiased and multiplies the variance by the square of n plus one over n, leaving theta squared over n times n plus two.
+
+Equation 7 collects the four exact standard deviations. Estimator one: theta over the square root of 12 n. Estimator two: theta times the square root of n over n plus one squared times n plus two. Estimator three: theta over the square root of 3 n. Estimator four: theta over the square root of n times n plus two.
+
+Four point three. What Bolfarine's Table 1.1 shows about the maximum. Printed page 12.
+
+Bolfarine's Example 1.3.8 compares the sample mean and the sample maximum by mean squared error. The mean squared error of the sample mean is one plus 3 n over 12 n, times theta squared; that of the maximum, variance plus squared bias, is two theta squared over n plus one times n plus two. Table 1.1 evaluates them at n equal to 3, 5, 10 and 20.
+
+The sample-mean column reads 5 theta squared over 18, 4 theta squared over 15, 31 theta squared over 120 and 61 theta squared over 240, and agrees with the formula. For the maximum, the entries at n equal to 3 and 5, theta squared over 10 and theta squared over 21, agree. But the formula gives two over 11 times 12, which is theta squared over 66, at n equal to 10, and two over 21 times 22, which is theta squared over 231, at n equal to 20, where the book prints theta squared over 662 and theta squared over 2312. And the ratio column should read 0.36, 0.18, 0.059 and 0.017, not 0.27, 0.12, 0.04 and 0.01. The book's conclusion, "X n é melhor que X barra para todo theta e n maior que 1", the maximum is better than the mean for every theta and every n above one, is unaffected. The Class 1 note recomputed every entry in Python.
+
+Why this matters for the bootstrap. The maximum is a good estimator precisely because it sits near the edge of the support: its mean squared error falls like one over n squared, against one over n for the mean. The same property, living on the edge, is what the empirical distribution cannot imitate. The best estimator here is the one the nonparametric bootstrap handles worst.
+
+Four point four. The deck's experiment. Slides 13 and 14.
+
+The deck draws one sample of 100 values from the uniform on zero to 3, so theta is 3. It then bootstraps the four estimators, with B equal to 1,000, using the first 10 values, the first 50, and all 100, and sets each bootstrap standard deviation beside the exact one from equation 7.
+
+The figures, by sample size, giving the four estimators in order, bootstrap standard deviation first and exact second.
+
+At n equal to 10. Bootstrap: 0.117, 0.062, 0.234 and 0.068. Exact: 0.274, 0.249, 0.548 and 0.274.
+
+At n equal to 50. Bootstrap: 0.113, 0.041, 0.226 and 0.042. Exact: 0.122, 0.058, 0.245 and 0.059.
+
+At n equal to 100. Bootstrap: 0.089, 0.036, 0.177 and 0.036. Exact: 0.087, 0.029, 0.173 and 0.030.
+
+The exact row at n equal to 50, worked from equation 7 at theta equal to 3. Estimator one: 3 over the square root of 600, which is 0.122. Estimator two: the square root of 50 times 9, over 51 squared times 52, which is 0.058. Estimator three: 3 over the square root of 150, which is 0.245. Estimator four: 3 over the square root of 2,600, which is 0.059.
+
+Four point five. The first failure: a bunched small sample. Slide 15.
+
+At n equal to 10, all four bootstrap standard deviations are far below the exact ones: 0.117 against 0.274 for the mean, and 0.234 against 0.548 for twice the mean. The reason is in the data. The ten draws "happen to lie in" the range 1.35 to 2.33. Their spread is small, so resamples drawn from them have a small spread too. "The bootstrap cannot recover what the sample does not contain."
+
+This is the statistical approximation of section 2 point 7 going wrong, and no value of B would fix it. But it is a small-sample problem, and for the mean-based estimators it fades as n grows: at n equal to 50 the mean gives 0.113 against 0.122, and at n equal to 100, 0.089 against 0.087. Twice the mean follows: 0.226 against 0.245, then 0.177 against 0.173.
+
+Four point six. The second failure: the maximum, wrong at every n. Slides 14 and 17.
+
+For estimators two and four, the bootstrap standard deviation does not settle on the exact one. At n equal to 50 it is too small: 0.041 against 0.058 for the maximum. At n equal to 100 it is too large: 0.036 against 0.029. So the error has no fixed direction. At n equal to 100, the boxplots of the bootstrap replicates "collapse onto" the sample maximum, which the deck calls "a warning sign", slide 17.
+
+The Class 1 note's diagnosis: the failure is in the shape of the bootstrap law, a point mass at the sample maximum, not in a consistent bias of its standard deviation, and it does not fade with n. Section 5 derives that point mass.
+
+Spoken checklist for section 4. You should be able to state the uniform density and Bolfarine's remark that its support depends on theta. You should be able to derive the distribution of the maximum, t over theta to the n, its density, and the beta with parameters n and one, and write the four exact standard deviations of equation 7. You should be able to state Bolfarine's Table 1.1 correction: theta squared over 66 and over 231, with ratios 0.36, 0.18, 0.059 and 0.017. You should be able to quote the deck's bootstrap and exact standard deviations at n equal to 10, 50 and 100. And you should be able to name the two failures: the bunched ten draws, which fade for the mean, and the maximum, wrong in both directions at every n.
+
+Section 5. Is a given observation in the bootstrap sample? One minus one over n, to the n, and why the bootstrap fails for the maximum.
+
+This section covers the Class 1 note, section 10, which follows deck slide 18, with its figure of the bootstrap point mass; the Class 1 pitfalls note, item 12; and the Class 1 Python note, section 5. The same calculation for a fixed observation is ISLP Exercise 5.2, printed pages 224 and 225; this narration gives only its address, not its statement.
+
+The claim, before the work. Each bootstrap draw picks a given observation with probability one over n. So the chance that a bootstrap sample of size n never picks it is one minus one over n, to the n, and the chance that it appears at least once is one minus that, which tends to one minus one over e, about 0.632. Apply this to the observation that happens to be the sample maximum: the bootstrap maximum equals the observed maximum about 63 per cent of the time, at every sample size. The true sampling distribution of the maximum is continuous and has no such atom. So the nonparametric bootstrap is inconsistent for the maximum.
+
+Five point one. The probability, step by step.
+
+Fix one observation, say observation j. A bootstrap sample makes n independent draws, each choosing one of the n observations with probability one over n.
+
+Step one. On a single draw, the probability of not picking observation j is one minus one over n.
+
+Step two. The n draws are independent, so the probability that none of them picks observation j is the product of n such factors. Equation 8: the probability that observation j is not in the bootstrap sample is one minus one over n, raised to the n.
+
+Step three. Take the complement. Equation 9: the probability that observation j is in the bootstrap sample, at least once, is one minus the quantity one minus one over n, to the n.
+
+Step four, the limit. Take the logarithm of one minus one over n, to the n: it is n times the log of one minus one over n. For large n, the log of one minus one over n is close to minus one over n, so n times it tends to minus one. Hence one minus one over n, to the n, tends to e to the minus one, which is about 0.368, and equation 9 tends to one minus e to the minus one, which is about 0.632.
+
+A consequence worth having. Since each observation appears with that same probability, the expected share of distinct original observations in a bootstrap sample is also one minus one minus one over n, to the n: on average about 63 per cent of the observations appear, and the remaining 37 per cent or so are left out of any given resample, while some others appear two or more times.
+
+Five point two. The numbers. Class 1 note, section 10.
+
+At n equal to 10: one minus 0.9 to the 10th, which is 0.651. At n equal to 50: one minus 0.98 to the 50th, which is 0.636. At n equal to 100: one minus 0.99 to the 100th, which is 0.634. The limit: 0.632. Notice how fast the limit arrives: by n equal to 10 the value is already within two hundredths of it.
+
+Five point three. The maximum is one particular observation. Deck slide 18.
+
+Now let observation j be the one that holds the sample maximum. A bootstrap sample reproduces the observed maximum whenever that observation is drawn at least once, because nothing in the data is larger. So the probability that the bootstrap maximum differs from the sample maximum is one minus one over n, to the n, which is equation 8. And, boxed in the note, the probability that the bootstrap maximum equals the sample maximum is equation 9, one minus one minus one over n to the n, which tends to about 0.632.
+
+The deck checks this with B equal to 1,000 resamples. The Monte Carlo standard error of an observed share near 0.632 is the square root of p times one minus p over 1,000, about 0.015. At n equal to 10: exact 0.651, observed 0.666, a gap of plus 1.0 standard errors. At n equal to 50: exact 0.636, observed 0.622, a gap of minus 0.9. At n equal to 100: exact 0.634, observed 0.632, a gap of minus 0.1. All three sit within about one Monte Carlo standard error of the formula.
+
+Five point four. Why that is a failure. Class 1 note, section 10.
+
+The bootstrap distribution of the maximum puts a point mass of about 63 per cent on a single value, the observed maximum. The true sampling law of the maximum, the scaled beta with parameters n and one from section 4, with density n t to the n minus one over theta to the n, is continuous: it gives probability zero to any single value. A distribution with a 63 per cent atom cannot be close in shape to a continuous one. And no sample size fixes it, because the mass converges to 0.632, not to zero. That is what the note means by inconsistent: the bootstrap distribution does not approach the true sampling distribution as n grows. The Class 1 pitfalls note puts the correction in one line: "The shape is wrong at every n."
+
+That is also why section 4 found the bootstrap standard deviation of the maximum too small at n equal to 50 and too large at n equal to 100. A wrong shape can make its spread miss either way, depending on how the top few observations happen to be spaced.
+
+Five point five. The root cause.
+
+The empirical distribution never puts mass above the sample maximum. The true sampling law of the maximum puts positive probability on every interval below theta, including the stretch from the sample maximum up to theta that the data never reached. The bootstrap maximum can never exceed the observed maximum; the real maximum of a fresh sample can, and often does. In the note's words: the statistic depends on the edge of the support, and the empirical distribution has no information beyond its own edge.
+
+For smooth statistics like the sample mean, this does not matter. Each observation contributes one over n to the mean, so no single point, and no edge, dominates it; the bootstrap works, as section 4 saw for the mean at n equal to 50 and 100.
+
+Five point six. The picture: the figure on the bootstrap point mass. Class 1 note, section 10.
+
+Left panel. Equation 9 plotted against n, falling from one, at n equal to 1, to its limit 0.632, with the deck's observed shares, 0.666, 0.622 and 0.632, marked at n equal to 10, 50 and 100. The mass settles at 0.632 almost immediately, and the three shares scatter around the curve by about one Monte Carlo standard error.
+
+Right panel. One seeded simulated sample, not the deck's sample, of size 100 from the uniform on zero to 3. Its maximum is 2.969, and estimator four is 2.999. The panel draws three exact cumulative distribution functions of the resampled maximum.
+
+The nonparametric one, equation 10: the empirical distribution function at t, raised to the n. Each bootstrap draw is at most t with probability F hat n of t, and the maximum of n independent draws is at most t when all of them are. Just below the sample maximum, F hat n is n minus one over n, so the function there is one minus one over n, to the n, about 0.366 at n equal to 100. At the sample maximum it reaches one. So it leaps by one minus 0.366, which is 0.634, the point mass of equation 9. Below that, it climbs in a handful of steps, one per top order statistic, of heights n minus j over n, to the n, minus n minus j minus one over n, to the n, for j counting down from the top. The next step down, for example, is 0.99 to the 100th minus 0.98 to the 100th, about 0.23.
+
+The parametric one: t over estimator four, to the n, the distribution function of the maximum of n draws from the uniform on zero to 2.999.
+
+The true one: t over 3, to the n.
+
+The parametric curve hugs the true one; the nonparametric one is a staircase with one giant last step. In the note's words: resampling from the fitted model gives the right shape. Section 6 does exactly that.
+
+The Class 1 Python note checks all of this with 20,000 resamples from the same seeded sample: the share of resamples whose maximum lands exactly on the sample maximum is within four Monte Carlo standard errors of 0.634, while the parametric resampled maximum never equals it.
+
+Spoken checklist for section 5. You should be able to derive, in four steps, that a given observation is left out of a bootstrap sample with probability one minus one over n to the n, and included with probability one minus that, and show that the limits are e to the minus one, about 0.368, and one minus e to the minus one, about 0.632. You should be able to give 0.651, 0.636 and 0.634 at n equal to 10, 50 and 100, and the deck's 0.666, 0.622 and 0.632 with their Monte Carlo standard error of about 0.015. You should be able to explain why a 63 per cent atom at the sample maximum makes the bootstrap inconsistent, why no n fixes it, and why the sample mean does not suffer. And you should be able to describe the three distribution functions: the empirical one to the n, with its jump of 0.634, against the smooth parametric and true curves.
+
+Section 6. The repair: the parametric bootstrap.
+
+This section covers the Class 1 note, section 11, which follows deck slide 19; the Class 1 formula note, section 2.5; and the Class 1 Python note, section 5.
+
+The claim, before the work. Instead of resampling the data, draw each bootstrap sample from the fitted model: n independent draws from the uniform on zero to theta hat, with theta hat taken to be estimator four. The fitted model is continuous and reaches beyond the sample maximum, so the resampled maximum has no point mass and its distribution has the right shape. With enough resamples, the parametric bootstrap reproduces the plug-in standard deviation, the exact formula of equation 7 with theta hat in place of theta. It tracks the truth as long as theta hat is close to theta.
+
+Six point one. The algorithm.
+
+Step one. Fit the model to the one sample: compute estimator four, n plus one over n times the sample maximum.
+
+Step two. Draw x star one to x star n, independently, from the uniform on zero to that estimate. Not from the data: from the fitted model.
+
+Step three. Compute the four estimators on the simulated sample.
+
+Step four. Repeat B times, and take the standard deviation of each estimator's B replicates, by equation 4.
+
+Compare with section 2 point 4. Only step two has changed. The plug-in principle is the same; what is plugged in is the fitted model rather than the empirical distribution.
+
+Six point two. What it converges to: the plug-in standard deviation.
+
+Under the fitted model the true parameter is, by construction, theta hat. So the exact standard deviation of each estimator, under the model the resamples come from, is equation 7 evaluated at theta hat. Equation 11: the plug-in standard deviation of an estimator is its exact standard deviation formula, equation 7, with theta replaced by theta hat equal to estimator four. As B grows, the parametric bootstrap standard deviation converges to it.
+
+Six point three. Worked check at n equal to 10. Slide 14's estimate, theta hat equal to 2.568.
+
+Estimator four. Its plug-in standard deviation is theta hat over the square root of n times n plus two. That is 2.568 over the square root of 120, which is 2.568 over 10.954, which is 0.234.
+
+Estimator two. Its plug-in standard deviation is theta hat times the square root of n over n plus one squared times n plus two. That is 2.568 times the square root of 10 over 121 times 12, which is 2.568 times 0.0830, which is 0.213.
+
+Six point four. The deck's parametric bootstrap against the exact plug-in values. Slide 19.
+
+By sample size, for the four estimators in order: the deck's parametric bootstrap standard deviations first, then the exact plug-in values.
+
+At n equal to 10, with theta hat 2.568. Parametric: 0.237, 0.213, 0.475 and 0.234. Plug-in: 0.234, 0.213, 0.469 and 0.234.
+
+At n equal to 50, with theta hat 2.926. Parametric: 0.119, 0.054, 0.238 and 0.055. Plug-in: 0.119, 0.056, 0.239 and 0.057.
+
+At n equal to 100, with theta hat 3.029. Parametric: 0.084, 0.031, 0.167 and 0.032. Plug-in: 0.087, 0.030, 0.175 and 0.030.
+
+The deck's column is a simulation with B equal to 1,000 of the plug-in row, and it matches to Monte Carlo error.
+
+Six point five. Reading the comparison.
+
+At n equal to 10, the parametric standard deviations, 0.213 to 0.234 for the two max-based estimators, are still below the exact ones, 0.249 and 0.274. The reason is not the method: theta hat equal to 2.568 is well below the true theta of 3, and every plug-in standard deviation is proportional to theta hat. The deck puts it this way: "it tracks the theory as long as" estimator four "is close to theta."
+
+At n equal to 50 and 100, theta hat is 2.926 and 3.029, and the max-based standard deviations now sit on the truth. At n equal to 50: parametric 0.054 and 0.055, plug-in 0.056 and 0.057, against the exact 0.058 and 0.059. At n equal to 100: parametric 0.031 and 0.032, plug-in 0.030 and 0.030, against the exact 0.029 and 0.030. The nonparametric bootstrap had given 0.041 at n equal to 50 and 0.036 at n equal to 100, missing in opposite directions.
+
+And the shape is right. The Class 1 Python note draws 20,000 parametric resamples from the seeded sample of section 5, with theta hat 2.999 at n equal to 100. Their standard deviation matches the plug-in formula to within 3 per cent, and not one resampled estimate lands exactly on theta hat: there is no point mass.
+
+Six point six. The two bootstraps side by side. Class 1 note, section 11.
+
+Compare them in four dimensions.
+
+First, what they resample from. The nonparametric bootstrap resamples the data, which is drawing from the empirical distribution. The parametric bootstrap draws from the fitted uniform on zero to theta hat.
+
+Second, whether they work for the sample mean. The nonparametric one does, as n grows. The parametric one does.
+
+Third, whether they work for the sample maximum. The nonparametric one does not, because of the 63 per cent point mass. The parametric one does.
+
+Fourth, what each needs. The nonparametric one needs nothing about the model. The parametric one needs the model to be right.
+
+That last line is the price. The parametric bootstrap repairs the maximum by trusting the uniform family. If the data did not come from a uniform, its resamples would come from the wrong population, and its standard deviations would be the plug-in values of a wrong formula.
+
+Spoken checklist for section 6. You should be able to state the parametric algorithm and say which single step differs from the nonparametric one. You should be able to define the plug-in standard deviation and compute it at n equal to 10, theta hat 2.568: 0.234 for estimator four and 0.213 for estimator two. You should be able to quote the deck's parametric standard deviations at n equal to 10, 50 and 100, and explain why they are still low at n equal to 10. And you should be able to compare the two bootstraps in four dimensions, ending with the price: the parametric bootstrap needs the model to be right.
+
+Recap of part 1. The bootstrap estimates a sampling distribution from one sample by resampling the data with replacement, which is drawing from the empirical distribution. Its standard error is the sample standard deviation of the replicates, and its quantiles give the percentile interval. It works for smooth statistics, as ISLP's 0.087 against 0.083 shows. It fails for the sample maximum of a uniform sample, because the resampled maximum equals the observed one with probability one minus one minus one over n to the n, about 0.632, at every n. The parametric bootstrap, drawing from the fitted uniform, repairs the shape, at the price of trusting the model. Part 2 takes the bootstrap to a regression curve, sizes the number of resamples, and closes with the support material.
+
+End of part 1.

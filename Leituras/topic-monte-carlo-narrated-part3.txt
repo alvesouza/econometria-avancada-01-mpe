@@ -1,0 +1,367 @@
+Advanced Econometrics. Topic narration: Monte Carlo methods for inference. Narrated study notes, part 3 of 3.
+
+How to listen. This file closes the Monte Carlo topic narration. Part 1 covered Monte Carlo integration, Monte Carlo studies of estimators and exact sampling; part 2 covered importance sampling, Markov chains and the Gibbs sampler. This file holds two sections: section 7, Metropolis-Hastings, with the acceptance ratio, detailed balance and tuning; and section 8, mixing, numerical standard errors and convergence diagnostics, where Hamiltonian Monte Carlo is named. Then the support parts, where audio beats reading: the pitfalls, each said as the error, the counterexample and the correction; a spoken formula sheet for active recall; an eighteen-item true or false self-test with pause cues; and the whole topic in five lines, the piece worth replaying.
+
+As before, every formula is spoken in words, equations are numbered within each section, and each section ends with a spoken checklist. Hamiltonian Monte Carlo and the no-U-turn sampler are named only, not examinable.
+
+
+Section 7. Metropolis-Hastings: propose anywhere, accept with the right probability.
+
+This section covers the Metropolis-Hastings and Hamiltonian Monte Carlo note, subsections 1 to 7; Greenberg section 7.2, printed pages 96 to 101, with equations 7.5 and 7.6, Algorithms 7.4 to 7.6, Theorem 7.2 and the Beta of 3 and 4 example; Greenberg section 5.3, printed pages 69 to 70, on how accept-reject differs; Greenberg section 8.2.3, printed pages 126 to 129, for the logit; Tsay sections 12.4 and 12.7, printed pages 622 to 624 and 636 to 638; Morettin and Singer appendix B, chapter note 3, printed pages 474 to 475, equations B.25 and B.26; and the lecturer's Bayesian logistic regression and Petrobras stochastic volatility pages.
+
+The claim, before the derivations. When a full conditional is not a standard distribution, propose a move from any density q of x and y, and accept it with probability alpha of x and y equal to the minimum of one and the ratio f of y times q of y and x, over f of x times q of x and y; otherwise stay where you are. This makes the chain reversible with respect to f, which is called detailed balance, so f is invariant; and the unknown normalising constant of f cancels in the ratio. Gibbs is the special case where the proposal is the full conditional and alpha is one. The proposal's scale trades acceptance against step size: for a standard normal target and random-walk steps with standard deviation s, the acceptance rate is exactly 2 over pi times the arc tangent of 2 over s, which is 0.445 at s equal to 2.38.
+
+The notation. f is the target density, known up to a constant. q of x and y is the proposal density of a candidate y given the current point x. alpha of x and y is the acceptance probability, between zero and one. s is the standard deviation of a random-walk proposal. In the logit example, beta is the vector of coefficients and P i is the probability that y i equals one.
+
+Seven point one. Accept or stay. The note, subsection 1; Greenberg printed pages 69 to 70 and 97. The U layer.
+
+Gibbs needs every full conditional in a form we can sample. Many models break this at one block: the logit coefficients, a GARCH parameter, a log-volatility. Metropolis-Hastings needs only the ability to evaluate the target up to a constant. It proposes a candidate from a convenient density and then corrects for the mismatch between proposal and target by accepting some moves and rejecting others.
+
+Unlike accept-reject, a rejection does not mean "try again". Greenberg, printed page 97: in accept-reject the algorithm continues to generate values until a candidate is accepted; in Metropolis-Hastings, when a candidate is rejected, the procedure returns the current state as the next state and continues, which implies that values may be repeated. So the draws are correlated. Greenberg's comparison, printed pages 69 to 70: Metropolis-Hastings is more general, it can sample a greater variety of distributions; but it generates correlated, rather than independent, samples, and independent samples are in general preferred to positively correlated ones because they have a smaller variance and so carry more information for a given sample size.
+
+Seven point two. Detailed balance and the acceptance probability. Greenberg printed pages 96 to 98; Morettin and Singer printed page 474.
+
+Equation 1, reversibility. A kernel p of x and y is reversible with respect to f if f of x times p of x and y equals f of y times p of y and x, for all x and y. This is detailed balance: in equilibrium, the flow of probability from x to y equals the flow from y to x.
+
+Reversibility implies invariance. Integrate both sides of equation 1 over x. The left side is the integral of f of x times p of x and y, d x. The right side is f of y times the integral over x of p of y and x, and that integral is one, because p of y and dot is a density for the next state. So the integral of f of x times p of x and y equals f of y: equation 4 of section 5. Morettin and Singer, printed page 474, make the same point: the reversibility condition is sufficient for f to be the equilibrium distribution.
+
+Now the construction, Greenberg following Chib and Greenberg, 1995. A proposal q is usually not reversible: for some pair, f of x times q of x and y is greater than f of y times q of y and x, so moves from x to y happen too often and moves from y to x too rarely.
+
+Step one. Multiply each side by an acceptance factor alpha that restores the balance. Equation 2, Greenberg 7.5: f of x times alpha of x and y times q of x and y equals f of y times alpha of y and x times q of y and x.
+
+Step two. Moves from y to x are too rare, so make them as frequent as possible: set alpha of y and x equal to one.
+
+Step three. Substitute into equation 2 and solve for alpha of x and y. Equation 3: alpha of x and y equals f of y times q of y and x, over f of x times q of x and y. In this case that ratio is less than one, so it is a valid probability.
+
+Step four. Combine both cases. Equation 4, Greenberg 7.6, Morettin and Singer B.26: alpha of x and y equals the minimum of one and the ratio f of y q of y and x over f of x q of x and y, when f of x times q of x and y is positive, and zero otherwise. Greenberg notes, printed page 98, that the positivity condition is usually satisfied because the start is in the support of f and the proposal usually stays there; but one can deliberately propose outside the support, for example draw from an untruncated proposal to sample a truncated target, and then alpha is zero for those moves.
+
+The normalising constant cancels. Only the ratio f of y over f of x enters equation 4, so a posterior known as likelihood times prior is enough. Greenberg, printed page 98: "an unknown constant in the target distribution is not needed, because it cancels out via the fraction f of y over f of x". Tsay, printed page 622, says the same.
+
+The kernel that results, Morettin and Singer equation B.25 and printed page 474. For y different from x, p of x and y is q of x and y times alpha of x and y. And the chain stays at x with the leftover probability, one minus the integral of q times alpha over all candidates. So the transition is a mixture: a density for moves, plus a positive probability mass on staying put.
+
+Greenberg's Algorithm 7.4. Given the current x: step one, generate Y from q of x and dot. Step two, generate U uniform on zero to one; if U is at most alpha of x and Y, return Y; otherwise return x. Theorem 7.2, from Tierney, 1994: a pi-irreducible Metropolis kernel is Harris recurrent, so the ergodic theorem of section 5 applies. Morettin and Singer state a sufficient condition, printed page 475: if q is irreducible and aperiodic and alpha is positive for every pair, the chain is irreducible and aperiodic with equilibrium distribution f.
+
+Seven point three. Two standard kernels. Greenberg printed page 99; Tsay sections 12.4.1 and 12.4.2; Morettin and Singer printed page 475.
+
+The random walk. The candidate is y equal to x plus u, with u symmetric about zero, so q of x and y equals q of y and x, and the q's cancel in equation 4. Equation 5: alpha of x and y is the minimum of f of y over f of x and one. This is the original Metropolis algorithm, Metropolis and coauthors, 1953, Tsay section 12.4.1 with its symmetric "jumping distribution". Uphill moves, where f of y exceeds f of x, are always accepted; downhill moves are accepted with probability equal to the density ratio f of y over f of x. A careful-reading note: Greenberg, printed page 99, writes this downhill probability as f of x over f of y, which would exceed one; equation 5 gives the correct ratio, f of y over f of x. Hastings's generalisation, Tsay section 12.4.2, allows asymmetric proposals through the correction in equation 4.
+
+The independence kernel. The candidate ignores the current point: q of x and y equals q of y. Equation 6: alpha of x and y is the minimum of one and the ratio f of y over q of y, divided by f of x over q of x. This is a random walk on the importance ratio f over q of section 4. Greenberg recommends a tailored kernel, printed page 99: a fat-tailed density, such as a multivariate t with small degrees of freedom, centred at the posterior mode, with scale matrix equal to the negative inverse of the matrix of second derivatives of the log posterior there.
+
+Worked: a Beta of 3 and 4 from uniform proposals. Greenberg Algorithm 7.5, printed page 99. The proposal is the uniform on zero to one, so q is one, and the target is proportional to x squared times the cube of one minus x. By equation 6, equation 7: alpha, from the previous value x g minus one to the candidate U two, is the minimum of one and U two squared times the cube of one minus U two, over x g minus one squared times the cube of one minus x g minus one. Draw U one; if it is at most alpha, move to U two; otherwise stay.
+
+Greenberg's run: 5000 draws after 500 discarded, acceptance 0.57, sample mean 0.4296 against the true three sevenths, 0.4286. The note computes the exact stationary acceptance rate of this independence sampler. Average equation 6 over x drawn from f and y drawn from the uniform; it becomes the double integral of the minimum of f of x and f of y, which for the Beta of 3 and 4 is 0.5726. A seeded Python run gives acceptance 0.581 and mean 0.4224.
+
+Seven point four. The proposal scale: an exact acceptance curve. The note, subsection 4, equations 8 and 9.
+
+Take the target to be a standard normal and random-walk proposals y equal to x plus u, with u normal with mean zero and standard deviation s. The stationary acceptance rate is the expected value of the minimum of one and r, where r is f of y over f of x, with x drawn from f.
+
+Step one. Split it. Equation 8: the expected value of the minimum of one and r equals the probability that r is at least one, plus the expected value of r times the indicator that r is less than one.
+
+Step two. Write the second term as an integral: the double integral of f of x times q of y minus x times f of y over f of x, over the region where f of y is less than f of x. The f of x cancels, leaving f of y times q of y minus x on that region. Relabel x and y; since q is symmetric, this is the probability, under the same joint distribution, that f of y exceeds f of x, that is, the probability that r is greater than one.
+
+Step three. So the acceptance rate is twice the probability that f of y exceeds f of x. For a standard normal, a higher density means closer to zero: the event is that the absolute value of x plus u is less than the absolute value of x.
+
+Step four. Write u as s times z, with z standard normal and independent of x. The absolute value of x plus s z is less than that of x exactly when z times 2 x plus s z is negative. In the plane of x and z, that region is the double wedge between the line z equal to zero and the line z equal to minus 2 x over s.
+
+Step five. The pair x and z is standard bivariate normal, which is rotation-invariant, so the probability of a wedge is its angle over 2 pi. Each half of the wedge has angle equal to the arc tangent of 2 over s, so the double wedge has probability 2 times the arc tangent of 2 over s, over 2 pi.
+
+Equation 9, the result: the acceptance rate as a function of s is 2 over pi, times the arc tangent of 2 over s.
+
+The curve, at six scales. At s equal to 0.1, acceptance 0.968. At 0.5, 0.844. At 1, 0.705. At 2.38, 0.445. At 8, 0.156. At 20, 0.063.
+
+Reading it. A small s accepts almost everything but crawls: each step is tiny, so successive draws are highly autocorrelated, as with a correlation near one in the Gibbs sampler of section 8. A large s proposes bold moves that are almost always rejected, so the chain sits still, repeating its value. Greenberg's warning, printed page 98: on one hand, the kernel should generate proposals with a reasonably good probability of acceptance, or the same value is returned often and the algorithm mixes poorly; on the other, a high acceptance rate can come from proposals close to the current point, which confines sampling to a small part of the support, again leading to poor mixing. Neither a high nor a low acceptance rate is a goal in itself.
+
+Tuning in practice. The value s equal to 2.38, for one dimension, is the scale that minimises the autocorrelation time of this chain, from Gelman, Roberts and Gilks, a G-layer result; and the tailored kernels in the logit example use 2.38 squared over K times an estimate of the posterior covariance, for K parameters. Morettin and Singer, printed page 474, give the rule of thumb in rates: the success of the method depends on acceptance rates that are not too low, of the order of 20 to 50 per cent, and on proposals that are easy to simulate. So tune the scale for mixing, judged by the autocorrelations of section 8, and treat the acceptance rate only as a symptom.
+
+Seven point five. Gibbs is Metropolis-Hastings with acceptance one. Greenberg printed pages 100 to 101; the note, equation 10.
+
+In a block update, propose Y one from the full conditional f of x one given x two. Then equation 4 reads, equation 10: alpha equals f of Y one and x two, times f of x one given x two, over f of x one and x two, times f of Y one given x two. Write each conditional as the joint over the marginal of x two: f of x one given x two is f of x one and x two over f of x two, and f of Y one given x two is f of Y one and x two over f of x two. Substitute: the numerator is f of Y one and x two times f of x one and x two over f of x two, and the denominator is f of x one and x two times f of Y one and x two over f of x two. They are equal, so alpha is one. Every proposal is accepted.
+
+This licenses Metropolis-Hastings within Gibbs, Greenberg Algorithm 7.6, and Morettin and Singer's remark i, printed page 475, after Müller, 1992: Gibbs steps for the blocks with standard conditionals, Metropolis-Hastings steps for the rest, in any order within a sweep. Tsay's Griddy Gibbs, section 12.4.3, is a third option for a univariate nonstandard conditional: evaluate it on a grid, build an approximate distribution function, and draw by the inverse distribution function of section 3.
+
+Seven point six. Worked: the Bayesian logit. Greenberg section 8.2.3, printed pages 126 to 129; the lecturer's Bayesian logistic regression page; the note, subsection 6.
+
+The model. The probability that y i equals one is P i, equal to e to the x i transposed beta, over one plus e to the x i transposed beta. So the log of P i over one minus P i is x i transposed beta: the log-odds are linear in the covariates, Greenberg printed page 127. With a normal prior on beta, mean beta zero and covariance B zero, equation 11: the log posterior is the sum over i of y i times x i transposed beta, minus the log of one plus e to the x i transposed beta; minus one half times beta minus beta zero, transposed, times B zero inverse, times beta minus beta zero; plus a constant. This is not a standard form, and latent logistic data do not make it conditionally conjugate, Greenberg Exercise 8.8. So Greenberg uses Metropolis-Hastings, with a random walk or a tailored independence kernel, printed page 128.
+
+Reading coefficients for a prior, Greenberg printed pages 127 to 128. The derivative of P i with respect to covariate k is beta k times P i times one minus P i, largest at P i equal to one half, where it is beta k over 4. The probit's largest effect is 0.4 times beta k, from the normal density at zero, 0.3989. So logit coefficients are about 1.6 times probit ones. Greenberg elicits a baseline intercept of the log of one ninth, which is minus 2.1972, from "a 10 per cent chance of owning a computer", and reports posterior probabilities that beta two is positive of 0.98 and that beta three is positive of 0.88, in his Table 8.3.
+
+The seeded check in the note. 2000 simulated observations with true beta equal to minus 1, 0.8 and 0.5; a prior normal with mean zero and covariance 100 times the identity; a random walk with covariance 2.38 squared over 3 times the maximum likelihood covariance; 10,000 draws after 1000 of burn-in. The maximum likelihood estimates are minus 1.072, 0.845 and 0.602; the posterior means are minus 1.074, 0.850 and 0.605; the acceptance rate is 0.32, inside Morettin and Singer's 20 to 50 per cent.
+
+The site page, 5000 bank clients, a loan on income and education. The classical fit gives an intercept of minus 11.304, with standard error 0.419; income 0.0596, with 0.0024; and education, levels 2 or 3 against 1, 4.055, with 0.221. The Bayesian fit, with a Gibbs sampler based on Pólya-Gamma data augmentation, a G-layer method, gives posterior means of minus 10.82, with posterior standard deviation 0.39; 0.06, with 0.00 to two decimals; and 3.82, with 0.21. Every 95 per cent interval excludes zero. The posterior means are 4 to 6 per cent smaller in absolute value than the maximum likelihood ones: minus 10.82 over minus 11.30 is 0.957, and 3.82 over 4.06 is 0.942, because the package's default prior shrinks toward zero. The page's payoff is the posterior of a probability: draw by draw, the probability of a loan given income and education is one over one plus e to the minus x transposed beta g, plotted at incomes 145, 170 and 193, the 90, 95 and 99 per cent income quantiles, for both education groups.
+
+Seven point seven. Stochastic volatility by Markov chain Monte Carlo, in one paragraph. Tsay section 12.7, equations 12.20 to 12.23; the Petrobras page.
+
+Tsay's model: the return r t is x t transposed beta plus a t, with a t equal to the square root of h t times a standard normal epsilon t; and the log of h t is alpha zero plus alpha one times the log of h t minus one, plus a normal shock v t with variance sigma v squared. The likelihood is an n-dimensional integral over the volatilities. Treating them as augmented parameters, as in section 6, gives three kinds of blocks: beta given the volatilities is a weighted regression; the alphas given the volatilities are an autoregression for the log of h t; and each h t given its neighbours has a nonstandard density, Tsay equation 12.23, drawn by Metropolis in Jacquier, Polson and Rossi, and by Griddy Gibbs in Tsay. The Petrobras page, daily log-returns since 2019, compares a Gaussian, standard deviation 0.0328, with a Student t with 3 degrees of freedom and scale 0.0193, and then fits four stochastic volatility variants by Markov chain Monte Carlo. The model itself belongs to Class 8; here it is the example of a sampler with thousands of latent states.
+
+Recap of section 7. Detailed balance, f of x p of x and y equal to f of y p of y and x, implies invariance. Starting from a nonreversible proposal, setting the rarer direction's acceptance to one gives the acceptance probability: the minimum of one and f of y q of y and x over f of x q of x and y. The normalising constant cancels. Random-walk proposals reduce it to the density ratio; independence proposals to the ratio of importance weights. Gibbs is the case with acceptance one. For a standard normal target the random-walk acceptance is 2 over pi times the arc tangent of 2 over s, 0.445 at s equal to 2.38; tune for mixing, with acceptance rates of roughly 20 to 50 per cent as a guide.
+
+Checklist for section 7. You should be able to show that detailed balance implies invariance. You should be able to derive the Metropolis-Hastings acceptance probability from an unbalanced proposal in four steps, and say why the normalising constant is not needed. You should be able to write the acceptance probability for random-walk and independence kernels, and for Greenberg's Beta of 3 and 4 example. You should be able to derive the acceptance curve 2 over pi times the arc tangent of 2 over s, and explain why both very small and very large s mix badly. You should be able to show that a Gibbs step is a Metropolis-Hastings step with acceptance one. And you should be able to write the logit log posterior and say why it needs Metropolis-Hastings.
+
+Section 8. Mixing, numerical standard errors, and convergence diagnostics.
+
+This section covers the Markov chains and Gibbs note, subsection 8; the Metropolis-Hastings and Hamiltonian Monte Carlo note, subsection 8; Greenberg section 7.1, printed page 94, the bivariate-normal example; Greenberg section 7.3, printed pages 102 to 103, on batch means, the relative numerical efficiency and convergence; Tsay printed page 617; and the lecturer's Stan programs, examples 1 to 3.
+
+The claim, before the derivations. A Markov chain's draws are correlated, so a chain of G draws carries less information than G independent draws. When two blocks are highly correlated, Gibbs moves in tiny steps: on a bivariate normal with correlation rho, each block's chain is an autoregression with coefficient rho squared, and its lag-h autocorrelation is rho to the power 2 h. The variance of a chain average is inflated by the inefficiency factor, one plus twice the sum of the autocorrelations, which for this chain is one plus rho squared over one minus rho squared: 1.67 at rho equal to 0.5, 9.5 at 0.9, and 999.5 at 0.999. So the naive standard error must be replaced, for example by batch means. There is no theorem for the burn-in; diagnostics are informal: trace plots, autocorrelations, and agreement across chains started far apart.
+
+Eight point one. When Gibbs mixes badly. Greenberg printed page 94; the Gibbs note, equations 17 and 18.
+
+Greenberg's definition: if there is a high correlation between variables in different blocks, the algorithm may not "mix well", meaning that the sampler fails to traverse the full support, generating iterations from only a limited portion. For a large enough number of iterations it will traverse the space, but it may fail for the number generated in practice.
+
+The example. Sample X one and X two from a bivariate normal with means zero, unit variances and correlation rho, by Gibbs with the two coordinates as blocks. The conditionals are: X one given x two is normal with mean rho x two and variance one minus rho squared; and X two given x one is normal with mean rho x one and variance one minus rho squared. Greenberg stresses that nobody samples a bivariate normal this way in practice; the example is a laboratory.
+
+The algebra in two steps. Step one: write each draw as its conditional mean plus an independent normal error, e one and e two, each with variance one minus rho squared. So x one at g equals rho times x two at g minus one, plus e one; and x two at g minus one equals rho times x one at g minus one, plus e two. Step two: substitute the second into the first. Equation 1: x one at g equals rho times, rho x one at g minus one plus e two, plus e one, which is rho squared times x one at g minus one, plus rho e two plus e one.
+
+So the x one chain is an autoregression of order one with coefficient rho squared, exactly the process of section 5, subsection 3. Its lag-h autocorrelation is the coefficient to the power h. Equation 2: rho h equals rho to the power 2 h.
+
+The numbers. For rho equal to 0.5: the lag-1 autocorrelation is 0.25, and the absolute autocorrelations are below 0.05 from lag 3, since 0.5 to the sixth is 0.016; that is Greenberg's report, printed page 103. For rho equal to 0.999: the lag-20 autocorrelation is 0.998 to the twentieth, which is 0.961; Greenberg: "over 0.900 even at lag 20". And the starting value matters. With G equal to 5000 draws after 500 of burn-in, Greenberg reports, printed page 94, a sample mean of x one of 1.084 when x two started at 1, and minus 0.623 when it started at minus 2, against the true mean of zero. With rho equal to 0.5, the start at minus 2 has little effect, giving a mean of 0.0587.
+
+The intuition, Greenberg printed page 94: when rho is close to one, the conditional variance one minus rho squared is close to zero, so each iteration generates a value very close to the previous one, and the initial value can play a large role in the sample.
+
+The left panel of the mixing figure in the Gibbs note shows equation 2 for the three correlations against lags 0 to 30, with seeded Gibbs autocorrelations as dots on the curves: rho equal to 0.5 falls to zero by lag 3; 0.9 decays over about 15 lags; 0.999 stays above 0.94 at lag 30.
+
+Eight point two. The cost of dependence: the inefficiency factor. Greenberg printed page 103; the Gibbs note, equation 19.
+
+The variance of an average of G correlated draws. Equation 3: it is the variance of X over G, times the bracket one plus twice the sum, over lags h from one upward, of rho h. The bracket is the inefficiency factor, also called the autocorrelation time. Greenberg defines it as the reciprocal of the relative numerical efficiency, the r.n.e., which compares the naive variance with the batch-means variance of subsection 3; small values of the r.n.e., large inefficiency factors, indicate substantial autocorrelation in the chain.
+
+For an autoregression of order one with coefficient phi, the autocorrelations are phi to the h, and their sum from h equal to one is phi over one minus phi. So the bracket is one plus 2 phi over one minus phi, which is one plus phi over one minus phi. For the Gibbs chain, phi is rho squared. Equation 4: the inefficiency factor is one plus rho squared over one minus rho squared. At rho equal to 0.5: 1.25 over 0.75, which is 1.67. At rho equal to 0.9: 1.81 over 0.19, which is 9.5. At rho equal to 0.999: 999.5.
+
+A chain of G draws carries the information of G over the inefficiency factor independent draws. So Greenberg's 5000 draws at rho equal to 0.999 are worth about 5 independent ones, which is why the two starts gave means of 1.084 and minus 0.623.
+
+And the same logic applies to Metropolis-Hastings: the tiny steps of a random walk with a very small scale, or the repeated values of one with a very large scale, both inflate the autocorrelations and the inefficiency factor. That is what the acceptance curve of section 7 trades off.
+
+Eight point three. The numerical standard error by batch means. Greenberg section 7.3, printed pages 102 to 103; the Gibbs note, equation 20.
+
+Greenberg's starting point, printed page 102: for independent samples the variance is estimated by one over G minus one times the sum of squared deviations; for Markov chain output this is not valid, because the expected sum of squared deviations includes covariance terms that it ignores.
+
+The batch-means method, in four steps. Step one: from the empirical autocorrelations, find a lag j zero at which the absolute autocorrelation is below 0.05, a commonly adopted cutoff. Step two: divide the G draws into N equal to G over j zero batches, adjusting j zero or G so that N is a whole number. Step three: compute the mean of each batch, Z bar b, and the overall mean Z bar. Step four: estimate the variance of the batch means by one over N minus one times the sum of Z bar b minus Z bar, squared; the numerical standard error is the square root of that variance over N. Equation 5: the n.s.e. is the square root of one over N, times one over N minus one, times the sum over the batches of Z bar b minus Z bar, squared.
+
+The logic: autocorrelations of high enough order tend to zero, so batches longer than the dependence are nearly independent, and the ordinary standard-error formula can be applied to their means. The naive formula, the square root of the variance over G, understates the error by the factor of the square root of the inefficiency factor.
+
+Eight point four. Remedies for poor mixing. The Gibbs note, subsection 8; Tsay printed page 617.
+
+Block the correlated parameters together: Tsay, "when parameters are highly correlated, it pays to draw them jointly"; in the bivariate normal, a single block drawn jointly would give independent draws. Reparameterise, so that the new parameters are less correlated. And run several chains from dispersed starting points, which is also the main diagnostic.
+
+Eight point five. Burn-in and convergence diagnostics. Greenberg printed pages 91 and 103; Tsay printed page 617.
+
+There is no theorem that gives the burn-in length B, Greenberg printed page 91. Greenberg, printed page 103: knowing when a chain has converged is "as much an art as a science"; there are a few indicators of nonconvergence but "no widely applicable theorems to compute the length of the burn-in period". The indicators mostly try to measure how much mixing is taking place, on the justification that a well-mixing sampler is likely to approximate the target well.
+
+The informal diagnostics, then, in order. First, trace plots: the draws against the iteration number should look like a stationary band, not a slow drift or long flat stretches. Second, the autocorrelation function: in a well-mixing chain it drops to zero within a few lags; in a poorly mixing one it stays high at large lags, as for rho equal to 0.999. Third, agreement across chains started far apart, Tsay printed page 617: if two chains from dispersed starts disagree, as Greenberg's two starts did, at least one has not converged. Stan reports the potential scale reduction factor, R hat, which compares chains, and the effective number of draws, n eff, for this purpose. The heart-attack output of the hierarchical-model note shows an n eff of 766 out of 20,000 draws for one parameter, eta: an inefficiency factor of about 26.
+
+Eight point six. Hamiltonian Monte Carlo and Stan, named only. The Metropolis-Hastings and Hamiltonian Monte Carlo note, subsection 8. The G layer.
+
+The lecturer's Stan programs state a model and priors and let the software sample. Example 1, a normal mean and standard deviation, with a prior on mu normal with mean 1.7 and standard deviation 0.3 and a half-Cauchy prior with scale 1 on sigma; example 2, a regression; example 3, a stochastic volatility model with Student t errors on DAX returns. Stan's sampler is Hamiltonian Monte Carlo, in its no-U-turn version. In one sentence: it treats minus the log posterior as a potential energy, adds a random momentum, follows the gradient-driven trajectory for many steps, and then makes a Metropolis-Hastings accept or reject decision, so proposals land far from the current point yet are accepted with high probability, which beats random walks in high dimensions. Named only; not examinable. Python equivalents are not installed in this project, and the notes write every sampler in NumPy.
+
+Recap of section 8. Gibbs on a bivariate normal with correlation rho gives an autoregression with coefficient rho squared and autocorrelations rho to the 2 h. The inefficiency factor, one plus twice the sum of autocorrelations, is one plus rho squared over one minus rho squared: 1.67, 9.5 and 999.5 for rho equal to 0.5, 0.9 and 0.999. G correlated draws are worth G over the inefficiency factor independent ones. Batch means give a valid numerical standard error. Burn-in has no theorem; check trace plots, autocorrelations and multiple chains; block or reparameterise correlated parameters.
+
+Checklist for section 8. You should be able to derive that the Gibbs chain for a bivariate normal is an autoregression with coefficient rho squared, and state its autocorrelations. You should be able to derive the inefficiency factor of an autoregression and compute 1.67, 9.5 and 999.5. You should be able to explain Greenberg's means of 1.084 and minus 0.623. You should be able to describe batch means in four steps and say by how much the naive standard error is wrong. And you should be able to list the informal convergence diagnostics and the remedies for poor mixing, and describe Hamiltonian Monte Carlo in one sentence.
+
+Support part one. The pitfalls.
+
+This part gathers the confusions this topic produces, each said as the error, the counterexample, and the correction, with the section of this narration where the counterexample lives. Twelve pitfalls.
+
+Pitfall one. Reading the third decimal of a simulation.
+The error: treating a simulated number as exact, or comparing two simulated numbers without their Monte Carlo error.
+The counterexample: section 1. The deck's estimate of pi, 3.196 from 1000 points, is 0.054 away from pi, but its standard error is 0.0519, so it is an ordinary draw. And in section 2, simulated standard deviations from 1000 replications are only accurate to about 2.2 per cent.
+The correction: attach a numerical standard error to every simulated number, the square root of the variance over M, and judge differences in units of it.
+
+Pitfall two. More draws as a cheap fix.
+The error: expecting ten times the draws to give ten times the precision.
+The counterexample: section 1, equation 3. The standard error of hit-or-miss pi is 1.6422 over the square root of M: 0.0519 at 1000 draws and 0.0164 at 10,000. Ten times the draws gave about a third of the error.
+The correction: the error falls like one over the square root of M; halving it costs four times the draws, and the draws needed for a target error e are the variance over e squared.
+
+Pitfall three. Unbiased means best.
+The error: choosing the unbiased estimator because it is unbiased.
+The counterexample: section 2. Twice the mean is unbiased for the uniform bound, but its mean squared error at theta equal to 3 and n equal to 10 is 0.300, against 0.136 for the biased maximum. And the best multiple of the maximum, n plus 2 over n plus one, is biased and beats the unbiased one, 0.0744 against 0.075.
+The correction: compare mean squared errors, variance plus squared bias.
+
+Pitfall four. Greenberg's 0.6577 as an acceptance rate.
+The error: reading Greenberg's "the probability of acceptance is one over c, 0.6577" for the normal from a Laplace as the share of proposals kept.
+The counterexample: section 3, subsection 6. 0.6577 is the constant that dominates the unnormalised kernel, whose integral over positive x is one half. The acceptance rate is one half over 0.6577, which is 0.7602, equal to one over the square root of 2 e over pi; a seeded run accepts 0.7605.
+The correction: the acceptance rate is the integral of the target divided by c; it is one over c only when the target is normalised.
+
+Pitfall five. Accept-reject against Metropolis-Hastings.
+The error: saying "both reject proposals, so both give independent draws".
+The counterexample: section 3, subsection 3, and section 7, subsection 1. Accept-reject retries until acceptance, so the accepted values are independent draws from f. Metropolis-Hastings keeps the current value on rejection, so values repeat and the draws are correlated.
+The correction: only accept-reject gives independent draws; Metropolis-Hastings output needs the dependence-aware standard errors of section 8.
+
+Pitfall six. A printed importance-sampling standard error.
+The error: trusting the standard error an importance sampler prints.
+The counterexample: section 4, subsection 3. Greenberg's Beta of 2 and 3 proposal for the truncated exponential vanishes at zero, while the target times the function is 1.582 there, so the second moment, the integral of 1.582 squared over 12 x near zero, is infinite. A seeded run gives 0.8003 with a "standard error" of 0.0089, against the truth 0.8302.
+The correction: check that the integral of g squared f squared over h is finite; choose a proposal with tails at least as heavy as the target and positive wherever the target is positive.
+
+Pitfall seven. A normal as a safe importance density.
+The error: using a normal centred at the mode as the importance density because it "looks like" the posterior.
+The counterexample: section 4, subsection 2. Greenberg, printed page 70: because the normal tends to zero very quickly, it is often not a good choice; its tails can be thinner than the target's, and the weights f over h then explode in the tails.
+The correction: use a fat-tailed proposal, such as a t with few degrees of freedom; the variance is small when f over h does not vary greatly.
+
+Pitfall eight. A million draws in SIR as a million draws.
+The error: thinking that sampling importance resampling with a million proposals yields the information of a million independent draws.
+The counterexample: section 4, subsection 6. For physicist C with a uniform box, the effective sample size was 144,275 of a million; and the resampled set contains repeats.
+The correction: report the effective sample size, the squared sum of the weights over the sum of the squared weights, and tighten the proposal when it is small.
+
+Pitfall nine. Many Gibbs draws as many independent draws.
+The error: saying "5000 draws give a Monte Carlo error of sigma over the square root of 5000".
+The counterexample: section 8, subsections 1 and 2. For the bivariate normal with rho equal to 0.999, the inefficiency factor is 999.5, so 5000 draws carry the information of about 5. Greenberg's means of 1.084 and minus 0.623 from two starts show it.
+The correction: divide the number of draws by the inefficiency factor, or compute the numerical standard error by batch means.
+
+Pitfall ten. A high acceptance rate as good mixing.
+The error: saying "a Metropolis-Hastings sampler that accepts 95 per cent of proposals works well".
+The counterexample: section 7, equation 9. On a standard normal with s equal to 0.1, acceptance is 0.968, but every step is tiny and the chain crawls; s equal to 2.38 accepts 0.445 and mixes far better.
+The correction: tune the scale for mixing, judged by the autocorrelations; acceptance rates of roughly 20 to 50 per cent are a guide, not a goal.
+
+Pitfall eleven. Forgetting the proposal correction.
+The error: accepting with the plain density ratio f of y over f of x when the proposal is not symmetric.
+The counterexample: section 7, subsection 3. For an independence sampler, the correct ratio is f of y over q of y, divided by f of x over q of x; for Greenberg's Beta of 3 and 4 with uniform proposals the q's are one and cancel, but for any nonuniform independence proposal they do not.
+The correction: use the full Hastings ratio, f of y times q of y and x over f of x times q of x and y; it reduces to the density ratio only for symmetric proposals.
+
+Pitfall twelve. A fixed burn-in as proof of convergence.
+The error: discarding the first 500 or 1000 draws and declaring the chain converged.
+The counterexample: section 8, subsection 5. Greenberg: there are "no widely applicable theorems to compute the length of the burn-in period"; his rho equal to 0.999 chain discarded 500 draws and still depended on its start.
+The correction: use trace plots, autocorrelations, and several chains from dispersed starts; block or reparameterise when they disagree.
+
+Recap of the pitfalls. Attach an error to every simulated number, and remember that it falls like one over the square root of M. Judge estimators by mean squared error, not unbiasedness. The acceptance rate of accept-reject is the target's integral over c. Only accept-reject gives independent draws. Importance sampling needs heavy enough tails, or its standard error is fiction; SIR needs its effective sample size. Chains need dependence-aware standard errors, tuning for mixing rather than for acceptance, the full Hastings ratio, and convergence checks rather than a fixed burn-in.
+
+Support part two. The spoken formula sheet.
+
+How to use it. After each prompt, pause the player, say the formula out loud, then resume and hear the answer. Equation numbers are those of the section named in the prompt. Twenty-two prompts, in the order of the narration.
+
+Prompt 1. Section 1, equation 1: the Monte Carlo estimate of the expected value of g of X. Pause.
+Answer: one over M times the sum, from i equal to 1 to M, of g of X i, with the X i independent draws from f. It is unbiased and converges by the law of large numbers.
+
+Prompt 2. Section 1, equation 2: the numerical standard error. Pause.
+Answer: the square root of the estimated variance of g of X divided by M.
+
+Prompt 3. Section 1, equation 3: the standard error of hit-or-miss pi, and its value at 1000 draws. Pause.
+Answer: 4 times the square root of p times one minus p over M, with p equal to pi over 4; that is 1.6422 over the square root of M, which is 0.0519 at M equal to 1000 and 0.0164 at 10,000.
+
+Prompt 4. Section 1: the number of draws for a target standard error e. Pause.
+Answer: the variance of g of X divided by e squared. Halving the error costs four times the draws.
+
+Prompt 5. Section 2, equation 2: the decomposition of the mean squared error. Pause.
+Answer: the mean squared error equals the variance plus the bias squared.
+
+Prompt 6. Section 2, equations 9 and 10: the distribution and the density of the maximum of n uniforms on zero to theta. Pause.
+Answer: the probability that the maximum is at most t is t over theta, to the n; the density is n times the maximum to the n minus one, over theta to the n. The maximum over theta is a Beta of n and 1.
+
+Prompt 7. Section 2, equations 16 to 18: the four mean squared errors. Pause.
+Answer: for the mean, 1 plus 3 n over 12 n, times theta squared; for the maximum, 2 theta squared over n plus one times n plus 2; for twice the mean, theta squared over 3 n; for n plus one over n times the maximum, theta squared over n times n plus 2.
+
+Prompt 8. Section 2, the four values at theta equal to 3 and n equal to 10, and the deck's simulated ones. Pause.
+Answer: exactly 2.325, 0.136, 0.300 and 0.075; simulated with 1000 replications, 2.336, 0.149, 0.308 and 0.084.
+
+Prompt 9. Section 2, equations 28 and 29: the best multiple of the maximum and its mean squared error. Pause.
+Answer: c star equals n plus 2 over n plus one; the mean squared error is theta squared over n plus one squared, 0.0744 at theta equal to 3 and n equal to 10.
+
+Prompt 10. Section 3, equation 1: the inverse distribution function method, and section 3, equation 2: its truncated form. Pause.
+Answer: if U is uniform on zero to one, F inverse of U has distribution function F. Truncated to c one, c two: X equals F inverse of, F of c one plus U times F of c two minus F of c one.
+
+Prompt 11. Section 3: the Student t as a mixture. Pause.
+Answer: u given lambda is normal with mean zero and variance sigma squared over lambda, and lambda is a Gamma with shape and rate nu over 2; then u is a t with nu degrees of freedom, location zero and scale squared sigma squared.
+
+Prompt 12. Section 3, equations 5 and 6: why accept-reject works, and its acceptance rate. Pause.
+Answer: by Bayes' theorem, the density of an accepted value is f over c g times g, divided by its integral, one over c; that is f. The acceptance rate is one over c, and the expected number of proposals per draw is c.
+
+Prompt 13. Section 3: c and the acceptance rate for the Beta of 3 and 3 from uniforms, and for the normal from a Laplace. Pause.
+Answer: c equal to 1.875, acceptance 0.5333; c equal to the square root of 2 e over pi, 1.3155, acceptance 0.7602.
+
+Prompt 14. Section 4, equations 1 and 2: the importance sampling estimate and its self-normalised form. Pause.
+Answer: one over G times the sum of g of X i times w i, with w i equal to f of X i over h of X i and the X i drawn from h; self-normalised, the sum of w i times g of X i divided by the sum of the w i.
+
+Prompt 15. Section 4, equation 3: the second moment that controls the variance of importance sampling. Pause.
+Answer: the integral of g squared times f squared over h. It is infinite for Greenberg's Beta of 2 and 3 proposal, because near zero the integrand is about 1.582 squared over 12 x.
+
+Prompt 16. Section 4, equation 5: the effective sample size. Pause.
+Answer: the square of the sum of the weights divided by the sum of the squared weights; 144,275 of a million for physicist C.
+
+Prompt 17. Section 5, equation 2: invariance; and the invariant distribution of Greenberg's two-state chain. Pause.
+Answer: pi j equals the sum over i of pi i times p i j, that is, pi times P equals pi. For rows 0.750, 0.250 and 0.125, 0.875: one third and two thirds, approached at the speed 0.625 to the n.
+
+Prompt 18. Section 6, equation 9: the full conditionals of the two rates in the coal model. Pause.
+Answer: lambda one given k is a Gamma with shape alpha zero plus S k and rate beta zero plus k; lambda two given k is a Gamma with shape alpha zero plus S n minus S k and rate beta zero plus n minus k.
+
+Prompt 19. Section 6: the coal results. Pause.
+Answer: the switch at 1891, k equal to 41, with posterior probability 0.2402; posterior means 3.106 for lambda one and 0.930 for lambda two; at k equal to 41 the conditional mean of lambda one is 128 over 41.5, which is 3.084.
+
+Prompt 20. Section 7, equations 1 and 4: detailed balance, and the Metropolis-Hastings acceptance probability. Pause.
+Answer: f of x times p of x and y equals f of y times p of y and x. Alpha of x and y is the minimum of one and f of y times q of y and x, over f of x times q of x and y.
+
+Prompt 21. Section 7, equation 9: the random-walk acceptance rate for a standard normal target. Pause.
+Answer: 2 over pi times the arc tangent of 2 over s; 0.705 at s equal to 1, 0.445 at s equal to 2.38.
+
+Prompt 22. Section 8, equations 2 and 4: the autocorrelation of the Gibbs chain for a bivariate normal, and its inefficiency factor. Pause.
+Answer: rho to the power 2 h; the inefficiency factor is one plus rho squared over one minus rho squared, 1.67, 9.5 and 999.5 for rho equal to 0.5, 0.9 and 0.999.
+
+Support part three. Self-test: eighteen true or false items.
+
+This is an original self-test built from the sections of this narration; no textbook exercise is reproduced. Difficulty is marked easy, medium or hard. After each statement, pause the player, decide true or false and say why, then resume for the answer.
+
+Item 1, easy. The Monte Carlo average of g over M independent draws is an unbiased estimate of the expected value of g of X, for every M. Pause.
+Answer: true. Section 1: its expectation is one over M times M equal expectations.
+
+Item 2, medium. With 1000 hit-or-miss points, an estimate of pi of 3.196 is evidence that the random number generator is faulty. Pause.
+Answer: false. Section 1, equation 3: the standard error is 0.0519, and 3.196 is 1.05 standard errors above pi, an ordinary draw.
+
+Item 3, medium. To cut the Monte Carlo standard error from 0.0519 to about 0.026, you need about 4000 hit-or-miss points instead of 1000. Pause.
+Answer: true. Section 1: halving the error costs four times the draws; 1.6422 over the square root of 4000 is about 0.026.
+
+Item 4, easy. Among the four estimators of the uniform bound, the unbiased ones always have the smallest mean squared error. Pause.
+Answer: false. Section 2: twice the mean is unbiased, with mean squared error theta squared over 3 n, yet the biased maximum beats it for n of 3 or more; and the best multiple of the maximum is biased.
+
+Item 5, medium. The ranking of the four mean squared errors depends on the true value of theta. Pause.
+Answer: false. Section 2, subsection 5: all four are theta squared times a function of n, so theta divides out.
+
+Item 6, medium. At n equal to 10, the mean and n plus one over n times the maximum have the same standard deviation. Pause.
+Answer: true. Section 2, subsection 7: 12 n and n times n plus 2 are both 120, so both standard deviations are 3 over the square root of 120, 0.274 at theta equal to 3; the mean's mean squared error is still 31 times larger, all of it bias.
+
+Item 7, hard. In the deck's study with 1000 replications, a simulated standard deviation of 0.290 against a theoretical 0.274 is about 2.6 Monte Carlo standard errors away. Pause.
+Answer: true. Section 2, subsection 7: the gap is 5.8 per cent, and the accuracy of a simulated standard deviation is about 2.2 per cent, the standard deviation over the square root of 1998; the skewed Beta shape of the maximum makes it noisier than that rule suggests.
+
+Item 8, easy. The inverse distribution function method can draw directly from a bivariate normal. Pause.
+Answer: false. Section 3, subsection 1: a multivariate distribution function is not one-to-one, so it cannot be inverted; the method is univariate.
+
+Item 9, medium. In accept-reject for a Beta of 3 and 3 with uniform proposals, about 1.875 proposals are needed on average for each accepted draw. Pause.
+Answer: true. Section 3: the number of tries is geometric with success probability one over c, so its mean is c, which is 1.875.
+
+Item 10, medium. Accept-reject requires the target's normalising constant to be known. Pause.
+Answer: false. Section 3, subsection 4: if f equals k times r, accept with probability r over c g, with r at most c g; the unknown k cancels, and then c need not be at least one.
+
+Item 11, hard. Greenberg's acceptance probability of 0.6577 for the normal from a Laplace is the share of proposals that his Algorithm 5.4 accepts. Pause.
+Answer: false. Section 3, subsection 6: 0.6577 is the constant for the unnormalised kernel, whose integral over positive x is one half; the acceptance rate is one half over 0.6577, which is 0.7602.
+
+Item 12, hard. Greenberg's importance sampler for the truncated exponential, with a Beta of 2 and 3 proposal, is inconsistent. Pause.
+Answer: false. Section 4, subsection 3: it is consistent, because the law of large numbers needs only a finite mean; what is infinite is its variance, so its printed standard error means nothing and convergence is erratic.
+
+Item 13, medium. In the genetic linkage example, the importance weights are proportional to 2 plus theta, to the power 125. Pause.
+Answer: true. Section 4, subsection 4: the importance density, a Beta of 35 and 39, carries the factors theta to the 34 and one minus theta to the 38, so only 2 plus theta to the 125 is left for the weights.
+
+Item 14, medium. An effective sample size of 144,275 from a million SIR proposals means the resampled draws carry the information of a million independent draws. Pause.
+Answer: false. Section 4, subsection 6: only about one in seven carries real weight; the effective sample size is the relevant count.
+
+Item 15, easy. For Greenberg's two-state chain with rows 0.750, 0.250 and 0.125, 0.875, the invariant distribution is one third, two thirds. Pause.
+Answer: true. Section 5: pi one equals 0.750 pi one plus 0.125 times one minus pi one gives 0.375 pi one equal to 0.125, so pi one is one third.
+
+Item 16, medium. In the coal-mining Gibbs sampler, the full conditional of lambda one given k is a Gamma with shape alpha zero plus S k and rate beta zero plus k, so with the Class 1 prior at k equal to 41 its mean is 3.084. Pause.
+Answer: true. Section 6, equation 9: 1 plus 127 over 0.5 plus 41, which is 128 over 41.5, is 3.084.
+
+Item 17, hard. A random-walk Metropolis sampler on a standard normal target with proposal standard deviation 0.1 accepts about 97 per cent of moves and therefore mixes well. Pause.
+Answer: false. Section 7, equation 9: the acceptance is 0.968, but the steps are tiny, so the chain crawls with high autocorrelation; s equal to 2.38 accepts 0.445 and mixes far better.
+
+Item 18, hard. A Gibbs sampler on a bivariate normal with correlation 0.9 needs about 9.5 times as many draws as independent sampling for the same numerical standard error. Pause.
+Answer: true. Section 8, equation 4: the inefficiency factor is one plus 0.81 over one minus 0.81, which is 1.81 over 0.19, which is 9.5.
+
+End of the self-test. Count your correct answers; an item answered for the wrong reason counts as wrong.
+
+
+Support part four. The whole topic in five lines.
+
+One. Monte Carlo replaces an integral by an average of draws: the average is unbiased, converges by the law of large numbers, and has a numerical standard error equal to the standard deviation over the square root of M, 0.0519 for hit-or-miss pi at 1000 points, so four times the draws buy half the error.
+
+Two. A Monte Carlo study simulates an estimator's bias, variance and mean squared error: for the uniform bound at theta equal to 3 and n equal to 10, the exact 0.075, 0.136, 0.300 and 2.325 rank the scaled maximum first and the mean last, and the simulation reproduces them within its own error of about 2 per cent.
+
+Three. Independent draws come from the inverse distribution function, composition, accept-reject with acceptance one over c, 0.5333 for the Beta of 3 and 3, and importance sampling and SIR, which fail silently when the proposal's tails are too thin, as in Greenberg's own infinite-variance example.
+
+Four. Markov chain Monte Carlo builds a chain whose invariant distribution is the posterior: Gibbs draws full conditionals and puts the coal switch at 1891 with probability 0.240; Metropolis-Hastings accepts with the minimum of one and the Hastings ratio, by detailed balance, and accepts 0.445 of random-walk moves at s equal to 2.38.
+
+Five. Dependence is the price: the inefficiency factor, 999.5 at a correlation of 0.999, divides the number of draws, so use batch-means standard errors, tune for mixing rather than acceptance, check several chains, and leave Hamiltonian Monte Carlo, named here, to Stan.
+
+This is the end of the Monte Carlo topic narration.

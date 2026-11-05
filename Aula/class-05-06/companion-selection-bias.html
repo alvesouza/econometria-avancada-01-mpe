@@ -1,0 +1,298 @@
+<title>Selection Bias Decomposer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,500;8..60,650&family=Public+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: controls rail on the left, the answer then two panels on the right; one column under 860px.
+   Colour roles follow the class-01 video: orange = Y0, blue = Y1, green = causal effect, red = selection bias, gold = heterogeneity / live. */
+:root{
+  --bg:#f4f6f9; --panel:#ffffff; --ink:#18202d; --muted:#586377; --line:#d8dee8; --soft:#eef1f6;
+  --y0:#c76f1c; --y1:#2b63c4; --eff:#23864d; --bias:#c63a30; --het:#a87b00; --unobs:#98a2b3;
+  --focus:#2b63c4;
+  --display:"Source Serif 4", Georgia, "Times New Roman", serif;
+  --body:"Public Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono:"JetBrains Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#10141b; --panel:#171d27; --ink:#e5e9f0; --muted:#9aa5b8; --line:#2a3342; --soft:#1e2532;
+  --y0:#f0a04b; --y1:#74a3ff; --eff:#4fc486; --bias:#ff6e61; --het:#e9c04a; --unobs:#5f6979; --focus:#74a3ff; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#10141b; --panel:#171d27; --ink:#e5e9f0; --muted:#9aa5b8; --line:#2a3342; --soft:#1e2532;
+  --y0:#f0a04b; --y1:#74a3ff; --eff:#4fc486; --bias:#ff6e61; --het:#e9c04a; --unobs:#5f6979; --focus:#74a3ff; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font:15px/1.5 var(--body);margin:0}
+.wrap{max-width:1180px;margin:0 auto;padding-inline:16px;padding-block:24px 40px}
+header{display:grid;gap:4px;margin-bottom:18px}
+.eyebrow{font:600 12px/1.3 var(--body);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+h1{font:650 clamp(26px,4vw,36px)/1.1 var(--display);margin:0;text-wrap:balance}
+.lede{color:var(--muted);max-width:68ch;margin:0}
+.grid{display:grid;grid-template-columns:320px minmax(0,1fr);gap:20px;align-items:start}
+@media (max-width:860px){.grid{grid-template-columns:minmax(0,1fr)}}
+.rail{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px;display:grid;gap:18px}
+.group{display:grid;gap:12px}
+.group h2{font:600 12px/1.2 var(--body);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:0}
+.ctl{display:grid;gap:4px}
+.ctl .top{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.ctl label{font-weight:600}
+.ctl label i{font-family:var(--display);font-weight:500}
+.ctl output{font:600 14px var(--mono);font-variant-numeric:tabular-nums}
+.ctl p{margin:0;font-size:13px;color:var(--muted)}
+input[type=range]{width:100%;accent-color:var(--ink)}
+input:focus-visible,button:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+button{font:600 13px var(--body);background:var(--soft);color:var(--ink);border:1px solid var(--line);border-radius:6px;padding:7px 12px;cursor:pointer}
+button:hover{border-color:var(--muted)}
+main{display:grid;gap:16px;min-width:0}
+.answer{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px 18px;display:grid;gap:6px}
+.answer .lab{font-size:13px;color:var(--muted)}
+.answer .big{font:600 clamp(34px,6vw,48px)/1 var(--mono);font-variant-numeric:tabular-nums}
+.answer .verdict{font:500 17px/1.4 var(--display);max-width:62ch}
+.answer .ident{font:13px/1.6 var(--mono);color:var(--muted);font-variant-numeric:tabular-nums;overflow-x:auto;white-space:nowrap}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px 16px;min-width:0}
+.panel h3{font:600 15px/1.3 var(--body);margin:0 0 2px}
+.panel .sub{font-size:13px;color:var(--muted);margin:0 0 8px}
+svg{display:block;width:100%;height:auto;max-width:100%}
+svg text{fill:var(--muted);font:12px var(--body)}
+svg .val{font:600 12px var(--mono);fill:var(--ink)}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{font-size:13px;border:1px solid var(--line);border-radius:999px;padding:4px 10px;color:var(--muted)}
+.chip.on{border-color:var(--eff);color:var(--eff);font-weight:600}
+table.ro{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums}
+table.ro td{padding:5px 4px;border-bottom:1px solid var(--line);font-size:14px}
+table.ro td:last-child{text-align:right;font-family:var(--mono)}
+.two{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px}
+@media (max-width:640px){.two{grid-template-columns:minmax(0,1fr)}}
+footer{margin-top:22px;font-size:13px;color:var(--muted);display:grid;gap:10px}
+.scroll{overflow-x:auto}
+footer table{border-collapse:collapse;font-size:12.5px;min-width:720px}
+footer th,footer td{border-bottom:1px solid var(--line);padding:4px 8px;text-align:left;vertical-align:top}
+.k{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:5px;vertical-align:-1px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<div class="wrap">
+<header>
+  <div class="eyebrow">Econometria Avançada · Classes 5+6 · MHE §2.1, p. 11</div>
+  <h1>Selection Bias Decomposer</h1>
+  <p class="lede">Choose who gets treated and how the effect varies across people, then see the naive treated-vs-untreated gap split into the causal effect and selection bias.</p>
+</header>
+
+<div class="grid">
+<aside class="rail" aria-label="Controls">
+  <div class="group">
+    <h2>The treatment effect</h2>
+    <div class="ctl"><div class="top"><label for="tau">Average effect <i>τ</i></label><output id="o-tau"></output></div>
+      <input id="tau" type="range" min="-3" max="3" step="0.05">
+      <p>ATE in health points: what treatment does on average across everyone.</p></div>
+    <div class="ctl"><div class="top"><label for="gam">Effect gradient <i>γ</i></label><output id="o-gam"></output></div>
+      <input id="gam" type="range" min="-1" max="1" step="0.05">
+      <p>How the effect changes with untreated health. Below 0, sicker people gain more.</p></div>
+  </div>
+  <div class="group">
+    <h2>Who gets treated</h2>
+    <div class="ctl"><div class="top"><label for="lam">Selection on <i>Y</i>₀ <i>λ</i></label><output id="o-lam"></output></div>
+      <input id="lam" type="range" min="-1" max="1" step="0.05">
+      <p>Correlation between untreated health and the urge to seek treatment. Below 0, the sick select in; 0 is a coin flip.</p></div>
+    <div class="ctl"><div class="top"><label for="pi">Share treated <i>π</i></label><output id="o-pi"></output></div>
+      <input id="pi" type="range" min="0.05" max="0.95" step="0.05">
+      <p>Fraction of the population with <i>D</i> = 1.</p></div>
+  </div>
+  <div class="group">
+    <h2>The population</h2>
+    <div class="ctl"><div class="top"><label for="sig">Spread of health <i>σ</i></label><output id="o-sig"></output></div>
+      <input id="sig" type="range" min="0.5" max="3" step="0.1">
+      <p>Standard deviation of <i>Y</i>₀ in points. More spread gives selection more to sort on.</p></div>
+  </div>
+  <button id="reset" type="button">Reset to defaults</button>
+</aside>
+
+<main>
+  <section class="answer" aria-live="polite">
+    <div class="lab">Naive gap &nbsp;E[<i>Y</i> | <i>D</i>=1] − E[<i>Y</i> | <i>D</i>=0]</div>
+    <div class="big" id="naive"></div>
+    <div class="verdict" id="verdict"></div>
+    <div class="ident" id="ident1"></div>
+    <div class="ident" id="ident2"></div>
+    <div class="chips" id="chips"></div>
+  </section>
+
+  <section class="panel">
+    <h3>Where the naive gap comes from</h3>
+    <p class="sub">Running total from 0. ATE plus the heterogeneity term lands on the ATT; adding selection bias lands on the naive gap.</p>
+    <svg id="bars" viewBox="0 0 720 230" role="img" aria-label="Waterfall decomposition of the naive gap"></svg>
+  </section>
+
+  <div class="two">
+    <section class="panel">
+      <h3>Untreated health, by group</h3>
+      <p class="sub"><span class="k" style="background:var(--y0)"></span>treated (<i>D</i>=1) &nbsp; <span class="k" style="background:var(--unobs)"></span>untreated (<i>D</i>=0). The red gap between the means is the selection bias.</p>
+      <svg id="dens" viewBox="0 0 420 250" role="img" aria-label="Density of Y0 by treatment group"></svg>
+    </section>
+    <section class="panel">
+      <h3>Every term</h3>
+      <p class="sub">Population values in health points.</p>
+      <table class="ro"><tbody id="tbl"></tbody></table>
+    </section>
+  </div>
+</main>
+</div>
+
+<footer>
+  <div><strong>Belongs to:</strong> Classes 5+6 notes (<code>Aula/class-05-06/potential-outcomes.ipynb</code>). Decomposition identities from Angrist &amp; Pischke, <em>Mostly Harmless Econometrics</em>, §2.1, printed p. 11; random assignment, §2.2, p. 12.</div>
+  <div><strong>Data-generating process (illustrative, declared here and not taken from MHE):</strong>
+    <i>Y</i>₀ ~ N(5, σ²), &nbsp;<i>z</i> = (<i>Y</i>₀ − 5)/σ; &nbsp;<i>Y</i>₁ = <i>Y</i>₀ + τ + γ(<i>Y</i>₀ − 5); &nbsp;
+    <i>D</i> = 1{λ<i>z</i> + √(1−λ²) ν &gt; <i>c</i>}, ν ~ N(0,1), <i>c</i> = Φ⁻¹(1 − π).
+    Then E[<i>z</i>|<i>D</i>=1] = λφ(<i>c</i>)/π, E[<i>z</i>|<i>D</i>=0] = −λφ(<i>c</i>)/(1−π), ATT = τ + γσE[<i>z</i>|<i>D</i>=1], ATU = τ + γσE[<i>z</i>|<i>D</i>=0],
+    selection bias = σλφ(<i>c</i>)/[π(1−π)]. Every number is closed form; no simulation. At |λ| = 1 selection is deterministic and the group densities are truncated normals.</div>
+  <div class="scroll"><table>
+    <thead><tr><th>Control</th><th>Symbol</th><th>Range</th><th>Step</th><th>Default</th><th>Unit</th><th>What visibly moves</th></tr></thead>
+    <tbody>
+      <tr><td>Average effect</td><td>τ</td><td>−3 to 3</td><td>0.05</td><td>1.00</td><td>points</td><td>ATE bar; all effect terms shift together</td></tr>
+      <tr><td>Effect gradient</td><td>γ</td><td>−1 to 1</td><td>0.05</td><td>−0.50</td><td>points per point of <i>Y</i>₀</td><td>heterogeneity bar; ATT vs ATU</td></tr>
+      <tr><td>Selection on <i>Y</i>₀</td><td>λ</td><td>−1 to 1</td><td>0.05</td><td>−0.60</td><td>correlation</td><td>bias bar; separation of the two densities</td></tr>
+      <tr><td>Share treated</td><td>π</td><td>0.05 to 0.95</td><td>0.05</td><td>0.50</td><td>share</td><td>size of both biases; group shapes</td></tr>
+      <tr><td>Spread of health</td><td>σ</td><td>0.5 to 3</td><td>0.1</td><td>2.0</td><td>points</td><td>width of densities; scales bias and heterogeneity</td></tr>
+    </tbody></table></div>
+  <div>Defaults mirror the hospital allegory (MHE p. 10–12): the sick select into treatment (λ &lt; 0) and gain more from it (γ &lt; 0), which makes the selection bias negative. Health is scored so that higher is healthier, the reverse of the NHIS 1–5 scale.</div>
+</footer>
+
+<script>
+const D = {tau:1, gam:-0.5, lam:-0.6, pi:0.5, sig:2};
+const MU0 = 5;
+const ids = Object.keys(D);
+const el = id => document.getElementById(id);
+
+const phi = x => Math.exp(-0.5*x*x)/Math.sqrt(2*Math.PI);
+function Phi(x){ // erfc Chebyshev fit (Numerical Recipes erfcc), |error| < 1.2e-7: far below the 2-decimal display
+  const z = Math.abs(x)/Math.SQRT2, t = 1/(1+0.5*z);
+  const r = t*Math.exp(-z*z-1.26551223+t*(1.00002368+t*(0.37409196+t*(0.09678418+t*(-0.18628806+t*(0.27886807+t*(-1.13520398+t*(1.48851587+t*(-0.82215223+t*0.17087277)))))))));
+  return x>=0 ? 1-0.5*r : 0.5*r;
+}
+function PhiInv(p){ // Acklam, refined by one Halley step
+  const a=[-39.69683028665376,220.9460984245205,-275.9285104469687,138.3577518672690,-30.66479806614716,2.506628277459239],
+        b=[-54.47609879822406,161.5858368580409,-155.6989798598866,66.80131188771972,-13.28068155288572],
+        c=[-0.007784894002430293,-0.3223964580411365,-2.400758277161838,-2.549732539343734,4.374664141464968,2.938163982698783],
+        d=[0.007784695709041462,0.3224671290700398,2.445134137142996,3.754408661907416];
+  let x, q, r;
+  if(p<0.02425){q=Math.sqrt(-2*Math.log(p));x=(((((c[0]*q+c[1])*q+c[2])*q+c[3])*q+c[4])*q+c[5])/((((d[0]*q+d[1])*q+d[2])*q+d[3])*q+1);}
+  else if(p>1-0.02425){q=Math.sqrt(-2*Math.log(1-p));x=-(((((c[0]*q+c[1])*q+c[2])*q+c[3])*q+c[4])*q+c[5])/((((d[0]*q+d[1])*q+d[2])*q+d[3])*q+1);}
+  else{q=p-0.5;r=q*q;x=(((((a[0]*r+a[1])*r+a[2])*r+a[3])*r+a[4])*r+a[5])*q/(((((b[0]*r+b[1])*r+b[2])*r+b[3])*r+b[4])*r+1);}
+  const e=Phi(x)-p, u=e*Math.sqrt(2*Math.PI)*Math.exp(x*x/2);
+  return x-u/(1+x*u/2);
+}
+
+function model(p){
+  const c = PhiInv(1-p.pi), f = phi(c);
+  const ez1 = p.lam*f/p.pi, ez0 = -p.lam*f/(1-p.pi);
+  const ATE = p.tau, ATT = p.tau + p.gam*p.sig*ez1, ATU = p.tau + p.gam*p.sig*ez0;
+  const SB = p.sig*(ez1-ez0), het = (1-p.pi)*(ATT-ATU);
+  return {c, ATE, ATT, ATU, SB, het, naive: ATT+SB, m1: MU0+p.sig*ez1, m0: MU0+p.sig*ez0};
+}
+// P(D=1 | z); at |lam|=1 selection is deterministic
+function pTreat(z, p, c){
+  const s = Math.sqrt(Math.max(0, 1-p.lam*p.lam));
+  if(s < 1e-9) return (p.lam*z > c) ? 1 : 0;
+  return 1 - Phi((c - p.lam*z)/s);
+}
+
+const fmt = (x, d=2) => { const v = Math.abs(x) < 0.5*Math.pow(10,-d) ? 0 : x; return (v<0?"−":"") + Math.abs(v).toFixed(d); };
+const sgn = x => (x<0?"− ":"+ ") + Math.abs(Math.abs(x)<0.005?0:x).toFixed(2);
+
+function read(){ const p={}; ids.forEach(k=>p[k]=parseFloat(el(k).value)); return p; }
+
+function niceTicks(lo, hi, n){
+  const span = hi-lo, step0 = span/n, mag = Math.pow(10, Math.floor(Math.log10(step0)));
+  const step = [1,2,2.5,5,10].map(m=>m*mag).find(s=>s>=step0);
+  const t=[]; for(let v=Math.ceil(lo/step)*step; v<=hi+1e-9; v+=step) t.push(+v.toFixed(10));
+  return t;
+}
+
+function drawBars(m){
+  const svg = el("bars"), W=720, L=190, R=30, T=12, rowH=46;
+  const rows = [
+    {lab:"ATE  τ", from:0, to:m.ATE, col:"var(--eff)", v:m.ATE},
+    {lab:"+ (1−π)(ATT − ATU)", from:m.ATE, to:m.ATT, col:"var(--het)", v:m.het},
+    {lab:"+ selection bias", from:m.ATT, to:m.naive, col:"var(--bias)", v:m.SB},
+    {lab:"= naive gap", from:0, to:m.naive, col:"var(--ink)", v:m.naive},
+  ];
+  let lo = Math.min(0, ...rows.flatMap(r=>[r.from,r.to])), hi = Math.max(0, ...rows.flatMap(r=>[r.from,r.to]));
+  const pad = Math.max(0.5, 0.08*(hi-lo)); lo-=pad; hi+=pad;
+  const x = v => L + (v-lo)/(hi-lo)*(W-L-R);
+  let s = "";
+  const ticks = niceTicks(lo, hi, 6);
+  ticks.forEach(t=>{ s+=`<line x1="${x(t)}" x2="${x(t)}" y1="${T}" y2="${T+rowH*4}" stroke="var(--line)" stroke-width="1"/>`+
+    `<text x="${x(t)}" y="${T+rowH*4+16}" text-anchor="middle">${fmt(t, Math.abs(t%1)>1e-9?1:0)}</text>`; });
+  s += `<line x1="${x(0)}" x2="${x(0)}" y1="${T-4}" y2="${T+rowH*4+4}" stroke="var(--muted)" stroke-width="1.5"/>`;
+  rows.forEach((r,i)=>{
+    const y = T + i*rowH + 9, h = rowH-18, a = x(Math.min(r.from,r.to)), b = x(Math.max(r.from,r.to));
+    s += `<text x="${L-12}" y="${y+h/2+4}" text-anchor="end" style="fill:var(--ink);font-weight:${i===3?600:400}">${r.lab}</text>`;
+    s += `<rect x="${a}" y="${y}" width="${Math.max(1.5,b-a)}" height="${h}" rx="3" fill="${r.col}" opacity="${i===3?0.9:0.85}"/>`;
+    const right = r.to >= r.from, lx = right ? b+6 : a-6;
+    s += `<text class="val" x="${lx}" y="${y+h/2+4}" text-anchor="${right?"start":"end"}">${fmt(r.v)}</text>`;
+    if(i<3){ const nx = x(r.to); s += `<line x1="${nx}" x2="${nx}" y1="${y+h}" y2="${y+rowH}" stroke="var(--muted)" stroke-dasharray="3 3"/>`; }
+  });
+  s += `<text x="${x(m.ATT)}" y="${T+rowH*2+5}" text-anchor="middle" style="font-size:11px">ATT ${fmt(m.ATT)}</text>`;
+  s += `<text x="${W-R}" y="${T+rowH*4+16}" text-anchor="end">points</text>`;
+  svg.innerHTML = s;
+}
+
+function drawDens(p, m){
+  const svg = el("dens"), W=420, H=250, L=36, R=12, T=14, B=40, xlo=-7, xhi=17, N=480;
+  const x = v => L + (v-xlo)/(xhi-xlo)*(W-L-R);
+  const g1=[], g0=[];
+  for(let i=0;i<=N;i++){
+    const y = xlo + (xhi-xlo)*i/N, z = (y-MU0)/p.sig, base = phi(z)/p.sig, pt = pTreat(z,p,m.c);
+    g1.push([y, base*pt/p.pi]); g0.push([y, base*(1-pt)/(1-p.pi)]);
+  }
+  const ymax = Math.max(...g1.map(d=>d[1]), ...g0.map(d=>d[1])) * 1.12;
+  const yy = v => T + (1 - v/ymax)*(H-T-B);
+  const path = (g, close) => { let d = g.map((q,i)=>(i?"L":"M")+x(q[0]).toFixed(1)+" "+yy(q[1]).toFixed(1)).join(""); if(close) d += `L${x(xhi)} ${yy(0)}L${x(xlo)} ${yy(0)}Z`; return d; };
+  let s = "";
+  [-5,0,5,10,15].forEach(t=>{ s+=`<line x1="${x(t)}" x2="${x(t)}" y1="${T}" y2="${H-B}" stroke="var(--line)"/><text x="${x(t)}" y="${H-B+16}" text-anchor="middle">${fmt(t,0)}</text>`; });
+  s += `<line x1="${L}" x2="${W-R}" y1="${yy(0)}" y2="${yy(0)}" stroke="var(--muted)"/>`;
+  s += `<text x="${(L+W-R)/2}" y="${H-6}" text-anchor="middle">untreated health <tspan font-style="italic">Y</tspan>₀ (points, higher = healthier)</text>`;
+  s += `<path d="${path(g0,true)}" fill="var(--unobs)" opacity="0.25"/><path d="${path(g0,false)}" fill="none" stroke="var(--unobs)" stroke-width="2"/>`;
+  s += `<path d="${path(g1,true)}" fill="var(--y0)" opacity="0.22"/><path d="${path(g1,false)}" fill="none" stroke="var(--y0)" stroke-width="2"/>`;
+  const by = T+10;
+  s += `<line x1="${x(m.m1)}" x2="${x(m.m1)}" y1="${by}" y2="${yy(0)}" stroke="var(--y0)" stroke-dasharray="4 3"/>`;
+  s += `<line x1="${x(m.m0)}" x2="${x(m.m0)}" y1="${by}" y2="${yy(0)}" stroke="var(--unobs)" stroke-dasharray="4 3"/>`;
+  s += `<line x1="${x(m.m0)}" x2="${x(m.m1)}" y1="${by}" y2="${by}" stroke="var(--bias)" stroke-width="3"/>`;
+  const mid = (x(m.m0)+x(m.m1))/2;
+  s += `<text x="${Math.min(W-R-40, Math.max(L+40, mid))}" y="${by-3}" text-anchor="middle" style="fill:var(--bias);font-weight:600">SB ${fmt(m.SB)}</text>`;
+  svg.innerHTML = s;
+}
+
+function update(){
+  const p = read(), m = model(p);
+  el("o-tau").textContent = fmt(p.tau); el("o-gam").textContent = fmt(p.gam);
+  el("o-lam").textContent = fmt(p.lam); el("o-pi").textContent = p.pi.toFixed(2); el("o-sig").textContent = p.sig.toFixed(1);
+  el("naive").textContent = fmt(m.naive);
+  const tol = 0.005; let v;
+  const nz = Math.abs(m.naive) < tol, az = Math.abs(m.ATE) < tol;
+  const says = nz ? "says treatment does nothing" : (m.naive>0 ? "says treatment helps" : "says treatment hurts");
+  if(az && nz) v = "Both the naive gap and the true effect are zero.";
+  else if(Math.abs(m.SB) < tol && Math.abs(m.het) < tol) v = `The naive gap equals the ATE: with no selection on <i>Y</i>₀ the comparison is causal.`;
+  else if(!az && !nz && Math.sign(m.naive) !== Math.sign(m.ATE)) v = `The naive comparison ${says}, but the true average effect is ${fmt(m.ATE)}. <strong style="color:var(--bias)">Selection flips the sign.</strong>`;
+  else if(az) v = `The true average effect is zero, yet the naive comparison ${says}. Everything you see is bias.`;
+  else if(nz) v = `The naive comparison ${says}, but the true average effect is ${fmt(m.ATE)}. Bias cancels the effect exactly.`;
+  else if(Math.abs(m.naive) < Math.abs(m.ATE)) v = `The naive comparison <strong>understates</strong> the true average effect of ${fmt(m.ATE)}.`;
+  else v = `The naive comparison <strong>overstates</strong> the true average effect of ${fmt(m.ATE)}.`;
+  el("verdict").innerHTML = v;
+  el("ident1").textContent = `naive = ATT + SB:              ${fmt(m.naive)} = ${fmt(m.ATT)} ${sgn(m.SB)}`;
+  el("ident2").textContent = `naive = ATE + SB + (1−π)(ATT−ATU): ${fmt(m.naive)} = ${fmt(m.ATE)} ${sgn(m.SB)} ${sgn(m.het)}`;
+  const chips = [
+    [Math.abs(p.lam) < 1e-9, "λ = 0: random assignment, SB = 0"],
+    [Math.abs(p.gam) < 1e-9, "γ = 0: homogeneous effect, ATT = ATU = ATE"],
+    [Math.abs(Math.abs(p.lam)-1) < 1e-9, "|λ| = 1: treatment fully determined by Y₀"],
+  ];
+  el("chips").innerHTML = chips.map(([on,t])=>`<span class="chip${on?" on":""}">${on?"● ":"○ "}${t}</span>`).join("");
+  const rows = [
+    ["E[Y₀ | D=1], treated", m.m1, "var(--y0)"], ["E[Y₀ | D=0], untreated", m.m0, "var(--unobs)"],
+    ["Selection bias", m.SB, "var(--bias)"], ["ATE", m.ATE, "var(--eff)"], ["ATT", m.ATT, "var(--eff)"],
+    ["ATU", m.ATU, "var(--eff)"], ["(1−π)(ATT − ATU)", m.het, "var(--het)"], ["Naive gap", m.naive, "var(--ink)"]];
+  el("tbl").innerHTML = rows.map(([k,val,c])=>`<tr><td><span class="k" style="background:${c}"></span>${k}</td><td>${fmt(val)}</td></tr>`).join("");
+  drawBars(m); drawDens(p, m);
+}
+function reset(){ ids.forEach(k=>el(k).value=D[k]); update(); }
+ids.forEach(k=>el(k).addEventListener("input", update));
+el("reset").addEventListener("click", reset);
+reset();
+</script>

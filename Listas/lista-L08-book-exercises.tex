@@ -1,0 +1,1122 @@
+% =============================================================================
+% L08 (Class 8) --- textbook exercises with solutions. Built from the MPE list template
+% (~/.claude/commands/templates/lista-exam.tex).
+%
+% TWO MODES (one source file):
+%   \solucoesfalse  -> blank LIST (space to solve)
+%   \solucoestrue   -> ANSWER KEY (same file)
+%
+% Compile (copyable PDF, global lmodern+cmap rule):
+%   pdflatex lista-L08-book-exercises.tex  (run 2x) ; check: pdffonts ... (all Type 1)
+% Numbers: python Listas/L08-book-exercises-check.py reproduces and asserts every number.
+% =============================================================================
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}   % Type 1 vector fonts (replaces PK bitmaps)
+\usepackage{cmap}      % ToUnicode CMap -> copyable text and accents
+\usepackage[english]{babel}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage[a4paper,margin=2.2cm]{geometry}
+\usepackage{enumitem}
+\usepackage{fancyhdr}
+\usepackage{comment}
+% One cut file per job: parallel builds in one folder would otherwise share comment.cut and
+% swap solutions. Redefine DefaultCutFileName; overriding CommentCutFile alone is reset by comment.sty.
+\def\DefaultCutFileName{\def\CommentCutFile{\jobname.cut}}
+\usepackage{needspace}
+\usepackage{xcolor}
+\usepackage{microtype}
+\usepackage{booktabs}
+
+% ====================== CONFIGURATION ======================
+\newif\ifsolucoes
+\solucoesfalse                 % <<<< \solucoestrue for the ANSWER KEY; \solucoesfalse for the LIST
+
+\newcommand{\disciplina}{Econometria Avançada --- MPE (Insper)}
+\newcommand{\listatema}{L08 --- Univariate time series (Class 8): textbook exercises}
+\newcommand{\espacoresol}{4.5cm}   % height of the solving space in the blank list
+
+% ====================== MACHINERY ======================
+\ifsolucoes\includecomment{sol}\else\excludecomment{sol}\fi
+
+\pagestyle{fancy}\fancyhf{}
+\lhead{\footnotesize\disciplina}
+\rhead{\footnotesize List L08\ifsolucoes{} --- Solutions\fi}
+\cfoot{\footnotesize\thepage}
+\renewcommand{\headrulewidth}{0.3pt}
+\setlength{\headheight}{14pt}
+
+\setlist{topsep=2pt,itemsep=2pt}
+\newcounter{questao}
+% Equations are numbered per question, (Q<question>.<n>), so they never collide with the
+% books' own numbers, which keep their printed tags, e.g. (3.7) or (18.21).
+\renewcommand{\theequation}{Q\thequestao.\arabic{equation}}
+
+% Block header
+\newcommand{\bloco}[3]{\bigskip\noindent
+  {\large\bfseries\color{blue!55!black}Block #1 --- #2}\hfill\textit{(#3)}\par
+  \noindent\rule{\linewidth}{0.3pt}\smallskip}
+
+% Question (automatic numbering; resets the equation counter)
+\newcommand{\questao}[1]{\refstepcounter{questao}\setcounter{equation}{0}\medskip\needspace{5\baselineskip}\noindent
+  \textbf{Question \thequestao.}~#1\par}
+% Source line that opens every question (estilo-avaliacao §5, book questions)
+\newcommand{\fonte}[1]{\par\noindent{\small\textit{Source:} #1}\par\smallskip}
+
+% Notation list that opens every solution (estilo-avaliacao §4, "Equations, notation and layout").
+\newenvironment{notacao}{\par\smallskip\noindent\textbf{Notation.}\begin{itemize}[leftmargin=1.4em,topsep=1pt,itemsep=0pt]\small}{\end{itemize}}
+\allowdisplaybreaks
+
+% Solving space in the blank list
+\newcommand{\resolespaco}{\ifsolucoes\else\par\textit{Solution:}\vspace{\espacoresol}\par\fi}
+
+% Solution step (use inside sol)
+\newcommand{\passo}[2]{\par\smallskip\noindent\textbf{Step --- #1.}~#2}
+\newcommand{\intuicao}[1]{\par\smallskip\noindent\textit{Intuition.}~#1}
+\newcommand{\refbib}[1]{\par\smallskip\noindent{\footnotesize\color{black!60}\textbf{Ref:} #1}}
+
+% =============================================================================
+\begin{document}
+\begin{center}
+  {\Large\bfseries \disciplina}\\[2pt]
+  {\large Exercise list: \listatema}\ifsolucoes\\[2pt]\textit{Solutions}\fi
+\end{center}
+\vspace{2pt}
+
+{\footnotesize\noindent\textbf{Instructions.} These are the \emph{Practice} items of Class 8 in
+\texttt{Map/class-plan.md} (T 2.1--2.6; W 18.C13; T 3.3, 3.4, 3.6, 3.11, 3.12, 3.14; W 12.4), grouped by
+book. Every question opens with a source line, and the statement is reproduced verbatim from the book PDF.
+Data exercises use Tsay's data files (FTS 3e web page, retrieved from the Internet Archive) and the
+\texttt{wooldridge} package; see \texttt{Listas/data/README.md}. They are solved in Python
+(\texttt{statsmodels}; GARCH-type models by conditional maximum likelihood written in NumPy/SciPy);
+\texttt{Listas/L08-book-exercises-check.py} reproduces and asserts every number in the solutions. Tests
+use the 5\% level unless the statement says otherwise. Show your steps.\par}
+
+% =============================================================================
+\bloco{1}{Tsay, Chapter 2: linear time series}{T Ch.~2 \,\textbullet\, Questions 1--6}
+
+% ---------------------------------------------------------------- Q1
+\questao{Tsay, Exercise 2.1 (MA(1) forecasts).}
+\fonte{Tsay (2010), \textit{Analysis of Financial Time Series}, 3rd ed., Chapter 2, Exercise 2.1, printed
+p.~104, reproduced verbatim. The chapter's exercises open with: ``If not specifically specified, use 5\%
+significance level to draw conclusions in the exercises.''}
+
+\noindent\textbf{2.1.} Suppose that the simple return of a monthly bond index follows the MA(1) model
+\[ R_t = a_t + 0.2a_{t-1}, \qquad \sigma_a = 0.025. \]
+Assume that $a_{100} = 0.01$. Compute the 1-step- and 2-step-ahead forecasts of the return at the forecast
+origin $t = 100$. What are the standard deviations of the associated forecast errors? Also compute the lag-1
+and lag-2 autocorrelations of the return series.
+\resolespaco
+\begin{sol}
+\begin{notacao}
+\item $R_t$: monthly simple return; $a_t$: white-noise shock, mean $0$, variance $\sigma_a^2$, $\sigma_a=0.025$.
+\item $\theta=0.2$: MA coefficient (written with a plus sign, as in the statement); $F_{100}$: information up to $t=100$.
+\item $\hat R_{100}(\ell)=E(R_{100+\ell}\mid F_{100})$: $\ell$-step forecast; $e_{100}(\ell)=R_{100+\ell}-\hat R_{100}(\ell)$: forecast error.
+\item $\gamma_\ell$, $\rho_\ell$: lag-$\ell$ autocovariance and autocorrelation of $R_t$.
+\end{notacao}
+
+\noindent The model is
+\begin{equation}\label{q21:model} R_t = a_t + \theta a_{t-1}, \qquad \theta = 0.2 . \end{equation}
+
+\passo{1-step forecast}{Writing \eqref{q21:model} at $t=101$,}
+\begin{equation}\label{q21:R101} R_{101} = a_{101} + \theta a_{100}. \end{equation}
+Taking $E(\cdot\mid F_{100})$ of \eqref{q21:R101}, with $E(a_{101}\mid F_{100})=0$ and $a_{100}$ known:
+\begin{align}
+\hat R_{100}(1) &= \theta a_{100} \label{q21:f1}\\
+&= (0.2)(0.01) \notag\\
+&= 0.002. \notag
+\end{align}
+\passo{1-step error}{Subtracting \eqref{q21:f1} from \eqref{q21:R101} gives $e_{100}(1)=a_{101}$, so}
+\begin{align*}
+\operatorname{sd}[e_{100}(1)] &= \sigma_a\\
+&= 0.025.
+\end{align*}
+\passo{2-step forecast}{Writing \eqref{q21:model} at $t=102$,}
+\begin{equation}\label{q21:R102} R_{102} = a_{102} + \theta a_{101}. \end{equation}
+Both shocks in \eqref{q21:R102} are future at $t=100$, so $\hat R_{100}(2)=0$ and $e_{100}(2)=a_{102}+\theta a_{101}$.
+Because $a_{102}$ and $a_{101}$ are uncorrelated,
+\begin{align}
+\operatorname{Var}[e_{100}(2)] &= (1+\theta^2)\sigma_a^2, \label{q21:v2}\\
+\operatorname{sd}[e_{100}(2)] &= \sigma_a\sqrt{1+\theta^2} \notag\\
+&= (0.025)\sqrt{1+(0.2)^2} \notag\\
+&= (0.025)\sqrt{1.04} \notag\\
+&= 0.025495. \notag
+\end{align}
+\passo{autocorrelations}{From \eqref{q21:model}, $\gamma_0=(1+\theta^2)\sigma_a^2$ (as in \eqref{q21:v2}),
+$\gamma_1=E[(a_t+\theta a_{t-1})(a_{t-1}+\theta a_{t-2})]=\theta\sigma_a^2$ and $\gamma_2=0$ (no shock in common). Dividing,}
+\begin{align*}
+\rho_1 &= \frac{\theta}{1+\theta^2}\\
+&= \frac{0.2}{1+(0.2)^2}\\
+&= \frac{0.2}{1.04}\\
+&= 0.19231,\\
+\rho_2 &= \frac{\gamma_2}{\gamma_0} = 0.
+\end{align*}
+\intuicao{An MA(1) has a memory of exactly one period: the shock $a_{100}$ moves only the next return, so
+from two steps on the forecast reverts to the mean (zero) and the error variance reaches its ceiling
+$\gamma_0$. The ACF cuts off after lag 1 for the same reason.}
+\refbib{Tsay (2010) \S2.5.1 (p.~59, ACF of MA models) and \S2.5.4 (pp.~62--63, forecasting with MA models).}
+\end{sol}
+
+% ---------------------------------------------------------------- Q2
+\questao{Tsay, Exercise 2.2 (AR(2) with $\phi_1=0$: moments and forecasts).}
+\fonte{Tsay (2010), \textit{Analysis of Financial Time Series}, 3rd ed., Chapter 2, Exercise 2.2, printed
+p.~104, reproduced verbatim.}
+
+\noindent\textbf{2.2.} Suppose that the daily log return of a security follows the model
+\[ r_t = 0.01 + 0.2r_{t-2} + a_t, \]
+where $\{a_t\}$ is a Gaussian white noise series with mean zero and variance 0.02. What are the mean and
+variance of the return series $r_t$? Compute the lag-1 and lag-2 autocorrelations of $r_t$. Assume that
+$r_{100} = -0.01$, and $r_{99} = 0.02$. Compute the 1- and 2-step-ahead forecasts of the return series at the
+forecast origin $t = 100$. What are the associated standard deviations of the forecast errors?
+\resolespaco
+\begin{sol}
+\begin{notacao}
+\item $r_t$: daily log return; $\phi_0=0.01$: intercept; $\phi_1=0$, $\phi_2=0.2$: AR coefficients (the model is an AR(2) without lag 1).
+\item $a_t$: Gaussian white noise, $\sigma_a^2=0.02$; $\mu=E(r_t)$; $\gamma_\ell$, $\rho_\ell$: autocovariance and autocorrelation.
+\item $\hat r_{100}(\ell)$: $\ell$-step forecast at origin 100; $e_{100}(\ell)$: its error.
+\end{notacao}
+\begin{equation}\label{q22:model} r_t = \phi_0 + \phi_2 r_{t-2} + a_t, \qquad \phi_0=0.01,\ \phi_2=0.2,\ \sigma_a^2=0.02. \end{equation}
+The characteristic equation $1-0.2x^2=0$ has roots $\pm\sqrt{5}$, outside the unit circle, so the process is
+weakly stationary and the moments below exist.
+
+\passo{mean}{Taking expectations of \eqref{q22:model} with $E(r_t)=E(r_{t-2})=\mu$:}
+\begin{align}
+\mu &= \phi_0 + \phi_2\mu \label{q22:mu0}\\
+\mu &= \frac{\phi_0}{1-\phi_2} \notag\\
+&= \frac{0.01}{1-0.2} \notag\\
+&= 0.0125. \notag
+\end{align}
+\passo{variance}{Taking the variance of \eqref{q22:model}; $a_t$ is uncorrelated with $r_{t-2}$ and $\operatorname{Var}(r_t)=\operatorname{Var}(r_{t-2})=\gamma_0$:}
+\begin{align}
+\gamma_0 &= \phi_2^2\gamma_0 + \sigma_a^2 \label{q22:g0}\\
+\gamma_0 &= \frac{\sigma_a^2}{1-\phi_2^2} \notag\\
+&= \frac{0.02}{1-(0.2)^2} \notag\\
+&= \frac{0.02}{0.96} \notag\\
+&= 0.020833. \notag
+\end{align}
+\passo{ACF}{Multiplying the mean-adjusted form of \eqref{q22:model} by $(r_{t-\ell}-\mu)$ and taking
+expectations gives, for $\ell>0$, the Yule--Walker recursion with $\phi_1=0$:}
+\begin{equation}\label{q22:yw} \rho_\ell = \phi_2\rho_{\ell-2}. \end{equation}
+At $\ell=1$, \eqref{q22:yw} with $\rho_{-1}=\rho_1$ gives
+\begin{align*}
+\rho_1 &= \phi_2\rho_1\\
+\rho_1(1-0.2) &= 0\\
+\rho_1 &= 0.
+\end{align*}
+At $\ell=2$, \eqref{q22:yw} with $\rho_0=1$ gives
+\begin{align*}
+\rho_2 &= (0.2)(1)\\
+&= 0.2.
+\end{align*}
+\passo{1-step forecast}{Writing \eqref{q22:model} at $t=101$ and conditioning on $F_{100}$ (here $r_{99}$ is known):}
+\begin{align}
+\hat r_{100}(1) &= \phi_0 + \phi_2 r_{99} \label{q22:f1}\\
+&= 0.01 + 0.2(0.02) \notag\\
+&= 0.01 + 0.004 \notag\\
+&= 0.014. \notag
+\end{align}
+\passo{2-step forecast}{At $t=102$ the lag-2 value is $r_{100}$, also known:}
+\begin{align}
+\hat r_{100}(2) &= \phi_0 + \phi_2 r_{100} \label{q22:f2}\\
+&= 0.01 + 0.2(-0.01) \notag\\
+&= 0.01 - 0.002 \notag\\
+&= 0.008. \notag
+\end{align}
+\passo{forecast errors}{Subtracting \eqref{q22:f1} and \eqref{q22:f2} from \eqref{q22:model} at $t=101,102$
+leaves $e_{100}(1)=a_{101}$ and $e_{100}(2)=a_{102}$ (the $\psi_1=\phi_1$ weight is zero). Hence}
+\begin{align*}
+\operatorname{sd}[e_{100}(1)] = \operatorname{sd}[e_{100}(2)] &= \sqrt{0.02}\\
+&= 0.141421.
+\end{align*}
+\intuicao{With only a lag-2 term the series is two interleaved AR(1)s (odd and even days). That is why
+$\rho_1=0$ while $\rho_2=0.2$, and why both 1- and 2-step forecasts use an observed value and carry only
+one shock of error.}
+\refbib{Tsay (2010) \S2.4.1 (pp.~38--45, moments and ACF of AR models) and \S2.4.4 (pp.~54--56, AR forecasts).}
+\end{sol}
+
+% ---------------------------------------------------------------- Q3
+\questao{Tsay, Exercise 2.3 (U.S. unemployment rate: model, forecasts, business cycles).}
+\fonte{Tsay (2010), \textit{Analysis of Financial Time Series}, 3rd ed., Chapter 2, Exercise 2.3, printed
+p.~104, reproduced verbatim.}
+
+\noindent\textbf{2.3.} Consider the monthly U.S. unemployment rate from January 1948 to March 2009 in the
+file \texttt{m-unrate.txt}. The data are seasonally adjusted and obtained from the Federal Reserve Bank of
+St Louis. Build a time series model for the series and use the model to forecast the unemployment rate for
+the April, May, June, and July of 2009. In addition, does the fitted model imply the existence of business
+cycles? Why? (Note that there are more than one model fits the data well. You only need an adequate model.)
+\resolespaco
+\begin{sol}
+\begin{notacao}
+\item $x_t$: unemployment rate (\%), $t=1,\dots,735$ (1948:01--2009:03); $B$: back-shift operator, $Bx_t=x_{t-1}$.
+\item $\phi_1,\phi_2$: nonseasonal AR coefficients of $(1-B)x_t$; $\theta_1,\theta_2$: nonseasonal MA coefficients;
+$\Phi_1$, $\Theta_1$: seasonal (lag-12) AR and MA coefficients; $a_t$: white noise, variance $\sigma_a^2$.
+\item $\omega_1,\omega_2$: characteristic (inverse) roots of the AR(2) factor; $\Delta=\phi_1^2+4\phi_2$: its discriminant.
+\item $Q(m)$: Ljung--Box statistic on residuals with $m$ lags.
+\end{notacao}
+
+\passo{identification}{The ADF test (constant, 12 lags chosen by AIC) on the level gives $t=-2.783$,
+$p=0.061$: a unit root is not rejected at 5\%, so we model $(1-B)x_t$. The residuals of nonseasonal models
+keep a significant lag-12 autocorrelation (the seasonal adjustment is imperfect), so a seasonal $(1,0,1)_{12}$
+factor is added. Among ARIMA$(p,1,q)\times(P,0,Q)_{12}$ models with $p\le 3$, $q\le 2$ we keep the one whose
+residuals pass both $Q(12)$ and $Q(24)$ at 5\%.}
+
+\noindent\textit{Code:}
+\begingroup\footnotesize
+\begin{verbatim}
+x = pd.read_csv("Listas/data/m-unrate.txt", sep=r"\s+").Rate.values
+m = ARIMA(x, order=(2,1,2), seasonal_order=(1,0,1,12)).fit()
+acorr_ljungbox(m.resid[1:], lags=[12,24], model_df=6)
+m.get_forecast(4).predicted_mean, m.get_forecast(4).se_mean
+\end{verbatim}
+\endgroup
+\noindent\textit{Key output:}
+\begingroup\footnotesize
+\begin{verbatim}
+ar.L1 1.1701 (0.1231)  ar.L2 -0.3104 (0.1194)  ma.L1 -1.1809 (0.1193)  ma.L2 0.4923 (0.1002)
+ar.S.L12 0.5505 (0.0673)  ma.S.L12 -0.8134 (0.0468)  sigma2 0.0369
+Q(12) = 12.52 (p = 0.051)   Q(24) = 26.43 (p = 0.090)     [df = 6 and 18]
+\end{verbatim}
+\endgroup
+
+\passo{fitted model}{With standard errors in parentheses above, the fitted model is}
+\begin{equation}\label{q23:model}
+(1-1.1701B+0.3104B^2)(1-0.5505B^{12})(1-B)x_t=(1-1.1809B+0.4923B^2)(1-0.8134B^{12})a_t ,
+\end{equation}
+with $\hat\sigma_a^2=0.0369$.
+All coefficients are significant; $Q(12)$ and $Q(24)$ do not reject white-noise residuals at 5\%, so
+\eqref{q23:model} is adequate.
+
+\passo{forecasts}{At origin 2009:03 (last value $8.6$), the forecasts of \eqref{q23:model} and their standard errors are}
+\begin{center}\small
+\begin{tabular}{lcccc}
+\toprule
+ & Apr 2009 & May 2009 & Jun 2009 & Jul 2009\\
+\midrule
+Forecast (\%) & 8.844 & 9.023 & 9.151 & 9.257\\
+Std.\ error & 0.192 & 0.270 & 0.350 & 0.437\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\passo{business cycles}{Stochastic cycles require a pair of complex characteristic roots in the AR
+polynomial of the (differenced) series. The nonseasonal factor of \eqref{q23:model} is
+$1-\phi_1B-\phi_2B^2$ with, to five decimals, $\phi_1=1.17009$ and $\phi_2=-0.31036$. Its roots are complex if and only if}
+\begin{equation}\label{q23:disc} \Delta=\phi_1^2+4\phi_2<0 . \end{equation}
+Substituting the estimates into \eqref{q23:disc}:
+\begin{align*}
+\Delta &= (1.17009)^2 + 4(-0.31036)\\
+&= 1.36911 - 1.24144\\
+&= 0.12767 > 0 .
+\end{align*}
+The roots are real. The characteristic roots are
+\begin{align*}
+\omega_{1,2} &= \frac{\phi_1\pm\sqrt{\Delta}}{2}\\
+&= \frac{1.17009\pm0.35731}{2}\\
+&= 0.7637,\ 0.4064 .
+\end{align*}
+\noindent\textbf{Answer:} no. The nonseasonal AR part is a product of two AR(1) factors whose ACF is a mix
+of two exponential decays, with no damped sine wave, so the fitted model does not imply business cycles.
+The seasonal factor $1-0.5505B^{12}$ does have complex roots, but they sit at the seasonal frequencies
+(periods $12/k$ months). They reflect leftover seasonality in the adjusted data, not a business cycle.
+\intuicao{Unemployment rises fast in recessions and falls slowly in expansions. A linear ARIMA
+fitted to monthly changes picks up this persistence as two real roots (0.76 and 0.41) rather than as an
+oscillation. Another adequate model (e.g.\ an AR(3) on $x_t$) could have complex roots, which is why the
+statement warns that more than one model fits.}
+\refbib{Tsay (2010) \S2.4.1 (pp.~42--43, complex characteristic roots and business cycles), \S2.7.5 (pp.~76--80, unit-root test), \S2.8.2 (pp.~84--90, multiplicative seasonal models).}
+\end{sol}
+
+% ---------------------------------------------------------------- Q4
+\questao{Tsay, Exercise 2.4 (CRSP decile returns: Ljung--Box test, ARMA model, forecasts).}
+\fonte{Tsay (2010), \textit{Analysis of Financial Time Series}, 3rd ed., Chapter 2, Exercise 2.4, printed
+p.~105, reproduced verbatim. The data file (not named in the statement) is Tsay's \texttt{m-deciles08.txt}.}
+
+\noindent\textbf{2.4.} Consider the monthly simple returns of the Decile 1, Decile 2, Decile 9, and Decile 10
+of NYSE/AMEX/NASDAQ based on market capitalization. The data span is from January 1970 to December 2008, and
+the data are obtained from CRSP.
+\begin{enumerate}[label=(\alph*)]
+\item For the return series of Decile 2 and Decile 10, test the null hypothesis that the first 12 lags of
+autocorrelations are zero at the 5\% level. Draw your conclusion.
+\item Build an ARMA model for the return series of Decile 2. Perform model checking and write down the fitted model.
+\item Use the fitted ARMA model to produce 1- to 12-step-ahead forecasts of the series and the associated
+standard errors of forecasts.
+\end{enumerate}
+\resolespaco
+\begin{sol}
+\begin{notacao}
+\item $R_t$: monthly simple return of Decile 2 (\texttt{CAP2RET}), $T=468$ (1970:01--2008:12).
+\item $Jan_t$: January dummy; $\beta_0$, $\beta_1$: intercept and January effect; $u_t$: regression error, MA(1) with coefficient $\theta$.
+\item $\hat\rho_\ell$: sample ACF; $Q(m)$: Ljung--Box statistic, $\chi^2_{m-g}$ under $H_0$ with $g$ fitted ARMA coefficients.
+\end{notacao}
+
+\passo{(a) Ljung--Box}{The test statistic is}
+\begin{equation}\label{q24:Q} Q(m)=T(T+2)\sum_{\ell=1}^{m}\frac{\hat\rho_\ell^2}{T-\ell}\ \overset{H_0}{\sim}\ \chi^2_m . \end{equation}
+Computing \eqref{q24:Q} with $m=12$ ($\chi^2_{12}$ 5\% critical value $21.03$):
+\begin{center}\small
+\begin{tabular}{lcc}
+\toprule
+ & $Q(12)$ & $p$-value\\
+\midrule
+Decile 2 & 55.74 & $1.3\times10^{-7}$\\
+Decile 10 & 10.69 & 0.556\\
+\bottomrule
+\end{tabular}
+\end{center}
+We reject $H_0$ for Decile 2 (small caps have serial correlation) and do not reject for Decile 10 (largest
+stocks: returns are serially uncorrelated, as in an efficient market for liquid stocks).
+
+\passo{(b) identification}{For Decile 2, $\hat\rho_1=0.204$, $\hat\rho_{12}=0.231$ and $\hat\rho_{24}=0.130$
+all exceed $2/\sqrt{T}=0.092$: there is a lag-1 and a seasonal (lag-12) pattern. A seasonal ARMA, as in Tsay's
+Example 2.4 for Decile 1, gives}
+\begin{equation}\label{q24:sar} (1-0.1981B)(1-0.9894B^{12})(R_t-0.0095)=(1-0.9398B^{12})a_t . \end{equation}
+The seasonal AR and MA factors of \eqref{q24:sar} nearly cancel ($0.9894$ vs $0.9398$). That points to a
+deterministic seasonal, the January effect, so we replace the seasonal factors by a January dummy and keep
+an MA(1) for the lag-1 correlation (MA(1) has a lower BIC than AR(1) here):
+\begin{equation}\label{q24:reg} R_t=\beta_0+\beta_1 Jan_t+u_t,\qquad u_t=a_t+\theta a_{t-1}. \end{equation}
+
+\noindent\textit{Code:}
+\begingroup\footnotesize
+\begin{verbatim}
+d   = pd.read_csv("Listas/data/m-deciles08.txt", sep=r"\s+")
+jan = (d.date.astype(str).str[4:6] == "01").astype(float).values
+m   = ARIMA(d.CAP2RET.values, exog=jan, order=(0,0,1), trend="c").fit()
+acorr_ljungbox(m.resid, lags=[12,24], model_df=1)
+ex = np.zeros(12); ex[0] = 1                   # step 1 = January 2009
+f  = m.get_forecast(12, exog=ex)
+\end{verbatim}
+\endgroup
+\noindent\textit{Key output:}
+\begingroup\footnotesize
+\begin{verbatim}
+const 0.00388 (0.00395)   Jan 0.07891 (0.00789)   ma.L1 0.23304 (0.03681)   sigma2 0.00356
+Q(12) = 14.50 (p = 0.207)   Q(24) = 23.65 (p = 0.424)      last residual a_T = -0.00406
+\end{verbatim}
+\endgroup
+\passo{(b) fitted model and checking}{The fitted model \eqref{q24:reg} is}
+\begin{equation}\label{q24:fit} R_t = 0.00388 + 0.07891\,Jan_t + a_t + 0.23304\,a_{t-1},\qquad \hat\sigma_a=0.0597 . \end{equation}
+The January effect is about 7.9 percentage points ($t\approx10$). The residual $Q(12)=14.50$ ($p=0.207$) and
+$Q(24)=23.65$ ($p=0.424$) do not reject white noise: the model is adequate.
+
+\passo{(c) forecasts}{The origin is December 2008, so step 1 is January 2009. From \eqref{q24:fit}, the
+1-step forecast uses the last residual $a_T=-0.00406$:}
+\begin{align*}
+\hat R_T(1) &= \beta_0+\beta_1+\theta a_T\\
+&= 0.00388+0.07891+0.23304(-0.00406)\\
+&= 0.08184 .
+\end{align*}
+For $\ell=2,\dots,12$ (February--December 2009) $Jan=0$ and the MA(1) memory is gone, so $\hat R_T(\ell)=\beta_0=0.00388$.
+The standard errors are $\sigma_a=0.05965$ at $\ell=1$ and $\sigma_a\sqrt{1+\theta^2}$ for $\ell\ge2$:
+\begin{align*}
+\operatorname{se}(\ell\ge2) &= 0.05965\sqrt{1+(0.23304)^2}\\
+&= 0.06125 .
+\end{align*}
+\begin{center}\small
+\begin{tabular}{lcccc}
+\toprule
+Step $\ell$ & 1 (Jan) & 2 (Feb) & $\cdots$ & 12 (Dec)\\
+\midrule
+Forecast & 0.08184 & 0.00388 & $\cdots$ & 0.00388\\
+Std.\ error & 0.05965 & 0.06125 & $\cdots$ & 0.06125\\
+\bottomrule
+\end{tabular}
+\end{center}
+\intuicao{Small-cap returns are predictable mainly through the calendar: the turn-of-the-year (January)
+effect. When a seasonal AR factor near 1 is almost cancelled by a seasonal MA factor, the seasonality is
+deterministic, and a dummy captures it with one parameter instead of two near-unit roots.}
+\refbib{Tsay (2010) \S2.2 (pp.~32--33, Ljung--Box test), \S2.8.2 Example 2.4 (pp.~86--88, Decile 1 and the January effect), \S2.9 (pp.~90--97, regression with time series errors).}
+\end{sol}
+
+% ---------------------------------------------------------------- Q5
+\questao{Tsay, Exercise 2.5 (long-range dependence in $|R_t|$ of IBM).}
+\fonte{Tsay (2010), \textit{Analysis of Financial Time Series}, 3rd ed., Chapter 2, Exercise 2.5, printed
+p.~105, reproduced verbatim.}
+
+\noindent\textbf{2.5.} Consider the daily simple returns of IBM stock from 1970 to 2008 in the file
+\texttt{d-ibm3dx7008.txt}. Compute the first 100 lags of ACF of the absolute series of daily simple returns of
+IBM stock. Is there evidence of long-range dependence? Why?
+\resolespaco
+\begin{sol}
+\begin{notacao}
+\item $R_t$: IBM daily simple return, $T=9845$ (1970--2008); $|R_t|$: its absolute value.
+\item $\hat\rho_k$: sample ACF of $|R_t|$ at lag $k$; $2/\sqrt T$: approximate 95\% band under white noise.
+\item $d$: fractional-differencing parameter of a long-memory process, $-0.5<d<0.5$.
+\end{notacao}
+
+\noindent\textit{Code:}
+\begingroup\footnotesize
+\begin{verbatim}
+r   = pd.read_csv("Listas/data/d-ibm3dx7008.txt", sep=r"\s+").rtn.values
+rho = acf(np.abs(r), nlags=100)
+b, _ = np.polyfit(np.log(np.arange(1,101)), np.log(rho[1:]), 1)   # rho_k ~ k^(2d-1)
+\end{verbatim}
+\endgroup
+\noindent\textit{Key output:}
+\begin{center}\small
+\begin{tabular}{lccccccc}
+\toprule
+Lag $k$ & 1 & 2 & 5 & 10 & 20 & 50 & 100\\
+\midrule
+$\hat\rho_k$ & 0.1947 & 0.1638 & 0.1723 & 0.1311 & 0.1379 & 0.1089 & 0.0786\\
+\bottomrule
+\end{tabular}
+\end{center}
+All 100 sample autocorrelations are positive and above the band $2/\sqrt{9845}=0.0202$; the smallest is $0.0607$.
+
+\passo{benchmark}{A short-memory (stationary ARMA) ACF decays exponentially. For example, an AR(1)
+matching $\hat\rho_1$ would give $\rho_{100}=(0.1947)^{100}\approx 9\times10^{-72}$, while the observed
+$\hat\rho_{100}=0.0786$.}
+\passo{hyperbolic decay}{For a fractionally integrated process, Tsay's property 3 gives}
+\begin{equation}\label{q25:hyp} \rho_k \approx C\,k^{2d-1}\quad (k\to\infty),\qquad \log\rho_k\approx \log C+(2d-1)\log k . \end{equation}
+Regressing $\log\hat\rho_k$ on $\log k$ ($k=1,\dots,100$) gives slope $b=-0.2188$. Matching the slope with \eqref{q25:hyp}:
+\begin{align*}
+2d-1 &= -0.2188\\
+d &= \frac{-0.2188+1}{2}\\
+&= 0.3906 .
+\end{align*}
+This is a rough, descriptive estimate inside $(0,0.5)$, the long-memory range.
+
+\noindent\textbf{Answer:} yes. The ACF of $|R_t|$ is small, positive and significant out to lag 100, and it
+decays slowly (polynomially), not exponentially. That is the signature of long-range dependence in volatility,
+even though the returns themselves are nearly uncorrelated.
+\intuicao{The absolute return is a proxy for volatility. Volatility regimes last for months or years
+(e.g.\ 1987, 2000--2002, 2008), so today's $|R_t|$ still says something about $|R_{t+100}|$. This is the
+fact that motivates persistent GARCH and long-memory volatility models.}
+\refbib{Tsay (2010) \S2.11 (pp.~101--103, long-memory models; property 3, $\rho_k\approx k^{2d-1}$, and the CRSP $|R_t|$ example, Figure 2.22).}
+\end{sol}
+
+% ---------------------------------------------------------------- Q6
+\questao{Tsay, Exercise 2.6 (seasonal model for electricity demand).}
+\fonte{Tsay (2010), \textit{Analysis of Financial Time Series}, 3rd ed., Chapter 2, Exercise 2.6, printed
+p.~105, reproduced verbatim.}
+
+\noindent\textbf{2.6.} Consider the demand of electricity of a manufacturing sector in the United States. The
+data are logged, denote the demand of a fixed day of each month, and are in \texttt{power6.txt}. Build a time
+series model for the series and use the fitted model to produce 1- to 24-step-ahead forecasts.
+\resolespaco
+\begin{sol}
+\begin{notacao}
+\item $x_t$: log electricity demand, monthly, $T=264$; $B$: back-shift operator; $s=12$: seasonal period.
+\item $w_t=(1-B)(1-B^{12})x_t$: regular and seasonal difference.
+\item $\theta$, $\Theta$: regular and seasonal MA coefficients (Tsay's sign convention $1-\theta B$); $a_t$: white noise with variance $\sigma_a^2$.
+\end{notacao}
+
+\passo{identification}{$x_t$ has a strong annual pattern: the ACF of $(1-B)x_t$ is $0.757$ at lag 12 and
+$0.726$ at lag 24 and decays slowly at the seasonal lags. We therefore take $w_t=(1-B)(1-B^{12})x_t$. Its
+ACF is significant only at lag 1 ($-0.332$), lag 12 ($-0.484$) and lag 13 ($0.206$), against a band of
+$2/\sqrt{251}=0.126$. That is the pattern of the airline model:}
+\begin{equation}\label{q26:air} (1-B)(1-B^{12})x_t=(1-\theta B)(1-\Theta B^{12})a_t , \end{equation}
+whose $w_t$ has nonzero ACF only at lags 1, 11, 12 and 13, with $\rho_{13}=\rho_1\rho_{12}$
+($(-0.332)(-0.484)=0.161$, close to the observed $0.206$).
+
+\noindent\textit{Code:}
+\begingroup\footnotesize
+\begin{verbatim}
+x = np.loadtxt("Listas/data/power6.txt")
+m = ARIMA(x, order=(0,1,1), seasonal_order=(0,1,1,12)).fit()
+acorr_ljungbox(m.resid[13:], lags=[12,24], model_df=2)
+f = m.get_forecast(24); f.predicted_mean, f.se_mean
+\end{verbatim}
+\endgroup
+\noindent\textit{Key output:}
+\begingroup\footnotesize
+\begin{verbatim}
+ma.L1 -0.4874 (0.0574)   ma.S.L12 -0.9572 (0.1301)   sigma2 0.000337
+Q(12) = 12.85 (p = 0.232)   Q(24) = 26.10 (p = 0.247)     [df = 10 and 22]
+\end{verbatim}
+\endgroup
+\passo{fitted model}{In the notation of \eqref{q26:air}, $\hat\theta=0.4874$ and $\hat\Theta=0.9572$:}
+\begin{equation}\label{q26:fit} (1-B)(1-B^{12})x_t=(1-0.4874B)(1-0.9572B^{12})a_t,\qquad \hat\sigma_a=0.0184 . \end{equation}
+Both coefficients are significant, and $Q(12)$, $Q(24)$ do not reject white-noise residuals, so the model is
+adequate. $\hat\Theta$ close to 1 suggests the seasonal pattern is close to deterministic: the seasonal
+difference is nearly cancelled by the seasonal MA, the same remark Tsay makes about the airline model.
+
+\passo{forecast recursion}{Expanding \eqref{q26:fit} and taking $E(\cdot\mid F_T)$, the 1-step forecast is}
+\begin{equation}\label{q26:f1} \hat x_T(1)=x_T+x_{T-11}-x_{T-12}-\theta a_T-\Theta a_{T-11}+\theta\Theta a_{T-12}, \end{equation}
+and for larger $\ell$ the same recursion is used with future $x$ replaced by forecasts and future $a$ by zero.
+
+\passo{forecasts}{1- to 24-step-ahead forecasts of log demand, with standard errors:}
+\begin{center}\small
+\begin{tabular}{rcc@{\qquad}rcc}
+\toprule
+$\ell$ & $\hat x_T(\ell)$ & s.e. & $\ell$ & $\hat x_T(\ell)$ & s.e.\\
+\midrule
+1 & 9.8827 & 0.0185 & 13 & 9.9115 & 0.0380\\
+2 & 9.8675 & 0.0208 & 14 & 9.8963 & 0.0392\\
+3 & 9.8740 & 0.0228 & 15 & 9.9029 & 0.0405\\
+4 & 9.8931 & 0.0247 & 16 & 9.9219 & 0.0417\\
+5 & 9.9221 & 0.0265 & 17 & 9.9509 & 0.0429\\
+6 & 10.0066 & 0.0281 & 18 & 10.0355 & 0.0441\\
+7 & 10.0465 & 0.0297 & 19 & 10.0753 & 0.0452\\
+8 & 10.0635 & 0.0311 & 20 & 10.0923 & 0.0463\\
+9 & 10.0729 & 0.0326 & 21 & 10.1017 & 0.0473\\
+10 & 10.0070 & 0.0339 & 22 & 10.0358 & 0.0484\\
+11 & 9.9520 & 0.0352 & 23 & 9.9808 & 0.0494\\
+12 & 9.9291 & 0.0365 & 24 & 9.9579 & 0.0504\\
+\bottomrule
+\end{tabular}
+\end{center}
+The second year repeats the first year's seasonal profile shifted up by about $0.029$ (e.g.\ $9.9115-9.8827$),
+the drift implied by the double difference. The standard errors grow, with a jump after $\ell=12$ when
+the seasonal shock enters.
+\intuicao{The airline model says: this month is last month plus last year's month-to-month change, with
+two smoothing (MA) corrections. The forecasts therefore copy the most recent seasonal shape and carry the
+current level forward.}
+\refbib{Tsay (2010) \S2.8.1--2.8.2 (pp.~82--90, seasonal differencing, the airline model, Example 2.3).}
+\end{sol}
+
+% =============================================================================
+\bloco{2}{Tsay, Chapter 3: conditional heteroscedastic models}{T Ch.~3 \,\textbullet\, Questions 7--12}
+
+% ---------------------------------------------------------------- Q7
+\questao{Tsay, Exercise 3.3 (Gaussian AR(1)--GARCH(1,1) likelihood).}
+\fonte{Tsay (2010), \textit{Analysis of Financial Time Series}, 3rd ed., Chapter 3, Exercise 3.3, printed
+p.~168, reproduced verbatim.}
+
+\noindent\textbf{3.3.} Suppose that $r_1,\dots,r_n$ are observations of a return series that follows the
+AR(1)-GARCH(1,1) model
+\[ r_t=\mu+\phi_1r_{t-1}+a_t,\qquad a_t=\sigma_t\epsilon_t,\qquad \sigma_t^2=\alpha_0+\alpha_1a_{t-1}^2+\beta_1\sigma_{t-1}^2, \]
+where $\epsilon_t$ is a standard Gaussian white noise series. Derive the conditional log-likelihood function of the data.
+\resolespaco
+\begin{sol}
+\begin{notacao}
+\item $r_t$: return, $t=1,\dots,n$; $\mu$: intercept; $\phi_1$: AR(1) coefficient, $|\phi_1|<1$.
+\item $a_t$: shock; $\sigma_t^2$: conditional variance; $\epsilon_t\sim$ i.i.d.\ $N(0,1)$.
+\item $\alpha_0>0$, $\alpha_1\ge0$, $\beta_1\ge0$, $\alpha_1+\beta_1<1$; $\boldsymbol\theta=(\mu,\phi_1,\alpha_0,\alpha_1,\beta_1)'$.
+\item $F_{t-1}$: information up to $t-1$; $\ell(\boldsymbol\theta)$: conditional log-likelihood.
+\end{notacao}
+\begin{gather}
+r_t=\mu+\phi_1r_{t-1}+a_t, \label{q33:mean}\\
+a_t=\sigma_t\epsilon_t, \label{q33:a}\\
+\sigma_t^2=\alpha_0+\alpha_1a_{t-1}^2+\beta_1\sigma_{t-1}^2. \label{q33:var}
+\end{gather}
+
+\passo{conditioning}{The first observation has no $r_0$, and \eqref{q33:var} needs a starting value.
+We condition on $r_1$ and on a fixed $\sigma_1^2$ (e.g.\ the sample variance of the residuals). Given these,
+\eqref{q33:mean} gives $a_t=r_t-\mu-\phi_1r_{t-1}$ for $t\ge2$, and \eqref{q33:var} then gives every $\sigma_t^2$
+recursively, so both are known functions of $\boldsymbol\theta$ and the data up to $t-1$.}
+
+\passo{conditional density}{Using \eqref{q33:a} with $\epsilon_t\sim N(0,1)$ and $\sigma_t$ known at $t-1$,}
+\begin{equation}\label{q33:cond} r_t\mid F_{t-1}\ \sim\ N\!\left(\mu+\phi_1r_{t-1},\ \sigma_t^2\right),\qquad t=2,\dots,n . \end{equation}
+\passo{factorization}{By the chain rule of probability,}
+\begin{equation}\label{q33:chain} f(r_2,\dots,r_n\mid r_1,\sigma_1^2)=\prod_{t=2}^{n}f(r_t\mid F_{t-1}). \end{equation}
+Substituting the normal density of \eqref{q33:cond} into \eqref{q33:chain}:
+\begin{equation}\label{q33:L} f(r_2,\dots,r_n\mid r_1,\sigma_1^2)=\prod_{t=2}^{n}\frac{1}{\sqrt{2\pi\sigma_t^2}}\exp\!\left[-\frac{(r_t-\mu-\phi_1r_{t-1})^2}{2\sigma_t^2}\right]. \end{equation}
+\passo{logs}{Taking logs of \eqref{q33:L}:}
+\begin{equation}\label{q33:ll} \ell(\boldsymbol\theta)=-\frac12\sum_{t=2}^{n}\left[\ln(2\pi)+\ln\sigma_t^2+\frac{(r_t-\mu-\phi_1r_{t-1})^2}{\sigma_t^2}\right], \end{equation}
+where, substituting $a_{t-1}$ from \eqref{q33:mean} into \eqref{q33:var},
+\begin{equation}\label{q33:rec} \sigma_t^2=\alpha_0+\alpha_1\left(r_{t-1}-\mu-\phi_1r_{t-2}\right)^2+\beta_1\sigma_{t-1}^2,\qquad t\ge3, \end{equation}
+and $\sigma_2^2=\alpha_0+\alpha_1a_1^2+\beta_1\sigma_1^2$ with the fixed starting values. Dropping the constant,
+$\ell(\boldsymbol\theta)\propto-\frac12\sum_{t=2}^n\big[\ln\sigma_t^2+a_t^2/\sigma_t^2\big]$, which is maximized numerically.
+The check script verifies \eqref{q33:ll} against the library normal log-density.
+\intuicao{The returns are not independent, but each one is normal given its past, with a mean and a
+variance that the past fixes. The likelihood is the product of these one-step-ahead densities: a
+prediction-error decomposition. Days with a large predicted variance count for less in the squared term.}
+\refbib{Tsay (2010) \S3.4.3 (pp.~120--121, ``Estimation'', Gaussian conditional likelihood) and \S3.5 (p.~133).}
+\end{sol}
+
+% ---------------------------------------------------------------- Q8
+\questao{Tsay, Exercise 3.4 (Student-$t$ AR(1)--GARCH(1,1) likelihood).}
+\fonte{Tsay (2010), \textit{Analysis of Financial Time Series}, 3rd ed., Chapter 3, Exercise 3.4, printed
+p.~168, reproduced verbatim.}
+
+\noindent\textbf{3.4.} In the equation in Exercise 3.3, assume that $\epsilon_t$ follows a standardized
+Student-$t$ distribution with $v$ degrees of freedom. Derive the conditional log-likelihood function of the data.
+\resolespaco
+\begin{sol}
+\begin{notacao}
+\item As in Question 7, with $\epsilon_t$ i.i.d.\ standardized Student-$t$ with $v>2$ degrees of freedom (mean 0, variance 1).
+\item $\Gamma(\cdot)$: gamma function; $\boldsymbol\theta=(\mu,\phi_1,\alpha_0,\alpha_1,\beta_1)'$; $f_v(\cdot)$: standardized-$t$ density.
+\end{notacao}
+
+\passo{standardized $t$}{If $x\sim t_v$, then $\epsilon=x/\sqrt{v/(v-2)}$ has unit variance, and its density (Tsay Eq.~(3.7)) is}
+\begin{equation}\label{q34:ft} f_v(\epsilon)=\frac{\Gamma\!\left(\frac{v+1}{2}\right)}{\Gamma\!\left(\frac v2\right)\sqrt{(v-2)\pi}}\left(1+\frac{\epsilon^2}{v-2}\right)^{-\frac{v+1}{2}} . \end{equation}
+\passo{change of variables}{By \eqref{q33:a}, $a_t=\sigma_t\epsilon_t$ with $\sigma_t$ known at $t-1$, so $f(a_t\mid F_{t-1})=f_v(a_t/\sigma_t)/\sigma_t$. Substituting $\epsilon=a_t/\sigma_t$ in \eqref{q34:ft}:}
+\begin{equation}\label{q34:fa} f(r_t\mid F_{t-1})=\frac{\Gamma\!\left(\frac{v+1}{2}\right)}{\Gamma\!\left(\frac v2\right)\sqrt{(v-2)\pi}}\ \frac{1}{\sigma_t}\left(1+\frac{a_t^2}{(v-2)\sigma_t^2}\right)^{-\frac{v+1}{2}},\qquad a_t=r_t-\mu-\phi_1r_{t-1}. \end{equation}
+\passo{log-likelihood}{Using the factorization \eqref{q33:chain} with \eqref{q34:fa} and taking logs:}
+\begin{equation}\label{q34:ll}
+\begin{aligned}
+\ell(\boldsymbol\theta,v)=(n-1)\left[\ln\Gamma\!\left(\tfrac{v+1}{2}\right)-\ln\Gamma\!\left(\tfrac v2\right)-\tfrac12\ln\big((v-2)\pi\big)\right]\\
+-\sum_{t=2}^{n}\left[\frac{v+1}{2}\ln\!\left(1+\frac{(r_t-\mu-\phi_1r_{t-1})^2}{(v-2)\sigma_t^2}\right)+\frac12\ln\sigma_t^2\right],
+\end{aligned}
+\end{equation}
+with $\sigma_t^2$ from the recursion \eqref{q33:rec}. If $v$ is fixed in advance, the first line is a constant
+and only the sum matters (Tsay Eq.~(3.8)). If $v$ is estimated jointly, the first line must stay, because it
+depends on $v$. The check script verifies \eqref{q34:ll} against \texttt{scipy.stats.t} rescaled to unit variance.
+\intuicao{The $t$ log-density penalizes a large standardized shock only logarithmically, not quadratically
+as the normal does. Outliers therefore pull the GARCH parameters less, and $v$ measures how fat the tails
+are: as $v\to\infty$, \eqref{q34:ll} tends to the Gaussian likelihood of Question 7.}
+\refbib{Tsay (2010) \S3.4.3 (pp.~121--122, Eqs.~(3.7)--(3.8) and the joint likelihood with $v$).}
+\end{sol}
+
+% ---------------------------------------------------------------- Q9
+\questao{Tsay, Exercise 3.6 (Merck monthly returns: serial correlation, ARCH effects, ARCH model).}
+\fonte{Tsay (2010), \textit{Analysis of Financial Time Series}, 3rd ed., Chapter 3, Exercise 3.6, printed
+p.~169, reproduced verbatim.}
+
+\noindent\textbf{3.6.} The file \texttt{m-mrk4608.txt} contains monthly simple returns of Merck stock from
+June 1946 to December 2008. The file has two columns denoting date and simple return. Transform the simple
+returns to log returns.
+\begin{enumerate}[label=(\alph*)]
+\item Is there any evidence of serial correlations in the log returns? Use autocorrelations and 5\%
+significance level to answer the question. If yes, remove the serial correlations.
+\item Is there any evidence of ARCH effects in the log returns? Use the residual series if there are serial
+correlations in part (a). Use Ljung--Box statistics for the squared returns (or residuals) with 6 and 12 lags
+of autocorrelations and 5\% significance level to answer the question.
+\item Identify an ARCH model for the data and fit the identified model. Write down the fitted model.
+\end{enumerate}
+\resolespaco
+\begin{sol}
+\begin{notacao}
+\item $r_t=\ln(1+R_t)$: monthly log return of Merck, $T=751$ (1946:06--2008:12); $R_t$: simple return.
+\item $\phi_1,\phi_8$: AR coefficients at lags 1 and 8; $a_t$: mean-equation shock; $\sigma_t^2$: conditional variance.
+\item $\alpha_0,\alpha_1,\alpha_2,\alpha_3$: ARCH(3) coefficients; $\tilde a_t=a_t/\sigma_t$: standardized residual.
+\end{notacao}
+
+\noindent\textit{Code (the ARCH fit uses \texttt{garch\_fit} of the check script, conditional Gaussian MLE):}
+\begingroup\footnotesize
+\begin{verbatim}
+r  = np.log1p(pd.read_csv("Listas/data/m-mrk4608.txt", sep=r"\s+").mrk.values)
+acf(r, nlags=12); acorr_ljungbox(r, lags=[6,12])                          # (a)
+m  = ARIMA(r, order=([1,8],0,0), trend="c").fit()                        # (a) remove
+acorr_ljungbox(m.resid**2, lags=[6,12]); pacf(m.resid**2, nlags=12)      # (b), (c)
+g  = garch_fit(r, ar_lags=[1,8], p=3, q=0)                               # (c) AR-ARCH(3)
+\end{verbatim}
+\endgroup
+
+\passo{(a) serial correlation}{The ACF of $r_t$ exceeds the band $2/\sqrt{751}=0.073$ at lag 1
+($-0.078$) and lag 8 ($0.104$). Ljung--Box: $Q(6)=10.19$ ($p=0.117$) and $Q(12)=27.24$ ($p=0.007$). So yes,
+there is serial correlation at the 5\% level, driven by lags 1 and 8. To remove it we fit an AR with lags 1
+and 8 only (statsmodels reports the mean $0.0108$):}
+\begin{equation}\label{q36:ar} (1+0.0826B-0.1094B^{8})(r_t-0.0108)=a_t,\qquad \text{s.e.}(\hat\phi_1)=0.0339,\ \text{s.e.}(\hat\phi_8)=0.0347 . \end{equation}
+The residuals of \eqref{q36:ar} give $Q(12)=14.03$ with $12-2=10$ df ($p=0.172$): no remaining serial correlation.
+
+\passo{(b) ARCH effects}{On the squared residuals $a_t^2$ of \eqref{q36:ar}: $Q(6)=17.81$ ($p=0.0067$) and
+$Q(12)=29.82$ ($p=0.0030$). Both reject $H_0$ of no autocorrelation in $a_t^2$: there are ARCH effects.}
+
+\passo{(c) identification}{The PACF of $a_t^2$ at lags 1--4 is $0.056$, $0.056$, $0.110$, $0.045$, and
+is inside the band after lag 4. Only lag 3 exceeds $0.073$, so we identify an ARCH(3) and estimate it jointly
+with the AR mean equation:}
+\begin{equation}\label{q36:arch} r_t=\mu+\phi_1r_{t-1}+\phi_8r_{t-8}+a_t,\quad a_t=\sigma_t\epsilon_t,\quad \sigma_t^2=\alpha_0+\alpha_1a_{t-1}^2+\alpha_2a_{t-2}^2+\alpha_3a_{t-3}^2 . \end{equation}
+\noindent\textit{Key output (Gaussian conditional MLE; standard errors from the numerical Hessian):}
+\begingroup\footnotesize
+\begin{verbatim}
+mu 0.01170 (0.00265)  phi1 -0.08134 (0.03706)  phi8 0.10145 (0.03715)
+alpha0 0.00404 (0.00033)  alpha1 0.02741 (0.03856)  alpha2 0.05283 (0.03560)
+alpha3 0.09608 (0.04142)
+standardized residuals: Q(12) = 14.14 (p = 0.167)
+squared:                Q(6) = 1.64 (p = 0.949), Q(12) = 11.20 (p = 0.512)
+\end{verbatim}
+\endgroup
+\passo{fitted model}{Substituting the estimates into \eqref{q36:arch}:}
+\begin{gather*}
+r_t=0.0117-0.0813\,r_{t-1}+0.1015\,r_{t-8}+a_t,\qquad a_t=\sigma_t\epsilon_t,\ \epsilon_t\sim N(0,1),\\
+\sigma_t^2=0.00404+0.0274\,a_{t-1}^2+0.0528\,a_{t-2}^2+0.0961\,a_{t-3}^2 .
+\end{gather*}
+The standardized residuals and their squares pass the Ljung--Box tests, so the model is adequate. The
+implied unconditional variance is
+\begin{align*}
+\operatorname{Var}(a_t) &= \frac{\alpha_0}{1-\alpha_1-\alpha_2-\alpha_3}\\
+&= \frac{0.00404}{1-(0.02741+0.05283+0.09608)}\\
+&= \frac{0.00404}{0.82368}\\
+&= 0.00490,
+\end{align*}
+a monthly volatility of about $7.0\%$. Only $\alpha_3$ is individually significant ($t=2.32$), so the ARCH
+effect in monthly Merck returns is real but weak.
+\intuicao{Monthly returns aggregate many daily shocks, which weakens volatility clustering. The ARCH
+coefficients sum to only $0.18$, far from the persistence of 0.99 typical of daily data (Questions 10--12).}
+\refbib{Tsay (2010) \S3.3.1 (p.~114, testing for ARCH effects), \S3.4.3 (pp.~119--123, building an ARCH model: PACF of $a_t^2$, estimation, model checking).}
+\end{sol}
+
+% ---------------------------------------------------------------- Q10
+\questao{Tsay, Exercise 3.11 (GM daily log returns: ARCH test, PACF, normal and GED GARCH).}
+\fonte{Tsay (2010), \textit{Analysis of Financial Time Series}, 3rd ed., Chapter 3, Exercise 3.11, printed
+p.~170, reproduced verbatim.}
+
+\noindent\textbf{3.11.} The file \texttt{d-gmsp9908.txt} contains the daily simple returns of GM stock and
+the S\&P composite index from 1999 to 2008. It has three columns denoting date, GM return, and S\&P return.
+\begin{enumerate}[label=(\alph*)]
+\item Compute the daily log returns of GM stock. Is there any evidence of ARCH effects in the log returns?
+You may use 10 lags of the squared returns and 5\% significance level to perform the test.
+\item Compute the PACF of the squared log returns (10 lags).
+\item Specify a GARCH model for the GM log return using a normal distribution for the innovations. Perform
+model checking and write down the fitted model.
+\item Find an adequate GARCH model for the series but using the generalized error distribution for the
+innovations. Write down the fitted model.
+\end{enumerate}
+\resolespaco
+\begin{sol}
+\begin{notacao}
+\item $r_t=100\ln(1+R_t)$: GM daily log return in percent, $T=2515$ (1999-01-04 to 2008-12-31). Percent
+units keep $\alpha_0$ away from zero; only $\mu$ and $\alpha_0$ change scale.
+\item $a_t=r_t-\mu$; $\sigma_t^2$: conditional variance; $\alpha_0,\alpha_1,\beta_1$: GARCH(1,1) coefficients.
+\item $v$: GED shape parameter ($v=2$ is normal; $v<2$ has fat tails); $\tilde a_t=a_t/\sigma_t$.
+\end{notacao}
+\noindent\textit{Code:}
+\begingroup\footnotesize
+\begin{verbatim}
+d  = pd.read_csv("Listas/data/d-gmsp9908.txt", sep=r"\s+")
+r  = 100*np.log1p(d.gm.values); e = r - r.mean()
+het_arch(e, nlags=10); acorr_ljungbox(e**2, lags=[10]); pacf(e**2, nlags=10)   # (a), (b)
+gn = garch_fit(r)               # (c) GARCH(1,1), normal
+gg = garch_fit(r, dist="ged")   # (d) GARCH(1,1), GED (Tsay Eq. (3.10))
+\end{verbatim}
+\endgroup
+
+\passo{(a) ARCH test}{Engle's LM test regresses $e_t^2$ on 10 of its lags; under $H_0$ of no ARCH, $TR^2\sim\chi^2_{10}$.
+We get $TR^2=625.2$ ($F=82.95$), with $p<10^{-100}$. The Ljung--Box statistic of $e_t^2$ is $Q(10)=898.1$.
+Strong evidence of ARCH effects.}
+\passo{(b) PACF of $e_t^2$}{(band $2/\sqrt{2515}=0.040$)}
+\begin{center}\small
+\begin{tabular}{lcccccccccc}
+\toprule
+Lag & 1 & 2 & 3 & 4 & 5 & 6 & 7 & 8 & 9 & 10\\
+\midrule
+PACF & 0.193 & 0.397 & $-0.013$ & $-0.128$ & 0.139 & 0.083 & 0.089 & 0.030 & $-0.000$ & 0.118\\
+\bottomrule
+\end{tabular}
+\end{center}
+Significant spikes out to lag 10 would require a long ARCH; a GARCH(1,1) is the parsimonious alternative.
+
+\passo{(c) normal GARCH(1,1)}{The raw returns have $Q(10)=28.40$ ($p=0.0016$), but the standardized
+residuals of a constant-mean GARCH(1,1) are white, so no AR term is needed. The model is}
+\begin{equation}\label{q311:g} r_t=\mu+a_t,\qquad a_t=\sigma_t\epsilon_t,\qquad \sigma_t^2=\alpha_0+\alpha_1a_{t-1}^2+\beta_1\sigma_{t-1}^2 . \end{equation}
+\noindent\textit{Key output:}
+\begingroup\footnotesize
+\begin{verbatim}
+normal: mu 0.0245 (0.0437)  alpha0 0.0942 (0.0208)  alpha1 0.0701 (0.0091)
+        beta1 0.9207 (0.0097)  logL -5853.30
+  std. resid: Q(10) = 12.78 (p 0.236), Q(20) = 26.92 (p 0.137)
+  squared:    Q(10) = 1.79 (p 0.998),  Q(20) = 9.01 (p 0.983)
+  kurtosis of std. resid = 8.89
+\end{verbatim}
+\endgroup
+Substituting into \eqref{q311:g}:
+\begin{equation}\label{q311:gfit} r_t=0.0245+a_t,\qquad \sigma_t^2=0.0942+0.0701\,a_{t-1}^2+0.9207\,\sigma_{t-1}^2,\qquad \epsilon_t\sim N(0,1). \end{equation}
+Model checking: the Ljung--Box tests on $\tilde a_t$ and $\tilde a_t^2$ do not reject, so the mean and
+variance equations are adequate. The persistence $\hat\alpha_1+\hat\beta_1=0.9908$ is close to 1. The
+standardized residuals have kurtosis $8.89$, far above the normal's $3$, so the normal assumption fails in the tails.
+
+\passo{(d) GED GARCH(1,1)}{Same equations \eqref{q311:g}, with $\epsilon_t$ following the GED of Tsay Eq.~(3.10):}
+\begingroup\footnotesize
+\begin{verbatim}
+GED:  mu -0.0444 (0.0408)  alpha0 0.0542 (0.0212)  alpha1 0.0678 (0.0113)
+      beta1 0.9286 (0.0117)  v 1.2521 (0.0432)  logL -5747.55
+  std. resid: Q(10) = 13.09 (p 0.219);  squared: Q(10) = 1.86 (p 0.997)
+\end{verbatim}
+\endgroup
+\begin{equation}\label{q311:ged} r_t=-0.0444+a_t,\qquad \sigma_t^2=0.0542+0.0678\,a_{t-1}^2+0.9286\,\sigma_{t-1}^2,\qquad \epsilon_t\sim \text{GED}(v=1.252). \end{equation}
+The test of normality inside the GED family, $H_0\!: v=2$, gives
+\begin{align*}
+t &= \frac{\hat v-2}{\text{s.e.}(\hat v)}\\
+&= \frac{1.2521-2}{0.0432}\\
+&= -17.33,
+\end{align*}
+a decisive rejection. The log-likelihood also rises by $105.75$ ($-5747.55$ vs $-5853.30$) for one extra
+parameter. The residual checks pass, so \eqref{q311:ged} is adequate and preferred to \eqref{q311:gfit}.
+\intuicao{GM's daily returns cluster in volatility (persistence near 0.99) and have fat tails even after
+standardizing. The GED with $v\approx1.25$ (between Laplace, $v=1$, and normal, $v=2$) absorbs the tail
+mass, and $\alpha_0$ falls because fewer extreme days have to be explained by the variance equation.}
+\refbib{Tsay (2010) \S3.3.1 (p.~114, Engle's LM test), \S3.5 (pp.~131--135, GARCH), \S3.4.3 (p.~122, GED, Eq.~(3.10)).}
+\end{sol}
+
+% ---------------------------------------------------------------- Q11
+\questao{Tsay, Exercise 3.12 (S\&P daily simple returns: ARCH test, GARCH model, forecasts).}
+\fonte{Tsay (2010), \textit{Analysis of Financial Time Series}, 3rd ed., Chapter 3, Exercise 3.12, printed
+p.~170, reproduced verbatim.}
+
+\noindent\textbf{3.12.} Consider the daily simple returns of the S\&P composite index in the file
+\texttt{d-gmsp9908.txt}.
+\begin{enumerate}[label=(\alph*)]
+\item Is there any ARCH effect in the simple return series? Use 10 lags of the squared returns and 5\%
+significance level to perform the test.
+\item Build an adequate GARCH model for the simple return series.
+\item Compute 1-step- to 4-step-ahead forecasts of the simple return and its volatility based on the fitted model.
+\end{enumerate}
+\resolespaco
+\begin{sol}
+\begin{notacao}
+\item $r_t=100R_t$: S\&P daily simple return in percent, $T=2515$, last date $T=$ 2008-12-31.
+\item $\mu,\phi_1,\phi_2$: AR(2) mean equation; $a_t$: shock; $\sigma_t^2$: conditional variance; $\alpha_0,\alpha_1,\beta_1$: GARCH(1,1).
+\item $\hat r_T(\ell)$, $\sigma_T^2(\ell)$: $\ell$-step forecasts of the return and of its conditional variance; volatility $=\sigma_T(\ell)$.
+\end{notacao}
+\noindent\textit{Code:}
+\begingroup\footnotesize
+\begin{verbatim}
+r = 100*d.sp.values; e = r - r.mean()
+het_arch(e, nlags=10); acorr_ljungbox(e**2, lags=[10])     # (a)
+g = garch_fit(r, ar_lags=[1,2])                            # (b) AR(2)-GARCH(1,1), normal
+\end{verbatim}
+\endgroup
+\passo{(a) ARCH test}{Engle's LM test with 10 lags: $TR^2=711.2$ ($F=98.88$), $p\approx0$; $Q(10)$ of the
+squared demeaned returns $=2097.7$. Yes, strong ARCH effects.}
+\passo{(b) model}{The returns have $\hat\rho_1=-0.077$, $\hat\rho_2=-0.091$ (band $0.040$) and $Q(10)=57.06$,
+so the mean needs lags 1 and 2. The model is}
+\begin{equation}\label{q312:m} r_t=\mu+\phi_1r_{t-1}+\phi_2r_{t-2}+a_t,\quad a_t=\sigma_t\epsilon_t,\quad \sigma_t^2=\alpha_0+\alpha_1a_{t-1}^2+\beta_1\sigma_{t-1}^2 . \end{equation}
+\noindent\textit{Key output:}
+\begingroup\footnotesize
+\begin{verbatim}
+mu 0.0357 (0.0179)  phi1 -0.0589 (0.0210)  phi2 -0.0419 (0.0208)
+alpha0 0.0100 (0.0031)  alpha1 0.0714 (0.0094)  beta1 0.9235 (0.0101)
+std. resid: Q(10) = 8.57 (p 0.380), Q(20) = 23.84 (p 0.160)   [df 8, 18]
+squared:    Q(10) = 14.65 (p 0.145), Q(20) = 20.31 (p 0.438)
+\end{verbatim}
+\endgroup
+Substituting into \eqref{q312:m}, with five decimals because they are used in the forecasts:
+\begin{gather}
+r_t=0.03570-0.05888\,r_{t-1}-0.04190\,r_{t-2}+a_t, \label{q312:mean}\\
+\sigma_t^2=0.00997+0.07135\,a_{t-1}^2+0.92350\,\sigma_{t-1}^2,\qquad \epsilon_t\sim N(0,1). \label{q312:var}
+\end{gather}
+All Ljung--Box tests on $\tilde a_t$ and $\tilde a_t^2$ pass at 5\%: the model is adequate. Persistence
+$\hat\alpha_1+\hat\beta_1=0.99485$, and the unconditional variance is $\alpha_0/(1-\alpha_1-\beta_1)=1.93$ (daily s.d.\ $\approx1.39\%$).
+
+\passo{(c) inputs at the origin}{At $T$ (2008-12-31): $r_T=1.4158$, $r_{T-1}=2.4407$, $a_T=1.5076$, $\sigma_T^2=7.9263$.}
+\passo{return forecasts}{Taking $E(\cdot\mid F_T)$ of \eqref{q312:mean}:}
+\begin{align}
+\hat r_T(1) &= \mu+\phi_1r_T+\phi_2r_{T-1} \label{q312:f1}\\
+&= 0.03570+(-0.05888)(1.4158)+(-0.04190)(2.4407) \notag\\
+&= 0.03570-0.08336-0.10227 \notag\\
+&= -0.1499 . \notag
+\end{align}
+For $\ell\ge2$ the recursion is $\hat r_T(\ell)=\mu+\phi_1\hat r_T(\ell-1)+\phi_2\hat r_T(\ell-2)$:
+\begin{align*}
+\hat r_T(2) &= 0.03570+(-0.05888)(-0.1499)+(-0.04190)(1.4158) = -0.0148,\\
+\hat r_T(3) &= 0.03570+(-0.05888)(-0.0148)+(-0.04190)(-0.1499) = 0.0429,\\
+\hat r_T(4) &= 0.03570+(-0.05888)(0.0429)+(-0.04190)(-0.0148) = 0.0338 .
+\end{align*}
+\passo{volatility forecasts}{The variance recursion compounds rounding over the steps, so it is shown with six
+decimals: $\alpha_0=0.009968$, $\alpha_1=0.071347$, $\beta_1=0.923498$, $a_T=1.507578$, $\sigma_T^2=7.926285$.
+From \eqref{q312:var} at $T+1$, everything is known at $T$:}
+\begin{align}
+\sigma_T^2(1) &= \alpha_0+\alpha_1a_T^2+\beta_1\sigma_T^2 \label{q312:v1}\\
+&= 0.009968+0.071347(1.507578)^2+0.923498(7.926285) \notag\\
+&= 0.009968+0.162157+7.319908 \notag\\
+&= 7.492033 . \notag
+\end{align}
+For $\ell\ge2$, $E(a_{T+\ell-1}^2\mid F_T)=\sigma_T^2(\ell-1)$, so
+\begin{equation}\label{q312:vl} \sigma_T^2(\ell)=\alpha_0+(\alpha_1+\beta_1)\,\sigma_T^2(\ell-1),\qquad \alpha_1+\beta_1=0.994845 . \end{equation}
+Substituting into \eqref{q312:vl}:
+\begin{align*}
+\sigma_T^2(2) &= 0.009968+0.994845(7.492033) = 7.463380,\\
+\sigma_T^2(3) &= 0.009968+0.994845(7.463380) = 7.434874,\\
+\sigma_T^2(4) &= 0.009968+0.994845(7.434874) = 7.406515 .
+\end{align*}
+\begin{center}\small
+\begin{tabular}{lcccc}
+\toprule
+Step $\ell$ & 1 & 2 & 3 & 4\\
+\midrule
+Return forecast $\hat r_T(\ell)$ (\%) & $-0.1499$ & $-0.0148$ & $0.0429$ & $0.0338$\\
+Variance $\sigma_T^2(\ell)$ & 7.4920 & 7.4634 & 7.4349 & 7.4065\\
+Volatility $\sigma_T(\ell)$ (\%) & 2.7372 & 2.7319 & 2.7267 & 2.7215\\
+\bottomrule
+\end{tabular}
+\end{center}
+\intuicao{The origin is the end of 2008, at the peak of the crisis: the conditional variance (7.9) is about
+four times its long-run level (1.93). With persistence $0.995$ the forecast moves back towards 1.93 only very
+slowly, about $0.5\%$ of the gap per day, while the mean forecasts are tiny and quickly settle at
+$\mu/(1-\phi_1-\phi_2)=0.0357/1.1008\approx0.032$.}
+\refbib{Tsay (2010) \S3.5 (pp.~132--133, GARCH(1,1) forecasts, $\sigma_h^2(\ell)=\alpha_0+(\alpha_1+\beta_1)\sigma_h^2(\ell-1)$); \S2.4.4 (AR forecasts).}
+\end{sol}
+
+% ---------------------------------------------------------------- Q12
+\questao{Tsay, Exercise 3.14 (market volatility as a regressor in GM's volatility).}
+\fonte{Tsay (2010), \textit{Analysis of Financial Time Series}, 3rd ed., Chapter 3, Exercise 3.14, printed
+p.~171, reproduced verbatim.}
+
+\noindent\textbf{3.14.} Revisit the file \texttt{d-gmsp9908.txt}. However, we shall investigate the value of
+using market volatility in modeling volatility of individual stocks. Convert the two simple return series into
+percentage log return series.
+\begin{enumerate}[label=(\alph*)]
+\item Build an AR(5)--GARCH(1,1) model with generalized error distribution for the log S\&P returns. The
+AR(5) contains only lags 3 and 5. Denote the fitted volatility series by \texttt{spvol}.
+\item Estimate a GARCH(1,1) model with \texttt{spvol} as an exogenous variable to the log GM return series.
+Check the adequacy of the model, and write down the fitted model. In S-Plus, the command is
+\begin{center}\texttt{fit = garch(gm \textasciitilde 1, \textasciitilde garch(1,1)+spvol, cond.dist='ged')}\end{center}
+\item Discuss the implication of the fitted model.
+\end{enumerate}
+\resolespaco
+\begin{sol}
+\begin{notacao}
+\item $s_t$, $g_t$: S\&P and GM daily log returns in percent ($100\ln(1+R_t)$), 1999--2008.
+\item $\sigma_{s,t}$: fitted S\&P conditional standard deviation = \texttt{spvol} (Tsay stores ``the volatility series $\sigma_t$'' in \texttt{sigma.t}).
+\item $\sigma_{g,t}^2$: GM conditional variance; $\gamma$: coefficient of \texttt{spvol} in GM's variance equation; $v$: GED shape.
+\end{notacao}
+\noindent\textit{Code:}
+\begingroup\footnotesize
+\begin{verbatim}
+s, g  = 100*np.log1p(d.sp.values), 100*np.log1p(d.gm.values)
+fs    = garch_fit(s, ar_lags=[3,5], dist="ged")             # (a)
+spvol = np.sqrt(fs["s2"])                                   # sigma_t, t = 6..T
+fg    = garch_fit(g[5:], X=spvol[:,None], dist="ged")       # (b) gamma*spvol_t in the variance
+f0    = garch_fit(g[5:], dist="ged")                        # same sample, gamma = 0
+\end{verbatim}
+\endgroup
+\passo{(a) S\&P model}{The model is}
+\begin{equation}\label{q314:sp} s_t=\mu+\phi_3s_{t-3}+\phi_5s_{t-5}+a_t,\quad a_t=\sigma_{s,t}\epsilon_t,\quad \sigma_{s,t}^2=\alpha_0+\alpha_1a_{t-1}^2+\beta_1\sigma_{s,t-1}^2,\quad \epsilon_t\sim\text{GED}(v) . \end{equation}
+\noindent\textit{Key output:}
+\begingroup\footnotesize
+\begin{verbatim}
+mu 0.0444 (0.0175)  phi3 -0.0094 (0.0207)  phi5 -0.0414 (0.0209)
+alpha0 0.0079 (0.0033)  alpha1 0.0713 (0.0108)  beta1 0.9258 (0.0113)
+v 1.4964 (0.0603)   logL -3688.80
+std. resid: Q(10) = 12.80;  squared: Q(10) = 11.49
+\end{verbatim}
+\endgroup
+\begin{gather*}
+s_t=0.0444-0.0094\,s_{t-3}-0.0414\,s_{t-5}+a_t,\\
+\sigma_{s,t}^2=0.0079+0.0713\,a_{t-1}^2+0.9258\,\sigma_{s,t-1}^2,\qquad v=1.496 .
+\end{gather*}
+The residual checks pass ($Q(10)=12.80$ with 8 df, $p=0.119$; $Q(10)=11.49$ for squares, $p=0.320$).
+\texttt{spvol}$_t=\hat\sigma_{s,t}$, with mean $1.1749$.
+
+\passo{(b) GM model with \texttt{spvol}}{The S-Plus formula puts \texttt{spvol} in the variance equation:}
+\begin{equation}\label{q314:gm} g_t=\mu+a_t,\quad a_t=\sigma_{g,t}\epsilon_t,\quad \sigma_{g,t}^2=\alpha_0+\alpha_1a_{t-1}^2+\beta_1\sigma_{g,t-1}^2+\gamma\,\texttt{spvol}_t,\quad \epsilon_t\sim\text{GED}(v) . \end{equation}
+\noindent\textit{Key output (sample $t=6,\dots,T$, where \texttt{spvol} exists):}
+\begingroup\footnotesize
+\begin{verbatim}
+with spvol:  mu -0.0485 (0.0395)  alpha0 0.0214 (0.0355)  alpha1 0.0677 (0.0114)
+             beta1 0.9254 (0.0127)  gamma 0.0499 (0.0474)  v 1.2478 (0.0430)   logL -5733.16
+             std. resid: Q(10) = 12.44 (p 0.257);  squared: Q(10) = 1.87 (p 0.997)
+gamma = 0:   alpha0 0.0540  alpha1 0.0677  beta1 0.9287  v 1.2505   logL -5733.79
+\end{verbatim}
+\endgroup
+Substituting into \eqref{q314:gm}:
+\begin{equation}\label{q314:fit} g_t=-0.0485+a_t,\qquad \sigma_{g,t}^2=0.0214+0.0677\,a_{t-1}^2+0.9254\,\sigma_{g,t-1}^2+0.0499\,\texttt{spvol}_t,\qquad v=1.248 . \end{equation}
+The Ljung--Box tests on the standardized residuals and their squares do not reject, so \eqref{q314:fit} is
+adequate. The Wald test of $H_0\!:\gamma=0$ is
+\begin{align*}
+t &= \frac{\hat\gamma}{\text{s.e.}(\hat\gamma)}\\
+&= \frac{0.0499}{0.0474}\\
+&= 1.05,
+\end{align*}
+and the likelihood-ratio statistic is
+\begin{align*}
+LR &= 2\,[\ell(\text{with spvol})-\ell(\gamma=0)]\\
+&= 2\,[-5733.16-(-5733.79)]\\
+&= 1.28 < \chi^2_{1,0.95}=3.84 .
+\end{align*}
+\passo{(c) implication}{\texttt{spvol} is not significant: once GM's own lagged shock $a_{t-1}^2$ and lagged
+variance $\sigma_{g,t-1}^2$ are in the model, market volatility adds no information about GM's volatility.
+Its average contribution $\hat\gamma\cdot\overline{\texttt{spvol}}=0.0499\times1.1749=0.0586$ mostly replaces
+the intercept: $\hat\alpha_0$ falls from $0.0540$ to $0.0214$, while $\alpha_1$ and $\beta_1$ hardly move.
+Market-wide volatility shocks also hit GM's returns, so GM's GARCH recursion already tracks them, and the
+persistent \texttt{spvol} series acts almost like a constant in GM's variance equation.}
+\intuicao{Volatility is largely a common factor (2008 raised every stock's volatility), but a univariate
+GARCH filters that factor out of the stock's own squared shocks. To see a spillover, a regressor must carry
+information that the stock's own past does not: here it does not.}
+\refbib{Tsay (2010) \S3.5 (pp.~131--135, GARCH), \S3.4.3 (p.~122, GED, Eq.~(3.10)); for volatility regressors see the end-of-chapter S-Plus command quoted in the statement.}
+\end{sol}
+
+% =============================================================================
+\bloco{3}{Wooldridge: unit roots and ARCH}{W Ch.~18 and 12 \,\textbullet\, Questions 13--14}
+
+% ---------------------------------------------------------------- Q13
+\questao{Wooldridge, Computer Exercise 18.C13 (Dickey--Fuller tests, TRAFFIC2).}
+\fonte{Wooldridge (2016), \textit{Introductory Econometrics: A Modern Approach}, 6th ed., Chapter 18,
+Computer Exercise C13, printed p.~604, reproduced verbatim.}
+
+\noindent\textbf{C13} Use the data in TRAFFIC2 for this exercise. These monthly data, on traffic accidents in
+California over the years 1981 to 1989, were used in Computer Exercise C11 in Chapter 10.
+\begin{enumerate}[label=(\roman*)]
+\item Using the standard Dickey-Fuller regression, test whether $ltotacc_t$ has a unit root. Can you reject a
+unit root at the 2.5\% level?
+\item Now, add two lagged changes to the test from part (i) and compute the augmented Dickey-Fuller test. What do you conclude?
+\item Add a linear time trend to the ADF regression from part (ii). Now what happens?
+\item Given the findings from parts (i) through (iii), what would you say is the best characterization of
+$ltotacc_t$: an I(1) process or an I(0) process about a linear time trend?
+\item Test the percentage of fatalities, $prcfat_t$, for a unit root, using two lags in an ADF regression. In
+this case, does it matter whether you include a linear time trend?
+\end{enumerate}
+\resolespaco
+\begin{sol}
+\begin{notacao}
+\item $y_t$: the series tested ($ltotacc_t$ = log of total accidents, or $prcfat_t$ = $100\times$ fatal/total accidents), $T=108$ months (1981--1989).
+\item $\Delta y_t=y_t-y_{t-1}$; $\theta=\rho-1$: coefficient on $y_{t-1}$; $\gamma_j$: coefficients on lagged changes; $\delta$: trend coefficient.
+\item $t_{\hat\theta}$: Dickey--Fuller $t$ statistic. Asymptotic critical values (Wooldridge Tables 18.2 and 18.3):
+no trend $-3.43$ (1\%), $-3.12$ (2.5\%), $-2.86$ (5\%), $-2.57$ (10\%); with trend $-3.96$, $-3.66$, $-3.41$, $-3.12$.
+\end{notacao}
+The regressions, Wooldridge Eqs.~(18.21) and (18.24), plus a trend in (iii) and (v):
+\begin{equation}\label{q13:adf} \Delta y_t=\alpha+\delta t+\theta y_{t-1}+\gamma_1\Delta y_{t-1}+\gamma_2\Delta y_{t-2}+e_t,\qquad H_0\!:\theta=0\ \text{vs}\ H_1\!:\theta<0 . \end{equation}
+\noindent\textit{Code:}
+\begingroup\footnotesize
+\begin{verbatim}
+d = wooldridge.data("traffic2")
+def df_reg(y, lags, trend):                       # OLS of dy on const, y_{t-1}, dy lags (, t)
+    y = pd.Series(y); dy = y.diff(); X = pd.DataFrame({"ylag": y.shift(1)})
+    for j in range(1, lags+1): X[f"dl{j}"] = dy.shift(j)
+    if trend: X["t"] = np.arange(1, len(y)+1)
+    D = pd.concat([dy.rename("dy"), sm.add_constant(X)], axis=1).dropna()
+    return sm.OLS(D.dy, D.drop(columns="dy")).fit()
+\end{verbatim}
+\endgroup
+\noindent\textit{Key output (coefficient on $y_{t-1}$):}
+\begin{center}\small
+\begin{tabular}{llcccccc}
+\toprule
+Series & Regression & $n$ & $\hat\theta$ & s.e. & $t_{\hat\theta}$ & 2.5\% c.v. & Reject at 2.5\%?\\
+\midrule
+$ltotacc$ & (i) DF, no lags & 107 & $-0.1923$ & 0.0581 & $-3.31$ & $-3.12$ & yes\\
+$ltotacc$ & (ii) ADF, 2 lags & 105 & $-0.0850$ & 0.0566 & $-1.50$ & $-3.12$ & no\\
+$ltotacc$ & (iii) ADF, 2 lags + trend & 105 & $-0.4253$ & 0.1160 & $-3.67$ & $-3.66$ & yes (barely)\\
+$prcfat$ & DF, no lags & 107 & $-0.2906$ & 0.0689 & $-4.22$ & $-3.12$ & yes\\
+$prcfat$ & (v) ADF, 2 lags & 105 & $-0.3837$ & 0.0809 & $-4.74$ & $-3.12$ & yes\\
+$prcfat$ & (v) ADF, 2 lags + trend & 105 & $-0.4581$ & 0.0866 & $-5.29$ & $-3.66$ & yes\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\passo{(i)}{From \eqref{q13:adf} with $\delta=\gamma_1=\gamma_2=0$: $t_{\hat\theta}=-0.1923/0.0581=-3.31<-3.12$. The unit root is rejected at 2.5\%.}
+\passo{(ii)}{With two lagged changes, $t_{\hat\theta}=-0.0850/0.0566=-1.50>-2.57$: we cannot reject a unit root
+even at 10\%. The lagged changes are highly significant ($t=-4.75$ and $-3.06$), so (i) omitted relevant dynamics
+and its rejection is not reliable. The ADF result is the one to trust.}
+\passo{(iii)}{Adding $t$: $t_{\hat\theta}=-0.4253/0.1160=-3.67<-3.66$, a (marginal) rejection at 2.5\% against the
+trend critical value. The trend is significant: $\hat\delta=0.0013$ with $t=3.31$, about $0.13\%$ more accidents per month.}
+\passo{(iv)}{Without a trend, the slow upward drift in accidents makes $ltotacc_t$ look like a unit-root
+process. Once the linear trend is allowed, the unit root is rejected. The best characterization is an
+\emph{I(0) process about a linear time trend} (trend-stationary), with the caveat that the rejection is borderline.}
+\passo{(v)}{For $prcfat_t$ with two lags: $t_{\hat\theta}=-4.74$ without a trend ($<-3.43$, reject at 1\%) and
+$-5.29$ with a trend ($<-3.96$, reject at 1\%). It does not matter whether the trend is included: $prcfat_t$
+is I(0) in both cases.}
+\intuicao{A Dickey--Fuller test asks whether shocks die out. Omitted short-run dynamics bias it, and so does
+an omitted deterministic trend: a trending stationary series looks like a random walk with drift if the test
+cannot ``see'' the trend. The fatality percentage is a ratio with no trend and mean reversion, so the
+specification does not matter for it.}
+\refbib{Wooldridge (2016) \S18-2 (pp.~574--578, Eqs.~(18.21), (18.24), Tables 18.2--18.3); Tsay (2010) \S2.7.3 and \S2.7.5 (pp.~75--80, trend-stationary series and unit-root tests).}
+\end{sol}
+
+% ---------------------------------------------------------------- Q14
+\questao{Wooldridge, Problem 12.4 (ARCH and serial correlation).}
+\fonte{Wooldridge (2016), \textit{Introductory Econometrics: A Modern Approach}, 6th ed., Chapter 12,
+Problem 4, printed p.~397, reproduced verbatim.}
+
+\noindent\textbf{4} True or false: ``If the errors in a regression model contain ARCH, they must be serially correlated.''
+\resolespaco
+\begin{sol}
+\begin{notacao}
+\item $u_t$: regression error; $F_{t-1}$: information at $t-1$ (past errors and regressors).
+\item ARCH(1), Wooldridge Eq.~(12.49): $E(u_t^2\mid F_{t-1})=\alpha_0+\alpha_1u_{t-1}^2$, $\alpha_0>0$, $0\le\alpha_1<1$; and $E(u_t\mid F_{t-1})=0$.
+\end{notacao}
+\noindent\textbf{Answer: false.}
+\passo{zero conditional mean}{ARCH restricts only the conditional \emph{variance}. The error keeps}
+\begin{equation}\label{q14:m} E(u_t\mid F_{t-1})=0 . \end{equation}
+\passo{no autocorrelation}{For $j\ge1$, $u_{t-j}$ belongs to $F_{t-1}$. By the law of iterated expectations,}
+\begin{align*}
+\operatorname{Cov}(u_t,u_{t-j}) &= E(u_tu_{t-j})\\
+&= E\big[u_{t-j}\,E(u_t\mid F_{t-1})\big]\\
+&= E\big[u_{t-j}\cdot(0)\big] \qquad\text{using \eqref{q14:m}}\\
+&= 0 .
+\end{align*}
+\passo{but dependence}{The errors are not independent: their squares are autocorrelated. Writing
+$u_t^2=\alpha_0+\alpha_1u_{t-1}^2+v_t$ with $E(v_t\mid F_{t-1})=0$ (Wooldridge Eq.~(12.50)), $u_t^2$ is an AR(1)
+with $\operatorname{Corr}(u_t^2,u_{t-1}^2)=\alpha_1$. A simulated ARCH(1) with $\alpha_0=1$, $\alpha_1=0.5$ and
+$n=200{,}000$ (check script) gives $\widehat{\operatorname{Corr}}(u_t,u_{t-1})=-0.003$ and
+$\widehat{\operatorname{Corr}}(u_t^2,u_{t-1}^2)=0.458$. The population value is $\alpha_1=0.5$; it exists because the
+fourth moment is finite ($3\alpha_1^2=0.75<1$). The sample value falls short because the eighth moment is infinite
+($105\alpha_1^4=6.56\ge1$), so the sample autocorrelation of $u_t^2$ converges slowly.}
+\intuicao{ARCH errors are a martingale difference sequence: unpredictable in level, predictable in size.
+OLS standard errors that assume no serial correlation remain valid (heteroskedasticity-robust ones are
+needed), and tests for serial correlation should not be confused with tests for ARCH (Ljung--Box on $u_t$ vs on $u_t^2$).}
+\refbib{Wooldridge (2016) \S12-6c (pp.~393--394, Eqs.~(12.49)--(12.50)); Tsay (2010) \S3.4.1 (pp.~117--118, properties of ARCH models: $a_t$ uncorrelated, $a_t^2$ autocorrelated).}
+\end{sol}
+
+\end{document}

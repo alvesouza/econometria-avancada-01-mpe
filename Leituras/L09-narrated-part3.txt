@@ -1,0 +1,472 @@
+Advanced Econometrics, Class 9. Multivariate time series. Narrated study notes, part 3 of 3: the support material.
+
+How to listen. This file holds the support parts of the Class 9 narration, where audio beats reading. Seven parts, in order. First, the pitfalls: eighteen confusions, each said as "the error is, the counterexample is, the correction is". Second, the spoken formula sheet, built for active recall: you hear a prompt, pause the player, say the result aloud, then hear the answer. Third, the implementation: the reference Python routines described as sequences of steps, never read as code. Fourth, the reading route and the exercises, as addresses only. Fifth, a twenty-four item true or false self-test, with a pause cue before each answer. Sixth, a glossary. Seventh, the whole class in five lines, the piece worth replaying.
+
+A reminder on scope. The final exam has no code. Expect derivations, such as OLS equal to MLE for a VAR, the Psi recursion, the variance decomposition at horizon one, the Minnesota posterior, Omega equal to beta beta transposed plus Sigma, the Kalman update and DCC reversion, and the reading of printed output: VARorder, FEVdec and the DCC fit.
+
+Abbreviations used throughout: VAR, vector autoregression; OLS, ordinary least squares; MLE, maximum likelihood estimator; GLS, generalised least squares; SUR, seemingly unrelated regression; IRF, impulse response function; FEVD, forecast-error variance decomposition; SVAR, structural VAR; BVAR, Bayesian VAR; SSVS, stochastic search variable selection; FAVAR, factor-augmented VAR; SV, stochastic volatility; TVP, time-varying parameters; DCC, dynamic conditional correlation; EWMA, exponentially weighted moving average; MSFE, mean squared forecast error.
+
+
+Support part one. The pitfalls.
+
+This part covers the pitfalls note, part one: the confusions this material produces. Every number here is asserted in the Python checks or in the companion check.
+
+Pitfall one. A coefficient above one against a non-stationary VAR.
+The error: "Phi two two is 1.1, above one, so the VAR is explosive."
+The counterexample: Tsay Example 8.3, seen in Class 1. The eigenvalues of Phi, with rows 0.2, 0.3 and minus 0.6, 1.1, are 0.8 and 0.5: stationary. Conversely, the slide-13 VAR 2 has no entry above 0.9, but a companion root of 0.91 and a determinant of Phi of one of only 0.032.
+The correction: stationarity is read off the companion eigenvalues, never off an entry.
+
+Pitfall two. Reduced-form against orthogonalised impulse responses.
+The error: reading the i j entry of Psi s as "the effect of a shock to j".
+The counterexample: Tsay's IBM and S and P 500 example. The innovations correlate 0.642, so a unit IBM innovation "holding the S and P innovation constant" is a pattern the data rarely produce. The orthogonalised Theta zero, with rows 6.9973, 0 and 3.5432, 4.2280, attributes the common part to whichever series comes first.
+The correction: Psi s answers a counterfactual with correlated shocks held fixed; Theta s, equal to Psi s P, answers one with orthogonal shocks, and needs an ordering.
+
+Pitfall three. The ordering as a detail against an identifying assumption.
+The error: "Cholesky is just a numerical device."
+The counterexample: Tsay Example 8.3. Under the ordering r one, r two, r two t equals 0.3 plus 0.5 r one t and so on; under r two, r one, r one t equals minus 0.2 plus 1.0 r two t and so on. The share of r one's 10-step variance due to the r two shock is 13.6 per cent or 48.5 per cent.
+The correction: a recursive ordering is a statement about who reacts to whom within the period. At rho equal to zero, and only then, it is harmless.
+
+Pitfall four. The order condition against identification.
+The error: "I have q times q minus one over two zeros, so A zero is identified."
+The counterexample: counting is necessary, not sufficient. The zeros must leave no rotation other than the identity, up to sign, that preserves them, slide 34's definition. And slide 32's commodity-price example shows only two zeros for q equal to 3: one short.
+The correction: count first, then check that the restrictions actually pin the rotation down.
+
+Pitfall five. OLS equation by equation against "ignoring the correlation between equations".
+The error: "Equation-by-equation OLS throws away Sigma; SUR must be better."
+The counterexample: with the same regressors in every equation, GLS on the stacked system returns OLS exactly. SUR gains only after restrictions make the regressors differ, as in the site's refined VAR.
+The correction: Sigma drops out of B hat when X is common; it still enters the covariance of beta hat, Sigma Kronecker the inverse of X transposed X.
+
+Pitfall six. AIC against BIC lag choice.
+The error: "The criteria disagree, so one is wrong."
+The counterexample: VARorder on the GDP data. AIC picks 2, BIC and HQ pick 1, and the sequential M test stops at 2. BIC's penalty, log T, exceeds AIC's 2 once T exceeds 7.4, so BIC can never choose more lags than AIC.
+The correction: they answer different questions, prediction against consistent selection, with different penalties.
+
+Pitfall seven. Shrinkage as bias against shrinkage as a better estimator.
+The error: "The Minnesota posterior is biased toward a random walk, so OLS is safer."
+The counterexample: with T equal to 58, OLS puts 0.379 on B one of one two, whose truth is 0.1; the posterior mean at lambda equal to 0.2 is 0.055. In Bańbura and coauthors, the CEE-sized OLS model with 13 lags has an MSFE 7.56 times the random walk's, and the 131-variable BVAR 0.46.
+The correction: shrinkage trades bias for variance; with many coefficients per observation, it wins.
+
+Pitfall eight. Lambda as "prior strength" against a variance scale.
+The error: "A large lambda means a strong prior."
+The counterexample: lambda multiplies the prior standard deviations. Lambda going to infinity returns OLS; lambda going to zero returns the random walk.
+The correction: a small lambda is a tight prior.
+
+Pitfall nine. Normal-Wishart against Minnesota.
+The error: "Normal-Wishart is the Minnesota prior with Sigma unknown."
+The counterexample: the Kronecker covariance, Psi Kronecker Omega tilde, gives every equation the same relative tightness across regressors, so it cannot make other variables' lags tighter than own lags.
+The correction: Normal-Wishart forces theta equal to one.
+
+Pitfall ten. Factors identified against loadings identified.
+The error: "The estimated loadings are the factor structure."
+The counterexample: beta P transposed and P f t fit identically for any orthogonal P; only beta beta transposed is identified. The site's factor SV names the United States factor first because Apple is row one; the static factor analysis names the Brazil factor first.
+The correction: a lower-triangular beta, or another normalisation, is a convention that names the factors.
+
+Pitfall eleven. More factors always fit better against the identification bound.
+The error: "With six series, use as many factors as you like."
+The counterexample: the bound gives k at most 3 when m is 6, and at k equal to 3 the factor model has 21 parameters, as many as an unrestricted Omega: no restriction left.
+The correction: respect k at most two m plus one minus the square root of eight m plus one, over two.
+
+Pitfall twelve. The Kalman gain as a tuning knob against a derived quantity.
+The error: "Pick K to smooth more or less."
+The counterexample: Tsay Example 11.1. K star is fixed by q, sigma eta squared over sigma e squared: 0.1418, which equals one minus theta hat, 0.142, from the ARIMA 0, 1, 1 fit.
+The correction: the filter's smoothing weight is the model's signal-to-noise ratio.
+
+Pitfall thirteen. Time-varying parameters as "more realistic, hence better".
+The error: "Coefficients surely move, so a TVP model must win."
+The counterexample: Greenberg's Phillips curve, section 10.3: the constant-coefficient AR 1 has the larger marginal likelihood. Each random-walk state adds variance t times Omega.
+The correction: time variation must earn its extra states.
+
+Pitfall fourteen. DCC's parameters as pair-specific.
+The error: "DCC lets each correlation have its own dynamics."
+The counterexample: Tsay page 531. Theta one and theta two are scalars, so every pair reverts at the same rate, theta one plus theta two to the h.
+The correction: for pair-specific behaviour, factor SV pairs differ through a i t and a j t.
+
+Pitfall fifteen. Correlations rising in crises as a separate phenomenon.
+The error: "Correlations and volatilities need separate models."
+The counterexample: in a one-factor model, the absolute correlation increases with the factor variance automatically: 0.939 at h equal to one and 0.489 at h equal to 0.05 for the slide-22 pair.
+The correction: in factor SV, rising correlation is implied by rising factor volatility.
+
+Pitfall sixteen. GARCH persistence below one by assumption.
+The error: "Fitted GARCH models always mean-revert."
+The counterexample: on the site page, the S and P 500 fit has alpha one plus beta one equal to 1.0029: no finite unconditional variance, and shocks never fade.
+The correction: check alpha plus beta before quoting a long-run variance or a half-life.
+
+Pitfall seventeen. Ticker against asset.
+The error: reading "WTI" on the site page as crude oil.
+The counterexample: it is W and T Offshore, Incorporated; the script's names say so.
+The correction: read the series names, not the ticker.
+
+Pitfall eighteen. Labels in the site scripts.
+The error: taking the plot titles of the VAR example at face value.
+The counterexample: the impulse-response titles swap shock and response, and the variance-decomposition plot labels row 2 "CAN", although the order is United Kingdom, United States, Canada.
+The correction: the i j entry of Psi s is the response of i to a shock in j; check the series order before reading a legend.
+
+The distinctions that cost most points, eight pairs. Psi s against Theta s: a unit correlated innovation against a one-standard-deviation orthogonal shock. The order condition against identification: counting restrictions against pinning down the rotation. OLS against SUR in a VAR: identical with common regressors, different after zero restrictions. Lambda small against large: the prior, a random walk, against OLS. Minnesota against Normal-Wishart: theta below one allowed against theta equal to one forced. Loadings against beta beta transposed: identified only up to rotation against identified. K t against K star: the initial path against the steady state set by q. DCC against factor SV correlation: its own recursion with scalar thetas against implied by the factor's volatility.
+
+Support part two. The spoken formula sheet.
+
+This part covers the formulas note. How to use it: after each prompt, pause the player, say the formula out loud, then resume and hear the answer. Equations are cited by each section's own numbering.
+
+First, the exam specification, mapped. The site describes Class 9 as an "Introduction to multivariate time series econometrics", in six items. Item one, "Factor SV models": section 5, points one to three, for the factor algebra, and section 7, points five and six. Item two, "Dynamic Conditional Correlation (DCC) models": section 7, points three, four and seven. Item three, "Vector autoregressive (VAR) models, impulses-response function, structural VAR (SVAR)": sections 1, 2 and 3. Item four, "Large BVAR, Factor-augmented VAR (FAVAR)": section 4, point six, and section 5, point four. Item five, "Time-varying parameter (TVP)-VAR": section 6, points three to six. Item six, "Bayesian VAR (BVAR) and Bayesian FAVAR (BFAVAR)": section 4, points two to five, and section 5, points three and four.
+
+The class plan's goals. VAR estimation: section 1, points three, four and seven. Impulse responses: section 2, points one to three. The structural VAR: section 3. The large Bayesian VAR with Minnesota-type shrinkage: section 4. The factor-augmented VAR: section 5, point four. The TVP-VAR with SV: section 6, points two and three. Factor stochastic volatility: section 7, point five. DCC against factor SV for time-varying covariances: section 7, points four and seven.
+
+Now the results, section by section.
+
+Section 1, the VAR p.
+
+The model. Prompt: the VAR p. Pause. Answer: y t equals mu plus B one y t minus one plus and so on up to B p y t minus p, plus u t, with u t iid normal with mean zero and covariance Sigma. Equation 1.
+
+The mean. Prompt: the stationary mean. Pause. Answer: m equals the inverse of the identity minus B one minus and so on minus B p, times mu. Equation 2.
+
+The regression form. Prompt: the three ways to write it. Pause. Answer: y t equals B x t plus u t; Y equals X B transposed plus U, with U matrix normal with row covariance the identity and column covariance Sigma; and the vec of Y equals the identity Kronecker X, times beta, plus u, with u normal with covariance Sigma Kronecker the identity. Equations 3 to 5.
+
+OLS equals MLE. Prompt: the completed square and its consequence. Pause. Answer: S of B equals S of B hat plus B hat minus B, times X transposed X, times B hat minus B transposed; so B hat transposed equals the inverse of X transposed X times X transposed Y for every Sigma, and Sigma tilde equals S of B hat over n. Equations 9 to 11.
+
+GLS equals OLS. Prompt: why. Pause. Answer: with the same regressors in every equation, beta hat GLS equals the identity Kronecker the inverse of X transposed X times X transposed, times y. Equation 12.
+
+The sampling covariance. Prompt. Pause. Answer: the covariance of beta hat is Sigma Kronecker the inverse of X transposed X. Equation 13.
+
+The companion form. Prompt. Pause. Answer: Y t equals A Y t minus one plus U t, with first block row B one to B p and identities below the diagonal. Equation 14.
+
+Stationarity. Prompt: the two equivalent conditions and the determinant identity. Pause. Answer: all eigenvalues of A inside the unit circle, if and only if all roots of the determinant of I minus B one z minus and so on minus B p z to the p lie outside it; and the determinant of lambda I minus A equals lambda to the q p times the determinant of I minus B one lambda inverse minus and so on. Equation 15.
+
+The forecast. Prompt: the forecast, the error and the mean squared error. Pause. Answer: y t of h equals J A to the h Y t; e t of h equals the sum over i below h of Psi i u t plus h minus i; and the mean squared error is the sum over i below h of Psi i Sigma Psi i transposed. Equations 16 to 18.
+
+The Bayesian forecast. Prompt. Pause. Answer: the integral of F of A, y t and h against the posterior of B and Sigma, with F nonlinear in B. Equation 19.
+
+Order selection. Prompt: the sequential statistic and the three criteria. Pause. Answer: M of i equals minus the quantity T minus k minus i minus three halves, times the log of the ratio of determinants of Sigma tilde i and Sigma tilde i minus one, asymptotically chi-squared with k squared degrees of freedom. AIC, BIC and HQ add to the log determinant the penalties 2 k squared i over T, k squared i log T over T, and 2 k squared i log log T over T. Equations 20 and 21.
+
+Section 2, impulse responses and the variance decomposition.
+
+The moving-average form. Prompt: the representation and the recursion. Pause. Answer: y t equals the sum over i of Psi i u t minus i, with Psi zero equal to the identity and Psi s equal to the sum over i from one to p of B i Psi s minus i. Equations 1 to 3.
+
+The impulse response. Prompt. Pause. Answer: the derivative of y t plus s with respect to u t transposed is Psi s; the i j entry is the response of i to a shock in j. Equation 4.
+
+The orthogonalised response. Prompt. Pause. Answer: Sigma equals P P transposed, lower Cholesky; epsilon t equals P inverse u t, standard normal; Theta s equals Psi s P; and Theta zero equals P. Equations 5 and 6.
+
+The variance decomposition. Prompt: the share, and its value at horizon one for the second variable and first shock. Pause. Answer: omega i j of h is the sum over s below h of Theta s of i j squared, over the sum over k and over s below h of Theta s of i k squared; and omega two one of one is rho two one squared. Equations 7 and 8.
+
+Section 3, the structural VAR.
+
+The SVAR. Prompt. Pause. Answer: A zero y t equals A one y t minus one plus and so on plus u t, with u t standard normal. Equation 1.
+
+The reduced form. Prompt. Pause. Answer: B i equals A zero inverse A i; Sigma equals the inverse of A zero transposed A zero; the structural impulse response is Psi s A zero inverse. Equations 3 to 5.
+
+Observational equivalence. Prompt. Pause. Answer: Q A zero and Q A, with Q orthogonal, give the same B and Sigma. Equations 6 and 7.
+
+The order condition. Prompt. Pause. Answer: q squared minus q times q plus one over two, which is q times q minus one over two restrictions. Equation 8.
+
+Exact identification. Prompt: slide 34's definition. Pause. Answer: for almost every B and Sigma, there is a unique A zero and A in the restricted set with g of A zero and A equal to B and Sigma.
+
+Recursive equals Cholesky. Prompt. Pause. Answer: A zero lower triangular implies A zero inverse equals P, and the structural impulse response equals Theta s. Equation 9.
+
+Section 4, the Bayesian VAR.
+
+The Minnesota prior. Prompt: the mean and the variances. Pause. Answer: the own first lag has mean one, everything else zero; the variance of an own lag k coefficient is lambda squared over k squared; the variance of variable j's lag k in equation i is theta squared lambda squared sigma i squared over k squared sigma j squared; and Sigma is diagonal and known. Equations 1 and 2.
+
+The posterior. Prompt. Pause. Answer: V i bar equals the inverse of V i zero inverse plus X transposed X over sigma i squared; beta i bar equals V i bar times V i zero inverse beta i zero plus X transposed y superscript i over sigma i squared. As lambda goes to zero, the prior; as lambda goes to infinity, OLS. Equations 7 and 8.
+
+The scalar weight. Prompt. Pause. Answer: b bar equals w b zero plus one minus w times b hat, with w equal to the variance of b hat over the variance of b hat plus v zero. Equation 9.
+
+The diffuse prior. Prompt: the posterior pair. Pause. Answer: the vec of B transposed, given Sigma and Y, is normal with mean the vec of B hat transposed and covariance Sigma Kronecker the inverse of X transposed X; and Sigma given Y is inverse Wishart with scale S of B hat and n minus k degrees of freedom. Equations 11 and 12.
+
+Normal-Wishart. Prompt: what it forces. Pause. Answer: with gamma given Psi normal with covariance Psi Kronecker Omega tilde, it forces theta equal to one.
+
+The ON and OFF switch. Prompt. Pause. Answer: gamma j given the rest is Bernoulli with probability A j over A j plus B j. Equation 13.
+
+SSVS. Prompt: the prior and the inclusion probability. Pause. Answer: beta j given gamma j is one minus gamma j times a normal with variance tau zero j squared, plus gamma j times a normal with variance tau one j squared; the probability that gamma j equals one given beta j follows by Bayes from the two densities. Equations 14 and 15.
+
+Section 5, factor models and the FAVAR.
+
+The model. Prompt. Pause. Answer: y t given f t is normal with mean beta f t and covariance Sigma; f t is standard normal of dimension k; Sigma is diagonal. Equation 1.
+
+The covariance. Prompt. Pause. Answer: Omega equals beta beta transposed plus Sigma; the variance of y i t is the sum over l of beta i l squared plus sigma i squared, and the covariance is the sum over l of beta i l beta j l. Equations 2 and 3.
+
+Rotation. Prompt. Pause. Answer: beta P transposed and P f t are observationally equivalent; impose a block-lower-triangular beta with positive diagonal. Equation 4.
+
+The bound on k. Prompt. Pause. Answer: m times k plus one minus k times k minus one over two at most m times m plus one over two, which is equivalent to k at most two m plus one minus the square root of eight m plus one, over two. Equations 5 to 7.
+
+The factor scores. Prompt. Pause. Answer: f t given y t is normal with mean V f beta transposed Sigma inverse y t and covariance V f, with V f equal to the inverse of the identity plus beta transposed Sigma inverse beta. Equation 9.
+
+The FAVAR. Prompt. Pause. Answer: y t given the past is normal with mean the sum of B i y t minus i plus the sum of A i f t minus i, and covariance Sigma; and x t given f t is normal with mean beta f t and covariance Omega. Equation 10.
+
+The RMSFE. Prompt. Pause. Answer: the square root of one over N h times the sum over origins of the squared forecast error. Equation 11.
+
+Section 6, time-varying VARs and the Kalman filter.
+
+The VAR with GARCH. Prompt. Pause. Answer: the vech of Sigma t equals alpha zero plus the sum of A i times the vech of Sigma t minus i, plus the sum of Gamma i times the vech of u t minus i u t minus i transposed. Equation 1.
+
+Uhlig's VAR with SV. Prompt: the precision recursion and the scalar martingale condition. Pause. Answer: Sigma t plus one inverse equals L t Theta t L t transposed over lambda, with Theta t matrix Beta with parameters nu plus p q over two and one half; in the scalar case, the precision is a martingale if and only if lambda equals nu plus p over nu plus p plus one. Equations 2 and 3.
+
+Primiceri's TVP-VAR with SV. Prompt. Pause. Answer: Sigma t equals A t inverse D t A t inverse transposed, with random walks for B t, alpha t and log sigma t. Equations 4 to 6.
+
+The local level model. Prompt. Pause. Answer: y t equals mu t plus e t, and mu t plus one equals mu t plus eta t. Equation 7.
+
+The Kalman filter. Prompt: the six lines. Pause. Answer: v t equals y t minus mu t given t minus one; V t equals Sigma t given t minus one plus sigma e squared; K t equals Sigma t given t minus one over V t; mu t given t equals mu t given t minus one plus K t v t; Sigma t given t equals Sigma t given t minus one times one minus K t; and Sigma t plus one given t equals Sigma t given t plus sigma eta squared. Equations 8 to 12.
+
+The steady state. Prompt. Pause. Answer: p star equals q plus the square root of q squared plus 4 q, over 2; K star equals p star over p star plus one, with q equal to sigma eta squared over sigma e squared; and the ARIMA 0, 1, 1 coefficient theta equals one minus K star. Equations 13 and 14.
+
+The TVP regression. Prompt. Pause. Answer: the variance of beta t given beta zero is t times Omega; and Greenberg's Gibbs sampler, equation 17. Equations 16 and 17.
+
+Discounting. Prompt. Pause. Answer: V t equals one over delta minus one, times P t minus one given t minus one. Equation 18.
+
+Section 7, multivariate volatility.
+
+The EWMA. Prompt. Pause. Answer: Sigma hat t equals one minus lambda times a t minus one a t minus one transposed, plus lambda Sigma hat t minus one. Equations 1 and 2.
+
+The correlation split. Prompt. Pause. Answer: Sigma t equals D t R t D t. Equation 3.
+
+Tse and Tsui DCC. Prompt. Pause. Answer: R t equals one minus theta one minus theta two, times R bar, plus theta one R t minus one, plus theta two Psi t minus one. Equation 4.
+
+Engle DCC. Prompt. Pause. Answer: Q t equals one minus theta one minus theta two, times Q bar, plus theta one epsilon t minus one epsilon t minus one transposed, plus theta two Q t minus one; and R t equals J t Q t J t. Equation 5.
+
+Reversion. Prompt: the rate and the half-life. Pause. Answer: the expected value of Q t plus h minus Q bar is about theta one plus theta two, to the h minus one, times Q t plus one minus Q bar; the half-life is log 0.5 over log of theta one plus theta two. Equation 6.
+
+Factor SV. Prompt. Pause. Answer: y t given f t is normal with mean beta f t and covariance Sigma t; f t is normal with covariance H t; the log-variances are first-order autoregressions; and the variance of y t is beta H t beta transposed plus Sigma t. Equations 7 to 10.
+
+The factor SV correlation. Prompt. Pause. Answer: rho i j t equals the sign of beta i beta j over the square root of one plus a i t over h t, times one plus a j t over h t, increasing in h t. Equations 11 and 12.
+
+Now every number, case by case. Say each number before you hear it if you can.
+
+The largest companion moduli of the slide-13 VAR 2: 0.9099, then 0.5329.
+
+The slide-13 VAR 2, if mu is the intercept: the determinant of Phi of one is 0.032, and the mean is 6.875, 14.375 and 30.94.
+
+The largest companion modulus of the United Kingdom, United States and Canada VAR 3: 0.6107.
+
+B one hat entries: 0.4308 for the United Kingdom's own lag; 0.4380 from the United Kingdom to the United States; 0.4887 from the United States to Canada.
+
+Tsay's VAR 1: the mean equals the 6-step forecast, 1.0908 and 0.4280; the forecast standard-deviation limits are 7.0436 and 5.5454.
+
+VARorder on the GDP data: AIC picks 2, BIC 1, HQ 1; M of 3 is 10.49, with p-value 0.31.
+
+The parameter counts: 15, 610 and 25,807 on slide 45; 301 on slide 27.
+
+Psi two of one one for the VAR 3: 0.2495.
+
+Tsay's orthogonalised impulse response, Theta one: rows 0.3088, 0.6353 and 0.2050, 0.4312; the innovation correlation, 0.642.
+
+Theta one for Canada's response to the United States shock: 0.4496.
+
+The variance decomposition at horizon one: 0.0758 and 0.0230; the United Kingdom at horizon 20: 0.8774, 0.0676 and 0.0550.
+
+Tsay Example 8.3, ordering r one, r two: L inverse with rows 1, 0 and minus 0.5, 1; G diagonal with 2 and 0.5; r two t equals 0.3 plus 0.5 r one t and so on. Ordering r two, r one: r one t equals minus 0.2 plus 1.0 r two t and so on. The share of r one's 10-step variance due to the r two shock: 13.6 against 48.5 per cent.
+
+Illustrations 1 and 2: 11 zeros against 10 needed; 18 against 15.
+
+The Minnesota posterior mean of B one of one one with T equal to 58: 0.647 by OLS, 0.690 at lambda equal to 0.2, 0.926 at lambda equal to 0.05. B one of one two: 0.379 by OLS against 0.055 at lambda equal to 0.2, with truth 0.1.
+
+SSVS inclusion: 0.069 at z equal to 0.2, 0.9996 at z equal to 0.5; the crossing at 0.3035.
+
+Relative MSFE for employment at horizon one: CEE OLS with 13 lags 7.56, LARGE BVAR 0.46.
+
+The maximum number of factors for m equal to 6, 12, 20 and 50: 3, 7, 14 and 40.
+
+Slide 22's Omega entries: 0.9901, 0.891 and 0.70; communalities from 0.990 down to 0.714.
+
+Slide 22's factor-score posterior variances: 0.00923 and 0.03671.
+
+The exchange-rate communality plus uniqueness: 1.030, 1.008 and 1.020; the Italy and Germany correlation, 0.757.
+
+The FAVAR against the LARGE BVAR for employment at horizon one: 0.70 and 0.65 against 0.46.
+
+Tsay Example 11.1: q equal to 0.0234, p star 0.1652, K star 0.1418, and one minus K star 0.858. From theta hat 0.858 and sigma a hat 0.5184: sigma e 0.4802 and sigma eta 0.0736.
+
+Greenberg's TVP Phillips curve: log base 10 marginal likelihood minus 92.506.
+
+W and T Offshore: GARCH persistence 0.9493, long-run variance 25.6, half-life 13.3 days. The S and P 500: persistence 1.0029, above one.
+
+DCC: Tse and Tsui, persistence 0.7518 and half-life 2.43 days; Engle, 0.9085 and 7.22 days.
+
+The factor SV correlation for the slide-22 pair: 0.9387 at h equal to one, 0.4893 at h equal to 0.05.
+
+The six-stock factor SV factors against the three-stock factors: 0.989 for the United States, 0.858 for Brazil.
+
+Every number above is asserted in the Python checks or in the figure script.
+
+Support part three. The implementation, described.
+
+This part covers the Python note, which presents the runnable script Notas, L09, L09 python checks. The script uses numpy, scipy and statsmodels; no R, and no probabilistic programming library. Every computation is checked with an assertion against the number printed in the slides, the site pages or Tsay. It runs in about 20 seconds, prints one "ok" line per section, and ends with "ALL L09 CHECKS PASSED", which was the output of the run on October 25th, 2026. The code is not read here; each routine is described by its inputs, its steps, and the trap that breaks it.
+
+What is reused rather than rewritten. The figure script is imported as a module, and importing it draws nothing: it supplies the printed matrices, the slide-13 VAR 2, the site's OLS and refined VAR 3, and their Sigma hats, together with the routines for the companion matrix, the moving-average weights, the variance decomposition, the Minnesota posterior and the lag matrix. The companion check script recomputes the two interactive pages' read-outs in Python and compares them with their JavaScript; it is cited, because it checks the pages while this script checks the formulas. The Class 1 checks compute the VAR 1 mean and Gamma zero by the vec formula; section 2 below uses the same formula for Tsay's IBM and S and P VAR 1.
+
+Not installed and not needed: the arch package and PyMC. The GARCH and DCC estimates are taken from the site page's printed output, and routine seven checks their implications, not a re-fit. The Minnesota and diffuse posteriors are closed form, and the Kalman filter is twenty lines.
+
+The convention. A helper called near passes when a computed value matches a printed one within a tolerance, by default half a unit in the third decimal.
+
+Routine one, the VAR p as a multivariate regression. Simulate 1000 observations from slide 13's VAR 2, with seed 2025 and 200 burn-in periods. Build the lag matrix with a constant and two lags, and fit by the inverse of X transposed X times X transposed Y. Check that the coefficients equal the statsmodels VAR fit with a constant. Then, on the first 300 rows, run GLS on the stacked system with the residual covariance, and check that it returns OLS exactly: Sigma drops out. Check that the standard errors are the square roots of the diagonal of Sigma hat Kronecker the inverse of X transposed X, as in the site's Kronecker product. And check that 1000 observations recover slide 13's B one to within 0.1. The trap: the GLS check builds an n by n Kronecker product, which is why it runs on only 300 rows.
+
+Routine two, the companion form, stationarity, means and forecasts. Compute the companion eigenvalues of the slide-13 VAR 2: the largest modulus must be 0.9099 and the next 0.5329. For every nonzero eigenvalue, check that its reciprocal is a root of the determinant of I minus B one z minus B two z squared. Solve for the mean, 6.875, 14.375 and 30.9375. Check the site's VAR 3's largest modulus, 0.6107. For Tsay's IBM and S and P VAR 1, check that the mean equals the printed 6-step forecasts, 1.0909 and 0.4280; build Sigma from the printed residual scales and the innovation correlation 0.642; solve the vec formula for Gamma zero, whose standard deviations must be 7.0436 and 5.5454; and check the horizon-two forecast standard deviations, 7.0434 and 5.5453. Finally check the parameter counts, 15, 610, 25,807 and 301. The trap: the vec formula needs column-major stacking.
+
+Routine three, moving-average weights, orthogonalised responses, the variance decomposition and the recursive SVAR. Compute Psi s by the recursion for the site's VAR 3 and check it against statsmodels' moving-average representation; Psi two of one one must be 0.2495, and Psi three of one two 0.3335. Check the orthogonalised responses against Psi s times the Cholesky factor, with Canada's response to the United States shock at horizon one equal to 0.4496. Check Tsay's Theta one as Phi times Theta zero. Compute the variance decomposition of the refined VAR 3 and match the site's FEVdec table at horizon one to within 10 to the minus 6, the United States share due to the United Kingdom being 0.07578528 and Canada's share due to the United States 0.1599804, and at horizon 20 to within 0.001, with 0.8774260, 0.2657297 and 0.43585314. Redo both orderings of Tsay Example 8.3: G diagonal with 2 and 0.5, the transformed intercept and coefficients for the first ordering, and, with a permutation, the second. Last, simulate 2,900 usable observations from Example 8.3 with seed 83, fit statsmodels' structural VAR with a lower-triangular A, and check that A inverse matches the Cholesky factor of Sigma hat to within 0.02 in absolute value. The trap: the horizon-20 tolerance is only 0.001, because the refined coefficients are printed to three decimals.
+
+Routine four, the Minnesota posterior, the limits in lambda, and SSVS. Re-run the figure's simulation with seed 9, keeping 60 observations. Fit univariate second-order autoregressions to get the variances 0.266, 0.1257 and 0.8046. Build the Minnesota prior for equation 1 with theta equal to 0.5 and a constant variance of 10 to the 6, and compute the posterior mean. Check the OLS row, 0.647, 0.379, minus 0.021 and minus 0.292, and the posterior rows at lambda equal to 0.05, 0.2 and 1. Check the limits: at lambda equal to 10 to the minus 6 the posterior equals the prior, and at 10 to the 4 it equals OLS. Check the prior standard deviations 0.145 and 0.057. Check that the scalar weight formula equals the general posterior with one centred regressor. And check the SSVS inclusion probabilities, 0.069 at z equal to 0.2 and 0.9996 at 0.5, with the crossing at 0.3035, where the probability is exactly one half. The trap: theta equal to 0.5 is illustrative; the slides give no value.
+
+Routine five, factor model algebra. With slide 22's loadings and variances, compute Omega and check 0.9901, 0.891 and 0.70; the communalities, 0.990, 0.951, 0.890, 0.844 and 0.714; and V f, with entries 0.00923, minus 0.00042 and 0.03671. Rotate the loadings by a random orthogonal matrix and check that beta beta transposed is unchanged. Check the bound on k for m equal to 6, 12, 20 and 50: 3, 7, 14 and 40. And check the exchange-rate sums, 1.030, 1.008 and 1.020, and the Italy and Germany correlation, 0.757. The trap: the bound must be rounded down.
+
+Routine six, the Kalman filter, the steady state, the ARIMA link and discounting. With Tsay Example 11.1's sigma e of 0.4803 and sigma eta of 0.0735, compute q, 0.023418; p star, 0.165186; and K star, 0.14177; and check that one minus K star is 0.858. Run Tsay's equations 11.4 and 11.5 backwards from theta hat 0.858 and sigma a hat 0.5184 to get sigma e of 0.4802 and sigma eta of 0.0736. Write the local-level filter from the six update lines and run it on 340 simulated observations, seed 11, with initial mean zero and variance 10. Check it against statsmodels' unobserved-components local-level model, state by state and in log-likelihood. Check that the gain is within 0.005 of K star by day 15, and that the first gain is 10 over 10 plus sigma e squared. Check the discount identity, and Uhlig's scalar Beta mean, a over a plus one half, which equals seven eighths for a equal to 3.5. The trap: statsmodels' reported log-likelihood drops the first observation, so the per-observation log-likelihoods must be summed instead.
+
+Routine seven, the EWMA, DCC and GARCH persistence, and the factor SV correlation. Generate 400 bivariate draws with seed 7, and check that the EWMA closed form with lambda equal to 0.94 equals its recursion, with weights summing to one. From the site's printed DCC scalars, check the half-lives 7.22 and 2.43 days, and the ten-day remainders 0.383 and 0.058. From the W and T GARCH estimates, check the long-run variance 25.635 and the half-life 13.33 days; check that the S and P's alpha plus beta exceeds one; and check the Student t kurtosis, 7.1. Finally, check that the factor SV correlation in its two forms, equations 11 and 12, agree over 200 values of h, that it is increasing in h, and that it equals 0.9387 at h equal to one and 0.4893 at h equal to 0.05. The trap: the site prints the DCC scalars in the opposite labelling to Tsay's, but the sum, and so the half-life, does not depend on the labels.
+
+
+Support part four. Reading route and exercises.
+
+Addresses only. The statements are in the books.
+
+Reading, by section.
+Section 1, the VAR p: slides 3 to 9, 13, 27 and 45; the site's VAR example, sections 2 to 3.1; Tsay sections 8.2.3 and 8.2.4, printed pages 403 to 409, and the VAR 1 output, printed pages 414 to 416; Greenberg section 9.1, printed pages 134 to 137.
+Section 2, impulse responses and the variance decomposition: slides 10 to 21; the site's VAR example, sections 3.2 and 4; Tsay section 8.2.5, printed pages 412 to 417.
+Section 3, the structural VAR: slides 31 to 37; Tsay section 8.2.1, printed pages 399 to 401, and printed page 413.
+Section 4, the Bayesian VAR: slides 13 to 16 and 22 to 30; part 2 slides 3 to 13, 50, 56 to 58 and 60. No book on disk covers the BVAR.
+Section 5, factor models and the FAVAR: part 2 slides 14 to 37, 51 to 55 and 59; the site's stochastic volatility page, section 3.2; Tsay sections 9.1 and 9.2, printed pages 468 to 476.
+Section 6, TVP-VAR, SV and the state space: slides 38 to 44; part 2 slide 61; Tsay section 11.1, printed pages 558 to 563, section 11.1.7, printed page 571, and section 11.3.1, printed pages 577 and 578; Greenberg section 10.3, printed pages 161 to 164.
+Section 7, factor SV, DCC and covariances: part 2 slides 38 to 43; the two site pages; Tsay section 10.1, printed pages 506 and 507, section 10.3.1, printed page 516, section 10.4.3, printed pages 531 and 532, and section 10.6, printed page 543.
+
+Practice exercises, by number and printed page.
+Tsay: 8.1, page 462; 8.2, pages 462 and 463; 8.3, 8.4 and 8.5, page 463; 8.7 parts a to c, page 463, on impulse responses and forecasts, with parts d and e being cointegration, outside Class 9; 9.7, page 503; and 10.1, 10.2, 10.3, 10.4, 10.5 and 10.6, page 554.
+Greenberg: 10.4, page 167, the SUR Gibbs structure with autocorrelated errors.
+When an exercise asks for orthogonalised impulse responses, as Tsay 8.1 and 8.7 part b do, state the ordering.
+
+
+Support part five. Self-test: twenty-four true or false items.
+
+This part covers the original self-test of the pitfalls note. Scoring follows the course rule: the true or false score is the maximum of zero and the number correct minus half the number wrong, times the item value; blank items do not count as wrong. Difficulty is marked easy, medium or hard. The numbers are illustrative unless a section is cited. After each statement, pause the player, decide true or false and say why, then resume for the answer.
+
+Block A, VAR, impulse responses and the variance decomposition. The setting for items 1 to 6: a central-bank analyst fits a VAR 2 to quarterly Brazilian inflation, the Selic rate and output growth, in that order, over 100 quarters, by OLS equation by equation.
+
+Item 1, easy. Because each equation was estimated separately, the coefficient estimates would change if the analyst re-estimated the system by GLS using the residual covariance matrix. Pause.
+Answer: false. With the same regressors in every equation, GLS equals OLS.
+
+Item 2, medium. If one coefficient of B one hat equals 1.05, the fitted VAR is necessarily explosive. Pause.
+Answer: false. Stationarity depends on the companion eigenvalues, not on single entries; see pitfall one.
+
+Item 3, medium. The fitted VAR is stationary if and only if all six eigenvalues of its companion matrix have modulus below one. Pause.
+Answer: true. q times p is 3 times 2, which is 6 eigenvalues.
+
+Item 4, easy. The two one element of Psi four is the response of the Selic rate, four quarters later, to a unit inflation innovation, other innovations held fixed. Pause.
+Answer: true. The i j entry of Psi s is the response of i to j.
+
+Item 5, medium. Under the Cholesky ordering above, the one-quarter-ahead forecast-error variance of inflation is entirely attributed to the inflation shock. Pause.
+Answer: true. Theta zero equals P, which is lower triangular, so the first variable's one-step error loads only on shock one.
+
+Item 6, hard. Re-ordering the variables as Selic, inflation, output leaves the orthogonalised impulse responses unchanged whenever the residual correlation between inflation and the Selic rate is positive. Pause.
+Answer: false. The orderings coincide only when the correlation is zero; see pitfall three and Tsay Example 8.3.
+
+Block B, structural identification. The setting for items 7 to 10: a four-variable SVAR, A zero y t equals A one y t minus one plus u t, with u t standard normal.
+
+Item 7, easy. The reduced-form covariance is Sigma equal to the inverse of A zero transposed A zero. Pause.
+Answer: true.
+
+Item 8, medium. At least six restrictions on A zero are needed for exact identification. Pause.
+Answer: true. q times q minus one over two is 4 times 3 over 2, which is 6.
+
+Item 9, medium. Any two matrices A zero and Q A zero, with Q orthogonal, imply different likelihood values. Pause.
+Answer: false. They give the same B and Sigma, hence the same likelihood.
+
+Item 10, hard. Imposing that A zero be lower triangular with a positive diagonal makes A zero inverse the Cholesky factor of Sigma, and the structural impulse responses coincide with the orthogonalised ones. Pause.
+Answer: true.
+
+Block C, the Bayesian VAR. The setting for items 11 to 15: a Minnesota-prior BVAR for 20 Brazilian macro series, with p equal to 4, and Sigma fixed at univariate autoregression residual variances.
+
+Item 11, easy. As the overall tightness lambda goes to zero, the posterior mean of each equation approaches a random walk for its own variable. Pause.
+Answer: true. V i zero goes to zero, so beta i bar goes to beta i zero.
+
+Item 12, medium. The prior standard deviation of the fourth own lag is one quarter of that of the first own lag. Pause.
+Answer: true. The standard deviation is lambda over k: lambda over 4 against lambda.
+
+Item 13, medium. With theta below one, the prior can be written as Normal-Wishart, beta given Sigma normal with mean beta zero and covariance Sigma Kronecker Omega zero. Pause.
+Answer: false. The Kronecker structure forces theta equal to one; see pitfall nine.
+
+Item 14, hard. For a single coefficient with an orthogonal regressor, the weight on the prior mean is the variance of b hat over the variance of b hat plus v zero, so it rises with the sample size. Pause.
+Answer: false. The variance of b hat, sigma squared over s x x, falls with T, so the prior weight falls.
+
+Item 15, medium. Under SSVS with c zero equal to 0.1 and c one equal to 10 times the OLS standard error, a draw of a coefficient equal to 0.5 standard errors is classified as included with probability above 0.99. Pause.
+Answer: true. The probability is 0.9996; the crossing is at 0.30.
+
+Block D, factors, TVP and covariances. The setting for items 16 to 24: a risk desk models daily returns of Itaú, Bradesco, Petrobras and Vale.
+
+Item 16, easy. In a one-factor model with a standard normal factor and a diagonal idiosyncratic covariance, the covariance between Itaú and Bradesco equals the product of their loadings. Pause.
+Answer: true. That is equation 3 of section 5.
+
+Item 17, medium. With four series, a three-factor model is admissible under the parameter-count bound. Pause.
+Answer: false. The bound is two m plus one minus the square root of eight m plus one, over two, which is 9 minus the square root of 33, over 2, which is 1.63. So k is at most 1 when m is 4.
+
+Item 18, medium. Rotating the loadings by an orthogonal matrix changes the implied covariance matrix of the returns. Pause.
+Answer: false. Beta P transposed P beta transposed equals beta beta transposed.
+
+Item 19, medium. In a one-factor SV model, if the factor's log-variance falls sharply on a calm day, the implied correlation between two positively loaded banks falls. Pause.
+Answer: true. The absolute correlation increases in h t.
+
+Item 20, easy. In an Engle DCC with theta one plus theta two equal to 0.9085, half of a correlation shock is gone after about 7 trading days. Pause.
+Answer: true. Log 0.5 over log 0.9085 is 7.22.
+
+Item 21, medium. In a DCC, the bank-bank and bank-oil correlations can revert at different speeds. Pause.
+Answer: false. The thetas are scalars, so there is one speed for all pairs; see pitfall fourteen.
+
+Item 22, hard. For a local-level model of log realised volatility with sigma eta squared over sigma e squared equal to 0.0234, the steady-state Kalman filter puts about 86 per cent weight on the latest observation. Pause.
+Answer: false. K star is 0.142: about 14 per cent on the latest observation, and 86 per cent on the previous estimate.
+
+Item 23, medium. A random-walk TVP coefficient has prior variance growing linearly with time. Pause.
+Answer: true. The variance of beta t given beta zero is t times Omega.
+
+Item 24, hard. A fitted GARCH 1, 1 with alpha one plus beta one equal to 1.003 has a finite unconditional variance, omega over one minus alpha one minus beta one. Pause.
+Answer: false. One minus alpha one minus beta one is negative: there is no finite unconditional variance; see pitfall sixteen.
+
+
+Support part six. Glossary.
+
+Vector autoregression, VAR: a system in which every variable is regressed on lags of every variable.
+Companion matrix: the q p by q p matrix that writes a VAR p as a VAR 1; its eigenvalues decide stationarity.
+Stationarity of a VAR: all companion eigenvalues inside the unit circle, equivalently all roots of the lag polynomial's determinant outside it.
+Matrix normal: the law of a data matrix whose rows are independent with a common covariance, written with a row and a column covariance.
+Seemingly unrelated regression, SUR: a system of regressions whose errors are correlated across equations at the same date; it reduces to OLS when every equation has the same regressors.
+Lag-order selection: choosing p by the sequential M test or by AIC, BIC or HQ, whose penalties grow with k squared per lag.
+Moving-average weights, Psi s: the coefficients of the infinite moving-average form of a stationary VAR, built by the recursion Psi s equal to B one Psi s minus one plus and so on.
+Impulse response function: the path of Psi s, or of Theta s, against the horizon; the response of each variable to a shock.
+Cholesky factor: the unique lower-triangular P with positive diagonal and P P transposed equal to Sigma.
+Orthogonalised impulse response, Theta s: Psi s P, the response to a one-standard-deviation orthogonal shock; it depends on the ordering.
+Forecast-error variance decomposition: the share of each variable's h-step forecast-error variance attributed to each orthogonal shock.
+Structural VAR: a VAR written with a contemporaneous matrix A zero and orthogonal unit-variance structural shocks.
+Order condition: the count of q times q minus one over two restrictions needed to identify A zero; necessary, not sufficient.
+Exact identification: a unique structural point for almost every reduced-form point; overidentification restricts Sigma and can be tested.
+Recursive identification: a lower-triangular A zero, equivalent to a Cholesky ordering.
+Minnesota prior: a prior centring each equation on a random walk, with standard deviation lambda over k on own lags and theta lambda sigma i over k sigma j on others.
+Overall tightness, lambda: the scale of the Minnesota prior standard deviations; small lambda means a tight prior.
+Normal-Wishart prior: a conjugate prior with Kronecker covariance, which forces equal relative tightness in every equation.
+Diffuse, or Jeffreys, prior: a flat prior on B with the density of Sigma proportional to the determinant to the minus q plus one over two.
+Spike-and-slab prior: a mixture of a narrow and a wide normal used by SSVS to decide whether a coefficient is in or out.
+Stochastic search variable selection, SSVS: Gibbs sampling of inclusion indicators under a spike-and-slab prior.
+Factor model: y t equals beta f t plus epsilon t, with a few common factors and diagonal idiosyncratic covariance.
+Loadings: the matrix beta linking series to factors, identified only up to rotation without a normalisation.
+Communality: the share of a series' variance explained by the common factors.
+Heywood problem: an idiosyncratic variance collapsing to zero, avoided by a proper inverse-gamma prior.
+Factor-augmented VAR, FAVAR: a small VAR augmented by a few factors extracted from a large panel of predictors.
+Root mean squared forecast error, RMSFE: the square root of the average squared out-of-sample forecast error, reported relative to a benchmark.
+State-space model: an observation equation linking data to an unobserved state, and a state equation governing the state's evolution.
+Local level model: y t equals mu t plus noise, with mu t a random walk.
+Kalman filter: the recursive Gaussian update of the state's mean and variance as each observation arrives.
+Kalman gain: the share of each forecast error that moves the state estimate; the regression coefficient of the state on the surprise.
+Signal-to-noise ratio, q: the state innovation variance over the measurement variance; it fixes the steady-state gain.
+Discount factor, delta: a West and Harrison device that inflates the filtered variance by one over delta at each step, replacing the state covariance.
+TVP-VAR with SV: Primiceri's VAR with random-walk coefficients, contemporaneous relations and log volatilities.
+VAR with GARCH: a VAR whose error covariance follows a multivariate GARCH recursion on the vech of Sigma t.
+Exponentially weighted moving average, EWMA: a covariance estimate that discounts past outer products geometrically; an IGARCH with persistence one.
+Dynamic conditional correlation, DCC: a model that fits univariate GARCH variances and then a two-parameter recursion for all correlations.
+Half-life: the number of periods for half of a shock to fade, log 0.5 over log of the persistence.
+Factor stochastic volatility: a factor model whose factor and idiosyncratic log-variances follow first-order autoregressions, so correlations move with the factor's volatility.
+
+
+Support part seven. The whole class in five lines.
+
+One. A VAR is a multivariate regression: OLS equation by equation is its maximum likelihood estimator, the companion eigenvalues decide stationarity, 0.9099 for the slide's VAR 2, and forecasts are powers of the companion matrix.
+
+Two. Its shocks are correlated, so impulse responses and variance decompositions need an ordering or other restrictions, q times q minus one over two of them, and Tsay's Example 8.3 shows one reduced form giving 13.6 or 48.5 per cent depending on that choice.
+
+Three. Its parameters grow like q squared p, and the Minnesota prior answers with ridge regression toward a random walk, the large BVAR reaching 0.46 of the random walk's error where unshrunk OLS reaches 7.56.
+
+Four. Factors carry the cross-section, with Omega equal to beta beta transposed plus a diagonal, identified only up to rotation, and a FAVAR puts a few of them into a small VAR.
+
+Five. When coefficients and volatilities move, each is a state for the Kalman filter, whose steady-state gain is one minus the ARIMA coefficient, 0.1418 for Alcoa; and when only covariances move, DCC models correlations directly while factor SV makes them rise with the common factor's volatility.
+
+This is the end of the Class 9 narration.

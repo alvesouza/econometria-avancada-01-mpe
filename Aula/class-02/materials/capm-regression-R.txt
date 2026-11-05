@@ -1,0 +1,105 @@
+# Stock Market Data
+# Monthly observations from 1960–01 to 2002–12
+# Number of observations : 516
+
+install.packages("Ecdat")
+library("Ecdat")
+library("moments")
+
+data(Capm)
+
+?Capm
+
+names = c("Food industry",
+          "Durables industry",
+          "Construction industry",
+          "Market portfolio")
+
+attach(Capm)
+
+
+data = cbind(rmrf,rfood,rdur,rcon)
+
+tab.eda = round(rbind(apply(data,2,quantile,c(0.25,0.5,0.75)),
+apply(data,2,mean),
+apply(data,2,sd),
+apply(data,2,skewness),
+apply(data,2,kurtosis)),3)
+
+rownames(tab.eda) = c("1st quartile","2nd quartile","3rd quartile","Mean","SD","Skewness","Kurtosis")
+colnames(tab.eda) = c("Market","Food","Durables","Construction")
+tab.eda
+
+# Time series plots & histograms
+range = range(rmrf,rfood,rdur,rcon)
+par(mfrow=c(2,4))
+ts.plot(rmrf,main=names[1],ylab="Excess returns",ylim=range)
+ts.plot(rfood,main=names[2],ylab="Excess returns",ylim=range)
+ts.plot(rdur,main=names[3],ylab="Excess returns",ylim=range)
+ts.plot(rcon,main=names[4],ylab="Excess returns",ylim=range)
+hist(rmrf,main="",prob=TRUE,xlim=range)
+hist(rfood,main="",prob=TRUE,xlim=range)
+hist(rdur,main="",prob=TRUE,xlim=range)
+hist(rcon,main="",prob=TRUE,xlim=range)
+
+# Scatterplots (highlighting correlations)
+pairs(cbind(rmrf,rfood,rdur,rcon),label=names)
+
+# Simple linear regression
+fit.rfood = lm(rfood~rmrf)
+fit.rdur  = lm(rdur~rmrf)
+fit.rcon  = lm(rcon~rmrf)
+
+tab.capm = rbind(
+cbind(fit.rfood$coef,fit.rdur$coef,fit.rcon$coef),
+cbind(fit.rfood$coef/sqrt(diag(summary(fit.rfood)$cov.unscaled*summary(fit.rfood)$sigma)),
+      fit.rdur$coef/sqrt(diag(summary(fit.rdur)$cov.unscaled*summary(fit.rdur)$sigma)),
+      fit.rcon$coef/sqrt(diag(summary(fit.rcon)$cov.unscaled*summary(fit.rcon)$sigma))),
+c(summary(fit.rfood)$sigma,
+summary(fit.rdur)$sigma,
+summary(fit.rcon)$sigma),
+c(summary(fit.rfood)$r.squared,
+summary(fit.rdur)$r.squared,
+summary(fit.rcon)$r.squared))
+
+
+rownames(tab.capm) = c("Intercept","Market","tstat-int","tstat-market","sigma","R2")
+colnames(tab.capm) = c("Food","Durables","Construction")
+round(tab.capm,3)
+
+tab.eda
+
+round(tab.capm,3)
+
+
+# Bayesian inference (closed form solution via conjugate prior)
+
+y = rdur
+X = cbind(1,rmrf)
+n = nrow(X)
+
+b0       = rep(0,2)
+B0       = diag(1,2)
+nu0      = 5
+sig20    = 1.0
+
+# posterior hyperparameters
+nu0sig20 = nu0*sig20
+iB0      = solve(B0)
+iB0b0    = iB0%*%b0
+B1       = solve(iB0+t(X)%*%X)
+tcB1     = t(chol(B1))
+b1       = B1%*%(iB0b0+t(X)%*%y)
+nu1      = nu0 + n
+sig21    = ((nu0sig20+sum((y-X%*%b1)*y)+t(b0-b1)%*%iB0b0)/nu1)[1]
+se       = sqrt(nu1/(nu1-2)*sig21*diag(B1))
+
+tab = round(cbind(b1,se,b1/se,2*(1-pt(abs(b1/se),df=nu1))),5)
+colnames(tab)=c("Mean","StDev","t","tail")
+rownames(tab)=c("Intercept","Market")
+tab
+
+# Recall OLS
+summary(lm(y~X-1))
+
+

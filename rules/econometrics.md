@@ -1,0 +1,105 @@
+---
+id: econometrics
+title: Economics and econometrics
+tier: 2
+applyTo: "**/{econometrics,economics,regression,timeseries,factor,macro}/**, **/*{Regression,Econometric,GARCH,VAR,Cointegr}*"
+skills: [econ, quant]
+owner: quant-team
+---
+
+An econometric result is a claim about the world, not a number a library returned.
+Every rule here exists because some default produces a confident, wrong estimate.
+
+## Non-negotiable
+
+1. **State the identification strategy before estimating.** What variation identifies
+   the coefficient, and what must be true for it to be causal?
+   *Why:* regression always returns a number. Without identification it is a
+   conditional correlation being described in causal language.
+   *Check:* the docstring or notebook names the source of exogenous variation.
+
+2. **Default to heteroskedasticity- and autocorrelation-consistent standard errors.**
+   Classical OLS errors are almost never right on financial or panel data — use
+   White/HC for heteroskedasticity, Newey–West/HAC for serial correlation, clustered
+   errors for panels.
+   *Why:* the point estimate survives; the *t*-statistic does not. Uncorrected errors
+   routinely overstate significance by 2–3×.
+   *Check:* `cov_type='HAC'` / `cluster` is passed explicitly, never left default.
+
+3. **Test for unit roots before regressing one series on another.** Difference,
+   detrend, or establish cointegration first.
+   *Why:* spurious regression — two independent random walks produce high R² and
+   significant *t*-stats essentially always.
+   *Check:* ADF/KPSS reported; if both series are I(1), Engle–Granger or Johansen
+   before any level regression.
+
+4. **Report the sample period, frequency, and every filter applied to reach the final
+   sample.** Winsorization, outlier removal, and minimum-history requirements are
+   modelling choices with results attached.
+   *Why:* undocumented sample construction is the most common irreproducible step, and
+   it is where survivorship silently enters.
+
+5. **Never interpret an in-sample R² as predictive power.** Report out-of-sample R²
+   against a documented benchmark (historical mean for return prediction, per
+   the historical mean, for return prediction).
+   *Why:* return predictability that vanishes out of sample is the field's most
+   replicated finding.
+
+6. **Correct for multiple testing whenever more than one specification was run.**
+   Report how many were tried. Bonferroni, Benjamini–Hochberg FDR, or a deflated
+   statistic.
+   *Why:* twenty specifications at α = 0.05 yield one "significant" result by
+   construction. See `quant-ml#3` for the trading-strategy analogue.
+
+## Prefer
+
+7. Log returns for time aggregation, simple returns for cross-sectional aggregation.
+   State which and stay consistent — mixing them is a silent bias.
+
+8. Newey–West lag length chosen by a stated rule (e.g. `4(T/100)^(2/9)`), not by hand
+   until the result becomes significant.
+
+9. Robustness across specifications, subsamples, and periods reported *together* —
+   including the ones that failed. A result that only survives one specification is a
+   result about that specification.
+
+10. GARCH-family models for volatility clustering rather than rolling standard
+    deviation, when the horizon matters. Report which variant and why; EGARCH/GJR when
+    leverage asymmetry is present.
+
+11. Panel methods with entity and time fixed effects for cross-sectional-time data,
+    with errors clustered on the dimension the correlation actually runs along —
+    usually the entity, sometimes both.
+
+12. Fama–MacBeth for cross-sectional asset-pricing regressions, with Shanken
+    correction when factor loadings are estimated rather than observed.
+
+13. Economic significance alongside statistical significance. A statistically
+    significant 2 bp effect that costs 8 bp to trade is not a finding.
+
+14. `statsmodels` or R over hand-rolled linear algebra — you get diagnostics, robust
+    covariance options, and correct degrees of freedom for free.
+
+## Avoid
+
+15. Stepwise regression and any automated specification search reported as if it were
+    a single hypothesis test. It is a search over noise with the p-values of a
+    single test.
+
+16. Dropping observations because they are "outliers" without a stated rule applied
+    symmetrically ex ante. In finance, the outliers are frequently the phenomenon.
+
+17. Interpreting a coefficient on a lagged dependent variable in a short panel without
+    a bias correction — Nickell bias is O(1/T) and severe for small T.
+
+18. Overlapping-window observations with standard errors that assume independence.
+    Overlap induces mechanical autocorrelation; use Hansen–Hodrick or Newey–West
+    standard errors.
+
+19. Adding regressors until R² rises. Each addition costs a degree of freedom and
+    invites collinearity that inflates variance without improving prediction.
+
+20. Extrapolating a fitted relationship outside the support of the data.
+
+21. Treating a structural break as noise. Test for it (Chow, Bai–Perron); regimes are
+    real and pooling across them estimates something that describes neither.

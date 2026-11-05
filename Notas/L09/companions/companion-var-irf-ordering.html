@@ -1,0 +1,236 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>The Ordering Dial</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,500;8..60,650&family=Public+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: controls rail left; answer, IRF small multiples and eigenvalue plot right; one column under 860px.
+   Colour roles: --main = current ordering, --warn = the other ordering / explosive, --good = stationary, --mark = landmarks. */
+:root{
+  --bg:#f3f5f8; --panel:#ffffff; --ink:#1a2130; --muted:#5a6578; --line:#d7dde7; --soft:#edf0f5;
+  --main:#1f5f8b; --warn:#b4521a; --good:#2f6b4f; --mark:#9c7200; --focus:#2b63c4;
+  --display:"Source Serif 4", Georgia, "Times New Roman", serif;
+  --body:"Public Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono:"JetBrains Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#10141b; --panel:#171d27; --ink:#e5e9f0; --muted:#9aa5b8; --line:#2a3342; --soft:#1e2532;
+  --main:#6fb0e0; --warn:#f0954a; --good:#5fc28f; --mark:#e6be4a; --focus:#74a3ff; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#10141b; --panel:#171d27; --ink:#e5e9f0; --muted:#9aa5b8; --line:#2a3342; --soft:#1e2532;
+  --main:#6fb0e0; --warn:#f0954a; --good:#5fc28f; --mark:#e6be4a; --focus:#74a3ff; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font:15px/1.5 var(--body);margin:0}
+.wrap{max-width:1180px;margin:0 auto;padding-left:max(16px, env(safe-area-inset-left, 0px));padding-right:max(16px, env(safe-area-inset-right, 0px));padding-block:24px 40px}
+header{display:grid;gap:4px;margin-bottom:18px}
+.eyebrow{font:600 12px/1.3 var(--body);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+h1{font:650 clamp(26px,4vw,36px)/1.1 var(--display);margin:0}
+.lede{color:var(--muted);max-width:70ch;margin:0}
+.grid{display:grid;grid-template-columns:320px minmax(0,1fr);gap:20px;align-items:start}
+@media (max-width:860px){.grid{grid-template-columns:minmax(0,1fr)}}
+.rail{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px;display:grid;gap:16px}
+.ctl{display:grid;gap:4px}
+.ctl .top{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.ctl label{font-weight:600}
+.ctl output{font:600 14px var(--mono);font-variant-numeric:tabular-nums}
+.ctl p{margin:0;font-size:13px;color:var(--muted)}
+input[type=range]{width:100%;accent-color:var(--ink)}
+input:focus-visible,button:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+.btns{display:flex;flex-wrap:wrap;gap:8px}
+button{font:600 13px var(--body);background:var(--soft);color:var(--ink);border:1px solid var(--line);border-radius:6px;padding:7px 12px;cursor:pointer}
+button[aria-pressed="true"]{border-color:var(--main);color:var(--main)}
+main{display:grid;gap:16px;min-width:0}
+.answer{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px 18px;display:grid;gap:6px}
+.answer .lab{font-size:13px;color:var(--muted)}
+.answer .big{font:600 clamp(24px,4.6vw,40px)/1.15 var(--body);font-variant-numeric:tabular-nums}
+.answer .verdict{font:500 16px/1.45 var(--body);max-width:66ch}
+.answer .side{font:13px/1.6 var(--mono);color:var(--muted);font-variant-numeric:tabular-nums}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px 16px;min-width:0}
+.panel h3{font:600 15px/1.3 var(--body);margin:0 0 2px}
+.panel .sub{font-size:13px;color:var(--muted);margin:0 0 8px}
+svg{display:block;width:100%;height:auto;max-width:100%}
+svg text{fill:var(--muted);font:12px var(--body)}
+.two{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr);gap:16px}
+@media (max-width:1000px){.two{grid-template-columns:minmax(0,1fr)}}
+.scroll{overflow-x:auto}
+table.ro{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums;min-width:380px}
+table.ro th,table.ro td{padding:5px 6px;border-bottom:1px solid var(--line);font-size:14px;text-align:right;white-space:nowrap}
+table.ro th:first-child,table.ro td:first-child{text-align:left}
+table.ro td{font-family:var(--mono);font-size:13px}
+footer{margin-top:22px;font-size:13px;color:var(--muted);display:grid;gap:10px}
+footer table{border-collapse:collapse;font-size:12.5px;min-width:760px}
+footer th,footer td{border-bottom:1px solid var(--line);padding:4px 8px;text-align:left;vertical-align:top}
+</style>
+
+<div class="wrap">
+<header>
+  <div class="eyebrow">Econometria Avançada · Class 9 · Tsay AFTS 3e Example 8.3 (p. 400) and §8.2.5 (pp. 412–413) · BVAR-part11.pdf slides 10–12</div>
+  <h1>The Ordering Dial</h1>
+  <p class="lede">A bivariate VAR(1), r<sub>t</sub> = Φ r<sub>t−1</sub> + a<sub>t</sub>, with Var(a<sub>1t</sub>) = 2, Var(a<sub>2t</sub>) = 1 and correlation ρ. The orthogonalised responses are Θ<sub>h</sub> = Φ<sup>h</sup>P, with P the Cholesky factor of Σ in the chosen ordering; the variance decomposition is ω<sub>ij</sub>(H) = Σ<sub>h&lt;H</sub> Θ<sub>h</sub>(i,j)² / Σ<sub>h&lt;H</sub> Σ<sub>k</sub> Θ<sub>h</sub>(i,k)². Notes: L09-02 §3–§4, L09-03 §4.</p>
+</header>
+
+<div class="grid">
+<aside class="rail" aria-label="Controls">
+  <div class="ctl"><div class="top"><label for="p11">Φ₁₁</label><output id="o-p11"></output></div>
+    <input id="p11" type="range" min="-1.5" max="1.5" step="0.05"><p>how much r₁'s own past carries into r₁</p></div>
+  <div class="ctl"><div class="top"><label for="p12">Φ₁₂</label><output id="o-p12"></output></div>
+    <input id="p12" type="range" min="-1.5" max="1.5" step="0.05"><p>effect of last period's r₂ on r₁</p></div>
+  <div class="ctl"><div class="top"><label for="p21">Φ₂₁</label><output id="o-p21"></output></div>
+    <input id="p21" type="range" min="-1.5" max="1.5" step="0.05"><p>effect of last period's r₁ on r₂</p></div>
+  <div class="ctl"><div class="top"><label for="p22">Φ₂₂</label><output id="o-p22"></output></div>
+    <input id="p22" type="range" min="-1.5" max="1.5" step="0.05"><p>how much r₂'s own past carries into r₂</p></div>
+  <div class="ctl"><div class="top"><label for="rho">ρ</label><output id="o-rho"></output></div>
+    <input id="rho" type="range" min="-0.95" max="0.95" step="0.05"><p>correlation of the two innovations within the period — what the ordering has to split</p></div>
+  <div class="ctl"><div class="top"><label>Ordering</label><output id="o-order"></output></div>
+    <div class="btns"><button id="ord12" aria-pressed="true">(r₁, r₂)</button><button id="ord21" aria-pressed="false">(r₂, r₁)</button></div>
+    <p>which variable comes first in the Cholesky factor (moves first within the period)</p></div>
+  <div class="btns"><button id="ex83">Ex. 8.3 exact (ρ = 1/√2)</button><button id="rho0">ρ = 0</button><button id="reset">Reset</button></div>
+</aside>
+
+<main>
+  <section class="answer" aria-live="polite">
+    <div class="lab">Share of r₁'s 10-step forecast-error variance due to the r₂ shock</div>
+    <div class="big" id="ans"></div>
+    <div class="verdict" id="verdict"></div>
+    <div class="side" id="side"></div>
+  </section>
+  <div class="two">
+    <section class="panel"><h3>Orthogonalised impulse responses Θ<sub>h</sub>(i,j), h = 0, …, 12</h3>
+      <p class="sub">solid: current ordering · dashed: the other ordering · row = responding variable, column = shock</p>
+      <svg id="irf" viewBox="0 0 520 380" role="img" aria-label="Four small panels of impulse responses"></svg></section>
+    <section class="panel"><h3>Eigenvalues of Φ</h3>
+      <p class="sub">stationary iff both lie inside the unit circle (slide 9)</p>
+      <svg id="eig" viewBox="0 0 300 300" role="img" aria-label="Unit circle with the two eigenvalues"></svg></section>
+  </div>
+  <section class="panel"><h3>Impact matrices P = Θ<sub>0</sub> under both orderings</h3>
+    <div class="scroll"><table class="ro"><thead><tr><th></th><th>(r₁,r₂): r₁ shock</th><th>r₂ shock</th><th>(r₂,r₁): r₁ shock</th><th>r₂ shock</th></tr></thead><tbody id="tbl"></tbody></table></div>
+  </section>
+</main>
+</div>
+
+<footer>
+  <div>Provenance: model and default Φ = [0.2 0.3; −0.6 1.1], Σ = [2 1; 1 1] from Tsay AFTS 3e Example 8.3, p. 400 (ρ = 1/√2 is the default; the slider shows its nearest step, 0.70); orthogonalisation and its ordering dependence, T §8.2.5, pp. 412–413; FEVD formula, BVAR-part11.pdf slide 11. σ₁² = 2 and σ₂² = 1 are fixed calibration. All quantities are unit-free (they inherit the units of r<sub>t</sub>).</div>
+  <div class="scroll"><table>
+    <thead><tr><th>Control</th><th>Symbol</th><th>Range</th><th>Step</th><th>Default</th><th>Source</th><th>What moves</th></tr></thead>
+    <tbody>
+      <tr><td>Own lag 1</td><td>Φ₁₁</td><td>−1.5–1.5</td><td>0.05</td><td>0.20</td><td>T Ex. 8.3</td><td>IRFs, eigenvalues, FEVD</td></tr>
+      <tr><td>Cross lag 2→1</td><td>Φ₁₂</td><td>−1.5–1.5</td><td>0.05</td><td>0.30</td><td>T Ex. 8.3</td><td>IRFs, eigenvalues, FEVD</td></tr>
+      <tr><td>Cross lag 1→2</td><td>Φ₂₁</td><td>−1.5–1.5</td><td>0.05</td><td>−0.60</td><td>T Ex. 8.3</td><td>IRFs, eigenvalues, FEVD</td></tr>
+      <tr><td>Own lag 2</td><td>Φ₂₂</td><td>−1.5–1.5</td><td>0.05</td><td>1.10</td><td>T Ex. 8.3</td><td>IRFs, eigenvalues, FEVD</td></tr>
+      <tr><td>Innovation correlation</td><td>ρ</td><td>−0.95–0.95</td><td>0.05</td><td>1/√2 (button)</td><td>T Ex. 8.3</td><td>gap between orderings</td></tr>
+      <tr><td>Ordering</td><td>—</td><td>(r₁,r₂) / (r₂,r₁)</td><td>—</td><td>(r₁,r₂)</td><td>T p. 413</td><td>solid vs dashed, answer</td></tr>
+    </tbody></table></div>
+  <div>Landmarks: ρ = 0 (the orderings coincide); largest eigenvalue modulus = 1 (stationary/explosive boundary). Belongs to Notas/L09 (L09-02, L09-03). Verified by companions/check_companions.py.</div>
+</footer>
+
+<script id="model">
+// Pure model: no DOM access. check_companions.py runs this block under node.
+const S1 = Math.SQRT2, S2 = 1, H = 10, HMAX = 12;
+const mm = (A, B) => [[A[0][0]*B[0][0]+A[0][1]*B[1][0], A[0][0]*B[0][1]+A[0][1]*B[1][1]],
+                      [A[1][0]*B[0][0]+A[1][1]*B[1][0], A[1][0]*B[0][1]+A[1][1]*B[1][1]]];
+// Cholesky factor in the chosen ordering, rows (r1, r2), columns (r1 shock, r2 shock).
+function chol(rho, order){
+  const c = Math.sqrt(1 - rho*rho);
+  return order === "12" ? [[S1, 0], [rho*S2, S2*c]] : [[S1*c, rho*S1], [0, S2]];
+}
+function thetas(p, order){
+  const Phi = [[p.p11, p.p12], [p.p21, p.p22]];
+  let A = chol(p.rho, order); const out = [A];
+  for(let h=1; h<=HMAX; h++){ A = mm(Phi, A); out.push(A); }
+  return out;
+}
+// omega_ij(H): share of variable i's H-step forecast-error variance due to shock j.
+function fevd(T){
+  const num = [[0,0],[0,0]];
+  for(let h=0; h<H; h++) for(let i=0;i<2;i++) for(let j=0;j<2;j++) num[i][j] += T[h][i][j]*T[h][i][j];
+  return num.map(r => { const s = r[0] + r[1]; return [r[0]/s, r[1]/s]; });
+}
+function eigen(p){
+  const tr = p.p11 + p.p22, det = p.p11*p.p22 - p.p12*p.p21, disc = tr*tr - 4*det;
+  if(disc >= 0){ const s = Math.sqrt(disc); return {re:[(tr+s)/2, (tr-s)/2], im:[0,0], mod:[Math.abs((tr+s)/2), Math.abs((tr-s)/2)]}; }
+  const s = Math.sqrt(-disc)/2, m = Math.sqrt(det); return {re:[tr/2, tr/2], im:[s, -s], mod:[m, m]};
+}
+const f3 = x => { const s = x.toFixed(3); return s === "-0.000" ? "0.000" : s; };
+const pct = x => (100*x).toFixed(1) + "%";
+const eigStr = (e, k) => e.im[k] === 0 ? f3(e.re[k]) : f3(e.re[k]) + (e.im[k] > 0 ? " + " : " − ") + f3(Math.abs(e.im[k])) + "i";
+// p = {p11, p12, p21, p22, rho, order}. Every number the page prints, as the string it prints.
+function readouts(p){
+  const other = p.order === "12" ? "21" : "12";
+  const Tc = thetas(p, p.order), To = thetas(p, other);
+  const Fc = fevd(Tc), Fo = fevd(To), F12 = p.order === "12" ? Fc : Fo, F21 = p.order === "12" ? Fo : Fc;
+  const e = eigen(p), mx = Math.max(e.mod[0], e.mod[1]);
+  const status = Math.abs(mx - 1) < 1e-9 ? "unit root (on the boundary)" : (mx < 1 ? "stationary" : "explosive");
+  const a = chol(p.rho, "12"), b = chol(p.rho, "21");
+  return {ans: pct(Fc[0][1]), ansOther: pct(Fo[0][1]), f12_12: pct(F12[0][1]), f12_21: pct(F21[0][1]),
+    f21_12: pct(F12[1][0]), f21_21: pct(F21[1][0]), gap: (100*Math.abs(F12[0][1] - F21[0][1])).toFixed(1),
+    eig1: eigStr(e, 0), eig2: eigStr(e, 1), maxmod: f3(mx), status,
+    a11: f3(a[0][0]), a12: f3(a[0][1]), a21: f3(a[1][0]), a22: f3(a[1][1]),
+    b11: f3(b[0][0]), b12: f3(b[0][1]), b21: f3(b[1][0]), b22: f3(b[1][1]),
+    th1_12: f3(Tc[1][0][1]), rho: Math.abs(p.rho - Math.SQRT1_2) < 1e-12 ? "0.7071 (exact)" : p.rho.toFixed(2)};
+}
+</script>
+<script>
+const DEF = {p11:0.2, p12:0.3, p21:-0.6, p22:1.1, rho:Math.SQRT1_2, order:"12"};
+let S = Object.assign({}, DEF);
+const $ = id => document.getElementById(id);
+const IDS = ["p11","p12","p21","p22","rho"];
+const NS = 'xmlns="http://www.w3.org/2000/svg"';
+function syncInputs(){ for(const k of IDS) $(k).value = String(k === "rho" ? Math.round(S.rho*20)/20 : S[k]); }
+function line(pts, color, dash){
+  return `<polyline fill="none" stroke="${color}" stroke-width="2" ${dash ? 'stroke-dasharray="5 4"' : ''} points="${pts.map(q => q[0].toFixed(1) + "," + q[1].toFixed(1)).join(" ")}"/>`;
+}
+function drawIRF(){
+  const other = S.order === "12" ? "21" : "12", Tc = thetas(S, S.order), To = thetas(S, other);
+  const W = 520, Hh = 380, pw = 240, ph = 160, labels = ["r₁", "r₂"];
+  let g = "";
+  for(let i=0;i<2;i++) for(let j=0;j<2;j++){
+    const x0 = 30 + j*(pw+20), y0 = 20 + i*(ph+30);
+    const vals = Tc.map(t=>t[i][j]).concat(To.map(t=>t[i][j]));
+    let lo = Math.min(0, ...vals), hi = Math.max(0, ...vals); if(hi - lo < 1e-9){ hi += 1; lo -= 1; }
+    const X = h => x0 + h*pw/HMAX, Y = v => y0 + ph - (v - lo)/(hi - lo)*ph;
+    g += `<rect x="${x0}" y="${y0}" width="${pw}" height="${ph}" fill="none" stroke="var(--line)"/>`;
+    g += `<line x1="${x0}" x2="${x0+pw}" y1="${Y(0).toFixed(1)}" y2="${Y(0).toFixed(1)}" stroke="var(--muted)" stroke-width="0.8"/>`;
+    g += line(To.map((t,h)=>[X(h), Y(t[i][j])]), "var(--warn)", true);
+    g += line(Tc.map((t,h)=>[X(h), Y(t[i][j])]), "var(--main)", false);
+    g += `<text x="${x0+4}" y="${y0+14}">${labels[i]} to ${labels[j]} shock</text>`;
+    g += `<text x="${x0+pw-4}" y="${y0+14}" text-anchor="end">max ${f3(hi)}</text><text x="${x0+pw-4}" y="${y0+ph-4}" text-anchor="end">min ${f3(lo)}</text>`;
+  }
+  g += `<text x="30" y="${Hh-4}">h = 0</text><text x="${W-10}" y="${Hh-4}" text-anchor="end">h = 12</text>`;
+  $("irf").innerHTML = g;
+}
+function drawEig(){
+  const e = eigen(S), R = Math.max(1.6, ...e.mod.map(m => m*1.1)), c = 150, sc = 130/R;
+  let g = `<line x1="10" x2="290" y1="${c}" y2="${c}" stroke="var(--line)"/><line y1="10" y2="290" x1="${c}" x2="${c}" stroke="var(--line)"/>`;
+  g += `<circle cx="${c}" cy="${c}" r="${(sc).toFixed(1)}" fill="none" stroke="var(--mark)" stroke-width="1.5"/>`;
+  for(let k=0;k<2;k++){ const col = e.mod[k] < 1 ? "var(--good)" : "var(--warn)";
+    g += `<circle cx="${(c + e.re[k]*sc).toFixed(1)}" cy="${(c - e.im[k]*sc).toFixed(1)}" r="6" fill="${col}"/>`; }
+  g += `<text x="${c + sc + 4}" y="${c - 6}">1</text><text x="12" y="22">axis range ±${R.toFixed(2)}</text>`;
+  $("eig").innerHTML = g;
+}
+function render(){
+  const o = readouts(S);
+  for(const k of ["p11","p12","p21","p22"]) $("o-"+k).textContent = S[k].toFixed(2);
+  $("o-rho").textContent = o.rho;
+  $("o-order").textContent = S.order === "12" ? "(r₁, r₂)" : "(r₂, r₁)";
+  $("ord12").setAttribute("aria-pressed", String(S.order === "12"));
+  $("ord21").setAttribute("aria-pressed", String(S.order === "21"));
+  $("ans").textContent = `${o.ans} now · ${o.ansOther} under the other ordering`;
+  const same = o.gap === "0.0";
+  $("verdict").textContent = (same ? "The two orderings agree" + (Math.abs(S.rho) < 1e-12 ? " — ρ = 0, nothing to split." : " to one decimal.")
+    : `The ordering moves the answer by ${o.gap} percentage points.`) + ` Φ is ${o.status}: largest |eigenvalue| ${o.maxmod}.`;
+  $("side").textContent = `eigenvalues ${o.eig1}, ${o.eig2} · r₂'s 10-step variance due to the r₁ shock: ${o.f21_12} under (r₁,r₂), ${o.f21_21} under (r₂,r₁) · Θ₁(1,2) now ${o.th1_12}`;
+  $("tbl").innerHTML = `<tr><td>r₁</td><td>${o.a11}</td><td>${o.a12}</td><td>${o.b11}</td><td>${o.b12}</td></tr>` +
+                       `<tr><td>r₂</td><td>${o.a21}</td><td>${o.a22}</td><td>${o.b21}</td><td>${o.b22}</td></tr>`;
+  drawIRF(); drawEig();
+}
+for(const k of IDS) $(k).addEventListener("input", () => { S[k] = Math.round(parseFloat($(k).value)*100)/100; render(); });
+$("ord12").addEventListener("click", () => { S.order = "12"; render(); });
+$("ord21").addEventListener("click", () => { S.order = "21"; render(); });
+$("ex83").addEventListener("click", () => { S.rho = Math.SQRT1_2; syncInputs(); render(); });
+$("rho0").addEventListener("click", () => { S.rho = 0; syncInputs(); render(); });
+$("reset").addEventListener("click", () => { S = Object.assign({}, DEF); syncInputs(); render(); });
+syncInputs(); render();
+</script>
+</html>

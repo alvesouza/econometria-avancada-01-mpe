@@ -1,0 +1,103 @@
+name: agent-governance
+
+# CI is the shared enforcement layer. Claude has hooks; Copilot has none. Anything
+# that must be true regardless of which agent wrote the code is checked here.
+
+on:
+  pull_request:
+    paths:
+      - 'rules/**'
+      - '.claude/**'
+      - '.github/copilot-instructions.md'
+      - '.github/instructions/**'
+      - 'CLAUDE.md'
+      - 'AGENTS.md'
+      - 'tools/**'
+  push:
+    branches: [main]
+
+jobs:
+  governance:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Context-guard hook behaves
+        run: python tools/test_hooks.py
+
+      - name: Active profile matches the checkout
+        # Catches a skill enabled or disabled without updating rules/PROFILES.md.
+        run: python tools/profile.py status
+
+      - name: Cross-references resolve
+        # Catches a renamed pack, a renumbered rule cited elsewhere, a dangling
+        # reference pointer, and an applyTo glob that matches nothing.
+        run: python tools/lint_refs.py
+
+      - name: Generated surfaces are in sync with rules/
+        run: python tools/sync_rules.py --check
+
+      - name: Tier-0 standing cost within budget
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: python tools/token_report.py --budget
+
+      - name: Every rule pack is listed in the index
+        run: |
+          missing=0
+          for f in rules/*.md; do
+            id="$(basename "$f" .md)"
+            # Uppercase stems (INDEX, BIBLIOGRAPHY) are navigation, not rule packs —
+            # same exclusion sync_rules.py applies.
+            [ "$id" = "$(printf '%s' "$id" | tr '[:lower:]' '[:upper:]')" ] && continue
+            if ! grep -q "\`$id.md\`" rules/INDEX.md; then
+              echo "::error file=rules/INDEX.md::rule pack '$id' is not listed in rules/INDEX.md"
+              missing=1
+            fi
+          done
+          exit $missing
+
+      - name: Every skill has a routing description
+        run: |
+          bad=0
+          for f in .claude/skills/*/SKILL.md; do
+            if ! head -20 "$f" | grep -q '^description:'; then
+              echo "::error file=$f::SKILL.md has no 'description' — it will never trigger"
+              bad=1
+            fi
+          done
+          exit $bad
+
+      - name: Rule packs are self-contained
+        # A pack must justify itself by mechanism, not by pointing at a book. Citations
+        # are unresolvable wherever the library is absent, and an appeal to authority
+        # cannot be generalized to a case the author did not foresee.
+        # Provenance belongs in docs/09-bibliography.md. See docs/05-authoring.md.
+        run: |
+          if grep -rnE '^## (Sources|References|Further reading)|Grounded in |\bch\. [0-9]' \
+               rules/ 2>/dev/null; then
+            echo "::error::rule pack cites a source — state the mechanism instead (docs/05-authoring.md)"
+            exit 1
+          fi
+
+      - name: No pressure language in rules or skills
+        # Current models over-trigger on inflated emphasis; when every instruction is
+        # critical, none is. See docs/05-authoring.md.
+        # A leading backtick exempts the match, so packs can quote the anti-pattern
+        # they are warning about (e.g. `CRITICAL:`) without tripping the check.
+        # `CRITICAL:` with the colon, so `--severity HIGH,CRITICAL` stays legal.
+        run: |
+          if grep -rnE '(^|[^`])(CRITICAL:|\bYOU MUST\b|\bNEVER EVER\b|\bALWAYS REMEMBER\b)' \
+               rules/ .claude/skills/ 2>/dev/null; then
+            echo "::error::pressure language found — state the rule plainly instead"
+            exit 1
+          fi
+
+      - name: No secrets committed
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -1,0 +1,465 @@
+Advanced Econometrics, Class 2. Introduction to statistical learning. Narrated study notes, part 1 of 3.
+
+How to listen.
+
+This is a listening version of the finished study notes for Class 2 of the course Econometria Avançada, in the professional master's in economics at Insper, taught by Hedibert Freitas Lopes. It carries the same content as the written notes, re-voiced for the ear. Every formula is spoken in words, and then its meaning is said in plain language.
+
+The narration comes in three files. Part 1, this file, covers the map of the class, then regression as prediction, with the bias-variance decomposition and the reading of linear and log-linear coefficients, then the estimation of the test error by cross-validation on the motorcycle data. Part 2 covers classification, with logistic regression and discriminant analysis, and counts, with Gaussian against Poisson regression. Part 3 holds the support material: the pitfalls, the spoken formula sheet, the implementation described as steps, the reading route and exercises, a self-test, a glossary, and the whole class in five lines.
+
+The three layers. The U layer is intuition. The C layer is the course layer: the results of the decks and books, with the decks' own numbers, and that is what is examinable. The G layer is graduate material, named or proved but not examinable; the narration says so each time.
+
+The scope, said once. Examinable: the results of the section notes as derived there, with no code in the final exam. The course site says it plainly: "You will NOT be asked to write R script or similar." So expect the derivations, the hand arithmetic of the printouts, and the readings. Proved but above the line, the G layer: the training-error optimism, two sigma squared times d plus one over n; separation in logistic regression; the generalized linear model template; and the closed-form area under the curve for equal variances. Named only: smoothing splines, trees, boosting and random forests, the classification bias-variance and k nearest neighbours of the Fundamentos slides 36 to 50, the one-standard-error rule, nested cross-validation, and Fisher's canonical discriminants. Belonging to later classes: ridge, lasso and elastic net, and every Bayesian part, namely the Bayesian logit, the admission script's posterior by sampling importance resampling, the blog page's grid posterior, and the Mroz page's Bayes factors, are Classes 3 and 4; probit and multinomial models are Class 7. And out of the course entirely: unsupervised learning, clustering and principal components.
+
+The books, by short name. ISLP is An Introduction to Statistical Learning with Python, 2023. Wooldridge is the sixth edition of his introductory econometrics text. AME is Izbicki and Mendonça, 2020, the statistical learning text in Portuguese, used as a cross-check. The decks are Fundamentos, by Marques; the motorcycle deck; the logistic and discriminant deck, by Lopes and Marques; and the multiple linear regression deck.
+
+
+Part zero. The map of Class 2.
+
+This part covers the map note: the one claim, the reading order, the numbers to memorize, the scope, the errata, and the place of the class in the course.
+
+The one claim, in three sentences. First: under squared loss the target is the regression function, the conditional expectation of Y given X, and every learned estimate of it misses a new Y by squared bias plus variance plus irreducible noise. Flexibility trades the first two, so the test error is U-shaped while the training error only falls, which is why the training error can never choose the model, and cross-validation, by hold-out, leave-one-out or k-fold, estimates the test error instead. Second: classification is the same problem with zero-one loss. Logistic regression models the probability that y equals one given x directly; discriminant analysis builds it from the density of x given y by Bayes' theorem; and the cut-off is a statement about costs, not a constant one half. Third: counts get a log link. Poisson regression reads coefficients as rate ratios and ties the variance to the mean, a tie that must be checked.
+
+The one result to hold. The expected squared prediction error equals the integral of the squared bias of psi hat at x over the distribution of X, which falls with flexibility; plus the integral of the variance of psi hat at x, which rises with flexibility; plus sigma squared, which is untouchable. Every other section is a way to estimate this or to trade its terms. Section 3 estimates the left side from held-out data. The choice between linear and quadratic discriminant analysis, in section 5, is a bias-variance choice. And the classification version replaces squared loss by zero-one loss, whose minimiser is the Bayes rule, the class k that maximises pi k times p k of x: the classification analogue of the conditional expectation.
+
+The reading order. Part one, regression as prediction: section 1, prediction error and the bias-variance decomposition; section 2, linear and log-linear regression. Part two, estimating the test error: section 3, cross-validation on the motorcycle data. Part three, classification: section 4, logistic regression; section 5, discriminant analysis. Part four, counts: section 6, Gaussian against Poisson regression. Then the support notes: the formula sheet, the pitfalls, and the Python implementation.
+
+The numbers and cases to have memorized. Nine of them.
+
+One. The tanh world, with 30 training points, noise standard deviation 4, and polynomial least squares: the optimal degree is 5, with test error 19.81, made of 0.94 squared bias, 2.87 variance and 16 noise. The bottom of the U-curve sits 3.81 above the noise floor.
+
+Two. The training optimism at degree 5 is two sigma squared times d plus one over n, which is 2 times 16 times 6 over 30, which is 6.4. That is why C p and AIC add a penalty.
+
+Three. The motorcycle data choose order 12. A hold-out split picks it 63 times out of 100; 10-fold cross-validation picks it 99 times out of 100. One split is a random answer.
+
+Four. A log-level coefficient of 0.306 means plus 35.8 per cent going up and minus 26.4 per cent going down; the 30.6 per cent reading is an approximation. One hundred times beta is a first-order reading.
+
+Five. The default model, minus 10.6513 plus 0.0055 times balance, gives a default probability of 0.58 per cent at a balance of 1000 and 58.6 per cent at 2000, and the 50 per cent cut-off is at a balance of 1936.6. A cut-off on the probability is a cut-off on x.
+
+Six. Student status alone gives a coefficient of plus 0.40489, an odds ratio of 1.499; with balance it gives minus 0.7149, an odds ratio of 0.489. At a balance of 1500 the probabilities are 5.4 per cent for students against 10.5 per cent for non-students. Confounding flips the sign.
+
+Seven. The spam logistic model has error 7.52 per cent, false positive rate 5.69 per cent, false negative rate 10.38 per cent, and false discovery rate 9.06 per cent. The false discovery rate is not the false positive rate.
+
+Eight. Gaussian discriminant analysis with means 1 and 5 and standard deviations 6 and 2.5 has two cut-offs, 1.680 and 10.001; class error probabilities 0.3881 and 0.1148; and total error 0.2515, against 0.3694 with equal standard deviations. The rule is quadratic, and class one wins both tails.
+
+Nine. Blog visits: alpha hat equal to 4.69135, beta hat equal to minus 0.26850, a rate ratio of 0.7645, and an overdispersion estimate of 1.444. Same means, different variances.
+
+The interactive companions. The Flexibility Dial lets you move the polynomial degree, the training size and the noise on the tanh model, and read the exact average squared bias, variance, training and test error and the optimal degree, 19.81 at degree 5 by default. The Two-Gaussian Classifier lets you move the two means and standard deviations, the prior and the cost ratio, and watch the allocation regions, the posterior threshold and the total misclassification probability, 0.2515 by default, with one cut-off at the midpoint when the standard deviations are equal. Both pages are verified by a check script that runs their own JavaScript against a Python recomputation.
+
+The errata found in the sources. Eleven slips, each documented in the note named.
+
+One. Fundamentos slide 16 writes the cross term of the expansion with plus 2; it is minus 2 times the expected product, and it is zero either way. Section 1.
+
+Two. Logistic deck slide 9 prints the weighted least squares objective without the weight matrix W; without W the minimiser is not the iteratively reweighted update. Section 4.
+
+Three. Logistic deck slide 10 writes the Pearson chi-squared as the sum of the residuals and the deviance as the sum of the deviance residuals; both should be sums of squares. Section 4.
+
+Four. Logistic deck slide 15 labels its second line "x equal to 1000"; the arithmetic is for x equal to 2000. Section 4.
+
+Five. Logistic deck slide 18 gives student-only probabilities of 0.43 and 0.29 per cent; they are 4.31 and 2.92 per cent, that is 127 over 2944 and 206 over 7056, as in ISLP page 142. Section 4.
+
+Six. Logistic deck slide 22 attaches the cut-off 1873 to students and 1998 to non-students; it is the reverse, students 1998 and non-students 1873, because the student coefficient is negative. Section 4.
+
+Seven. Logistic deck slide 38 computes its false discovery column as false positives over false positives plus true positives plus false negatives; the false discovery rate is false positives over false positives plus true positives, which is 9.06 per cent for the logistic model, not 8.20. Section 4.
+
+Eight. The graduate school admission script comments "2/3 admitted and 1/3 not admitted"; in fact about one third were admitted, with the plotted rate near 0.32. Section 4.
+
+Nine. Discriminant deck slide 41 defines the allocation regions with an intersection; a partition needs their union to be the whole space. Section 5.
+
+Ten. Discriminant deck slide 44 states the multinomial maximum likelihood rule as "class one if and only if the sum of x k log of alpha k over beta k is less than zero"; it should be greater than zero, as the Bernoulli case confirms. Section 5.
+
+Eleven. The motorcycle R Markdown plots the leave-one-out and 10-fold curves under "Root MSE", while the code accumulates the sum of squared errors and the mean squared error respectively. The chosen order is unaffected. Section 3.
+
+The place of Class 2 in the course. From Class 1: mean squared error equals variance plus squared bias for one parameter becomes the decomposition pointwise in x; least squares, the hat matrix, the R squared, AIC, BIC and overfitting are the tools section 3 reuses; the Bernoulli and Poisson likelihoods become the logistic and Poisson regressions; and the bootstrap and its failure for the maximum precede the bootstrap band. In Classes 3 and 4, Bayesian learning, the posterior predictive replaces the plug-in, with Bayesian logit, Poisson and model comparison, ridge and lasso as posterior modes, and Bayes rules and loss functions generalising the cost-based cut-off. In Classes 5 and 6, causal inference, the inference column of section 1 becomes formal: which controls are legitimate, as in the Mroz return to education that vanishes, and confounding, as in the student sign flip. In Class 7, generalized linear models return, with probit, ordered and multinomial probit beside the logit, Tobit, and heteroskedastic errors like the motorcycle noise. In Class 8, model choice by information criteria and out-of-sample error continues, now with time order and no random folds. In Class 9, shrinkage in large Bayesian vector autoregressions is the bias-variance trade-off at scale.
+
+Recap of part zero. The best predictor under squared loss is the conditional mean; every learned estimate pays squared bias, variance and noise; the training error cannot choose flexibility, so cross-validation estimates the test error; classification uses the Bayes rule with a cost-based cut-off; and counts use a log link with a variance tie that must be checked.
+
+
+Part one, section 1. The best predictor is the conditional mean, and every estimate of it pays squared bias, variance and noise.
+
+This section covers Marques' Fundamentos deck, slides 2 to 30, and the script bias variance; ISLP section 2.1, printed page 15, equation 2.1; section 2.1.1, printed pages 17 to 20, equations 2.2 and 2.3; sections 2.2.1 and 2.2.2, printed pages 28 to 34, equations 2.5 to 2.7; and AME section 1.4, printed pages 9 to 11, with Teorema 1 and Observação 1.3; section 1.5.1, printed page 14, equation 1.1; and section 1.5.2, printed pages 22 to 23.
+
+The claim. Under squared loss the best possible predictor of Y from X is the regression function psi of x, the expected value of Y given X equal to x: a two-line calculus result. Any learned psi hat then misses Y by three separate amounts: noise, sigma squared, that no method can remove; squared bias, which falls as the learner gets more flexible; and variance, which rises with it. The expected test error is U-shaped in flexibility; the training error is not. So the training error can never choose the flexibility. Section 2 reads the coefficients of the linear learners, and section 3 estimates the test error by cross-validation.
+
+The notation. X is the vector of p predictors and Y the response, with an unknown joint distribution, and a marginal distribution for X. Psi of x is the regression function; Marques writes psi, ISLP writes f, and AME writes r. Phi is any candidate predictor, and t is its value at one point. D is the iid training data of n pairs, and psi hat, the learned function, is the learning method applied to D. Epsilon is the additive error, with mean zero and variance sigma squared, independent of X and of D. X and Y written without an index are always a new observation, independent of D. The EQM of psi hat at x, erro quadrático médio, is the mean squared error of the estimator at x, and Viés is bias. Graus de liberdade, degrees of freedom, measure a smoother's flexibility; d is the polynomial degree, and a degree-d polynomial has d plus one degrees of freedom.
+
+One point one. Intuition: supervised learning, and the two things one wants from it.
+
+The set-up, slides 2 to 5. One observes predictors X and a response Y; in ISLP's Advertising data, TV, radio and newspaper budgets and the sales of 200 markets. It is regression if Y is quantitative and classification if it is a label, sections 4 and 5. With no Y at all, as in clustering or principal components, the problem is unsupervised and out of this course's scope.
+
+Two purposes, usually in tension, slides 10 to 12, ISLP section 2.1.1, printed pages 17 to 20. Compare them in four dimensions. How to treat psi hat: for prediction, as a black box; for inference, as an object to read. What success means: for prediction, a small expected squared error on new data; for inference, knowing which predictors matter and how. The typical question: for prediction, "what sales will this market have?"; for inference, "is TV associated with sales? what does 25 per cent more newspaper do?". What each favours: prediction favours flexible methods, such as trees, boosting and support vector machines; inference favours rigid, interpretable ones, such as least squares, subset selection and the lasso.
+
+Flexibility buys accuracy and costs interpretability, slide 12, after ISLP Figure 2.7. This section is about the prediction side; section 2 is the inference side of the same linear learners.
+
+One point two. The regression function minimises the expected prediction error.
+
+The problem, slide 6. Find the function phi that minimises the expected prediction error, also called the expected test error or just the test error. Equation 1: the expected value of Y minus phi of X, squared, which is the integral of y minus phi of x, squared, against the joint distribution.
+
+Restating the strategy: condition on X, then solve a one-variable problem at each x. Three steps.
+
+Step one, condition on X, slide 7. By iterated expectations, equation 2: the expected squared error equals the expected value of the conditional expected squared error given X, which is the integral over x of the expected value of Y minus phi of x, squared, given X equal to x, against the distribution of X. Every integrand in equation 2 is non-negative and involves phi only through the single number phi of x, so equation 2 is minimised by minimising the integrand separately at each x.
+
+Step two, one variable at a time, slide 8. Fix x and write t for phi of x. Expand the square inside the conditional expectation. Equation 3: g of t, the expected value of Y minus t squared given X equal to x, equals the conditional expected value of Y squared, minus 2 t times the conditional expected value of Y, plus t squared.
+
+Step three, first- and second-order conditions. Differentiate equation 3 in t. Equation 4: g prime of t equals minus 2 times the conditional mean of Y plus 2 t. Equation 5: g prime of t is zero if and only if t equals the conditional mean of Y given X equal to x, and g double prime of t is 2, which is positive.
+
+So the minimiser is unique at every x, and putting the pointwise solutions back into equation 2 gives equation 6, boxed: the function that minimises the expected squared prediction error is psi of x, the expected value of Y given X equal to x.
+
+The same result as a decomposition, AME Teorema 1, printed page 10. For any fixed function g, add and subtract psi of X. Equation 7: the expected value of Y minus g of X, squared, equals the expected value of psi of X minus g of X, squared, plus the expected value of Y minus psi of X, squared, plus two times the expected value of the product of psi of X minus g of X and Y minus psi of X.
+
+The cross term vanishes by conditioning on X, because psi of X minus g of X is then a constant. Equation 8: the expected product equals the expected value of psi of X minus g of X, times the conditional mean of Y minus psi of X, which is times zero, which is zero. And the middle term is the expected value of the conditional variance of Y given X. Substitute equation 8 into equation 7. Equation 9: the prediction risk of g equals the regression risk of g, the expected value of psi of X minus g of X squared, plus the expected conditional variance of Y given X.
+
+Reading equation 9. The second term does not depend on g. So predicting Y well and estimating the regression function well are the same problem under squared loss: the reason the whole course of regression methods is also a course in prediction. With absolute loss the answer would be the conditional median instead, slide 6, remark 2, and AME Observação 1.2.
+
+The catch, slide 9. Psi depends on the unknown joint distribution. Learning means building psi hat from the training data; each method, least squares, a spline, a tree, is one such rule.
+
+One point three. The additive model: reducible and irreducible error.
+
+The model, slides 13 and 14, ISLP equation 2.1, printed page 15. Equation 10: Y equals psi of X plus epsilon, and for the training data, Y i equals psi of X i plus epsilon i, for i from 1 to n. The new X and the training X's are iid; the new and training errors are iid with mean zero and variance sigma squared; and the X's and the errors are all mutually independent. Then the conditional mean of Y given X equal to x is psi of x plus the mean of epsilon, which is psi of x, so psi in equation 10 is the regression function of section 1.2. The prediction for the new point is Y hat equal to psi hat of X.
+
+Conditioning on the new X, slide 15, exactly as in equation 2. Equation 11: the expected value of Y minus psi hat of X, squared, is the integral over x of the conditional expected value of Y minus psi hat of x, squared, given X equal to x. The expectation now runs over both the new epsilon and the training sample inside psi hat. AME Observação 1.3, printed page 11, calls this the expected risk, as opposed to the conditional risk of one fixed psi hat.
+
+The proof of the split, slide 16. Four steps.
+
+First, substitute equation 10 for Y at X equal to x. Equation 12: the conditional expected squared error equals the expected value of psi of x plus epsilon minus psi hat of x, squared.
+
+Second, write the bracket as minus the quantity psi hat of x minus psi of x, plus epsilon, and expand. Equation 13: the expected value of psi hat of x minus psi of x, squared; minus 2 times the expected value of psi hat of x minus psi of x, times epsilon; plus the expected value of epsilon squared.
+
+Third, psi hat is built from D alone and the new epsilon is independent of D, so the expected product factorises. Equation 14: the expected product equals the expected value of psi hat of x minus psi of x, times the mean of epsilon, which is times zero, which is zero. The slide writes the cross term with a plus 2; the expansion gives minus 2. It is zero either way.
+
+Fourth, the expected value of epsilon squared is its variance plus zero squared, which is sigma squared. Substitute equation 14 into equation 13. Equation 15, boxed: the conditional expected squared error at x equals the EQM of psi hat at x, the reducible part, plus sigma squared, the irreducible part.
+
+Integrate equation 15 through equation 11. Equation 16: the expected squared prediction error equals the integral of the EQM of psi hat at x against the distribution of X, plus sigma squared.
+
+The choice of method moves the EQM; nothing moves sigma squared, slide 16. ISLP equation 2.3, printed page 18, is equation 15 with psi hat and X held fixed, so its reducible part is the plain square, psi of X minus psi hat of X, squared. Sigma squared is a floor on the test error that is almost always unknown in practice, ISLP page 18: it is the variation in Y due to everything not in X.
+
+One point four. The reducible part splits into squared bias plus variance.
+
+The definitions, slide 17, at a fixed x, with expectations over training samples. Equation 17: the bias of psi hat at x is the expected value of psi hat of x minus psi of x; and the variance of psi hat at x is the expected value of psi hat of x minus its expectation, squared.
+
+The proof, slide 18: the same add-and-subtract as Class 1's mean squared error equals variance plus squared bias, now pointwise in x. Insert the expected value of psi hat of x. Equation 18: the EQM equals the expected value of the square of two pieces, psi hat of x minus its expectation, minus psi of x minus the expectation of psi hat of x. Equation 19, expanding: the expected value of psi hat minus its expectation, squared; minus 2 times the expected value of psi hat minus its expectation, times psi of x minus the expectation of psi hat; plus psi of x minus the expectation of psi hat, squared. The middle factor is a constant times the expectation minus the expectation, which is zero. So equation 20: the EQM of psi hat at x equals its variance plus its squared bias.
+
+Substitute equation 20 into equation 16 to get the full factorisation. Equation 21, boxed: the expected squared prediction error equals the integral of the squared bias of psi hat at x, plus the integral of the variance of psi hat at x, both against the distribution of X, plus sigma squared. That is expected squared bias, expected variance, and irreducible error. ISLP equation 2.7, printed page 32, is the pointwise version of equation 21 at a point x zero, stated there without proof. AME section 1.5.2, page 22, writes it with the conditional variance of Y given X in place of sigma squared, which also covers heteroskedastic noise.
+
+Where the randomness lives, the point the bias variance script asks the reader to check, term by term. Sigma squared is random over the new epsilon; it is driven by the world, and it is untouchable. The squared bias is random over nothing, a number for each x; it measures how far the average learned curve is from psi, and a rigid learner cannot bend to psi. The variance is random over the training sample; it measures how much psi hat moves when the sample is redrawn, and a flexible learner chases its sample.
+
+"Variance" here is the variance of the learned function across training samples, not of Y. A high-variance method: change 10 per cent of the sample and psi hat changes a lot, slide 19. High bias: the method can only learn a restricted class of functions, like a straight line fitted to a strongly non-linear psi.
+
+One point four point one. Worked: a high-bias, low-variance learner, quantified, from the script bias variance.
+
+The script draws 1000 points from y equal to one minus x plus 2 x squared plus epsilon, with x uniform on zero to one and sigma equal to 0.1, and refits a straight line to 90 per cent subsamples, asking: "Can you even see the fitted regression line changing?" The two terms of equation 21 can be computed exactly.
+
+The bias. As n grows, the least squares line converges to the population projection of psi on one and x. For x uniform on zero to one, the projection of x squared is x minus one sixth, with residual x squared minus x plus one sixth, orthogonal to one and to x. Substitute into psi. Equation 22: psi of x, one minus x plus 2 x squared, equals one minus x plus 2 times x minus one sixth, plus 2 times x squared minus x plus one sixth; which is two thirds plus x, plus 2 times x squared minus x plus one sixth. So the bias of the line is minus 2 times x squared minus x plus one sixth. And the integral from zero to one of x squared minus x plus one sixth, squared, is one over 180. Equation 23: the integrated squared bias is 4 times one over 180, which is one over 45, which is 0.0222.
+
+The variance. Least squares with 2 coefficients on 900 points averages sigma squared times 2 over 900 over the design. Equation 24: the average variance is about 0.1 squared times 2 over 900, which is 0.0000222.
+
+The squared bias, 0.0222, is 1000 times the variance, 0.0000222, and more than twice the noise, sigma squared equal to 0.01. That holds with the design fixed, as equation 24 assumes. If every training set draws fresh x values, the variance is about 8.6 times 10 to the minus 5, so the squared bias is only about 260 times larger; the Python note computes both. That is "high bias, low variance": the line is stable to the fourth decimal across subsamples and systematically wrong. The script's tall regression tree is the opposite corner. In the G layer, boosting attacks bias with many short trees and random forests attack variance by averaging many tall ones; they are named in the script and not developed in this course.
+
+One point five. Worked: the tanh simulation. Slides 20 to 27.
+
+The world, fully known, slide 21. X is years of schooling and Y is annual income in thousands of reais. Equation 25: psi of x equals 45 times the hyperbolic tangent of x over 1.9 minus 7, plus 57; X is uniform on 8 to 18; epsilon is normal with mean zero and variance 4 squared; and n is 30.
+
+Reading equation 25 with numbers. The argument of the hyperbolic tangent is zero at x equal to 7 times 1.9, which is 13.3, where psi equals 45 times zero plus 57, which is 57: the inflection point. At the ends, equation 26: psi of 8 equals 45 times the hyperbolic tangent of minus 2.7895, plus 57, which is 45 times minus 0.99248 plus 57, which is 12.339; and psi of 18 equals 45 times the hyperbolic tangent of 2.4737, plus 57, which is 45 times 0.98590 plus 57, which is 101.365. The slope at the inflection is 45 over 1.9 times the squared hyperbolic secant of zero, which is 23.68 thousand reais per extra year. It is an S-curve from about 12 to about 101 that no straight line can follow. The irreducible error is sigma squared equal to 4 squared, which is 16, the dotted line of slide 26.
+
+The figure shows psi from 8 to 18 years, 30 seeded training points, which are not the slide's sample, and three learners: the least squares line, with 2 degrees of freedom, which is what the slide's smoothing spline gives at 2 degrees of freedom; a degree-6 polynomial, with 7 degrees of freedom, standing in for the slide's 7; and the interpolant, with 30 degrees of freedom, as on slide 24. The line is rigid: it under-predicts at 8 and 18 and over-predicts just below 13 years, and redrawing the sample would barely move it: bias without variance. The interpolant has zero training error, since it passes through every point, but zigzags with the noise: variance without bias. The degree-6 curve tracks psi to within a few thousand reais everywhere: the trade-off in one picture.
+
+The slide's Monte Carlo, slide 25. For each number of degrees of freedom from 2 to n: draw M test points from the distribution of X; for each, draw N training samples of size n, fit the learner, and estimate the two terms of equation 21. Equation 27: the estimated squared bias at a test point is the square of the average of the N fitted values minus psi at that point; and the estimated variance is the variance of the N fitted values. Then average each over the M points. Slide 26 shows the result: the squared bias falls to near zero by about 7 degrees of freedom, the variance climbs steadily, and the prediction error bottoms out near 20, above the dotted line at 16. In the slide's words, "aproximadamente 7 graus de liberdade", approximately 7 degrees of freedom, slide 27.
+
+The same experiment, exactly. Swap the smoothing spline for a least squares polynomial of degree d on a fixed equispaced design of 30 points in 8 to 18. Then psi hat at x zero equals b of x zero transposed, times B transposed B inverse, times B transposed times y, which is linear in y, the vector psi plus the vector epsilon. Here B is the 30 by d plus one basis matrix and b of x zero its row at x zero. So both terms of equation 17 are closed-form. Equation 28: the expected value of psi hat at x zero is b of x zero transposed times B transposed B inverse times B transposed times the vector psi; and its variance is sigma squared times b of x zero transposed times B transposed B inverse times b of x zero. These are averaged over a uniform grid on 8 to 18 in place of the distribution of X, computed in the figure script.
+
+The results, degree by degree, giving the average squared bias, the average variance, the noise 16, the expected test error, and the expected training error.
+
+Degree 1, 2 degrees of freedom: squared bias 74.80, variance 1.03, test error 91.83, training error 93.87.
+Degree 3, 4 degrees of freedom: squared bias 7.98, variance 1.97, test error 25.95, training error 22.39.
+Degree 5, 6 degrees of freedom: squared bias 0.94, variance 2.87, test error 19.81, the minimum, training error 13.79.
+Degree 6, 7 degrees of freedom: squared bias 0.70, variance 3.33, test error 20.03, training error 13.01.
+Degree 7, 8 degrees of freedom: squared bias 0.11, variance 3.80, test error 19.91, training error 11.85.
+Degree 10, 11 degrees of freedom: squared bias 0.007, variance 5.37, test error 21.38, training error 10.14.
+Degree 15, 16 degrees of freedom: squared bias 0.000, variance 10.20, test error 26.20, training error 7.47.
+
+Check one row against equation 21: at degree 5, 0.94 plus 2.87 plus 16 is 19.81. It checks.
+
+The figure plots the expected test error, the average squared bias, the average variance, the expected training error and the irreducible level 16 against degree from 0 to 15. The squared bias falls from over 1000 to nearly zero by degree 9; the variance rises from 0.5 to 10; the test error bottoms at 19.8 at degree 5 and rises after; the training error keeps falling below 16.
+
+The minimum is flat: degrees 5, 6 and 7, that is 6 to 8 degrees of freedom, are within 0.25 of each other, right where the slide's spline lands, about 7 degrees of freedom. Past it, the squared bias has nothing left to give and the variance curve carries the test error up; the training curve slides below sigma squared equal to 16, which means the fit is now reproducing noise.
+
+The interactive companion, the Flexibility Dial, lets you move the degree, the training size and the noise on this tanh model and watch where the optimal degree goes: larger n or smaller sigma push it right.
+
+One point six. Why the training error cannot pick the flexibility.
+
+The training mean squared error, slide 28, ISLP equation 2.5, printed page 28, AME equation 1.1, printed page 14. Equation 29: the training EQM is one over n times the sum over the training points of y i minus psi hat of x i, squared.
+
+Slides 29 and 30: as the degrees of freedom grow, equation 29 falls monotonically and hits zero at 30 degrees of freedom, where the spline interpolates. Choosing the degrees of freedom by equation 29 always picks the most overfitted model. ISLP's test mean squared error, equation 2.6, printed page 29, is the average of y zero minus psi hat of x zero, squared, over previously unseen pairs: the quantity equation 21 describes.
+
+How optimistic is it? Exactly, for least squares. This is the G layer, proved because it explains the AIC and C p penalties of Class 1 section 6. Four steps.
+
+First. With hat matrix H equal to B times B transposed B inverse times B transposed, the residual vector is equation 30: e equals I minus H times y, which is I minus H times psi plus I minus H times epsilon.
+
+Second. I minus H is symmetric and idempotent with trace n minus d plus one, and the zero mean of epsilon kills the cross term. Equation 31: the expected squared length of e is the squared length of I minus H times psi, plus the expected value of epsilon transposed times I minus H times epsilon, which is the squared length of I minus H times psi plus sigma squared times n minus d minus one.
+
+Third. Divide by n. Equation 32: the expected training EQM is the squared length of I minus H times psi over n, plus sigma squared times one minus d plus one over n.
+
+Fourth. For a new response at the same design points, the error is the squared length of I minus H times psi over n, plus sigma squared times d plus one over n, plus sigma squared: squared bias plus variance plus noise, averaged over the design points. Subtract equation 32. Equation 33: the expected in-sample test error minus the expected training EQM equals two sigma squared times d plus one, over n.
+
+The training error understates the error on new responses by two sigma squared times d plus one over n, growing with every parameter. Adding exactly that penalty back is Mallows' C p or AIC; BIC uses log n in place of 2, AME section 1.5.1.1, printed page 21. At degree 5, n equal to 30 and sigma squared equal to 16: 2 times 16 times 6 over 30, which is 6.4. The other route, estimating the test error directly on held-out data, is cross-validation, section 3.
+
+One point seven. Graduate layer: named, not developed here.
+
+Smoothing splines, the slide's learner, fitted with a chosen number of degrees of freedom: a black box on purpose, slide 23. Polynomials stand in for them in this unit.
+
+Trees, boosting and random forests, from the bias variance script's comments: the bias-variance trade-off "in orthogonal directions". Outside this course's syllabus.
+
+The same decomposition for classification, slides 36 to 50: zero-one loss, the Bayes classifier and its optimality proof, k nearest neighbours with k chosen by 10-fold cross-validation, and a Bayes error of 0.0183 by Monte Carlo. The classification side is section 5.
+
+Ridge and lasso, buying lower variance with deliberate bias, are Classes 3 and 4.
+
+Spoken checklist for section 1. You should be able to prove in three steps that the conditional mean minimises the expected squared prediction error, and give the decomposition version with the vanishing cross term. You should be able to derive the split into reducible error plus sigma squared, including why the cross term factorises. You should be able to derive the split of the reducible part into squared bias plus variance, and state the full decomposition. You should be able to say over what each term is random. You should be able to reproduce the quadratic example: squared bias one over 45, 0.0222, against variance 0.0000222. You should be able to read the tanh results, optimum at degree 5 with 19.81 equal to 0.94 plus 2.87 plus 16. And you should be able to derive the optimism, two sigma squared times d plus one over n, and compute 6.4.
+
+
+Part one, section 2. Reading a linear regression: levels, logs, elasticities and interactions.
+
+This section covers the multiple linear regression deck, slides 17, 29 and 44; the scripts capm regression and salaries for professors; the page on the return to education with the Mroz data; Wooldridge section 2.4, printed pages 36 to 40, with equations 2.39 to 2.46, Examples 2.10 and 2.11, and Table 2.3; Wooldridge section 6.2, printed pages 171 to 178, with equations 6.6 to 6.13 and 6.17 and Example 6.2; and ISLP section 3.3.1, printed page 91, for the Credit units.
+
+The claim. "Linear" regression is linear in the parameters, not in the variables, so logs, squares and products of the regressors are all fitted by the same least squares. What changes is the reading of a coefficient: a unit change, level-level; an approximate percentage, log-level, 100 beta; an elasticity, log-log, beta; or a slope that depends on another variable, with interactions and quadratics. The 100 beta reading is a first-order approximation; the exact change is 100 times e to the beta delta x, minus one, and the gap is already 5 points at beta equal to 0.306.
+
+The notation. y is the response, x one to x k the regressors, and u the error, with conditional mean zero given x. The betas are population coefficients and the beta hats their least squares estimates. Delta is a discrete change, and the percentage change of y is 100 times delta y over y. Ceteris paribus means all other regressors and u held fixed. Log is the natural log throughout, Wooldridge's convention. s y and s x j are sample standard deviations, and a star marks a standardised variable, minus its mean, over its standard deviation. A dummy D is one for the named category and zero for the base category.
+
+Two point one. Intuition: "linear" means linear in beta.
+
+The model y equals beta zero plus beta one x plus u is linear because it is linear in beta zero and beta one; nothing stops y or x from being the log of wage, the square root of income, x squared, or x one times x two, Wooldridge section 2-4c, page 40. The mechanics of least squares, beta hat equal to X transposed X inverse times X transposed y, from Class 1 section 6, do not care how the columns of X were built.
+
+The mechanics are free; the interpretation is not. Wooldridge, page 40: "it is much more important to become proficient at interpreting coefficients than to become efficient at computing formulas." The same fact is what makes polynomial regression a linear model, section 3.
+
+Two point two. Level-level: a coefficient is a slope in the variables' own units.
+
+For y equal to beta zero plus beta one x one up to beta k x k plus u, holding the other regressors and u fixed, equation 1: delta y equals beta j times delta x j.
+
+Units move the coefficient, never the fit, Wooldridge section 2-4a, pages 36 to 37. If x j is replaced by c times x j, equation 1 stays true only if the slope becomes beta j over c; if y is replaced by c times y, every coefficient is multiplied by c. The R squared is unchanged. Wooldridge's own case: the CEO salary slope on return on equity is 18.501, equation 2.39, salary in thousands of dollars per percentage point; and on return on equity divided by 100 it is 1,850.1, equation 2.41, page 37. Dividing x by 100 multiplied the slope by 100.
+
+Two point two point one. Worked: the Credit best model, multiple linear regression deck slide 44. Equation 2: predicted balance equals minus 499.7, minus 7.84 times income, plus 0.267 times limit, plus 23.18 times cards, plus 429.6 times student. n is 400, the residual standard error is 99.56 on 395 degrees of freedom, the R squared is 0.9536, and the adjusted R squared is 0.9531. Balance is the average credit-card debt in dollars; income is in thousands of dollars, ISLP section 3.3.1, page 91.
+
+The readings by equation 1, others held fixed. Income, minus 7.839: 1,000 dollars more income goes with 7.84 dollars less balance. Limit, 0.2666: each extra dollar of credit limit goes with 0.27 dollars more balance. Cards, 23.18: one more card goes with 23.18 dollars more balance. Student, 429.6, a dummy: a student carries 429.6 dollars more balance than a non-student with the same income, limit and cards.
+
+Check the printout's own arithmetic. The t statistic is the estimate over its standard error. Equation 3: for student, 429.6 over 16.61 is 25.86; for cards, 23.18 over 3.639 is 6.37. Both check. And the adjusted R squared, one minus one minus R squared times n minus one over n minus k minus one, with k equal to 4. Equation 4: one minus 1 minus 0.9536, times 399 over 395, which is one minus 0.0464 times 1.010127, which is one minus 0.04687, which is 0.9531. It checks.
+
+Two point two point two. Worked: rescaling in the houseprice data, slides 17 and 29. Slide 17 converts the data before fitting: square feet to square metres, multiplying by 0.092903, and price from US dollars to thousands of reais, multiplying by 3.2 and dividing by 1000. The six-variable model of slide 29 has a size coefficient of 1.886008: 1,886 reais per extra square metre, other regressors fixed. Undo the conversion with the rule under equation 1. Since one square metre measure equals 0.092903 times the square-feet measure, the slope per square foot is equation 5: 0.092903 times 1.886008, which is 0.17522 thousand reais, that is 175.2 reais per square foot; and at 3.2 reais per dollar, 175.22 over 3.2 is 54.75 dollars per square foot.
+
+The CAPM regressions, from the script capm regression, are level-level too: monthly excess returns of the food, durables and construction industries on the market's excess return, from the Ecdat Capm data, 516 months, 1960 to 2002. There beta reads "percentage points of industry excess return per percentage point of market excess return", and the intercept is the pricing error alpha. The script prints no output, so there are no numbers to work here; its conjugate-prior part belongs to Classes 3 and 4.
+
+Two point three. Interactions: the slope of one variable depends on another.
+
+With an interaction, Wooldridge section 6-2c, pages 177 to 178, equation 6.17. Equation 6: y equals beta zero plus beta one x one plus beta two x two plus beta three x one x two plus u, which implies that delta y over delta x two equals beta two plus beta three x one.
+
+Beta two alone is the effect of x two at x one equal to zero, often meaningless. Wooldridge's example: the effect of a bedroom on a house of zero square feet. Report equation 6 at interesting values of x one, or centre x one at its mean before forming the product, so that beta two becomes the effect at the mean, Wooldridge page 178.
+
+When x one is a dummy, equation 6 gives two slopes. The script salaries for professors fits the full model of salary on the sex dummy, years of service, and their product, with salary in thousands of dollars and the dummy equal to one for men. Equation 7: the expected salary given sex and years equals beta zero, plus beta one times male, plus beta two times years, plus beta three times male times years. Equation 8: the slope of expected salary in years is beta two for women and beta two plus beta three for men; and the gap, the expected salary for men minus that for women, is beta one plus beta three times years.
+
+So beta one is the gender gap at zero years of service, and beta three is how much the gap widens per year. The reduced model, salary on the dummy plus years, forces beta three to zero: parallel lines, one constant gap. The script prints no estimates; it compares the two models by a Bayes factor, Classes 3 and 4.
+
+Two point three point one. Worked: the seven-variable houseprice model, slide 29. The coefficients include size times neighbourhood two, minus 0.3614412, and size times brick, 0.2907379, with the size coefficient 1.9374668. By equation 6, the price of one more square metre, in thousands of reais, is 1.9375 minus 0.3614 times the neighbourhood-two dummy plus 0.2907 times the brick dummy. Four cases. Not brick and not neighbourhood two: 1.9375. Brick and not neighbourhood two: 1.9375 plus 0.2907, which is 2.2282. Not brick, in neighbourhood two: 1.9375 minus 0.3614, which is 1.5760. Brick, in neighbourhood two: 1.9375 minus 0.3614 plus 0.2907, which is 1.8668.
+
+One coefficient per row of the printout, but four different effects of size. A square metre is worth 2,228 reais in a brick house outside neighbourhood two and 1,576 reais in a non-brick house in neighbourhood two.
+
+Two point four. Log-level: 100 beta is a semi-elasticity, and an approximation.
+
+The model, Wooldridge equation 2.42, page 37. Equation 9: log y equals beta zero plus beta one x plus u.
+
+Three steps.
+
+Step one. Take two values of x with the same u, and subtract the two versions of equation 9. Equation 10: log y one minus log y zero equals beta one times x one minus x zero, which is beta one delta x.
+
+Step two, exact. Exponentiate equation 10: y one over y zero equals e to the beta one delta x. So equation 11: the percentage change of y equals 100 times y one over y zero minus one, which is 100 times e to the beta one delta x, minus one.
+
+Step three, approximate. For small z, e to the z is one plus z plus z squared over two and so on, approximately one plus z. Substitute z equal to beta one delta x into equation 11. Equation 12: the percentage change of y is approximately 100 times beta one times delta x. This is Wooldridge's equation 2.43; 100 beta one is the semi-elasticity of y with respect to x. Equation 11 is Wooldridge's 6.8, page 171, and with delta x equal to one it is his 6.9. The error of equation 12 is about 100 z squared over two: negligible for z up to 0.05 in absolute value, five points at z equal to 0.3.
+
+Two point four point one. Worked: Wooldridge's own numbers, approximate against exact. Five cases, each with beta hat times delta x, the approximate reading, and the exact reading.
+
+Example 2.10, log wage equals 0.584 plus 0.083 times education, with n equal to 526 and R squared 0.186, one more year: 0.083; approximately 8.3 per cent; exactly 100 times e to the 0.083 minus one, which is 8.65 per cent.
+
+Equation 6.7, log price equals 9.23 minus 0.718 log nitrogen oxide plus 0.306 rooms, one more room: 0.306; approximately 30.6 per cent; exactly 100 times e to the 0.306 minus one, which is 35.8 per cent.
+
+The same, one fewer room: minus 0.306; approximately minus 30.6 per cent; exactly 100 times e to the minus 0.306 minus one, which is minus 26.4 per cent.
+
+The student-teacher ratio coefficient, minus 0.052, plus one: approximately minus 5.2 per cent; exactly minus 5.1 per cent.
+
+The same, plus five: minus 0.260; approximately minus 26 per cent; exactly 100 times e to the minus 0.26 minus one, which is minus 22.9 per cent.
+
+These are Wooldridge pages 38 and 171 to 172. Note the room rows: the approximation, 30.6 per cent, always lies between the exact decrease, 26.4 per cent, and the exact increase, 35.8 per cent. It is the symmetric, "arc" version, Wooldridge page 172.
+
+The figure has two panels. On the left, the percentage change in y against the change in log y, from minus 0.8 to 0.8: the exact curve, 100 times e to the z minus one, lies above the straight approximation, 100 z, on both sides, with Wooldridge's points marked: education 8.7 per cent, one more room 35.8 per cent, one fewer room minus 26.4 per cent, five more students per teacher minus 22.9 per cent. On the right, the percentage change in salary against the percentage change in sales for an elasticity of 0.257: the exact curve bends below the straight approximation, 2.48 per cent against 2.57 per cent at plus 10 per cent. The vertical gaps on the left are the error of reading 100 beta: invisible at 0.083, five points at 0.306. Exact changes are asymmetric, up 35.8, down 26.4 for the same change in rooms, because a log-linear model is multiplicative in y.
+
+Three cautions. First: not "log wage rises by 8.3 per cent"; the log rises by 0.083, Wooldridge page 38. Second: rescaling y, from dollars to thousands, changes only the intercept, by log c, never the slope, page 39. Third: an R squared from a regression of log y cannot be compared with one of y; they explain the variation of different variables, page 173.
+
+A G-layer note on what equation 11 is a change of. With u held fixed, equation 11 is the change in e to the beta zero plus beta one x plus u, that is in the median of y when u is symmetric. If u is independent of x, the conditional mean of y is e to the beta zero plus beta one x times the expected value of e to the u, and the ratio of conditional means is e to the beta one delta x, the same, so equation 11 also holds for the mean. Plugging beta hat into equation 11 is consistent but not unbiased, since the exponential is non-linear, Wooldridge page 171.
+
+Two point five. Log-log and level-log.
+
+Log-log, Wooldridge equation 2.45, page 39: log y equals beta zero plus beta one log x plus u. Differencing as in equation 10, equation 13: the change in log y equals beta one times the change in log x, so beta one equals d log y over d log x, which is d y over y divided by d x over x: the elasticity of y with respect to x. Using the approximation that a change in log v is about the percentage change of v over 100 on both sides, equation 14: the percentage change of y is approximately beta one times the percentage change of x. Exactly, exponentiating equation 13, y one over y zero equals x one over x zero raised to beta one, so equation 15: the percentage change of y equals 100 times the quantity one plus the percentage change of x over 100, raised to beta one, minus one.
+
+Worked: Wooldridge Example 2.11, page 39. The predicted log salary equals 4.822 plus 0.257 log sales, with n equal to 209 and R squared 0.211. A 1 per cent rise in sales goes with a 0.257 per cent rise in CEO salary. For a 10 per cent rise, equation 14 gives 0.257 times 10, which is 2.57 per cent, and equation 15 gives equation 16: 100 times 1.10 to the 0.257, minus one, which is 100 times 1.024797 minus one, which is 2.48 per cent.
+
+Level-log: y equals beta zero plus beta one log x plus u gives delta y equal to beta one times the change in log x, approximately beta one over 100 times the percentage change of x.
+
+Wooldridge Table 2.3, page 39, the summary to keep, model by model. Level-level: dependent y, independent x, delta y equals beta one delta x. Level-log: dependent y, independent log x, delta y equals beta one over 100 times the percentage change of x. Log-level: dependent log y, independent x, the percentage change of y equals 100 beta one times delta x. Log-log: dependent log y, independent log x, the percentage change of y equals beta one times the percentage change of x.
+
+When to log, Wooldridge pages 172 to 173: usually for positive money amounts and large counts; usually not for years, such as education, experience and age; either way for proportions, and then a percentage change, in logs, must not be confused with a percentage point change, in levels. Unemployment going from 8 to 9 is one point, 12.5 per cent, and log 9 minus log 8 is 0.118.
+
+Two point six. Worked: the site's log family income regression, with the Mroz data.
+
+The page on the return to education, by Lopes, dated May 30th, 2023, uses Mroz's 1975 PSID sample of 753 married women. Equation 17: y star equals the sum over 18 regressors of beta j star times x j star, plus e, where y star is log family income minus its mean, over its standard deviation, and each x j star is standardised the same way. It is fitted with no intercept, because every variable has mean zero.
+
+Reading a standardised log-level coefficient. Undo the standardisation in equation 17. Equation 18: log family income equals its mean, plus s y times the sum of beta j star times x j minus its mean over s x j, plus s y times e; so the derivative of log family income in x j is beta j star times s y over s x j. So beta j star reads: one standard deviation more of x j goes with beta j star standard deviations more of log family income. The semi-elasticity per unit of x j is 100 times beta j star times s y over s x j, by equation 12. The page does not print the standard deviations, and the data are not in the repository, so the percentage reading cannot be completed from the page; the standard deviation reading is the one available.
+
+Four coefficients from the printout, each with standard error, t, and reading.
+
+The wife's marginal tax rate: minus 0.7119, standard error 0.0329, t equal to minus 21.64. By far the strongest association; but tax rates are computed from income, so this is a predictive association, not an effect.
+
+The husband's wage: 0.1476, standard error 0.0320, t equal to 4.62. One standard deviation more of husband's wage goes with 0.148 standard deviations more of log family income.
+
+The wife's hours: 0.1323, standard error 0.0285, t equal to 4.65.
+
+The wife's education: minus 0.0053, standard error 0.0238, t equal to minus 0.22. No association, holding the wife's wage, hours and the other 15 regressors fixed.
+
+The page's "return to education" is nil because of what is held fixed. Education works partly through the wife's wage and hours, which are in the regression; conditioning on them removes that channel. Which controls are legitimate is a question for Classes 5 and 6, the problem of bad controls.
+
+Check the printout: residual standard error 0.4511 on 735 degrees of freedom, R squared 0.8011, adjusted 0.7962. The t for the tax rate: minus 0.711872 over 0.032891 is minus 21.64, which checks. The residual sum of squares, and, because y star has mean zero and variance one, the total sum of squares, the sum of y star squared, which is n minus one, 752. Equation 19: RSS equals 735 times 0.4511 squared, which is 735 times 0.203491, which is 149.57; and the R squared is one minus 149.57 over 752, which is one minus 0.19889, which is 0.8011. It checks.
+
+R's no-intercept adjusted R squared uses n and n minus p, with p equal to 18. Equation 20: one minus one minus 0.8011, times 753 over 735, which is one minus 0.1989 times 1.02449, which is one minus 0.20377, which is 0.7962. It checks.
+
+The page's "MLE" standard errors use the maximum likelihood variance, RSS over n, instead of RSS over n minus p, so each is the least squares one times the square root of 735 over 753, which is 0.98798. For labour force participation, 0.029839 times 0.98798 is 0.029480, matching the printed 0.02947983. The maximum likelihood estimator of sigma squared is the biased one, as in Class 1 section 6.
+
+The rest of the page, prior predictive densities of minus 2253.0, minus 2107.2 and minus 2015.1, and log Bayes factors of 145.8, 238.0 and 92.1, selecting labour force participation, the wife's hours, children aged 6 to 18, the husband's wage, and the tax rate, is Bayesian model comparison: Classes 3 and 4.
+
+Two point seven. Quadratics: a slope that changes with x.
+
+y equals beta zero plus beta one x plus beta two x squared plus u, Wooldridge equation 6.10, page 173. The slope is not beta one. Equation 21: the change in predicted y over the change in x is approximately beta one hat plus 2 beta two hat x. It is zero at the turning point, equation 22: x star equals the absolute value of beta one hat over 2 beta two hat.
+
+Worked, Wooldridge pages 174 to 176. Wage on experience, with beta one hat equal to 0.298 and beta two hat equal to minus 0.0061, equation 6.12: x star is 0.298 over 2 times 0.0061, which is 0.298 over 0.0122, which is 24.4 years. Example 6.2, log price with a rooms coefficient of minus 0.545 and a rooms squared coefficient of 0.062: x star is 0.545 over 0.124, which is 4.4 rooms. And by equations 21 and 12, equation 23: the percentage change in price is approximately 100 times the quantity minus 0.545 plus 2 times 0.062 times rooms, times the change in rooms, which is minus 54.5 plus 12.4 times rooms, times the change in rooms. That gives minus 54.5 plus 12.4 times 5, which is 7.5 per cent from five to six rooms, and minus 54.5 plus 12.4 times 6, which is 19.9 per cent from six to seven.
+
+A quadratic is a degree-2 polynomial regression. Raising the degree buys flexibility and, by section 1, variance; choosing the degree from data is section 3.
+
+Spoken checklist for section 2. You should be able to explain why "linear" means linear in the parameters. You should be able to read level-level coefficients and say how units move them, and check a printout's t statistics and adjusted R squared. You should be able to read an interaction as a slope that depends on another variable, and read a dummy interaction as two slopes and a gap that widens. You should be able to derive the exact log-level change, 100 times e to the beta delta x minus one, and its approximation, and compute 35.8 and minus 26.4 per cent at 0.306. You should be able to read an elasticity, and compute 2.57 against 2.48 per cent for a 10 per cent rise at 0.257. You should be able to recite Wooldridge's Table 2.3. You should be able to read a standardised coefficient and check the Mroz printout. And you should be able to find a quadratic's turning point, 24.4 years and 4.4 rooms.
+
+
+Part two, section 3. Choosing the polynomial order by cross-validation, and putting a bootstrap band on the winner.
+
+This section covers the motorcycle deck, 11 slides, and its R Markdown page by Lopes, dated October 28th, 2025; Fundamentos slides 27 to 35; the multiple linear regression deck, slides 36 to 38; ISLP section 5.1, printed pages 202 to 209, equations 5.1 to 5.3, section 5.2, printed pages 212 to 214, equation 5.8, and section 7.1, printed pages 290 to 291, equations 7.1 and 7.2; and AME section 1.5.1, printed pages 14 to 16, with equations 1.1 and 1.2 and Observação 1.5, and section 1.5.1.1, printed page 21.
+
+The claim. The test error of section 1 is not observable, but it can be estimated by refitting on part of the data and predicting the rest. A single hold-out split is noisy: on the site, 100 random 80 to 20 splits pick order 12 only 63 times. 10-fold cross-validation picks it 99 times out of 100. Leave-one-out cross-validation, LOOCV for short, costs a single fit for least squares, thanks to the formula: CV sub n equals one over n times the sum of the squared quantity y i minus y i hat, over one minus h i i. The adjusted R squared, BIC, LOOCV and 10-fold all land on order 12 for the motorcycle data, and a pairs bootstrap draws the uncertainty band around that fit.
+
+The notation. The data are pairs x i and y i, for i from 1 to n. For the motorcycle data, x is the time after impact in milliseconds and y the head acceleration in g, both standardised, with n equal to 132. d is the polynomial order, the tuning parameter; the model has d plus one coefficients. X is the n by d plus one design with columns one, x, up to x to the d; beta hat is X transposed X inverse times X transposed y; y i hat is the fitted value; and e i is the residual. H, X times X transposed X inverse times X transposed, is the hat matrix, and h i i, x i transposed times X transposed X inverse times x i, is the leverage of point i. beta hat with i removed, and y hat with i removed, are the fit and prediction with point i left out. k is the number of folds, and n sub j the size of fold j. B is the number of bootstrap resamples, and f hat star b is the fit on resample b.
+
+Three point one. Intuition: two jobs for an error estimate.
+
+Fundamentos slide 27 names them. Model selection: pick the flexibility, here d, that best balances bias and variance. Model assessment: say how well the chosen model will predict. The training mean squared error does neither: it falls with every added term, section 1.6. Two fixes exist: penalise the training error, with the adjusted R squared, C p, AIC or BIC, from Class 1 section 6; or estimate the test error directly by predicting observations the fit has not seen, which is this section.
+
+Three point two. Polynomial regression and the motorcycle data.
+
+Polynomial regression is a linear model, ISLP equation 7.1, page 290. Equation 1: y i equals beta zero plus beta one x i plus beta two x i squared, up to beta d x i to the d, plus epsilon i. It is least squares on the columns x, x squared, up to x to the d. ISLP warns that d above 3 or 4 gives "very strange shapes", "especially near the boundary of the X variable", page 290. Keep that in mind when order 12 wins below.
+
+The data, slides 2 and 3. The mcycle data from the MASS package: head acceleration in a simulated motorcycle crash, used to test helmets, Silverman 1985. The code keeps the first 132 rows, maps x to x over its maximum, then to minus one plus 2 x, then standardises; y likewise. The first two maps are wasted work: standardising a x plus b, with a positive, gives back the standardised x, because the mean shifts by b and scales by a while the standard deviation scales by a. Equation 2: a x i plus b minus the quantity a x bar plus b, over a s x, equals x i minus x bar over s x.
+
+The plot, slide 3, is flat and tight before impact, then a deep dip, a rebound and a noisy tail: the noise variance is far from constant, which matters for section 3.7.
+
+Three point three. In-sample criteria: the adjusted R squared and BIC. Slides 4 and 5.
+
+Slide 4 fits orders 1, 2, 5, 8, 10, 11, 12 and 20, and the panel labels read: 0.0769, 0.1323, 0.5259, 0.6941, 0.769, 0.7686, 0.7798 at order 12, and 0.7688 at order 20. The page's code prints the adjusted R squared in that legend, and slide 5's adjusted R squared curve peaks at the same value, about 0.78, at order 12.
+
+The page computes, with sigma hat squared equal to RSS over n minus d minus one, equation 3: the adjusted R squared at order d is one minus one minus R squared times n minus one over n minus d minus one; and BIC at order d is one over n times the quantity RSS plus log n times d plus one times sigma hat squared. That is BIC in AME's penalised-risk form, the EQM plus log n times p times sigma hat squared over n, with p equal to d plus one, AME section 1.5.1.1, page 21. Both pick order 12, the dotted lines on slide 5. Going from 12 to 20 adds eight coefficients and lowers the adjusted R squared from 0.7798 to 0.7688: the penalty at work.
+
+A number to carry. y is standardised, so its variance is one, and the adjusted R squared equals one minus sigma hat squared over the variance of y. So at order 12, equation 4: sigma hat squared is one minus 0.7798, which is 0.2202, and sigma hat is the square root of 0.2202, which is 0.4693.
+
+Three point four. The validation-set, or hold-out, approach.
+
+The estimator, ISLP section 5.1.1, pages 202 to 204, AME equation 1.2, page 14. Split at random into a training part T and a validation part V; fit on T only. Equation 5: the estimated risk at order d is the average over the validation points of y i minus the training fit at x i, squared.
+
+Since V played no part in the fit, equation 5 is an honest estimate, consistent by the law of large numbers, AME page 14. Two drawbacks, ISLP section 5.1.1 and page 208: it varies a lot with the split, and it fits on fewer points than n, so it tends to overestimate the error of the full-sample fit.
+
+One split, slide 6, 80 per cent to 20 per cent: the root mean squared error curve falls from about 0.92 at orders up to 4 to its minimum at order 12.
+
+One hundred splits, slide 7, with the variability made visible. The times each order wins, out of 100: orders 1 to 5, zero; order 6, once; order 7, zero; order 8, twice; order 9, twice; order 10, 15 times; order 11, 7 times; order 12, 63 times; order 13, 10 times; order 14, zero. The total is 1 plus 2 plus 2 plus 15 plus 7 plus 63 plus 10, which is 100. It checks. Order 12 wins 63 per cent of the time; orders 10 to 13 together, 15 plus 7 plus 63 plus 10, win 95 per cent. The same experiment drives the best-subset size in the houseprice data, in the multiple linear regression deck, slides 36 to 38: 1,000 random splits with 50, 60, 70 and 80 per cent for training, and the winners pile up at sizes 5 to 7.
+
+A single split answers "which d?" with a random variable. Repeating the split and reporting the distribution of winners is honest; reporting one split is not.
+
+Three point five. Leave-one-out cross-validation, and the one-fit shortcut.
+
+The definition, Fundamentos slide 31, ISLP equation 5.1, page 204, AME page 15. For each i, fit on the other n minus one points and predict y i. Equation 6: CV sub n equals one over n times the sum of y i minus the left-out prediction of y i, squared.
+
+There is no randomness, and each fit uses n minus one points, so there is little bias, ISLP page 205. AME Observação 1.5, pages 15 to 16: LOOCV on n plus one points is exactly unbiased for the expected risk of the method fitted on n.
+
+The shortcut, ISLP equation 5.2, page 205, stated there without proof. For least squares, equation 7, boxed: CV sub n equals one over n times the sum of the square of y i minus y i hat, over one minus h i i. One fit instead of n.
+
+The derivation. Restating the goal: express the left-out residual in terms of the full-sample residual. Write A for X transposed X and u for x i, so h i i is u transposed A inverse u. Four steps.
+
+Step one, drop row i. Removing one row from X and y, equation 8: X with row i removed, transposed, times itself, equals A minus u u transposed; and X with row i removed, transposed, times y with entry i removed, equals X transposed y minus u times y i.
+
+Step two, Sherman-Morrison, valid when one minus u transposed A inverse u is not zero. Equation 9: the inverse of A minus u u transposed equals A inverse plus A inverse u u transposed A inverse over one minus h i i.
+
+Step three, substitute equations 8 and 9 into the left-out estimate. Equation 10: beta hat with i removed equals the quantity A inverse plus A inverse u u transposed A inverse over one minus h i i, times the quantity X transposed y minus u y i. Multiply out, using A inverse X transposed y equal to beta hat, u transposed beta hat equal to y i hat, and u transposed A inverse u equal to h i i. Equation 11: beta hat with i removed equals beta hat, minus A inverse u y i, plus A inverse u y i hat over one minus h i i, minus A inverse u h i i y i over one minus h i i. Put the last three terms over one minus h i i. Equation 12: beta hat plus A inverse u times the bracket minus y i times one minus h i i, plus y i hat, minus h i i y i, all over one minus h i i; the bracket simplifies to minus y i minus y i hat; so beta hat with i removed equals beta hat minus A inverse x i times e i, over one minus h i i.
+
+Step four, the left-out residual. Premultiply equation 12 by x i transposed. Equation 13: y i minus the left-out prediction equals y i minus y i hat plus h i i e i over one minus h i i, which is e i times one plus h i i over one minus h i i, which is e i over one minus h i i. Substitute equation 13 into equation 6 and you have equation 7. That completes the proof.
+
+Reading equation 13. The left-out residual is the ordinary residual inflated by one over one minus h i i, "exactly the right amount", ISLP page 205. Since the leverages sum to the trace of H, which is d plus one, the average leverage is d plus one over n: at order 12 with n equal to 132, it is 13 over 132, which is 0.0985. But leverages are largest at the ends of the x range, which is where a degree-12 polynomial is least trustworthy. Equation 7 holds for least squares and some linear smoothers, not in general: logistic regression or linear discriminant analysis must be refitted n times, ISLP page 205.
+
+On the site, slide 8, the LOOCV curve's minimum is at order 12, about 0.48 on the slide's "Root MSE" axis.
+
+The variance of CV sub n, Fundamentos slide 35. With EQM i the squared left-out error of point i, equation 14: the variance of CV sub n equals one over n squared times the sum of the variances of the EQM i, plus two over n squared times the sum over pairs i less than j of their covariances. The n fits share n minus 2 of their n minus 1 points, so the covariances are large and positive: LOOCV is nearly unbiased but high-variance, ISLP section 5.1.4, pages 208 to 209.
+
+Three point six. k-fold cross-validation.
+
+The definition, Fundamentos slide 33, ISLP equation 5.3, page 206. Split at random into k folds of about equal size; fit without fold j, compute the mean squared error on fold j; average. Equation 15: CV sub k equals one over k times the sum of the fold errors, where the error of fold j is one over n sub j times the sum over the fold of y i minus the fit without fold j at x i, squared. With k equal to n it is LOOCV, slide 35. AME, page 15, and the site's code use the observation-weighted version. Equation 16: one over n times the double sum of the squared left-out errors, which equals the sum over folds of n sub j over n times the fold error. It equals equation 15 only when all folds have exactly n over k points.
+
+The site's folds, worked. The code sets L equal to the integer part of 132 over 10, which is 13. Folds 1 to 9 are 13 consecutive shuffled positions each, 9 times 13 is 117, and fold 10 takes the rest, 132 minus 117, which is 15. So the weights are 13 over 132 or 15 over 132, not one tenth, and equations 15 and 16 differ slightly.
+
+Why k equal to 5 or 10, ISLP section 5.1.4 and Fundamentos slide 35. Compare three methods in four dimensions. The 80 to 20 hold-out fits on about 105 points, 0.8 times 132 being 105.6; the bias of its error estimate is the highest; its variance is high, from one split; and it costs one fit. 10-fold fits on about 119 points, 0.9 times 132 being 118.8; its bias is small; its variance moderate; and it costs 10 fits. LOOCV fits on 131 points; its bias is the smallest; its variance the highest, because of correlated fits; and it costs n fits, or one with equation 7.
+
+On the site, one 10-fold run, slide 9, has its minimum at order 12; repeating the random fold assignment 100 times, slide 10, order 12 wins 99 times and order 13 once. Compare 63 for the hold-out: every observation is predicted once in every run, so the only randomness left is the fold assignment.
+
+The axis label is not the quantity, but the chosen order is safe. In the page's code, the leave-one-out loop accumulates the sum of squared errors and the 10-fold loop divides it by n, giving a mean squared error, and both are plotted under "Root MSE". On the slides the curves sit near 0.48 at order 12. By equation 4, a mean squared error there cannot be below about sigma hat squared, 0.22, while the square root of 0.22 is 0.47, so the slides show root mean squared error. The sum, the mean and the root of squared errors are increasing transforms of one another: the chosen d is the same; only the vertical scale differs.
+
+Three point seven. Bootstrap bands for the chosen fit.
+
+The pairs bootstrap, slide 11, the page's section 8, ISLP section 5.2, pages 212 to 214. With the order fixed at 12, for each of B equal to 1000 resamples: draw n indices with replacement, refit equation 1 on those pairs, and keep the fitted curve. Slide 11 draws all 1,000 curves in grey under the red order-12 fit. A pointwise 95 per cent percentile band keeps, at each x, the 2.5 and 97.5 per cent quantiles of the bootstrap curves. The bootstrap standard error at x is ISLP's equation 5.8, page 214. Equation 17: the square root of one over B minus one times the sum over resamples of the squared distance between each resampled curve at x and their average at x.
+
+The formula alternative, ISLP equation 7.2 and footnote 1, page 291. With l zero the vector one, x zero, up to x zero to the d, and C hat equal to sigma hat squared times X transposed X inverse, equation 18: the estimated variance of the fit at x zero is l zero transposed C hat l zero, and the band is the fit plus or minus two times the square root of that.
+
+Equation 18 assumes one error variance for all x. Resampling pairs does not: each resample carries the quiet pre-impact points and the noisy tail in their own proportions. With the motorcycle data's heteroskedasticity, the two bands disagree, the bootstrap one being wider where the noise is large.
+
+What the band does not cover: the order was chosen on the same data and is held at 12 in every resample. Model-selection uncertainty is outside it. In the G layer, re-running the cross-validation inside each resample would put it in.
+
+Three point eight. Worked: the whole pipeline on a reproducible stand-in.
+
+The mcycle data are not in the repository, so the figures run every step on a simulated stand-in built to look like slide 3: 132 points, a flat start, a dip to about minus 2 and a rebound to about plus 1.3 in standardised units, with noise standard deviation 0.15 before the dip and 0.45 after, seeded and defined in the figure script. Its numbers are not the site's. That its cross-validation also lands on 12 is a property of how the stand-in was drawn, not evidence about the motorcycle data.
+
+The stand-in results, order by order, giving the training error, the mean 80 to 20 hold-out error over 100 splits, LOOCV by equation 7, and the mean 10-fold error over 100 runs.
+
+Order 1: 0.9252, 0.9550, 0.9461, 0.9481.
+Order 3: 0.7376, 0.7954, 0.7781, 0.7810.
+Order 5: 0.5388, 0.6192, 0.5900, 0.5917.
+Order 7: 0.3219, 0.3746, 0.3567, 0.3577.
+Order 10: 0.1847, 0.2262, 0.2174, 0.2197.
+Order 12, the winner: 0.1737, 0.2220, 0.2082, 0.2117.
+Order 13: 0.1736, 0.2357, 0.2109, 0.2164.
+Order 14: 0.1722, 0.2501, 0.2107, 0.2179.
+
+Read across a row: training below LOOCV below 10-fold below hold-out, the ordering of the method comparison, with fit sizes 132, 131, about 119 and about 105. Read down: training keeps falling to order 14; the three honest estimates turn up after 12. Over 100 random splits, the hold-out winners scatter, order 14 winning 31 times, 12 winning 30, 10 winning 23, 13 winning 10, and others 6, while 10-fold picks 12 82 times: the same contrast as the site's 63 against 99.
+
+The first figure has three panels on the stand-in data. On the left, the training error, the mean hold-out error, LOOCV and the mean 10-fold error against order 1 to 14: all fall steeply to order 10, training keeps falling, and the three cross-validation curves are lowest at order 12. In the middle, bars of how often each order wins over 100 random splits: the hold-out wins spread over orders 10, 12, 13 and 14, while 10-fold concentrates 82 of 100 at order 12. On the right, the stand-in data with the order-12 fit, a pairs-bootstrap 95 per cent band from 1000 resamples, and the plus or minus two standard error formula band. In the noisy tail the bootstrap band is wider than the constant-variance formula band, and at both ends of the x range the band flares: the boundary misbehaviour ISLP warns about for high degrees.
+
+The second figure has two panels. On the left, the leverage of each point against x for orders 3 and 12, on a log scale: both are U-shaped, smallest in the middle and largest at the two ends, with means 0.0303 and 0.0985 marked at d plus one over n, that is 4 over 132 and 13 over 132. On the right, LOOCV computed by 132 refits against LOOCV from the one-fit shortcut for orders 1 to 14: every point lies on the 45-degree line, with agreement to a relative 10 to the minus 8, asserted in the script. That is the derivation in numbers. The left panel shows where the inflation one over one minus h i i bites: at the edges, more so for order 12.
+
+The interactive companion, the Flexibility Dial, is the population version of the left panel: on the tanh model of section 1, it shows the true test error that cross-validation is trying to estimate, and where its minimum sits.
+
+Three point nine. Graduate layer: named, not developed here.
+
+The one-standard-error rule: pick the simplest model whose cross-validation error is within one standard error of the minimum, ISLP chapter 6. On the stand-in, orders 10 and 12 differ by less than 0.01 in cross-validation error, so the rule could well prefer the simpler one.
+
+Selection bias of the minimum: the smallest of 14 cross-validation estimates is optimistic for the chosen model; an untouched test set, AME's training, validation and test split, page 16, or nested cross-validation fixes it.
+
+Cross-validation for classification, ISLP equation 5.4: the error indicator replaces the squared error. Sections 4 and 5.
+
+Ridge and lasso, whose penalty is chosen by cross-validation in the multiple linear regression deck: Classes 3 and 4.
+
+Spoken checklist for section 3. You should be able to name the two jobs of an error estimate and the two fixes. You should be able to show that polynomial regression is a linear model and that the extra maps before standardising are wasted. You should be able to compute sigma hat squared, 0.2202, from the adjusted R squared at order 12. You should be able to state the hold-out estimator and its two drawbacks, and read the 63 out of 100 against 99 out of 100. You should be able to derive the LOOCV shortcut in four steps through Sherman-Morrison, and state when it does not apply. You should be able to explain why LOOCV is high-variance, and compare hold-out, 10-fold and LOOCV in bias, variance and cost. And you should be able to describe the pairs bootstrap band, how it differs from the formula band, and what it leaves out.
+
+
+Recap of part 1. Under squared loss the best predictor is the conditional mean, and any learned estimate pays squared bias, variance and noise; in the tanh world the optimum is degree 5 with test error 19.81 against a floor of 16, and the training error is optimistic by two sigma squared times d plus one over n, 6.4 there. Linear regression is linear in the parameters; read level coefficients as slopes, log-level coefficients exactly as 100 times e to the beta minus one, 35.8 per cent at 0.306, log-log coefficients as elasticities, and interactions and quadratics as slopes that move. Cross-validation estimates the test error: one hold-out split picks the motorcycle order 12 only 63 times in 100, 10-fold 99 times, and LOOCV costs one fit through the leverages. Part 2 continues with classification and counts.

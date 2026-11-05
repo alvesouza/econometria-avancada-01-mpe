@@ -1,0 +1,519 @@
+Advanced Econometrics, Class 7. More econometric models. Narrated study notes, part 3 of 3: the support material.
+
+How to listen. This file holds the support parts of the Class 7 narration, where audio beats reading. Seven parts, in order. First, the pitfalls: fourteen confusions, each said as "the error is, the correction is", with the counterexample. Second, the spoken formula sheet, built for active recall: you hear a prompt, pause the player, say the result aloud, then hear the answer. Third, the implementation: the reference Python routines described as sequences of steps, never read as code. Fourth, the reading route and the exercises, as addresses only. Fifth, a thirty-item true or false self-test, with a pause cue before each answer. Sixth, a glossary. Seventh, the whole class in five lines, the piece worth replaying.
+
+A reminder on scope. The final exam has no code. Expect derivations, such as full conditionals, likelihoods, the scale mixture, partial pooling and Tobit moments, and the reading of printouts, such as Wooldridge's tables and the slides' posterior summaries.
+
+
+Support part one. The pitfalls.
+
+This part covers the pitfalls note, part one: the confusions this material produces. Every counterexample uses a number derived in a section note, and the new ones are checked in the Python checks, section 7.
+
+Pitfall one. Heteroskedasticity and bias.
+The error: saying "heteroskedasticity biases ordinary least squares."
+The correction: ordinary least squares stays unbiased; its variance formula is wrong, and it is inefficient. The counterexample is Wooldridge's Example 8.6: ordinary least squares gives 0.821 and weighted least squares 0.787, and both estimate the same slope. What differs is the standard error, 0.104 against 0.063. Section 1, subsection 3.
+
+Pitfall two. Robust standard errors against efficiency.
+The error: saying "robust standard errors make ordinary least squares as good as generalized least squares."
+The correction: they make the inference of ordinary least squares valid, not ordinary least squares efficient. At alpha one equal to one, the true ordinary least squares slope variance is 4.38 times the generalized least squares one, whatever standard error you report. Section 1, subsection 4.1.
+
+Pitfall three. The weighted least squares weights.
+The error: saying "the weighted least squares weights are one over the square root of h i."
+The correction: the variables are divided by the square root of h i; the squared residuals are weighted by one over h i, Wooldridge printed page 256. And the constant column is divided too: the transformed regression has no column of ones. Section 1, equation 9.
+
+Pitfall four. Sigma squared in a t model.
+The error: saying "sigma squared in a t model is the error variance."
+The correction: it is the scale; the variance is sigma squared times nu over nu minus two. Greenberg's Vella and Verbeek sigma squared falls from 0.165 to 0.105 under the t with 5 degrees of freedom, yet 0.105 times 5 over 3 is 0.175: the spread hardly changed. Section 2, subsection 6.
+
+Pitfall five. The omega i as parameters.
+The error: saying "the omega i are random effects to be estimated and reported."
+The correction: they are a computational device. The model is the marginal t, and the omega i are integrated out by ignoring their draws, Greenberg printed page 114. Their posterior means are still useful diagnostics: an outlier's weight of 0.018. Section 2, subsection 5.
+
+Pitfall six. A large nu as evidence of normality.
+The error: saying "a large posterior nu is evidence of normality."
+The correction: nu is weakly identified. The slide 21 chain wanders over 5 to 60 with an autocorrelation of 0.5 at lag 30, and one outlier drags the posterior mean to 3.8. Look at the prior too: the exponential with mean 25 already puts 0.20 on nu at least 40. Section 2, subsection 5.
+
+Pitfall seven. Autoregressive errors and the direction of the standard-error bias.
+The error: saying "with first-order autoregressive errors, ordinary least squares standard errors are always too small."
+The correction: only if the regressor is persistent in the same direction. The ratio of the true to the naive variance is one plus rho phi over one minus rho phi: equal to one when phi is zero, and below one when rho phi is negative. The efficiency loss of ordinary least squares remains even when the standard error is right: 9.53 at rho equal to 0.9 and phi equal to zero. Section 3, subsection 3.
+
+Pitfall eight. Cochrane-Orcutt against Prais-Winsten.
+The error: saying "Cochrane-Orcutt and Prais-Winsten are different estimators of different things."
+The correction: same model, same rho iteration; Prais-Winsten keeps the first observation, rescaled by the square root of one minus rho squared. Barium: 2.94 against 2.95. Section 3, subsection 2.
+
+Pitfall nine. The direction of shrinkage.
+The error: saying "shrinkage pulls estimates toward zero."
+The correction: it pulls them toward the estimated population mean. School C, at minus 2.75, moves up, to 7.02 at tau equal to 5.23. Section 4, subsection 5.
+
+Pitfall ten. Hierarchical, random effects and consistency.
+The error: saying "hierarchical equals random effects equals consistent no matter what."
+The correction: the exchangeable prior, like random effects, assumes the unit effects are unrelated to the regressors, Wooldridge equation 14.8. Fixed effects, which is individual effects with a flat prior, does not. Section 4, subsection 8.
+
+Pitfall eleven. The site's band.
+The error: saying "the site's band is a predictive interval."
+The correction: it is the posterior of alpha i plus beta i x; a new measurement adds normal noise with variance sigma y squared. Section 4, subsection 6.
+
+Pitfall twelve. The Tobit coefficient as a marginal effect.
+The error: saying "the Tobit coefficient is the marginal effect on hours."
+The correction: it is the effect on the expected value of y star. On the expected value of y given x it is beta j times capital Phi of z: at the averages 0.645 times beta, and on average 0.589 times beta, for Mroz. Section 5, subsections 5 and 7.
+
+Pitfall thirteen. Censored against truncated.
+The error: saying "censored is the same as truncated."
+The correction: censored samples keep the units, with y at the limit; truncated samples lose them, x included. The slides' "probability of truncation" is a censoring probability. Ordinary least squares is biased in both, differently: on the full censored sample the slope is beta times the probability that y is positive, 1.50; on the positive part only, 1.902. Section 5, subsections 1, 6 and 8.
+
+Pitfall fourteen. Comparing probit and logit coefficients.
+The error: saying "probit coefficients are comparable to logit ones."
+The correction: only after scaling. Logit coefficients are about 1.6 times probit ones: in Mroz, 0.221 over 0.131 is 1.69, and the scale factors give 0.391 over 0.243, which is 1.61. The probabilities agree; the coefficients do not. Section 6, subsections 1 and 2.
+
+The distinctions that cost most points, said once more. Unbiased is not efficient, and valid inference is not efficiency. A scale is not a variance. A computational device is not a parameter. Shrinkage goes toward the population mean, not toward zero. A band for the mean line is not a predictive band. A latent-scale coefficient is not an observable effect. Censoring keeps the units, truncation drops them. And probit and logit coefficients live on different scales.
+
+
+Support part two. The spoken formula sheet.
+
+This part covers the formula sheet note: the exam specification mapped, every numbered result of sections 1 to 6, and every number. The equation numbers are the section notes' own: "section 3, equation 10" is equation 10 of the autoregressive-errors note. It is built for active recall. After each prompt, pause the player, say the result aloud, then hear the answer.
+
+First, the exam specification, mapped. The sources are the class goals in the class plan, the outlines of the three decks, and the topic rule packs on panel and hierarchical models and on classification. The exam has no code: derive it, compute it by hand, read it. Eleven items.
+
+Item one, the general linear model with a general covariance, from the GLM3 outline; section 1, subsection 2. Be able to show that P Omega P transposed equal to the identity gives spherical rotated errors, derive generalized least squares, and derive the conditionals for sigma squared and beta.
+
+Item two, heteroskedastic errors, weighted and generalized least squares, from the class plan; section 1, subsections 3 and 4, and Wooldridge section 8.4. Be able to write the transformed equation and the weighted sum of squares; read Wooldridge's Table 8.1; write the conditional of alpha and say why it needs Metropolis-Hastings; and state the feasible steps.
+
+Item three, Student t errors and scale mixtures, from the class plan and GLM3's Case II; section 2, subsections 2 to 4. Be able to derive the t from the mixture; write the conditionals of omega i, the weight, and the conditional of nu; compute prior probabilities of nu; and state Geweke's conditions.
+
+Item four, autoregressive errors, from the class plan and GLM3's "parsimonious Omega"; section 3, subsections 1 to 4. Be able to derive the variance and covariances; verify the tridiagonal inverse and the Prais-Winsten factor; quasi-difference; compare Prais-Winsten with Cochrane-Orcutt; derive the small-sin conditional of rho; and use the truncated-normal draw.
+
+Item five, hierarchical or multilevel linear models and partial pooling, from the class plan and the HLM deck; section 4, subsections 2 to 6. Be able to write the three models; derive the alpha i conditional and the partial-pooling weight, the mu alpha conditional, and the three random-coefficients conditionals; compute the eight-schools results for a school; and read the pregnancy outputs.
+
+Item six, the nutrition of pregnant women example, from the class plan; section 4, subsection 6. Be able to read the pooled printout, explain the shrinkage figure, and criticise the "predictive" band.
+
+Item seven, the Tobit, from the class plan and the LDV outline; section 5, subsections 1 to 7. Be able to write the likelihood, the augmentation, the conditionals, derive the four Wooldridge moments and effects, slide 9's probabilities, and the attenuation result.
+
+Item eight, the probit, from the class plan, Wooldridge section 17.1 and Greenberg section 8.2.2; section 6, subsections 1 and 2. Be able to write the probability, the identification, the partial effect and the 1.6 rule, the Albert-Chib conditionals, and read Wooldridge's Table 17.1 with scale factors.
+
+Item nine, the ordered probit, from the class plan and LDV slides 11 and 12; section 6, subsection 3. Be able to write the probabilities, the identification, the latent conditional, and derive the uniform cut-point conditional.
+
+Item ten, the multinomial probit, from the class plan and LDV slides 13 to 15; section 6, subsection 4. Be able to write the choice rule, the seemingly-unrelated-regression stacking, the conditionals with the truncated multivariate normal, and the scale identification.
+
+Item eleven, the frequentist neighbours, from the class plan's note on panel fixed and random effects; section 4, subsection 8. Be able to write the equicorrelation, the random-effects theta, and say that fixed effects is individual effects with a flat prior.
+
+Now every result, section by section. Pause after each prompt.
+
+Section 1, the general covariance.
+
+Prompt: the model, equation 1. Pause. Answer: y equals X beta plus epsilon, with epsilon normal with mean zero and variance sigma squared Omega. GLM3 slide 3.
+
+Prompt: what P Omega P transposed equal to the identity gives, equations 2 and 3. Pause. Answer: the variance of P epsilon is sigma squared times the identity, so P y on P X is a standard regression. Slide 4.
+
+Prompt: generalized least squares, equation 5. Pause. Answer: beta hat GLS equals the inverse of X transposed Omega inverse X, times X transposed Omega inverse y; its variance is sigma squared times the inverse of X transposed Omega inverse X; and Omega inverse equals P transposed P. Derived.
+
+Prompt: the conditional of sigma squared, equation 7. Pause. Answer: inverse-gamma with parameters nu one over two and nu one s one squared over two, where nu one is nu zero plus n, and nu one s one squared is nu zero s zero squared plus y minus X beta transposed Omega inverse y minus X beta. Slide 5.
+
+Prompt: the conditional of beta, equation 8. Pause. Answer: normal with mean beta one and variance V one, where V one inverse is V zero inverse plus sigma to the minus two X transposed Omega inverse X, and V one inverse beta one is V zero inverse beta zero plus sigma to the minus two X transposed Omega inverse y. Slide 5 and Greenberg 8.2.
+
+Prompt: weighted least squares, equations 9 and 10. Pause. Answer: divide every column, the constant too, by the square root of h i, and minimize the sum of y i minus x i transposed beta, squared, over h i. Wooldridge 8.25 to 8.27.
+
+Prompt: the conditional of alpha, equations 11 and 12. Pause. Answer: proportional to the prior of alpha times the product of h i to the minus one half times e to the minus e i squared over two sigma squared h i. It is non-standard, so Metropolis-Hastings. Slide 7.
+
+Prompt: feasible generalized least squares. Pause. Answer: regress the log of u hat squared on x, set h hat equal to the exponential of the fitted values, and run weighted least squares with weights one over h hat. Wooldridge 8.30 to 8.33.
+
+Section 2, Student t errors.
+
+Prompt: the scale-mixture identity, equations 1 to 3. Pause. Answer: a normal with variance sigma squared omega, times an inverse-gamma with parameters nu over two and nu over two, integrated over omega, is the t with nu degrees of freedom and scale sigma squared. Slide 16 and Greenberg printed page 52.
+
+Prompt: the conditional of omega i, equation 4. Pause. Answer: inverse-gamma with shape nu plus one over two and scale nu plus epsilon i squared over sigma squared, over two. Slide 18 and Greenberg printed page 115.
+
+Prompt: the weight, equation 5. Pause. Answer: the conditional expected value of omega i inverse is nu plus one over nu plus epsilon i squared over sigma squared. Derived.
+
+Prompt: the beta and sigma squared conditionals. Pause. Answer: section 1's equations 7 and 8, with Omega diagonal in the omega i. Greenberg printed page 115.
+
+Prompt: the conditional of nu, equation 6. Pause. Answer: proportional to the bracket nu over two to the nu over two over gamma of nu over two, raised to the n, times the exponential of minus the bracket one over nu naught plus one half the sum of log omega i plus omega i inverse, times nu. Metropolis-Hastings. Slide 18.
+
+Prompt: the prior of nu and Geweke's conditions. Pause. Answer: nu is exponential with mean nu naught. With a flat prior on beta, the posterior mean needs zero prior probability on nu at most two, and the posterior variance needs zero prior probability on nu at most four. Slide 17.
+
+Section 3, autoregressive errors.
+
+Prompt: the variance and covariance, equations 1 and 2. Pause. Answer: gamma zero equals sigma squared over one minus rho squared, and the covariance of epsilon t and epsilon t plus k is rho to the k times gamma zero. Slide 22 and Wooldridge 12.27.
+
+Prompt: the inverse of Omega rho and its factor, equations 3 and 4. Pause. Answer: tridiagonal, with diagonal one, one plus rho squared, and so on, ending in one, and off-diagonals minus rho; it equals P transposed P, with the Prais-Winsten P. Derived.
+
+Prompt: the transformed rows, equations 5 and 6. Pause. Answer: the first row is multiplied by the square root of one minus rho squared; for t at least two, y t minus rho y t minus one equals x t minus rho x t minus one, transposed, times beta, plus u t. Wooldridge 12.28 to 12.32.
+
+Prompt: equations 7 to 9, in words. Pause. Answer: the large-n ordinary least squares variance with the regressor persistence phi, the naive variance, and the generalized least squares variance. Derived, G layer.
+
+Prompt: the two ratios, equations 10 and 11. Pause. Answer: true over naive is one plus rho phi over one minus rho phi; ordinary over generalized least squares is that ratio times one plus rho squared minus two rho phi over one minus rho squared. Derived, G layer.
+
+Prompt: the exact conditional of rho, equation 12. Pause. Answer: proportional to the determinant of Omega rho to the minus one half, times the exponential of minus one over two sigma squared epsilon transposed Omega rho inverse epsilon, times the truncated normal prior. Metropolis-Hastings. Slide 24, corrected.
+
+Prompt: the small-sin conditional, equation 13. Pause. Answer: rho is normal truncated to minus one to one, with variance V rho bar equal to the inverse of V rho inverse plus sigma to the minus two epsilon tilde transposed epsilon tilde, and mean rho one equal to V rho bar times V rho inverse rho zero plus sigma to the minus two epsilon tilde transposed epsilon. Slide 25.
+
+Prompt: the truncated-normal draw, equations 14 and 15. Pause. Answer: y equals mu plus sigma times capital Phi inverse of u B plus one minus u times A, with u uniform, A and B the standardized distribution function at the two bounds. Slide 26.
+
+Section 4, hierarchical models.
+
+Prompt: the three models, equations 1 to 3. Pause. Answer: pooled, y i normal with mean X i beta; individual effects, mean one sub T alpha i plus X tilde i beta tilde; random coefficients, mean X i beta i; all with variance sigma squared times the identity. HLM slides 4 to 6.
+
+Prompt: equation 4. Pause. Answer: the dummy design X star for individual effects with a non-hierarchical prior, whose last block row ends in X tilde N. Slide 9, corrected.
+
+Prompt: the conditional of alpha i, equation 5. Pause. Answer: V tilde alpha inverse equals V alpha inverse plus sigma to the minus two T, and V tilde alpha inverse mu tilde i alpha equals V alpha inverse mu alpha plus sigma to the minus two one sub T transposed, times y i minus X tilde i beta tilde. Slide 12.
+
+Prompt: the partial-pooling weight, equation 6, the most important formula of the section. Pause. Answer: mu tilde i alpha equals w times r bar i plus one minus w times mu alpha, with w equal to T V alpha over T V alpha plus sigma squared. Derived.
+
+Prompt: the conditionals of mu alpha and V alpha, equation 7. Pause. Answer: V tilde mu inverse equals V mu inverse plus N V alpha inverse, and V tilde mu inverse mu one equals V mu inverse mu zero plus V alpha inverse times the sum of the alpha i. V alpha is inverse-gamma with eta zero plus N, and eta zero sigma zero squared plus the sum of alpha i minus mu alpha, squared. Slide 13, corrected.
+
+Prompt: equations 8 to 10. Pause. Answer: the conditionals of beta i, normal; of beta zero, normal; and of V zero inverse, Wishart. Slides 15 and 16, corrected.
+
+Prompt: the eight-schools results, equations 11 to 15. Pause. Answer: y i given mu and tau is normal with mean mu and variance sigma i squared plus tau squared; mu hat and V mu by precision weighting; B i equals sigma i squared over sigma i squared plus tau squared; the conditional mean of theta i is one minus B i times y i plus B i mu hat; and the posterior of tau is a one-dimensional density on a grid. Slide 23, derived.
+
+Prompt: the random-intercept moments, equation 16. Pause. Answer: the variance is sigma a squared plus sigma squared, and the covariance within a unit is sigma a squared. Morettin and Singer 6.28.
+
+Prompt: the random-effects theta, equation 17. Pause. Answer: theta equals one minus the square root of sigma u squared over sigma u squared plus T sigma a squared. Wooldridge 14.10.
+
+Section 5, the Tobit.
+
+Prompt: the likelihood pieces, equations 1 to 4. Pause. Answer: one over sigma times phi of y minus x transposed beta over sigma, for y positive; capital Phi of minus x transposed beta over sigma, for y zero; and the log-likelihood that adds the two with indicators. Slide 6, Greenberg printed page 118, Wooldridge 17.20 to 17.22.
+
+Prompt: the augmentation, equations 5 and 6. Pause. Answer: the augmented posterior, and y i star for the zeros normal with mean x i transposed beta and variance sigma squared, truncated to minus infinity to zero. Slide 7, Greenberg 8.6 and Algorithm 8.2.
+
+Prompt: the conditionals, equations 7 and 8. Pause. Answer: beta normal with mean V beta times V zero inverse beta zero plus sigma to the minus two X transposed y star, and variance V beta, with V beta inverse equal to V zero inverse plus sigma to the minus two X transposed X; and sigma squared inverse-gamma on y star. Slide 8, corrected.
+
+Prompt: the conditional-on-positive mean, equation 9. Pause. Answer: x transposed beta plus sigma times lambda of x transposed beta over sigma. Wooldridge 17.24.
+
+Prompt: the unconditional mean, equation 10. Pause. Answer: capital Phi of z times x transposed beta, plus sigma phi of z. Wooldridge 17.25.
+
+Prompt: the partial effect on the conditional-on-positive mean, equation 11. Pause. Answer: beta j times the bracket one minus lambda of z times z plus lambda of z. Wooldridge 17.26.
+
+Prompt: the partial effect on the unconditional mean, equation 12. Pause. Answer: beta j times capital Phi of z. Wooldridge 17.30.
+
+Prompt: slide 9's probability, equation 13. Pause. Answer: capital Phi of minus 2 a over 2.062.
+
+Prompt: the attenuation result, equation 14. Pause. Answer: with normal x, the ordinary least squares slope is beta times the probability that y is positive. Derived with Stein's lemma, G layer.
+
+Section 6, the probit family.
+
+Prompt: the probit probability, equation 1. Pause. Answer: capital Phi of x transposed beta; sigma is not identified, so it is set to one. Greenberg 8.7 to 8.9, Wooldridge 17.2 and 17.6.
+
+Prompt: the partial effect, equation 2. Pause. Answer: phi of x transposed beta times beta k, at most 0.3989 beta k. Wooldridge 17.7, Greenberg printed page 124.
+
+Prompt: the logit-probit rule, equation 3. Pause. Answer: the logit beta is approximately 1.6 times the probit beta. Greenberg printed page 128.
+
+Prompt: Albert-Chib, equations 4 and 5. Pause. Answer: y i star truncated at zero according to y i; beta normal with mean B one times X transposed y star plus B zero inverse beta zero, and variance B one, the inverse of X transposed X plus B zero inverse. Greenberg Algorithm 8.3.
+
+Prompt: the ordered-probit probabilities, equation 6. Pause. Answer: capital Phi of gamma j minus x transposed beta, minus capital Phi of gamma j minus one minus x transposed beta, with gamma one equal to zero. Slide 11.
+
+Prompt: equations 7 and 8. Pause. Answer: y i star truncated to the interval from gamma j minus one to gamma j, and gamma j uniform between its lower and upper bounds. Slide 12.
+
+Prompt: the multinomial probit, equations 9 and 10. Pause. Answer: y i j star equals x i j transposed beta j plus epsilon i j; the choice is the largest, or zero if all are negative; beta is normal, Omega inverse Wishart, and y i star a truncated multivariate normal. Slides 13 to 15.
+
+Now every number and worked case. Pause after each prompt and say the numbers.
+
+Prompt: Wooldridge's Example 8.6. Pause. Answer: nettfa on income, n equal to 2017, weights one over income. Ordinary least squares slope 0.821, standard error 0.104, intercept minus 10.57; weighted least squares slope 0.787, standard error 0.063, intercept minus 9.58, standard error 1.65; R squared 0.0827 and 0.0709. Section 1, subsection 3.
+
+Prompt: the cost of ignoring Omega. Pause. Answer: with h equal to e to the x and a normal design, the slope variance ratio of ordinary to generalized least squares is 4.38. Section 1, subsection 4.1.
+
+Prompt: the Case I re-run. Pause. Answer: n equal to 100, alpha one and one, beta 2 and 4; posterior means beta 2.20 and 3.97, alpha 0.93 and 1.12; acceptance 0.55. Section 1, subsection 4.
+
+Prompt: the airline posterior. Pause. Answer: beta two 1.117, beta three minus 0.504, beta four 1.895, alpha one minus 3.968, alpha two 7.085 with standard deviation 3.293; e to the minus 3.968 is 0.0189; e to the 0.7085 is 2.03. Section 1, subsection 5.
+
+Prompt: the prior of nu. Pause. Answer: exponential with mean 25: 0.3297 on nu at most 10, and 0.2019 on nu at least 40. Section 2, subsection 4.
+
+Prompt: the t re-run. Pause. Answer: slide 19's design plus an outlier: posterior means 0.43, 0.87 and 1.93, against ordinary least squares 0.54, 1.07 and 2.03; posterior mean of nu 3.8; outlier weight 0.018. Section 2, subsection 5.
+
+Prompt: Vella and Verbeek. Pause. Answer: beta U 0.129, standard deviation 0.036, Gaussian; 0.128, standard deviation 0.033, t; sigma squared 0.165 against 0.105; base-ten log Bayes factor 4.83. Section 2, subsection 6.
+
+Prompt: barium. Pause. Answer: Wooldridge's Table 12.1: ordinary least squares 3.12, standard error 0.48; Prais-Winsten 2.94, standard error 0.63, intercept minus 37.08, rho hat 0.293, t minus 1.69; Cochrane-Orcutt 2.95. Section 3, subsection 2.
+
+Prompt: the autoregressive ratios at rho equal to 0.9. Pause. Answer: with phi 0.9, true over naive is 9.53; with phi zero, ordinary over generalized is 9.53. Section 3, subsection 3.
+
+Prompt: the autoregressive re-run. Pause. Answer: slide 27's design: posterior means beta 1.97 and 4.06, sigma squared 1.03, rho 0.871. Section 3, subsection 5.
+
+Prompt: Tsay section 2.9. Pause. Answer: interest rates: r 3 equals 0.832 plus 0.930 r 1, with R squared 96.5 per cent; c 3 equals 0.792 c 1. Section 3, subsection 2.
+
+Prompt: the eight schools. Pause. Answer: pooled 7.87, standard deviation 4.17; tau with mode 0, median 5.23, mean 6.59, 95 per cent interval 0.24 to 20.87; school A at tau equal to 5.2: mu hat 8.027, B 0.8914, conditional mean 10.24; fully Bayes A 11.64 and C 6.35. Section 4, subsection 5.
+
+Prompt: the pregnancy numbers. Pause. Answer: pooled minus 4.52639, standard error 0.48680, plus 0.47633, standard error 0.01897, times x; sigma hat 3.612; R squared 0.5974. Individual means minus 4.412 and 0.470. Gibbs: alpha minus 4.363, beta 0.4687, sigma y 1.119, sigma alpha 3.210, sigma beta 0.1253. Woman 1 at 40.143: 17.68, band 15.68 to 19.86. Section 4, subsection 6.
+
+Prompt: the two pooling weights with T equal to 6. Pause. Answer: w equal to 0.980, and the random-effects theta equal to 0.859. Section 4, subsections 6 and 8.
+
+Prompt: Morettin and Singer's calves. Pause. Answer: alpha hat 69.9, beta hat 4.7; standard errors 7.8 falling to 5.6 for alpha, and 0.4 falling to 0.1 for beta, under the mixed model. Section 4, subsection 8.
+
+Prompt: Greenberg's panel. Pause. Answer: Table 9.5: union coefficient 0.090, interval 0.006 to 0.179; experience 0.058. Section 4, subsection 8.
+
+Prompt: slide 9. Pause. Answer: beta 2, sigma squared 0.25: the probability of a zero is 0.500, 0.249 and 0.104; the ordinary least squares slopes are 1.00, 1.50 and 1.79. Section 5, subsection 6.
+
+Prompt: the Mroz Tobit. Pause. Answer: Wooldridge's Table 17.3: education 80.65, standard error 21.58; kidslt6 minus 894.02, standard error 111.88; sigma hat 1122.02; log-likelihood minus 3819.09; average-partial-effect factor 0.589, giving 47.5; factor at the averages 0.645; ordinary least squares 28.76. Section 5, subsection 7.
+
+Prompt: Greenberg's Mroz. Pause. Answer: Table 8.1: probability of zero hours 0.431 against 0.328; mean hours 214 against 587. Section 5, subsection 7.
+
+Prompt: truncated ordinary least squares. Pause. Answer: with slide 9's design, a slope of 1.902. Section 5, subsection 8.
+
+Prompt: Mroz probit and logit. Pause. Answer: Wooldridge's Table 17.1: education 0.131 and 0.221; log-likelihoods minus 401.30 and minus 401.77; scale factors 0.391 and 0.243, ratio 1.61; average factor 0.301. Section 6, subsection 2.
+
+Prompt: Greenberg's computer ownership. Pause. Answer: Table 8.2: minus 0.705, 0.879 and 0.524; prior quantities minus 1.2816, 0.1492, 1.0616, 0.0225 and 1.0283. Section 6, subsection 2.
+
+Prompt: the ordered re-run. Pause. Answer: gamma 0, 1 and 2: posterior means beta 0.50 and 0.89, gamma two 1.10, gamma three 2.08; lag-1 autocorrelation 0.99. Section 6, subsection 3.
+
+Prompt: the multinomial re-run. Pause. Answer: with Omega known: 0.45, 1.10, minus 0.11 and minus 0.71, against 0.3, 1.0, minus 0.2 and minus 0.8. Section 6, subsection 4.
+
+Prompt: Rubinfeld's multivariate probit. Pause. Answer: Greenberg's Table 9.4: beta two two 1.113, beta two three minus 1.437, sigma one two 0.085. Section 6, subsection 5.
+
+Prompt: Morettin and Singer's inhibin logit. Pause. Answer: minus 2.310, standard error 0.947, and 0.026, standard error 0.009; odds ratio 1.026 per unit. Section 6, subsection 6.
+
+
+Support part three. The implementation, described as steps.
+
+This part covers the Python note: every sampler of the class, each followed by the assertions that tie it to a printed number. The file uses NumPy, SciPy, statsmodels and the wooldridge data only; there is no PyMC and no scikit-learn, so every Gibbs and Metropolis-Hastings step is written out, as the slides write it. The lecturer's R is the reference, never the code. The file is the source of truth, and the note copies it section by section. Nothing here is read as code: each routine is described by its inputs, its sequence of steps, and the one trap that breaks it.
+
+How it runs. One command runs the file in about two minutes, most of it in the samplers. It prints one line per section and ends with the line "ALL L07 CHECKS PASSED". The first disagreement aborts with an assertion error naming the quantity and the printed value. The data for Wooldridge's tables come from the wooldridge package.
+
+What is reused rather than rewritten. The figure script supplies the eight-schools data, the conditional means and the exact posterior of tau; the pregnancy data and a line-by-line port of the site's hierarchical Gibbs sampler; the generalized least squares efficiency ratio; the autoregressive variance ratios; the Tobit moments and slide 9's probability of a zero; and the t weight and the mixture density. The companion checking script is cited, not imported, because it checks the pages. And statsmodels supplies the frequentist fits of Wooldridge's tables: ordinary, weighted, probit and logit. What is new, and why: no existing project code samples these models. statsmodels has no Bayesian samplers and no Tobit, and its autoregressive generalized least squares routine iterates Cochrane-Orcutt, not Prais-Winsten, so Prais-Winsten is written here in three lines.
+
+Routine zero, the shared helpers. A check helper passes when a computed number rounds to the printed value at the stated number of decimals, that is, within half a unit in the last printed place. The truncated-normal sampler is slide 26's inverse-distribution-function draw, equation 15 of section 3: standardize the two bounds, draw a uniform, mix the two standard normal probabilities at the bounds with weights u and one minus u, apply the inverse normal distribution function, and rescale. The trap: when the whole interval lies in the upper tail, both probabilities round to one, so the routine reflects the problem into the lower tail first and flips the sign back. The beta sampler is the general-Omega conditional, equation 8 of section 1, the boxed result of the map: it accepts either a vector of weights, the diagonal of Omega inverse, or a full Omega inverse matrix; builds the posterior precision as V zero inverse plus X transposed Omega inverse X over sigma squared; inverts it; forms the mean; and draws one multivariate normal vector.
+
+Routine one, generalized and weighted least squares, and Case I. First, on an arbitrary known covariance, build P as the inverse of the Cholesky factor, confirm that P Omega P transposed is the identity, and confirm that ordinary least squares on P y and P X equals the generalized least squares formula; then confirm that the beta conditional with zero prior precision collapses to generalized least squares, with variance sigma squared times the inverse of X transposed Omega inverse X. Second, reproduce Wooldridge's Table 8.1: keep single people, fit ordinary least squares with robust standard errors and weighted least squares with weights one over income, and check all eight printed numbers and the sample size of 2,017; then confirm that weighted least squares equals ordinary least squares on the transformed variables, with every column, the constant too, divided by the square root of income. Third, Case I on the slide 8 design: simulate with alpha equal to one and one, get the starting alpha from the regression of the log squared ordinary least squares residual on x, which is the feasible step, and confirm that the expected log of a chi-squared with one degree of freedom is minus 1.27. Then alternate a beta draw with weights e to the minus z transposed alpha and sigma squared fixed at one, and a random-walk Metropolis-Hastings step for alpha with step 0.15, accepting on the log-likelihood difference plus the log prior difference; 12,000 iterations, 2,000 burned. The trap: an acceptance rate outside roughly 0.15 to 0.7 means the step is badly tuned; the run gives 0.55. Finally, check the efficiency ratio of 4.38 at alpha one equal to one.
+
+Routine two, Student t errors. First, check the scale-mixture identity numerically, the mixture density against the t density at 20 pairs of nu and residual. Second, check the prior probabilities 0.3297 and 0.2019, and that the variance of a t with 5 degrees of freedom is five thirds. Third, the Gibbs and Metropolis-Hastings sampler of slides 16 to 19. Its inputs are the design, the data, the prior on beta, the prior on sigma squared, the prior mean of nu, the burn-in and the number of draws. Each sweep: compute the residuals; draw each precision, one over omega i, from a gamma with shape nu plus one over two and rate nu plus the squared residual over sigma squared, over two; draw beta with weights one over omega i; draw sigma squared from its inverse-gamma with the weighted residual sum of squares; propose a new nu by a random walk with step 0.25 and accept on the difference of the log conditional of nu, rejecting any non-positive proposal. Keep the draws and the running mean of each weight. The run plants one outlier of plus 15. The traps it asserts: the outlier's mean weight must fall below a fifth of the median weight, and dropping the outlier must move the t fit by less than half of what it moves ordinary least squares.
+
+Routine three, first-order autoregressive errors. First, build Omega rho from its entries rho to the absolute value of i minus j over one minus rho squared, and the closed-form tridiagonal inverse, and confirm they are inverses; build the Prais-Winsten matrix and confirm P transposed P is the inverse and P Omega P transposed is the identity. Second, reproduce Wooldridge's Table 12.1 on the barium data: fit ordinary least squares; then iterate, starting from rho equal to zero, quasi-differencing the data with the first row scaled by the square root of one minus rho squared, fitting, recomputing the residuals on the original data, and re-estimating rho by regressing each residual on its lag, until rho stops changing. It converges in 11 iterations to rho hat 0.293, with 2.94, standard error 0.63, the intercept minus 37.08, and the afdec6 t statistic minus 1.69. Cochrane-Orcutt runs the same loop but drops the first transformed row, and gives rho 0.293 and 2.95. Third, confirm that the inverse-distribution-function draw equals SciPy's truncated-normal quantile function on 999 quantiles, and that draws from deep in the upper tail, above 8, stay valid. Fourth, the slide 27 sampler: each sweep builds the tridiagonal inverse in closed form, with no 200 by 200 inversion, draws beta and sigma squared from the exact Omega rho conditionals, then draws rho from the small-sin truncated normal on minus one to one, using the regression of each residual on its lag. The trap avoided: inverting Omega rho numerically at every sweep, when its inverse is known.
+
+Routine four, hierarchical models. First, the eight schools: evaluate the exact posterior of tau on a grid from 0 to 100 with 4,001 points, read its median, mean and 2.5 and 97.5 per cent quantiles, compute the complete-pooling mean and standard deviation, and integrate the conditional means against the posterior of tau to get the fully Bayes means. Check that B A equals 14.9 squared over 14.9 squared plus tau squared, and that school A's conditional mean is the convex combination by hand. Second, the pregnant women: fit the pooled regression and check every printed digit; fit one line per woman and check the six-number summaries of the intercepts and slopes against the site's printout, and the mean individual residual standard deviation, 1.0133. Third, run the ported hierarchical sampler, and assert partial pooling: the posterior means are less dispersed than the individual fits, and centred near the population means. Fourth, compute the weight on a woman's own data with T equal to 6, and the random-effects theta, and assert that theta lies between zero and the weight, which lies below one. Finally, compute the band for woman 1 at x equal to 40.143 from the intercept and slope draws alone, which is why it is a band for the mean line, not a predictive band.
+
+Routine five, the Tobit. First, slide 9: check that the standard deviation of y star is 2.062 and the three probabilities of a zero. Second, a Monte Carlo with one million draws confirms that the ordinary least squares slope on censored data equals beta times the probability that y is positive. Third, check Wooldridge's equations 17.24 and 17.25 against simulation at one point, and equations 17.26 and 17.30 against numerical derivatives of the means. Fourth, reproduce Table 17.3 on the MROZ data: confirm the 325 zeros, fit ordinary least squares, then maximize the Tobit log-likelihood, with log sigma as the parameter so sigma stays positive, starting from ordinary least squares and alternating a gradient method with a simplex method until it settles; check every coefficient, sigma 1122.02 and the log-likelihood minus 3819.09; then the average-partial-effect factor 0.589, the factor at the averages 0.645, using the square of average experience, and the average partial effect of education, 47.5. Fifth, the Chib sampler with a flat prior: each sweep draws the latent values of the censored observations from the normal truncated at zero, draws beta around the ordinary least squares fit to y star, and draws sigma squared from its inverse gamma. The check: the posterior means of education and kidslt6 lie within a quarter of a standard error of the maximum likelihood estimates, and the posterior standard deviations within 15 per cent of the standard errors.
+
+Routine six, the probit family. First, reproduce Wooldridge's Table 17.1: fit the probit and the logit, check every coefficient, both log-likelihoods, the pseudo R squared 0.221 and the 73.4 per cent correctly predicted; then the scale factors at the means, 0.391 and 0.243, their ratio 1.61, and the probit average factor 0.301. Second, the Albert-Chib sampler with a flat prior: precompute the inverse of X transposed X once, because it never changes when sigma is one; each sweep draws the latent values truncated to the positive half-line for ones and the non-positive half-line for zeros, then draws beta. The check: posterior means within 0.3 standard errors of the maximum likelihood estimates. Third, check Greenberg's prior arithmetic and phi of zero, 0.3989. Fourth, the ordered probit on a simulated sample with four categories: each sweep draws the latent values truncated to their category's interval, draws beta, then draws each free cut-point uniformly between the larger of the previous cut-point and the largest latent value in its lower category, and the smaller of the next cut-point and the smallest latent value in its upper category. The trap it measures: the cut-point chain's lag-1 autocorrelation, 0.99. Fifth, the multinomial probit with three alternatives and Omega known: each sweep updates each utility difference from its univariate conditional normal given the others, truncated according to the observed choice, then draws beta from the seemingly-unrelated-regression conditional. The check: every posterior mean within 0.25 of the truth.
+
+Routine seven, the counterexamples of the pitfalls note. It asserts, in turn: that at tau equal to 5.23 school C moves up while school A moves down; that the efficiency ratio at alpha one equal to one exceeds 4; that the Tobit slope of the unconditional mean at z equal to zero is beta over two; that scaling beta and sigma by the same constant leaves the probit probabilities unchanged; that a t with 5 degrees of freedom and scale one has variance 1.6667; that every Gibbs weight equals one at a standardized residual of one, whatever nu; that ordinary least squares on the positive subsample has a slope below 2; and that with autoregressive errors at 0.9 and an independent regressor the naive variance is right while generalized least squares still gains a factor above 9.
+
+The output of the last run, in words. Section 1 reproduces Table 8.1, with Case I acceptance 0.55, posterior means beta 2.20 and 3.97 and alpha 0.93 and 1.12, a feasible slope of 3.97, and the efficiency ratio 4.38. Section 2 confirms the mixture identity and the prior probabilities, with posterior means 0.43, 0.87 and 1.93 against ordinary least squares 0.54, 1.07 and 2.03, a posterior mean of nu of 3.8, acceptance 0.83, and an outlier weight of 0.018 against a median of 1.063. Section 3 reproduces Table 12.1 in 11 iterations, Cochrane-Orcutt 2.95, and the Gibbs means 1.97, 4.06, 1.03 and 0.871. Section 4 gives the eight schools, 7.87, 4.17, a tau median 5.23 and mean 6.59 with interval 0.24 to 20.87, and a fully Bayes school A of 11.64; the pregnancy pooled line; Gibbs means minus 4.363, 0.4687, 1.119, 3.210 and 0.1253; the weight 0.980 and theta 0.859; and woman 1's median 17.68, from 15.68 to 19.86. Section 5 gives the censored slope 1.5033 against 1.5029, Table 17.3 reproduced, the factors 0.589 and 0.645, and Gibbs means of 81.84 for education, minus 902.63 for kidslt6, and 1138.8 for sigma. Section 6 gives Table 17.1 reproduced, the factor ratio 1.61, Albert-Chib education 0.132 against 0.131, the ordered means 0.50, 0.89, 1.10 and 2.08 with lag-1 correlation 0.99, and the multinomial means 0.45, 1.1, minus 0.11 and minus 0.71. Section 7 gives school C moving up to 7.02, the truncated slope 1.902, and the gain of 9.53. Then: all checks passed.
+
+What is deliberately absent. PyMC, which is not installed and is listed as optional: every sampler is hand-written, which is what the exam asks you to be able to write down. The multinomial probit's Omega step, the inverse Wishart with a scale normalization of McCulloch and Rossi: Omega is held at its true value, marked in the code as a deliberate simplification with its upgrade path. The airline data, Greene's, which are not on disk: the airline posteriors of GLM3 slide 14 and HLM slides 20 and 21 are read, not reproduced. And convergence diagnostics beyond what the notes use, one lag-1 autocorrelation for the cut-points: the samplers are long enough for the asserted tolerances, which are a fraction of a posterior standard deviation.
+
+
+Support part four. Reading route and exercises.
+
+Addresses only. The statements are in the books.
+
+Reading, by section.
+Section 1, a general covariance matrix and generalized least squares: GLM3 slides 3 to 15. Wooldridge, section 8.4, printed pages 254 to 262, with Example 8.6 and Table 8.1 on printed page 257. Greenberg, section 8.1.1, printed pages 111 to 112, with Algorithm 8.1.
+Section 2, Student t errors: GLM3 slides 16 to 21. Greenberg, section 4.5, printed pages 50 to 52; section 4.6, printed pages 52 to 53; and section 8.1.2, printed pages 114 to 116, with the Vella and Verbeek results, which start on printed page 112.
+Section 3, first-order autoregressive errors: GLM3 slides 22 to 30. Wooldridge, section 12.3, printed pages 381 to 386, with Example 12.4 and Table 12.1 on printed page 384. Tsay, section 2.9, printed pages 90 to 93.
+Section 4, hierarchical linear models: HLM slides 3 to 23, and the site page hierarchicalmodel. Greenberg, section 4.6, printed pages 52 to 53, and section 9.3, printed pages 144 to 149, with Algorithm 9.3 and Table 9.5. Morettin and Singer, section 6.4, printed pages 215 to 218. Wooldridge, section 14.2, printed pages 441 to 442, as the frequentist neighbour.
+Section 5, the Tobit: LDV slides 4 to 10. Greenberg, section 8.2.1, printed pages 117 to 122, with Algorithm 8.2 and Table 8.1. Wooldridge, section 17.2, printed pages 536 to 543, with Example 17.2 and Table 17.3 on printed page 541; and section 17.4, printed pages 547 to 553.
+Section 6, the probit, ordered probit and multinomial probit: LDV slides 11 to 16. Greenberg, sections 8.2.2 and 8.2.3, printed pages 122 to 129, with Algorithm 8.3 and Table 8.2 on printed page 126; and section 9.2, printed pages 139 to 144, with Table 9.4 on printed page 144, as a graduate item. Wooldridge, section 17.1, printed pages 525 to 535, with Example 17.1 and Table 17.1 on printed page 533. Morettin and Singer, section 6.5, printed pages 218 to 220.
+Background from earlier classes: ordinary least squares as maximum likelihood, Class 1, section 6; conjugate updating and shrinkage, Class 1, section 4; the first-order autoregression, Class 1, section 7; and the logit and partial effects, Class 2, section 4.
+
+Practice exercises, by number and printed page.
+Wooldridge, chapter 12: computer exercise 12.C2, printed page 397, and computer exercise 12.C10, printed page 399. They go with section 3.
+Greenberg, chapter 8: exercises 8.3 and 8.5, printed page 132, with section 2; exercise 8.6, printed page 132, with section 5; and exercise 8.7, printed page 132, with section 6.
+Greenberg, chapter 4: exercise 4.6, printed page 59, with sections 2 and 4.
+Greenberg, chapter 9: exercises 9.2 and 9.3, printed page 151, with sections 4 and 6 for 9.2, and sections 2 and 4 for 9.3.
+Wooldridge, chapter 14: computer exercise 14.C5, printed page 454, with section 4.
+Wooldridge, chapter 17: problem 17.3, printed page 559, with section 5; computer exercise 17.C2, printed page 561, with section 6; computer exercise 17.C3, printed page 561, with section 5; and computer exercise 17.C9, printed page 562, with section 5.
+Morettin and Singer, chapter 6: exercise 6.18, printed page 241, and exercise 6.21, printed page 242, with section 6.
+Worked solutions to this list are in the unit's exercise list, built separately.
+
+
+Support part five. Self-test: thirty true or false items.
+
+This part covers the original self-test of the pitfalls note; no textbook exercise is reproduced. Scoring follows the course rule: the number correct minus half the number wrong. Difficulty is marked essential, medium or probing. After each statement, pause the player, decide true or false and say why, then resume for the answer.
+
+Block A. General covariance and heteroskedasticity.
+
+Item 1, essential. If P Omega P transposed is the identity, ordinary least squares on P y and P X equals the inverse of X transposed Omega inverse X, times X transposed Omega inverse y, for every such P.
+Pause.
+True. Omega inverse equals P transposed P, and only P transposed P appears in the ordinary least squares formula on the rotated data. Section 1, equations 4 and 5.
+
+Item 2, essential. Under heteroskedasticity with known h i, ordinary least squares is biased, which is why weighted least squares is used.
+Pause.
+False. Ordinary least squares remains unbiased; weighted least squares is used for efficiency and for valid usual standard errors. Section 1, subsection 1, and Wooldridge printed page 255.
+
+Item 3, medium. In the full conditional of beta, setting V zero inverse to zero gives a posterior mean equal to the generalized least squares estimator.
+Pause.
+True. Then V one inverse beta one equals sigma to the minus two X transposed Omega inverse y, and V one inverse equals sigma to the minus two X transposed Omega inverse X. Section 1, equation 8.
+
+Item 4, medium. For h of z and alpha equal to the exponential of z transposed alpha, with a normal prior on alpha, the full conditional of alpha is normal.
+Pause.
+False. Alpha appears in minus one half the sum of z i transposed alpha, and inside e to the minus z i transposed alpha: no conjugate form, hence Metropolis-Hastings. Section 1, equation 12.
+
+Item 5, probing. In feasible generalized least squares, the intercept of the regression of the log of u hat squared on x estimates the log of sigma squared consistently.
+Pause.
+False. It absorbs the expected value of the log of v, minus 1.27 for normal errors. That is harmless, because a constant factor in h cancels from weighted least squares. Section 1, subsection 4.1.
+
+Item 6, medium. A weighted least squares standard error 40 per cent smaller than the robust ordinary least squares one proves the variance model is correct.
+Pause.
+False. The weighted standard error is computed assuming h equals income; if h is wrong, it is wrong too. Wooldridge printed page 257, and section 1, subsection 4.1.
+
+Block B. Student t errors.
+
+Item 7, essential. If epsilon given omega is normal with mean zero and variance sigma squared omega, and omega is inverse-gamma with parameters nu over two and nu over two, then epsilon is a t with nu degrees of freedom, location zero and scale sigma squared.
+Pause.
+True. Integrating the inverse-gamma kernel with shape nu plus one over two and scale nu plus epsilon squared over sigma squared, over two, leaves one plus epsilon squared over nu sigma squared, raised to the minus nu plus one over two. Section 2, equations 1 to 3.
+
+Item 8, essential. If omega i inverse is inverse-gamma with parameters nu over two and nu over two, the marginal of epsilon i is a t with nu degrees of freedom.
+Pause.
+False. The reciprocal relation is the other way: omega i is inverse-gamma, equivalently omega i inverse is gamma. That is the slide 6 slip. Section 2, subsection 2.
+
+Item 9, medium. In the Gibbs sampler, an observation with an absolute residual below sigma gets an expected weight above one.
+Pause.
+True. Nu plus one over nu plus epsilon i squared over sigma squared exceeds one if and only if epsilon i squared is below sigma squared. Section 2, equation 5.
+
+Item 10, medium. The full conditional of nu is a gamma distribution when nu has an exponential prior.
+Pause.
+False. Nu enters through the bracket nu over two to the nu over two over gamma of nu over two, raised to the n; the conditional, section 2, equation 6, is non-standard, so Metropolis-Hastings.
+
+Item 11, probing. With a flat prior on beta and nu exponential with mean 25, the posterior median of beta exists but the posterior mean may not.
+Pause.
+True. Geweke: the mean needs zero prior probability on nu at most two, and the exponential puts mass there; quantiles always exist. Section 2, subsection 4.
+
+Item 12, medium. Under t errors with 5 degrees of freedom, the scale sigma squared equals the error variance.
+Pause.
+False. The variance is sigma squared times 5 over 3. Section 2, subsection 6.
+
+Block C. First-order autoregressive errors.
+
+Item 13, essential. With first-order autoregressive errors, the covariance of epsilon t and epsilon t plus k is rho to the k times sigma squared over one minus rho squared, for the absolute value of rho below one.
+Pause.
+True. Section 3, equations 1 and 2.
+
+Item 14, medium. Omega rho is tridiagonal.
+Pause.
+False. Its inverse is tridiagonal; Omega rho itself is full, with entries rho to the absolute value of i minus j over one minus rho squared. Section 3, equation 3.
+
+Item 15, medium. Cochrane-Orcutt and Prais-Winsten differ only in the treatment of the first observation.
+Pause.
+True. Prais-Winsten keeps the first observation of y and x multiplied by the square root of one minus rho squared; Cochrane-Orcutt drops it. Section 3, subsection 2, and Wooldridge printed page 383.
+
+Item 16, probing. If the regressor is serially uncorrelated, autoregressive errors leave ordinary least squares both efficient and with correct usual standard errors.
+Pause.
+False. The standard error is asymptotically right, a ratio of one, but generalized least squares is still more efficient: 9.53 at rho equal to 0.9. Section 3, equations 10 and 11.
+
+Item 17, medium. After conditioning on the first error, the full conditional of rho under a truncated-normal prior is a truncated normal.
+Pause.
+True. The likelihood becomes that of a regression of epsilon t on epsilon t minus one. Section 3, equation 13.
+
+Block D. Hierarchical models.
+
+Item 18, essential. In the individual-effects model with a hierarchical prior, the posterior mean of alpha i moves toward mu alpha more when T is small.
+Pause.
+True. The weight on the unit's own data, T V alpha over T V alpha plus sigma squared, falls as T falls. Section 4, equation 6.
+
+Item 19, medium. In the update of mu alpha, the precision of each alpha i is sigma to the minus two.
+Pause.
+False. It is V alpha inverse: the slide 13 slip. Section 4, equation 7.
+
+Item 20, medium. In the eight-schools model, every posterior mean of theta i given y and tau lies between y i and mu hat at that tau.
+Pause.
+True. It is the convex combination one minus B i times y i plus B i times mu hat. Section 4, equation 14.
+
+Item 21, probing. Shrinkage always moves the extreme schools toward zero.
+Pause.
+False. Toward mu hat, about 8: school C, at minus 2.75, moves up. Section 4, subsection 5, and pitfall nine.
+
+Item 22, medium. The individual-effects model with a vague non-hierarchical prior reproduces the dummy-variable, or fixed-effects, regression.
+Pause.
+True. Each alpha i is learned from its own unit only. Section 4, subsection 2, and Wooldridge printed page 438.
+
+Item 23, probing. The site's 95 per cent band for woman 1 at x equal to 40.143 covers a new weight measurement with 95 per cent probability.
+Pause.
+False. It omits the sigma y noise: it is a band for the mean line. Section 4, subsection 6.
+
+Block E. The Tobit.
+
+Item 24, essential. In the Tobit, the probability that y is zero given x is one minus capital Phi of x transposed beta over sigma.
+Pause.
+True. Section 5, equation 2, and Wooldridge 17.21.
+
+Item 25, medium. In the Tobit, the partial derivative of the expected value of y given x with respect to x j is beta j.
+Pause.
+False. It is beta j times capital Phi of x transposed beta over sigma, section 5, equation 12; beta is the latent-scale effect.
+
+Item 26, medium. In Chib's data augmentation, the latent value of a censored observation is drawn from a normal truncated to the interval from minus infinity to zero.
+Pause.
+True. Section 5, equation 6.
+
+Item 27, probing. With x normal with mean a and variance one, ordinary least squares of the censored y on x estimates beta times the share of uncensored observations.
+Pause.
+True. Stein's lemma: the covariance of x and the maximum of zero and y star equals the covariance of x and y star times the probability that y star is positive. Section 5, equation 14.
+
+Block F. The probit family.
+
+Item 28, essential. In the probit, the pair beta, sigma and the pair two beta, two sigma give the same likelihood, so sigma is fixed at one.
+Pause.
+True. Only x transposed beta over sigma enters. Section 6, equation 1.
+
+Item 29, medium. In the ordered probit Gibbs sampler, each cut-point is drawn from a normal distribution.
+Pause.
+False. From a uniform between the largest latent value of its lower category and the smallest of its upper one. Section 6, equation 8.
+
+Item 30, probing. In the multinomial probit, fixing one variance of Omega is needed even after differencing utilities from a base alternative.
+Pause.
+True. Differencing removes the location; c beta and c squared Omega still give the same choices. That is the scale. Section 6, subsection 4.
+
+
+Support part six. Glossary.
+
+One sentence per term, in the order the class meets them.
+
+Non-spherical errors: errors whose covariance is sigma squared Omega rather than sigma squared times the identity, because they are heteroskedastic, correlated, or both.
+Generalized least squares: ordinary least squares after a rotation P with P Omega P transposed equal to the identity, giving the inverse of X transposed Omega inverse X, times X transposed Omega inverse y.
+Weighted least squares: generalized least squares with a diagonal Omega, which divides every column, the constant too, by the square root of h i.
+Variance function: a positive function h of covariates z and parameters alpha that scales the error variance, usually the exponential of z transposed alpha.
+Feasible generalized least squares: generalized least squares with Omega estimated first, for heteroskedasticity by regressing the log of the squared residuals on the covariates.
+Heteroskedasticity-consistent standard errors: ordinary least squares standard errors valid whatever Omega is, which fix inference but not efficiency.
+Metropolis-Hastings step: a draw for a parameter with a non-standard conditional, proposed by a random walk and accepted with probability given by the posterior ratio.
+Scale mixture of normals: writing the t as a normal whose variance multiplier omega i is itself drawn from an inverse gamma with parameters nu over two and nu over two.
+Latent variance: the observation-specific multiplier omega i, a computational device integrated out by ignoring its draws.
+Gibbs weight: the conditional expected value of omega i inverse, nu plus one over nu plus the squared standardized residual, below one exactly when the absolute residual exceeds sigma.
+Scale against variance: in a t model sigma squared is a scale, and the variance is sigma squared times nu over nu minus two.
+Exchangeability: the assumption that nothing distinguishes the units in advance, so their parameters are drawn independently from one distribution.
+Geweke's conditions: with a flat prior on beta, the posterior mean of beta needs zero prior mass on nu at most two, and the posterior variance zero mass on nu at most four.
+First-order autoregressive errors: errors with epsilon t equal to rho epsilon t minus one plus white noise, so the correlation at lag k is rho to the k.
+Quasi-differencing: replacing y t by y t minus rho y t minus one, and x t likewise, which whitens first-order autoregressive errors.
+Prais-Winsten: quasi-differencing that keeps the first observation multiplied by the square root of one minus rho squared.
+Cochrane-Orcutt: quasi-differencing that drops the first observation.
+Tridiagonal inverse: the inverse of Omega rho, nonzero only on the diagonal and the two neighbouring diagonals.
+The small sin: conditioning on the first error, which makes the conditional of rho an exact truncated normal.
+Inverse-distribution-function draw: drawing a truncated normal as mu plus sigma times capital Phi inverse of a uniform mixture of the bound probabilities.
+Pooled model: one regression line for all units.
+Individual-effects model: one intercept per unit with common slopes; with a vague prior it is the fixed-effects, or dummy-variable, regression.
+Random-coefficients model: one full coefficient vector per unit.
+Hierarchical prior: a prior on unit parameters whose mean and variance are themselves given priors and estimated.
+Partial pooling: a unit's estimate as a weighted average of its own data and the population mean, with weight T V alpha over T V alpha plus sigma squared on its own data.
+Shrinkage factor: B i, sigma i squared over sigma i squared plus tau squared, the share of the population mean in a school's conditional mean.
+Borrowing strength: the gain in precision a unit with little or noisy data gets from the other units.
+Wishart prior: the conjugate prior for the precision matrix of the unit coefficient vectors.
+Random-intercept model: a regression with an additive unit effect of variance sigma a squared, which makes observations of the same unit equicorrelated.
+Random-effects theta: the quasi-demeaning weight, one minus the square root of sigma u squared over sigma u squared plus T sigma a squared, between pooled and fixed effects.
+Corner solution: an outcome at zero because zero is a genuine optimal choice.
+Censoring: values beyond a limit are recorded at the limit, but the units stay in the sample.
+Truncation: units beyond a limit are absent from the sample, x included.
+Tobit: the regression y equal to the maximum of zero and x transposed beta plus a normal error.
+Data augmentation: adding the hidden latent values to the unknowns so that every other conditional becomes standard.
+Inverse Mills ratio: lambda of c, phi of c over capital Phi of c, the correction term in the conditional-on-positive mean.
+Average partial effect scale factor: the average of capital Phi of x i transposed beta hat over sigma hat, 0.589 for the Mroz Tobit.
+Stein's lemma: for jointly normal x and w, the covariance of x and g of w equals the covariance of x and w times the expected value of g prime of w.
+Probit: the binary model with probability capital Phi of x transposed beta and the error variance fixed at one.
+Identification of the scale: only beta over sigma is seen through a cut, so a variance must be fixed.
+The 1.6 rule: logit coefficients are about 1.6 times probit coefficients, from the density peaks 0.399 and one quarter.
+Albert-Chib sampler: the probit Gibbs sampler that draws latent values truncated by the observed category and then beta by a normal regression.
+Ordered probit: a latent normal regression cut into ordered categories at increasing cut-points.
+Cut-point: a threshold gamma j separating two ordered categories, drawn from a uniform in the Gibbs sampler.
+Multinomial probit: a choice model in which the alternative with the largest latent utility is chosen, written as a latent seemingly unrelated regression in utility differences.
+Seemingly unrelated regression: a system of regressions with correlated errors, estimated by generalized least squares with the identity Kronecker Sigma.
+Truncated multivariate normal: a multivariate normal restricted to the region consistent with the observed choice, drawn one coordinate at a time.
+Multivariate probit: several binary decisions with correlated latent errors, whose covariance is a correlation matrix.
+Odds ratio: e to the logit coefficient, the multiplicative change in the odds per unit of x, a reading the probit does not have.
+
+
+Support part seven. The whole class in five lines.
+
+One. Every model of Class 7 is the normal linear regression with one twist, and one conditional does all the work: beta given the rest is normal, with precision V zero inverse plus sigma to the minus two X transposed Omega inverse X; only what else is drawn around it changes.
+
+Two. A known Omega is a rotation and diagonal Omega is weighted least squares, 0.787 with standard error 0.063 against 0.821 with standard error 0.104 in Wooldridge's Example 8.6; a variance function costs one Metropolis step, and ignoring it costs ordinary least squares a factor of 4.38.
+
+Three. Student t errors are normals with latent variances, so each observation carries the weight nu plus one over nu plus its squared standardized residual and an outlier falls to 0.018; first-order autoregressive errors have a tridiagonal inverse, Prais-Winsten quasi-differences, barium gives 2.94 with standard error 0.63, and naive standard errors are wrong by one plus rho phi over one minus rho phi.
+
+Four. Hierarchical models pool partially, with weight T V alpha over T V alpha plus sigma squared on a unit's own data: school A falls from 28.39 to 11.64 fully Bayes, toward 7.87, not toward zero, and the pregnant women's 3.21 against 1.12 leaves each woman's data in charge.
+
+Five. Limited dependent variables are latent regressions seen through a cut: draw the hidden part from a truncated normal and it is ordinary least squares again, but the coefficients are latent-scale effects, so the Mroz Tobit's 80.65 is 47.5 hours on average, probit effects are at most 0.4 times beta, logit coefficients are 1.6 times probit ones, and the scale must be fixed.
+
+This is the end of the Class 7 narration.

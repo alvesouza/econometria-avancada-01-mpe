@@ -1,0 +1,10 @@
+Livros/
+NotebookLM/
+Leituras/
+graphify-out/
+__pycache__/
+.venv/
+*.pdf
+**/data/
+**/cache/
+**/figures/

@@ -1,0 +1,550 @@
+Advanced Econometrics, Class 1. Review of basic ingredients. Narrated study notes, part 3 of 3: the support material.
+
+How to listen. This file holds the support parts of the Class 1 narration, where audio beats reading. Seven parts, in order. First, the pitfalls: sixteen confusions, each said as "the error is, the correction is", with the minimal counterexample. Second, the spoken formula sheet, built for active recall: you hear a prompt, pause the player, say the result aloud, then hear the answer. Third, the implementation: the reference Python routines described as sequences of steps, never read as code. Fourth, the reading route and the exercises, as addresses only. Fifth, a thirty-item true or false self-test, with a pause cue before each answer. Sixth, a glossary. Seventh, the whole class in five lines, the piece worth replaying.
+
+A reminder on scope. The final exam has no code. Expect derivations, such as likelihoods, maximum likelihood estimators, information, posteriors and autoregressive moments, and the reading of printed output, with the abstention table of section 6 as the model.
+
+
+Support part one. The pitfalls.
+
+This part covers the pitfalls note, part one: the confusions this material produces. Every number here is asserted in the Python checks.
+
+Pitfall one. Unbiased against low mean squared error.
+The error: treating "unbiased" as "best".
+The counterexample: the uniform on zero to theta, with theta equal to 3 and n equal to 10. The biased maximum likelihood estimator, the sample maximum, has mean squared error 0.136. The unbiased twice the sample mean has 0.300. And within the family of multiples c times the maximum, the unbiased choice, c equal to 11 over 10, gives theta squared over 120, while the biased optimum, c equal to 12 over 11, gives theta squared over 121.
+The correction: mean squared error is variance plus squared bias. Unbiasedness removes one term. It does not minimise the sum.
+
+Pitfall two. Same likelihood against same sampling distribution.
+The error: thinking that if two experiments give proportional likelihoods, every inference must agree.
+The counterexample: one success in ten trials. Both designs give theta hat equal to 0.1, the same observed information, the same Wald interval and the same beta posterior. But the expected value of theta hat at theta equal to 0.1 is 0.100 under the binomial and 0.256 under the negative binomial; and the p-value against theta equal to one half is 0.0107 under the binomial and 0.0020 under the negative binomial.
+The correction: what depends only on the observed likelihood agrees: the estimate, the observed information, the Wald interval and the posterior. What averages over unobserved outcomes disagrees: bias, exact variance, coverage and p-values.
+
+Pitfall three. Observed against expected information.
+The error: treating "the information" as a property of the data alone.
+The counterexample: the observed information, minus the second derivative of the log-likelihood, is computed from the realised likelihood and is the same function under every sampling rule. The expected information averages over the design. At theta equal to one half, a binomial with n equal to 10 has expected information 10 over 0.25, which is 40, so the asymptotic standard deviation is 0.158. A negative binomial with one success has expected information one over 0.25 times 0.5, which is 8, so the standard deviation is 0.354. The plug-ins coincide at theta hat; the functions of theta do not.
+The correction: the observed information is random and design-free; the expected information is fixed and design-dependent. Using the observed information at the estimate for the standard error is what makes the Wald interval blind to the stopping rule.
+
+Pitfall four. The p-value against the probability of the null given the data.
+The error: reading "p equal to 0.036" as "a 3.6 per cent chance that the null is true".
+The counterexample: X normal with mean theta and variance one, null theta equal to zero, alternative theta equal to 4, and x equal to 1.8. The p-value is 0.036, yet with equal priors the posterior probability of the null is one minus 0.310, which is 0.690. The data favour the null: the Bayes factor for the null is e to the 0.8, which is 2.23.
+The correction: the p-value is a tail area under the null. It never looks at the alternative, so it cannot be a posterior probability. Every x between 1.645 and 2 is significant and also favours the null.
+
+Pitfall five. Profiling against integrating.
+The error: treating the profile weight w of tau as the posterior of the change point.
+The counterexample: a toy series, 6 followed by seven 1s, with a uniform prior on the cut and exponential priors with rate one half on both rates for the integrated version. The weight on "the break is after year one" is 0.783 profiled and 0.653 integrated. The one-year segment fits its own count exactly, with rate estimate 6. Profiling keeps that perfect fit and ignores how uncertain a rate estimated from one observation is. Integrating charges for that uncertainty. On the coal data both routes give 0.251 at 1891, because both segments are long.
+The correction: profiling plugs in the peak height; integrating keeps the area. They agree only when every segment is long and the prior is weak.
+
+Pitfall six. Overdispersion against a change point.
+The error: saying "the variance to mean ratio is 1.59 with p below 0.001, so the rate changed."
+The counterexample: the ratio does not depend on the order of the years. Shuffle the 112 coal counts and the dispersion index is still exactly 1.592, with p below 0.001. But the best-cut likelihood-ratio statistic of the shuffled series has a 95 per cent quantile of about 14 across permutations, against 70.0 in calendar order. Overdispersion also arises from year-to-year rate heterogeneity with no break at all.
+The correction: overdispersion says "not one Poisson rate". Only the time structure, through the profile likelihood and the segment fits, says "a change around 1890".
+
+Pitfall seven. A searched likelihood-ratio statistic referred to a chi-squared with one degree of freedom.
+The error: saying "LR equals 70.0, so the p-value is the probability that a chi-squared with one degree of freedom exceeds 70."
+The counterexample: simulate iid Poisson series with rate 1.705 and length 112, so there is no change, and maximise the statistic over all 111 cuts. The 95 per cent quantile is 9.9, not the chi-squared's 3.84. A nominal 5 per cent test with the chi-squared cut-off would reject far too often. Here 70.0 lies above every one of 4,000 null draws and 4,000 permutation draws, so the conclusion survives. The chi-squared p-value does not.
+The correction: Wilks needs a regular problem. A cut that is searched, discrete, and unidentified under the null is not one.
+
+Pitfall eight. The R squared against out-of-sample fit.
+The error: believing a higher R squared means a better model.
+The counterexample: Boston, interaction order 5, with 2380 coefficients and only 253 training observations. The in-sample R squared is 1.0000, the out-of-sample R squared is 0.052, and the test root mean squared error is 47.13 against 4.48 for the plain model.
+The correction: the R squared cannot fall when a column is added, so it cannot choose between nested models. The training error is optimistic by two p sigma squared over n.
+
+Pitfall nine. Significant against important.
+The error: believing a joint F of 13.22, with p below 0.0001, means the variables matter a lot.
+The counterexample: abstention, model 4 against model 2. The size dummies are jointly significant, yet the adjusted R squared moves from 0.754 to 0.756. With 5,565 observations, a tiny share of variance is still precisely estimated.
+The correction: significance and explanatory share answer different questions.
+
+Pitfall ten. Stationary against unit root, and persistent against nonstationary.
+The error: treating a very persistent first-order autoregression as nonstationary, or treating a vector autoregression with a coefficient above one as explosive.
+The counterexamples: phi equal to 0.9 is stationary, with equilibrium variance 5.26 sigma squared and half-life 6.6. Only phi equal to one has variance t sigma squared and no equilibrium. Tsay's Example 8.3 has a diagonal coefficient of 1.1, yet its eigenvalues are 0.8 and 0.5, so it is stationary.
+The correction: stationarity is decided by the absolute value of phi being below one, or by the eigenvalues of Phi. It is not decided by how slowly the autocorrelation decays, or by any single coefficient.
+
+Pitfall eleven. Consistency against unbiasedness.
+The error: treating the two as the same property, or assuming one implies the other.
+The counterexamples, all for the uniform on zero to theta. The sample maximum is not unbiased, its bias is minus theta over n plus one, but it is consistent, because its mean squared error, two theta squared over n plus one times n plus two, goes to zero. Twice the first draw is unbiased but not consistent: its mean squared error is theta squared over three for every n. The sample mean is neither unbiased for theta nor consistent: it converges to theta over two, and its mean squared error tends to theta squared over four. Also, s over N in inverse sampling is biased, 0.256 at theta equal to 0.1 with one success, but consistent as s grows.
+The correction: unbiasedness is about the centre at a fixed n; consistency is about the limit. A mean squared error that goes to zero gives consistency, with or without bias.
+
+Pitfall twelve. The nonparametric bootstrap for the maximum.
+The error: believing the bootstrap always works if n is large.
+The counterexample: the resampled maximum equals the observed one with probability one minus the quantity one minus one over n to the n: 0.651 at n equal to 10, 0.634 at n equal to 100, and tending to 0.632. The true law of the maximum is continuous. In the deck the bootstrap standard deviation of the maximum is too small at n equal to 50, 0.041 against 0.058, and too large at n equal to 100, 0.036 against 0.029. The shape is wrong at every n.
+The correction: the empirical distribution has no mass beyond its own maximum. A statistic that lives on the edge of the support cannot be bootstrapped from it. Resample from the fitted uniform on zero to theta hat instead.
+
+Pitfall thirteen. Uncorrelated against independent.
+The error: concluding independence from zero autocorrelation.
+The counterexample: IBM monthly returns. Ljung-Box on returns gives Q of 30 equal to 38.2, with p equal to 0.144: no autocorrelation. On squared returns it gives Q of 30 equal to 182.1, with p about 10 to the minus 23.
+The correction: the returns are uncorrelated but not independent; their size is predictable. That is volatility clustering, Class 8.
+
+Pitfall fourteen. Asymptotics where they do not apply.
+The error: applying the regular large-sample recipe everywhere.
+The counterexamples. With one success in ten trials, the Wald interval runs from minus 0.086 to 0.286, which leaves the interval from zero to one. The uniform maximum likelihood estimator is not a root of the score: the derivative of the log-likelihood, minus n over theta, never vanishes, and the maximum is at the boundary, the sample maximum. For iid Poisson data with a zero total, the maximum likelihood estimator does not exist on positive lambda.
+The correction: check the regularity before using the recipe.
+
+Pitfall fifteen. A confident posterior against a right model.
+The error: reading a tight posterior as evidence that the model is right.
+The counterexample: on all 112 coal years the posterior mean is 1.707, with a tight posterior around it. It is a precise estimate of a single rate that section 3 showed does not exist.
+The correction: the prior regularises the estimate. It does not test the likelihood.
+
+Pitfall sixteen. 0.81 as the false-positive rate of a specification search.
+The error: saying "32 tries means an 81 per cent false-positive rate."
+The counterexample: one minus 0.95 to the 32nd, 0.806, assumes independent tests. With 32 one-sided z tests sharing a common component, a pairwise correlation of 0.5, like re-analyses of the same 30 students, the family-wise rate is 0.405. That is still eight times the nominal 0.05, but it is not 0.81. And the real choice count of the deck's setup is 162, not 32.
+The correction: the independence formula is an upper bound for positively correlated tests; the true rate lies between 0.05 and that bound.
+
+The ten distinctions that cost most points, each as a pair.
+Likelihood against sampling distribution: the observed curve, against the average over outcomes that did not happen.
+Observed information at the estimate against expected information: realised curvature, design-free, against expected curvature, design-dependent.
+Unbiased against minimum mean squared error: the centre alone, against centre and spread together.
+Unbiased against consistent: a fixed-n statement, against a limit.
+Profile against integrated likelihood: the peak height, against the area under the curve.
+Overdispersion against change point: "not one rate", against "two rates, in this order".
+p-value against Bayes factor against posterior: a tail area under the null, against a ratio of heights, against a probability of the hypothesis.
+R squared against test error: can only rise with p, against rises once noise is fitted.
+Persistent against unit root: the absolute value of phi below one but near one, against phi equal to one.
+Nonparametric against parametric bootstrap: resample the data, against resample the fitted model.
+
+
+Support part two. The spoken formula sheet.
+
+This part covers the formulas note. How to use it: after each prompt, pause the player, say the formula out loud, then resume and hear the answer. The equation numbers are those of each section note.
+
+First, the exam specification, mapped. The site describes Class 1 as a "Brief review of basic ingredients" in five items. Item one, "Parametric models, likelihoods, estimators and their sampling distributions", is settled in sections 1, 2, 3 and 5. Item two, "Gaussian linear regression: estimation and variable selection", is section 6: subsections 2 to 4 for estimation and 5 to 7 for selection and overfitting. Item three, "AR(1) model: estimation, unit root, equilibrium distribution", is section 7: subsection 5 for estimation, 7 for the unit root, and 6 for the equilibrium. Item four, "AR(p) model: connection to Gaussian linear regression", is section 7.8. Item five, "VAR(1) model: multivariate estimation, matrix notation", is section 7.9.
+
+The eleven goals of the class plan. One, write a likelihood and derive the maximum likelihood estimator: sections 1, 2, 5.6, 6.4 and 7.5. Two, sufficiency, unbiasedness, consistency and Cramér-Rao efficiency: section 2, and 5.6 for the sufficiency of the maximum. Three, check them by Monte Carlo: sections 2.8 and 5.7. Four, compare estimators by mean squared error, the four uniform estimators: sections 5.2 to 5.5, and 5.8 for the graduate best multiple. Five, the nonparametric against the parametric bootstrap, and why the nonparametric fails for the maximum: sections 5.9 to 5.11. Six, overdispersion and a Poisson change point: section 3. Seven, Gaussian linear regression in matrix form and variable selection: section 6. Eight, first-order autoregression estimation, the equilibrium distribution and the unit root: sections 7.4 to 7.7. Nine, the autoregression of order p as a regression: section 7.8. Ten, the first-order vector autoregression in matrix notation: section 7.9. Eleven, p-hacking and reproducibility: section 8. Also on the site list: the first Bayesian example, section 4, and the sampling rules and the likelihood principle, section 1.
+
+Now the results, section by section.
+
+Section 1, sampling rules.
+
+Prompt: the common likelihood kernel of the Bernoulli, binomial and negative binomial designs. Pause. Answer: the likelihood is proportional to theta to the s times one minus theta to the n minus s.
+
+Prompt: the likelihood principle. Pause. Answer: proportional likelihoods give the same likelihood-based and Bayesian inference.
+
+Prompt: the log-likelihood, the score and the estimator, equations 4 to 6. Pause. Answer: the log-likelihood is s log theta plus n minus s log of one minus theta; the score is s over theta minus n minus s over one minus theta; and theta hat is s over n.
+
+Prompt: the observed information and its value at the estimate, equations 7 and 8. Pause. Answer: J of theta is s over theta squared plus n minus s over one minus theta squared; at the estimate it is n over theta hat times one minus theta hat, the same under every rule.
+
+Prompt: the binomial exact distribution, mean, variance and Fisher information, equations 9 to 11. Pause. Answer: the probability that theta hat equals k over n is n choose k, theta to the k, one minus theta to the n minus k; the mean is theta; the variance is theta times one minus theta over n; the information is n over theta times one minus theta; the bound is attained.
+
+Prompt: the binomial asymptotic law, equation 12. Pause. Answer: theta hat is approximately normal with mean theta and variance theta times one minus theta over n.
+
+Prompt: the negative binomial distribution, information and asymptotic law, equations 13 to 15. Pause. Answer: the probability that N equals m is m minus one choose s minus one, theta to the s, one minus theta to the m minus s; the information is s over theta squared times one minus theta; and theta hat is approximately normal with variance theta squared times one minus theta over s.
+
+Prompt: the delta method result and the plug-in check, equations 16 to 18. Pause. Answer: N is approximately normal with mean s over theta and variance s times one minus theta over theta squared; the delta method on s over N gives equation 15; and the plug-in variances coincide at theta hat times one minus theta hat over n.
+
+Prompt: the bias of s over N, and the closed form for one success, equations 19 and 20. Pause. Answer: by Jensen, the expected value of s over N exceeds theta; for one success, the expected value of one over N is minus theta log theta over one minus theta.
+
+Prompt: Haldane's estimator. Pause. Answer: s minus one over N minus one is exactly unbiased for s at least 2. Graduate layer.
+
+Prompt: the p-value definition and the two tails. Pause. Answer: the nível descritivo, Bolfarine Definition 6.3.1, printed page 100; binomial, the probability that S is at most s; negative binomial, the probability that N is at least n.
+
+Prompt: the beta posterior and its weighted average, equations 21 and 22. Pause. Answer: a beta prior with parameters a and b gives a beta posterior with parameters a plus s and b plus n minus s under every rule; the posterior mean is a weighted average of the prior mean and s over n, with weights a plus b and n over a plus b plus n.
+
+Prompt: the sample size rule, equation 23. Pause. Answer: n at least z squared times theta times one minus theta over E squared; worst case theta equal to one half.
+
+Section 2, the Poisson estimator.
+
+Prompt: the Poisson probability, mean and variance, equations 1 to 3. Pause. Answer: lambda to the y times e to the minus lambda over y factorial; mean and variance both lambda: equidispersion.
+
+Prompt: the Poisson likelihood, equations 4 and 5. Pause. Answer: a constant times lambda to the s sub n times e to the minus n lambda.
+
+Prompt: sufficiency by the definition, and the conditional law, equation 6. Pause. Answer: the law of the sample given the total is free of lambda; it is the multinomial with t trials and equal probabilities one over n.
+
+Prompt: the log-likelihood, the estimator and the second derivative, equations 7 to 10. Pause. Answer: log c plus s sub n log lambda minus n lambda; lambda hat is the sample mean; the second derivative is minus s sub n over lambda squared, negative; no estimate exists if the total is zero.
+
+Prompt: unbiasedness and variance, equations 11 and 12. Pause. Answer: the mean of lambda hat is lambda; the variance is lambda over n, which tends to zero.
+
+Prompt: Chebyshev's bound, equation 13. Pause. Answer: the probability that lambda hat misses lambda by more than epsilon is at most lambda over n epsilon squared: consistency.
+
+Prompt: the asymptotic law and standard error, equation 14. Pause. Answer: lambda hat approximately normal with mean lambda and variance lambda over n; standard error the square root of lambda hat over n.
+
+Prompt: the Cramér-Rao bound and the efficiency of the sample mean, equations 15 to 18. Pause. Answer: the bound is one over I of lambda, with I of lambda equal to n over lambda; the efficiency is one: the sample mean is efficient.
+
+Prompt: the variance of the sample variance, equation 19. Pause. Answer: lambda over n plus two lambda squared over n minus one.
+
+Prompt: the efficiency of the sample variance, equations 20 and 21. Pause. Answer: one over one plus two lambda times n over n minus one, tending to one over one plus two lambda.
+
+Section 3, coal mining.
+
+Prompt: the dispersion statistic, equation 1. Pause. Answer: D equals n minus one times s squared over y bar, approximately chi-squared with n minus one degrees of freedom; the upper tail tests overdispersion.
+
+Prompt: the law of total variance for a two-rate mixture, equation 2. Pause. Answer: the variance is the mean rate plus pi times one minus pi times the squared difference of the rates: a mixture is overdispersed.
+
+Prompt: the segment estimates, equation 5. Pause. Answer: lambda j hat of tau equals s sub j over n sub j.
+
+Prompt: the profile log-likelihood, equation 6. Pause. Answer: s one log lambda one hat plus s two log lambda two hat minus 191, plus a constant.
+
+Prompt: the normalised weight, equation 7. Pause. Answer: w of tau is e to the profile log-likelihood at tau over the sum over the window; it is the posterior of tau under a uniform prior with the rates profiled out.
+
+Prompt: the likelihood-ratio statistic in two forms, equations 8 and 9. Pause. Answer: two times the profile maximum minus the single-rate maximum; equivalently two times s one log of lambda one hat over lambda hat plus s two log of lambda two hat over lambda hat.
+
+Prompt: the generalized likelihood-ratio test and Wilks, and why it fails here. Pause. Answer: lambda of x is the supremum of the likelihood over the null over the supremum over everything; minus two log lambda tends to a chi-squared under regularity; it fails here because tau was searched, is unidentified under the null, and is discrete.
+
+Prompt: the integrated posterior of tau, equation 10, graduate layer. Pause. Answer: proportional to the product over segments of a times gamma of s sub j plus one over n sub j plus a to the s sub j plus one.
+
+Section 4, the first Bayesian example.
+
+Prompt: the exponential prior and its moments, equations 1 and 3. Pause. Answer: a e to the minus a lambda; mean one over a; variance one over a squared.
+
+Prompt: the gamma integral, equation 2. Pause. Answer: the integral from zero to infinity of lambda to the k e to the minus b lambda is gamma of k plus one over b to the k plus one.
+
+Prompt: Bayes' theorem in proportional form, equation 4. Pause. Answer: the posterior is proportional to the likelihood times the prior.
+
+Prompt: the posterior, equations 6 to 8. Pause. Answer: kernel lambda to the s sub n e to the minus a plus n lambda, so lambda given the data is gamma with shape s sub n plus one and rate a plus n.
+
+Prompt: the gamma mean, variance and mode, equation 9. Pause. Answer: alpha over beta; alpha over beta squared; alpha minus one over beta.
+
+Prompt: the posterior mean, mode and variance, equations 10 to 12. Pause. Answer: s sub n plus one over a plus n; s sub n over a plus n; s sub n plus one over a plus n squared.
+
+Prompt: shrinkage, equations 13 and 14. Pause. Answer: the posterior mean is a over n plus a times one over a, plus n over n plus a times y bar; the mode is n over n plus a times y bar.
+
+Section 5, mean squared error and the bootstrap.
+
+Prompt: the decomposition, equations 1 to 3. Pause. Answer: the mean squared error is the expected squared error, which equals the variance plus the squared bias; for an unbiased estimator, the variance.
+
+Prompt: the uniform moments and the sample mean, equations 4 to 8. Pause. Answer: the mean of x is theta over two, its variance theta squared over twelve; the sample mean has mean theta over two and variance theta squared over 12 n.
+
+Prompt: the law and moments of the maximum, equations 9 to 14. Pause. Answer: the maximum over theta is beta with parameters n and one; the mean of the maximum is n over n plus one times theta; its variance is n theta squared over n plus one squared times n plus two.
+
+Prompt: the four mean squared errors, equations 15 to 18. Pause. Answer: one plus 3 n over 12 n times theta squared; two theta squared over n plus one times n plus two; theta squared over 3 n; theta squared over n times n plus two.
+
+Prompt: the ranking, equations 19 to 22. Pause. Answer: estimator four, then two, then three, then one, for n at least 3; all equal at n equal to 1; estimators two and three tie at n equal to 2.
+
+Prompt: the uniform likelihood and estimator, equations 23 to 25. Pause. Answer: theta to the minus n times the indicator that theta is at least the maximum; the estimator is the maximum, on the boundary, with the score never zero; the maximum is sufficient.
+
+Prompt: the Monte Carlo estimate, equation 26. Pause. Answer: the average over replications of the squared error.
+
+Prompt: the best multiple of the maximum, equations 27 to 29, graduate layer. Pause. Answer: c star equals n plus two over n plus one, with mean squared error theta squared over n plus one squared.
+
+Prompt: the bootstrap standard error, equation 30. Pause. Answer: the standard deviation of the B replicates, ISLP equation 5.8.
+
+Prompt: the bootstrap point mass, equations 31 and 32. Pause. Answer: the probability that the resampled maximum equals the observed one is one minus the quantity one minus one over n to the n, tending to one minus e to the minus one, 0.632: the nonparametric bootstrap is inconsistent for the maximum.
+
+Prompt: the parametric bootstrap. Pause. Answer: resample from the uniform on zero to estimator four; it reproduces the plug-in standard deviation.
+
+Section 6, Gaussian linear regression.
+
+Prompt: simple least squares on standardised data, equations 1 and 2. Pause. Answer: the slope is the sample correlation.
+
+Prompt: the model, the normal equations and the estimator, equations 3 to 7. Pause. Answer: y equals X beta plus epsilon; X transposed X beta hat equals X transposed y; beta hat is X transposed X inverse times X transposed y.
+
+Prompt: the global minimum identity, equation 8. Pause. Answer: RSS of beta equals RSS of beta hat plus the squared length of X times beta hat minus beta.
+
+Prompt: the hat matrix and its properties, equations 9 to 12. Pause. Answer: P equals X times X transposed X inverse times X transposed; symmetric, idempotent, trace q; X transposed e is zero; RSS is y transposed times I minus P times y; e is I minus P times epsilon.
+
+Prompt: the estimator's error and variance, equations 13 and 14. Pause. Answer: beta hat equals beta plus X transposed X inverse X transposed epsilon; its variance is sigma squared times X transposed X inverse.
+
+Prompt: the Gaussian maximum likelihood estimators, equations 15 to 17. Pause. Answer: the maximum likelihood estimator of beta is the least squares estimator; of sigma squared, RSS over n.
+
+Prompt: the expected RSS and the unbiased variance, equations 18 and 19. Pause. Answer: sigma squared times n minus q; RSS over n minus q.
+
+Prompt: the R squared and its monotonicity, equations 20 and 21. Pause. Answer: one minus RSS over TSS; it never falls when regressors are added.
+
+Prompt: the adjusted R squared and its rule, equations 22 and 23. Pause. Answer: one minus one minus R squared, times n minus one over n minus k minus one; it rises if and only if the added absolute t exceeds one, or for a group, F exceeds one.
+
+Prompt: the three criteria, equation 24. Pause. Answer: C p is one over n times RSS plus 2 d sigma hat squared; AIC is C p over sigma hat squared; BIC is one over n times RSS plus log n times d sigma hat squared.
+
+Prompt: the interaction model sizes, equation 25. Pause. Answer: p sub k equals one plus the sum over j up to k of 13 choose j.
+
+Prompt: in- and out-of-sample error, equations 26 and 27. Pause. Answer: sigma squared times one minus p over n, and sigma squared times one plus p over n: optimism two p sigma squared over n.
+
+Prompt: the R squared form of the F test, Wooldridge 4.41. Pause. Answer: the gain in R squared over q, divided by one minus the unrestricted R squared over the residual degrees of freedom; valid under homoskedasticity.
+
+Prompt: the HC1 variance, equation 29. Pause. Answer: n over n minus q, times X transposed X inverse, times the sum of squared residuals times x x transposed, times X transposed X inverse.
+
+Section 7, autoregressions.
+
+Prompt: weak stationarity. Pause. Answer: constant mean, and autocovariance depending only on the lag.
+
+Prompt: the symmetry of the autocovariance and the autocorrelation, equations 1 and 2. Pause. Answer: gamma at minus l equals gamma at l; rho sub l equals gamma l over gamma zero.
+
+Prompt: the Ljung-Box statistic, equation 3. Pause. Answer: T times T plus two times the sum up to m of rho hat l squared over T minus l, approximately chi-squared with m degrees of freedom.
+
+Prompt: the autocovariance of a linear series, equation 4. Pause. Answer: sigma a squared times the sum over j of psi j psi j plus l.
+
+Prompt: the first-order autoregression's mean, weights, variance and stationarity condition, equations 5 to 9. Pause. Answer: the mean is phi zero over one minus phi one; the weights are phi one to the i; the variance is sigma a squared over one minus phi one squared; stationary if and only if the absolute value of phi one is below one.
+
+Prompt: the autocovariance recursion and the autocorrelation, equations 10 and 11. Pause. Answer: gamma l equals phi one gamma l minus one; rho l equals phi one to the l.
+
+Prompt: estimation, equations 12 and 13. Pause. Answer: the conditional Gaussian likelihood is maximised by least squares of r at t on one and r at t minus one; the exact likelihood adds the density of the first observation.
+
+Prompt: the conditional law and the equilibrium distribution, equations 14 to 16. Pause. Answer: y at t given y zero is normal with mean mu plus phi to the t times y zero minus mu, and variance sigma squared times one minus phi to the 2 t over one minus phi squared; it tends to a normal with mean mu and variance sigma squared over one minus phi squared.
+
+Prompt: the half-life, equation 17. Pause. Answer: the log of 0.5 over the log of the absolute value of phi.
+
+Prompt: the random walk, equations 18 and 19. Pause. Answer: variance t sigma squared; the forecast at any horizon is the current value; the correlation between y at t and y at t plus h is the square root of t over t plus h.
+
+Prompt: the autoregression of order p, equations 20 and 21. Pause. Answer: a multiple regression on p lags; mean phi zero over one minus the sum of the phi's; error variance the sum of squared residuals over T minus 2 p minus one.
+
+Prompt: the vector autoregression and its stationarity condition, equation 22. Pause. Answer: r at t equals phi zero plus Phi r at t minus one plus a at t, with shock covariance Sigma; estimated equation by equation by least squares; stationary if and only if all eigenvalues of Phi have modulus below one.
+
+Prompt: the vector mean, equation 23. Pause. Answer: I minus Phi inverse times phi zero.
+
+Prompt: the vector covariance, equations 24 and 25. Pause. Answer: Gamma zero equals Phi Gamma zero Phi transposed plus Sigma; vec of Gamma zero equals the inverse of I minus Phi Kronecker Phi times vec of Sigma.
+
+Prompt: the lagged cross-covariance, equation 26. Pause. Answer: Gamma l equals Phi to the l times Gamma zero.
+
+Section 8, evidence.
+
+Prompt: the size of one test, equation 1. Pause. Answer: the null probability that p is at most alpha equals alpha, for one pre-specified test.
+
+Prompt: the family-wise rate for independent tests, equations 2 and 3. Pause. Answer: one minus one minus alpha to the m.
+
+Prompt: Bonferroni, equation 4. Pause. Answer: test each at alpha over m; the family-wise rate is at most alpha, with no independence assumption.
+
+Prompt: the two p-values at 1.8, equations 5 and 6. Pause. Answer: one minus Phi of 1.8, which is 0.0359; and for the reversed test, Phi of minus 2.2, which is 0.0139.
+
+Prompt: the Bayes factor and its log, equations 7 and 8. Pause. Answer: B F zero one is phi of 1.8 over phi of minus 2.2, which is e to the 0.8; the log of B F one zero at x is 4 x minus 8.
+
+Prompt: the posterior with general priors, equations 9 to 11. Pause. Answer: one over one plus B F zero one times the prior odds P of H zero over P of H one.
+
+Prompt: the prior odds needed for a posterior of 0.9, equations 12 and 13. Pause. Answer: P of H one over P of H zero equals 9 times B F zero one, about 20.
+
+Now the numbers, as quick recall. After each prompt, pause, say the number, then hear it.
+
+Expected value of s over N with one success at theta equal to 0.1. Pause. 0.256, standard deviation 0.281.
+Four p-values for one and four successes in ten trials. Pause. 0.0107 and 0.0020; 0.377 and 0.254.
+Efficiency of the sample variance at lambda equal to 2, for n equal to 10, 50 and 200. Pause. 0.184, 0.197, 0.199, tending to 0.2.
+Exact coverage of the plus or minus 0.25 window at n equal to 10, 50 and 200. Pause. 0.424, 0.789, 0.987.
+Coal rates and dispersion p-values for the full series, the early and the late period. Pause. 1.705, below 0.001; 3.125, 0.774; 0.917, 0.168.
+Profile maximum, single-rate maximum, and the likelihood ratio. Pause. Minus 54.055, minus 89.049, and 69.99, about 70.0.
+Weight at 1891 and the weight of 1889 to 1892. Pause. 0.251 and 0.696.
+Coal posterior mean, mode, standard deviation, and the estimate. Pause. 3.084, 3.060, 0.273, against 3.098.
+Four mean squared errors at theta equal to 3 and n equal to 10. Pause. 2.325, 0.136, 0.300, 0.075.
+Bootstrap point mass at n equal to 10 and its limit. Pause. 0.651, and 0.632.
+Boston: in- and out-of-sample R squared at order 5, and the test error ratio. Pause. 1.0000 and 0.052; 10.5 times.
+Abstention persistence in model 4 and its interval. Pause. 0.684, from 0.666 to 0.702.
+Equilibrium variance and half-life at phi equal to 0.9. Pause. 5.263 and 6.58.
+Tsay Example 8.3 eigenvalues, mean and correlation. Pause. 0.8 and 0.5; 1 and 2; 0.632.
+Family-wise rate for 32 tests, Bonferroni threshold, p-value at 1.8, Bayes factor, posterior, prior odds. Pause. 0.806; 0.0016; 0.0359; 2.2255; 0.310; 20.03.
+
+
+Support part three. The implementation, described.
+
+This part covers the Python note, which presents the runnable script Notas, L01, L01 python checks. The script uses numpy, scipy and statsmodels, no R, and checks every computation with an assertion against the number printed in the deck or the section note. It runs in about ten seconds, prints one "ok" line per section, and ends with "ALL L01 CHECKS PASSED", which was the output of the run on October 19th, 2026. The code is not read here; each routine is described by its inputs, its steps, and the trap that breaks it.
+
+What is reused rather than rewritten. The companion check script supplies the coal series, read from the project's verified data note, and the Change-Point Dial's read-out function; the script imports it, takes its data, and checks its own likelihood ratio against the companion's. The figure script draws fourteen figures, each with its own assertion; it is cited, not imported, because importing it would redraw every figure, and its seeds are reused so the samples match the figures. The figure assertions check figures; this script checks formulas and printed numbers: exact distributions against closed forms, Monte Carlo against theory, and the linear algebra library against statsmodels.
+
+The convention. A helper called near passes when a computed value matches a printed one to half a unit in its last decimal. Monte Carlo checks are seeded and allow about four standard errors.
+
+Routine one, the sampling rules. Build the exact distribution of s over N from the negative binomial probabilities, summed far into the tail, and take its mean and standard deviation; they must reproduce 0.256 and 0.281 for one success, and 0.461 and 0.178 for four. Check the closed form for one success and Haldane's unbiased estimator to machine precision. Compute the binomial p-value as a lower tail, few successes, and the negative binomial p-value as an upper tail, many trials; each must equal its hand fraction, 11 over 1024, 1 over 512, 386 over 1024 and 130 over 512. The trap: the statistics library counts failures, not trials, for the negative binomial, so the index must be shifted by s. The note's remark: the two p-value functions are the whole of slide 10: same data, same likelihood, different tail, because each sums over a different sample space. The routine also checks the Wald intervals, the beta posteriors, the site's Bernoulli example, and the sample size of 385.
+
+Routine two, the Poisson estimator. Sum the Fisher information and the fourth central moment exactly over the probability mass function; check that the general formula for the variance of s squared reproduces equation 19 for every n; check the theoretical efficiencies 0.184, 0.197 and 0.199 and the deck's Monte Carlo efficiencies. Then repeat slide 8's Monte Carlo design with 20,000 replications instead of 1,000, so the tolerances can be tight. Finally compute the plus or minus 0.25 coverage exactly, using the fact that n times lambda hat is Poisson with rate n lambda, and by the normal approximation.
+
+Routine three, coal mining. Load the 112 counts and check the totals, 191 in all, 125 in the first 40 years, 127 in the first 41. For each period compute the mean, the variance, the dispersion index, the statistic D and its upper-tail p-value. For the profile, use one small function per segment, the maximised kernel s times log of s over n, minus s, with the convention that zero log zero is zero; sum it over the two segments for every admissible cut; find the maximum at 1891, with value minus 54.055, against minus 89.049 for one rate; and form the likelihood ratio, 69.99, checked against the compact form. Normalise over the window 1885 to 1895 to get the weights, checking both normalisers: 3.983 from the rounded gaps and 3.985 from the unrounded ones, with the same weights to three decimals. Check the law of total variance, 2.825, the sample's within and between split, the fitted against observed frequencies, and the relative log-likelihoods. For the graduate layer, compute the integrated weights with the gamma function. The trap: a segment with zero disasters needs the zero log zero convention, or the profile breaks.
+
+Routine four, the gamma posterior. Check the conjugate result two ways: with the gamma distribution at shape 128 and rate 41.5, remembering that the library takes a scale equal to one over the rate; and by normalising prior times likelihood on a fine grid, the brute-force version of Bayes' theorem. Check the mean, mode, standard deviation, the two intervals, and the shrinkage weight 0.01205. The trap: passing the rate where the library expects a scale.
+
+Routine five, the four estimators and the bootstraps. Compute the four mean squared errors as exact fractions, so that the ranking and the two ties at n equal to 1 and 2 are checks of exact equality, not of floating-point closeness, for every n up to 200. Check the corrected entries of Bolfarine's Table 1.1 and the best multiple of the maximum. Run the Monte Carlo at theta equal to 3 and n equal to 10 with 200,000 replications. For the bootstrap, use the same seeded sample as the figure, with maximum 2.969: the nonparametric resampled maximum lands exactly on the sample maximum about 63 per cent of the time, while the parametric one never does, and its standard deviation matches the plug-in formula. A rounding note: at n equal to 50, the plug-in standard deviation of the sample mean is 0.11945, which section 5.11 prints as 0.120 though three decimals give 0.119; the check allows a tolerance of one thousandth for that row. The routine also checks the triangular weights, the median under the t with 4 degrees of freedom, and the exact intervals of the bootstrap example page.
+
+Routine six, regression. Three routes to beta hat must agree: the normal equations solved directly, a least squares solver, and statsmodels. Check the hat matrix is symmetric and idempotent with trace q, and that the residuals are orthogonal to X. Check the R squared, the adjusted R squared and the error variance against statsmodels, and check that the Gaussian log-likelihood at beta hat and RSS over n equals statsmodels' log-likelihood: "least squares equals maximum likelihood" as a number. Build the HC1 variance by formula and compare it with statsmodels' robust standard errors. Check the optimism result at a fixed design with p equal to 10 and n equal to 50: training error about 0.8 sigma squared and test error about 1.2 sigma squared. Regenerate the best-subset simulation with seed 128 and check the quoted criteria. Then check every printed number of the abstention example. The trap, in the note's words: use a least squares solver, never the explicit inverse of X transposed X, in real work; the explicit inverse appears only inside the HC1 sandwich, where the formula needs it.
+
+Routine seven, autoregressions. A small function returns the stationary mean and variance and deliberately refuses an absolute phi of one or more, because at a unit root there is no equilibrium distribution to return. Check the equilibrium variance, the half-life, the conditional moments at t equal to 10, Wooldridge's correlations, Tsay's third-order mean, and the Ljung-Box p-values. Simulate a long stationary first-order autoregression and check that least squares on the lag equals statsmodels' autoregression estimates, Tsay's conditional least squares, and that the sample moments match the theory. Check across 20,000 random walks that the variance grows like t. For Tsay's Example 8.3, check the eigenvalues, solve for the mean, solve the vec formula for Gamma zero, and confirm it independently with a discrete Lyapunov solver, which solves equation 24 directly; check Gamma one and the correlation 0.632. Finally simulate the vector autoregression and check that equation-by-equation least squares reproduces statsmodels' vector autoregression fit.
+
+Routine eight, p-hacking. Under the null every p-value is uniform, so 32 independent null tests are 32 uniform draws, and the share whose minimum falls below 0.05 is the family-wise rate. The run prints a family-wise rate of 0.806 for independent tests, 0.048 with Bonferroni, and 0.405 for correlated tests, 32 one-sided z tests with pairwise correlation 0.5 standing in for the same 30 students. That lies between 0.05 and 0.806, as section 8.3 argues. Then check the p-value at 1.8, the reversed p-value, the Bayes factor, the log Bayes factor 4 x minus 8, the posterior 0.310, and the prior odds 20.03.
+
+Routine nine, the numbers behind the pitfalls and the self-test. A function computes the best-cut likelihood ratio over all 111 cuts at once with cumulative sums. Draw 4,000 iid Poisson series with no break and 4,000 permutations of the coal counts, and take the 95 per cent quantiles. The run prints 9.9 for the iid null and 14.2 for the permuted coal, against 3.84 for the chi-squared with one degree of freedom and 70.0 observed. A searched likelihood ratio has its own reference distribution, and 70 is far outside it. The routine also checks that the dispersion index ignores the order, the profile against integrated toy, 0.783 and 0.653, the expected information under the two designs, the unbiased but inconsistent twice the first draw, and every number in the inspectors' self-test.
+
+
+Support part four. Reading route and exercises.
+
+Addresses only. The statements are in the books.
+
+Reading, by section.
+Section 1, sampling rules: Bolfarine and Sandoval, section 1.3, printed pages 4 to 6; section 2.1, printed pages 15 to 19; section 3.1, printed pages 35 to 37, with Example 3.1.2; section 3.2.2, printed pages 44 to 45; Definition 6.3.1, printed page 100. Greenberg, section 2.2, printed pages 12 to 18.
+Section 2, the Poisson estimator: Bolfarine, section 1.1.4, printed pages 2 to 3; section 2.1, printed pages 15 to 19, with Example 2.1.2; section 2.2, printed pages 20 to 23, with Examples 2.2.3 and 2.2.4; section 3.1, printed pages 35 to 42; section 3.2, printed pages 42 to 45, with Example 3.2.5; section 3.7, printed page 52.
+Section 3, coal mining: Bolfarine, section 3.4, printed pages 46 to 49, on the profile likelihood; section 6.5, printed pages 103 to 114, on the generalized likelihood-ratio test and Wilks. Greenberg, section 7.1.1, printed pages 91 to 95, on the switch-point model, as a preview.
+Section 4, the first Bayesian example: Greenberg, section 2.2, printed pages 12 to 18; Bolfarine, sections 4.3 and 4.4, printed pages 61 to 70, as the decision-theory view.
+Section 5, mean squared error and the bootstrap: Bolfarine, section 1.1.5, printed page 3; section 1.3, printed pages 3 to 13, with Table 1.1; Examples 2.2.5 and 3.1.3. ISLP, section 5.2, printed pages 212 to 215.
+Section 6, regression: Wooldridge, chapters 2 and 3, printed pages 20 to 81; section 6.3, printed page 181; section 8.2, printed pages 245 to 246. Izbicki and Mendonça, section 1.5.1.1, printed page 21; chapter 2, printed pages 27 to 31; sections 3.1 and 3.2, printed pages 33 to 37.
+Section 7, autoregressions: Tsay, sections 2.1 to 2.4, printed pages 30 to 57; section 8.2, printed pages 399 to 403. Wooldridge, sections 11.1 and 11.3, printed pages 345 to 355.
+Section 8, evidence: the two p-hacking decks.
+
+Practice exercises, by number and printed page. Bolfarine and Sandoval: 1.4, page 13, two variance estimators compared by mean squared error; 1.6, page 13, the density of the maximum; 1.9, page 14; 1.12, page 14, the best multiple of the maximum; 2.2, page 32, the Cramér-Rao bound and efficiency; 2.4, page 32, sufficiency by the definition for the Poisson; 2.10, page 33; 2.11, page 33, the geometric case; 3.13, page 54, invariance and the delta method; 3.17, page 55, consistency; 4.9, page 72; 5.11, page 89, a Bayesian interval with an exponential prior; 6.11, page 116, the approximate likelihood-ratio test for equal Poisson means of two samples, the fixed-cut version of the coal statistic.
+Greenberg: 2.2, page 19, gamma-Poisson and the posterior mean as a weighted average; 3.2, page 39, the Poisson-gamma predictive; 3.7 and 3.8, page 40, Bayes factors, forward to Classes 3 and 4; 7.3, page 106, Gibbs for the coal switch point, a preview of Classes 3 and 4.
+Izbicki and Mendonça: 3.7, page 129; 3.9, pages 129 to 130; 5.2, pages 224 to 225; 5.9, pages 227 to 228.
+Tsay: 2.2, page 104, second-order autoregression moments and forecasts; 8.1 and 8.2, page 462.
+Wooldridge: 11.C8, page 370, a regression with a lagged regressor; 12.1, page 396.
+
+
+Support part five. Self-test: thirty true or false items.
+
+This part covers the original self-test of the pitfalls note. Scoring follows the course rule: the true or false score is the maximum of zero and the number correct minus half the number wrong, times the item value; blank items do not count as wrong. Difficulty is marked easy, medium or hard. The numbers are illustrative unless a note is cited. After each statement, pause the player, decide true or false and say why, then resume for the answer.
+
+Block A, likelihood and sampling rules. The setting for items 1 to 5: two Anvisa inspectors estimate the defect rate theta of a vaccine line. Inspector A audits a fixed batch of 20 vials and finds 2 defective. Inspector B audits vials until the second defective appears, which happens at the 20th vial.
+
+Item 1, easy. Both inspectors' maximum likelihood estimates equal 0.10. Pause.
+Answer: true. Both likelihoods are proportional to theta squared times one minus theta to the 18th. The score vanishes at 2 over 20, which is 0.10, whichever binomial constant multiplies the kernel. The estimate uses only the realised likelihood, so the sampling rule cannot change it.
+
+Item 2, medium. Because the two estimates coincide, B's estimator 2 over N is unbiased for theta, just as A's S over 20 is. Pause.
+Answer: false. The estimate is the same function of the data; its sampling distribution is not. Under inverse sampling N is random and one over x is convex, so Jensen gives an expected value of 2 over N above theta. At theta equal to 0.1 the exact mean is 0.165. Haldane's s minus one over N minus one, here one over N minus one, is the unbiased one. A's S over 20 is unbiased. The converse trap is "same likelihood implies same bias".
+
+Item 3, medium. With a uniform beta prior with parameters 1 and 1, A and B obtain the same posterior for theta. Pause.
+Answer: true. The posterior is beta with parameters 1 plus 2 and 1 plus 18, beta of 3 and 19, with mean 0.136, under either rule. The binomial coefficients cancel in the normalisation. This is the likelihood principle at work: the stopping rule does not enter Bayesian inference.
+
+Item 4, hard. Testing the null theta equal to 0.25 against theta below 0.25 at the 5 per cent level, A and B necessarily reach the same decision, since their likelihoods are proportional. Pause.
+Answer: false. Extreme is defined by each sample space. For A, the p-value is the probability that S is at most 2 with n equal to 20 and theta equal to 0.25, which is 0.091: do not reject. For B, it is the probability that N is at least 20 with s equal to 2, which equals the probability that a binomial with 19 trials and probability 0.25 is at most 1, which is 0.031: reject. Identical vials, opposite verdicts.
+
+Item 5, medium. The Wald 95 per cent intervals of A and B, built from the observed information at the estimate, are identical. Pause.
+Answer: true. The observed information is n over theta hat times one minus theta hat, 20 over 0.1 times 0.9, which is 222.2, in both cases, and the plug-in variances coincide. The interval is also poor in both cases: 0.10 plus or minus 1.96 times 0.067, from minus 0.031 to 0.231, which leaves the interval from zero to one. Being the same is not being right.
+
+Block B, the Poisson estimator. The setting for items 6 to 9: an analyst models the yearly number of offshore oil-spill incidents reported to the ANP as iid Poisson with rate lambda, an illustrative example.
+
+Item 6, easy. If the model is right, no unbiased estimator of lambda has a smaller variance than the sample mean. Pause.
+Answer: true. The variance of the sample mean, lambda over n, equals the Cramér-Rao bound, so the sample mean is efficient. Under the bound's regularity conditions no unbiased competitor can do better. It is also the minimum variance unbiased estimator, a graduate-layer fact.
+
+Item 7, medium. The sample variance is also unbiased for lambda. Both it and the sample mean are consistent, so for large samples they are equally precise. Pause.
+Answer: false. Both are unbiased and consistent, but the variance of s squared is lambda over n plus two lambda squared over n minus one. Its efficiency tends to one over one plus two lambda, 0.2 at lambda equal to 2, so s squared needs about five times the data. Consistency is a limit statement; it says nothing about precision at any n.
+
+Item 8, medium. For any data set, the Poisson likelihood has a maximiser on the positive half-line. Pause.
+Answer: false. If every year has zero incidents, the log-likelihood is log c minus n lambda, which increases as lambda falls to zero, and there is no maximum on the open space. This happens with probability e to the minus n lambda, not negligible for small n lambda.
+
+Item 9, hard. At lambda equal to 2 and n equal to 50, Chebyshev's lower bound on the probability that the sample mean is within 0.25 of lambda is a close approximation to the exact probability. Pause.
+Answer: false. Chebyshev gives one minus 2 over 50 times 0.25 squared, which is 0.36. The exact probability is 0.789, from the total being Poisson with rate 100. The bound proves consistency but is far too crude to quantify it.
+
+Block C, the change point and the first prior. The setting for items 10 to 14: yearly counts of track incidents on a metro network, illustrative, and the coal-mining series.
+
+Item 10, medium. A dispersion index of 1.6 with a dispersion test p-value below 0.001 shows that the incident rate changed at some date. Pause.
+Answer: false. The index ignores the order of the years. Shuffling the coal series leaves it at exactly 1.592, yet the shuffled best-cut likelihood ratio has a 95 per cent quantile near 14, against 70 in calendar order. Overdispersion rules out one Poisson rate. A change point is one explanation; year-to-year heterogeneity is another. Locating a break needs the time structure.
+
+Item 11, hard. In the coal data, the likelihood ratio is 70.0 at the profile-maximising cut, so the correct p-value is the probability that a chi-squared with one degree of freedom exceeds 70. Pause.
+Answer: false. Tau was chosen to maximise the statistic over 111 candidates; it is not identified when the two rates are equal; and it is discrete, so Wilks does not apply. Under an iid Poisson null with no break, the maximised statistic has a 95 per cent quantile of 9.9, not 3.84. The single-rate model is still rejected, because 70 exceeds every simulated null draw.
+
+Item 12, easy. The single-rate model can never attain a higher maximised likelihood than the best two-regime model. Pause.
+Answer: true. One rate is the special case of equal rates in the two-regime model. Maximising over a larger set cannot give a lower maximum, so the single-rate line in the profile figure lies below every cut.
+
+Item 13, easy. With an exponential prior with rate a and n iid Poisson counts summing to s sub n, the posterior of lambda is gamma with shape s sub n plus one and rate a plus n. Pause.
+Answer: true. The prior kernel e to the minus a lambda times the likelihood kernel lambda to the s sub n e to the minus n lambda gives lambda to the s sub n e to the minus a plus n lambda, the gamma kernel with shape s sub n plus one and rate a plus n. The exponential is a gamma with shape one, so the update adds the count to the shape and the exposure to the rate.
+
+Item 14, medium. With the exponential prior with rate one half, the posterior mean, s sub n plus one over n plus one half, always exceeds the estimate s sub n over n, because the prior adds one pseudo-event. Pause.
+Answer: false. The prior adds one event and half a year. The posterior mean is a weighted average of the prior mean, one over a, which is 2, and the sample mean, so it exceeds the estimate only when the sample mean is below 2. On the 1851 to 1891 data, the sample mean is 3.098, above 2, and the posterior mean is 3.084, below the estimate. The pull is toward the prior centre, not always upward.
+
+Block D, mean squared error and the bootstrap. The setting for items 15 to 19: a procurement auditor at the TCU models winning discounts in a sealed-bid auction as iid uniform on zero to theta and wants the upper bound theta, an illustrative example.
+
+Item 15, easy. An unbiased estimator of theta always has a smaller mean squared error than a biased one. Pause.
+Answer: false. At theta equal to 3 and n equal to 10, the biased maximum has mean squared error 0.136 and the unbiased twice the sample mean has 0.300. Mean squared error is variance plus squared bias: a small bias can buy a large cut in variance.
+
+Item 16, medium. The maximum likelihood estimator of theta is found by setting the score to zero. Pause.
+Answer: false. The likelihood is theta to the minus n times the indicator that theta is at least the maximum, so the score, minus n over theta, never vanishes. The likelihood is decreasing wherever it is positive, so the maximum sits on the boundary, theta equal to the sample maximum. Bolfarine Example 3.1.3.
+
+Item 17, medium. Among all estimators of the form c times the maximum, the unbiased one, c equal to n plus one over n, has the smallest mean squared error. Pause.
+Answer: false. The mean squared error is minimised at c star equal to n plus two over n plus one, below n plus one over n. The optimum shrinks slightly and accepts a bias of minus theta over n plus one squared. At n equal to 10: theta squared over 121, below theta squared over 120.
+
+Item 18, medium. With 2 bids, the maximum has strictly smaller mean squared error than twice the sample mean. Pause.
+Answer: false. At n equal to 2 both equal theta squared over 6, because n minus one times n minus two is zero. The strict ranking needs n of at least 3. That is why the handwritten "n at least 2" is wrong.
+
+Item 19, hard. As n grows, the nonparametric bootstrap distribution of the resampled maximum approaches the true sampling distribution of the maximum. Pause.
+Answer: false. The resampled maximum equals the observed maximum with probability one minus the quantity one minus one over n to the n, which tends to 0.632. That point mass never disappears, while the true law of the maximum is continuous. The bootstrap is inconsistent here. The parametric bootstrap from the uniform on zero to theta hat is not.
+
+Block E, Gaussian linear regression. The setting for items 20 to 24: an IPEA analyst regresses municipal outcomes on several regressors by least squares with an intercept, as in the abstention study.
+
+Item 20, easy. Adding a regressor can never lower the R squared. Pause.
+Answer: true. The smaller model is the larger one with the extra coefficient set to zero, so the minimised residual sum of squares cannot rise. That is exactly why the R squared cannot select a model.
+
+Item 21, medium. Adding a regressor raises the adjusted R squared only if its t statistic is significant at 5 per cent. Pause.
+Answer: false. The exact condition is an absolute t above one, Wooldridge page 181, far below the 5 per cent critical value. The adjusted R squared is a lenient criterion: in the seeded best-subset simulation it keeps 5 predictors where BIC picks the true 3.
+
+Item 22, medium. Under Gaussian errors, the maximum likelihood estimator RSS over n is unbiased for sigma squared. Pause.
+Answer: false. The expected RSS is sigma squared times n minus q, so the expected value of RSS over n is sigma squared times n minus q over n, below sigma squared. The unbiased estimator divides by n minus q. The maximum likelihood and unbiased variance estimators differ here, while the beta hats are the same.
+
+Item 23, hard. For a fixed design and a correct linear model with p columns, the expected training mean squared error understates the expected test mean squared error at the same design by two p sigma squared over n. Pause.
+Answer: true. The expected training error is sigma squared times one minus p over n, and the expected test error is sigma squared times one plus p over n. The gap is two p sigma squared over n: the training error is optimistic in proportion to the number of parameters, and C p adds exactly that back.
+
+Item 24, medium. Since the four size dummies are jointly significant, with F equal to 13.22 and p below 0.0001, adding them must raise the adjusted R squared substantially. Pause.
+Answer: false. The adjusted R squared moves from 0.754 to 0.756. With 5,565 observations, a very small share of variance is estimated precisely. Significance and explanatory share answer different questions. The group's F above one guarantees only that the adjusted R squared rises, not by how much.
+
+Block F, autoregressions. The setting for items 25 to 28: a Banco Central analyst models a monthly inflation-gap series.
+
+Item 25, easy. A first-order autoregression with phi equal to 0.95 is nonstationary because shocks to it are very persistent. Pause.
+Answer: false. Stationarity needs only an absolute phi below one. At phi equal to 0.95 the equilibrium variance is sigma squared over one minus 0.9025, which is 10.26 sigma squared, finite, and the half-life is about 13.5 periods. Persistent is not the same as a unit root. Only at phi equal to one does the variance grow like t sigma squared.
+
+Item 26, medium. For a Gaussian first-order autoregression with absolute phi below one, the distribution of y at t given any starting value y zero converges to a normal with mean mu and variance sigma squared over one minus phi squared. Pause.
+Answer: true. The conditional mean, mu plus phi to the t times y zero minus mu, tends to mu, and the conditional variance, sigma squared times one minus phi to the 2 t over one minus phi squared, tends to sigma squared over one minus phi squared. The start is forgotten geometrically.
+
+Item 27, hard. A first-order vector autoregression whose coefficient matrix has an entry greater than one is necessarily explosive. Pause.
+Answer: false. Stationarity depends on the eigenvalues of Phi, not on its entries. Tsay's Example 8.3 has a diagonal entry of 1.1 and eigenvalues 0.8 and 0.5, so it is stationary, with mean 1 and 2.
+
+Item 28, medium. Least squares of y at t on one and y at t minus one gives the exact Gaussian maximum likelihood estimates of a first-order autoregression. Pause.
+Answer: false. Least squares maximises the conditional likelihood given the first observation. The exact likelihood also contains the density of the first observation, normal with mean mu and variance sigma squared over one minus phi squared, which depends on phi and imposes an absolute phi below one. The two estimates differ slightly and coincide asymptotically.
+
+Block G, p-values and evidence.
+
+Item 29, easy. Under the null, the p-value of a test with a continuous statistic is uniformly distributed on zero to one. Pause.
+Answer: true. The p-value is one minus F zero of T, and F zero of T is uniform under the null by the probability integral transform, so the null probability that p is at most alpha is alpha. This is what makes the minimum of many p-values misleading: 32 independent uniforms fall below 0.05 at least once with probability 0.806.
+
+Item 30, hard. With X normal with mean theta and variance one, the null theta equal to zero, the alternative theta equal to 4, and equal prior probabilities, an observation whose one-sided p-value is 0.03 is evidence in favour of the alternative. Pause.
+Answer: false. A p-value of 0.03 means x equal to 1.881. By the log Bayes factor 4 x minus 8, B F one zero is e to the 4 times 1.881 minus 8, which is 0.621, below one, so the data favour the null, and the posterior probability of the alternative is 0.383. Any x between 1.645 and 2 is significant at 5 per cent yet closer to zero than to 4. The p-value never looks at where the alternative is.
+
+
+Support part six. Glossary.
+
+Likelihood: the joint probability or density of the observed sample, read as a function of the parameter.
+Log-likelihood: the natural log of the likelihood; constants that do not involve the parameter drop out on differentiation.
+Score: the first derivative of the log-likelihood; setting it to zero gives the likelihood equation.
+Maximum likelihood estimator: the parameter value that maximises the likelihood, sometimes at a root of the score, sometimes on the boundary.
+Observed information: minus the second derivative of the log-likelihood, a random, design-free curvature.
+Expected, or Fisher, information: the expected value of the observed information, fixed and dependent on the design.
+Likelihood principle: proportional likelihoods should give the same inference; likelihood-based and Bayesian methods obey it, frequentist sampling properties do not.
+Sampling rule: the design that decides which quantities are random, such as fixed trials or fixed successes.
+Negative binomial, or inverse, sampling: sampling until the s-th success, so the number of trials is random.
+Sufficient statistic: a statistic such that the conditional law of the sample given it does not depend on the parameter.
+Factorisation criterion: a statistic is sufficient when the likelihood factors into a function of the statistic and the parameter times a function of the data alone.
+Unbiased: an estimator whose expected value equals the parameter at every sample size.
+Consistent: an estimator that converges in probability to the parameter as the sample grows.
+Cramér-Rao lower bound: one over the Fisher information, the smallest variance an unbiased estimator can attain under regularity.
+Efficiency: the ratio of the Cramér-Rao bound to an estimator's variance; one means efficient.
+Equidispersion: the Poisson property that the mean equals the variance.
+Overdispersion: a variance larger than the mean in count data, a symptom of mixed or changing rates.
+Dispersion test: the statistic n minus one times s squared over the sample mean, referred to a chi-squared with n minus one degrees of freedom.
+Profile likelihood: the likelihood of one parameter with the others replaced by their maximising values.
+Integrated likelihood: the likelihood of one parameter with the others integrated against a prior.
+Generalized likelihood-ratio test: compares the maximised likelihood under the null with the unrestricted maximum; Wilks gives its chi-squared limit under regularity.
+Change point: the time at which a model's parameter, here a Poisson rate, switches value.
+Prior: a density for the parameter that encodes knowledge before the data.
+Posterior: the density of the parameter given the data, proportional to likelihood times prior.
+Conjugate prior: a prior whose posterior stays in the same family, such as gamma for a Poisson rate or beta for a Bernoulli probability.
+Shrinkage: the pull of a Bayesian estimate toward the prior centre, with weight that vanishes as data accumulate.
+Mean squared error: the expected squared distance between an estimator and the parameter, equal to variance plus squared bias.
+Order statistics: the sorted sample; the largest is the sample maximum.
+Monte Carlo: approximating a sampling distribution by simulating many samples from a known model.
+Nonparametric bootstrap: approximating a sampling distribution by resampling the observed data with replacement.
+Parametric bootstrap: approximating a sampling distribution by simulating from the fitted model.
+Normal equations: X transposed X times beta hat equals X transposed y, the first-order conditions of least squares.
+Hat matrix: the projection matrix that maps y to the fitted values.
+R squared: one minus the residual sum of squares over the total sum of squares, the share of variance explained.
+Adjusted R squared: the R squared with both sums of squares replaced by unbiased variance estimates.
+Mallows' C p, AIC and BIC: training error plus a price per parameter, with BIC charging log n instead of two.
+Best subset selection: an exhaustive search for the best model of each size.
+Overfitting: fitting noise, so that training error falls while test error rises.
+Optimism: the expected gap between test and training error, two p sigma squared over n for a correct linear model.
+HC1 standard errors: White's heteroskedasticity-robust variance times n over n minus q.
+Omitted-variable bias: the bias from leaving out a regressor, equal to its effect times its slope on the included regressor.
+Weak stationarity: a constant mean and autocovariances that depend only on the lag.
+Autocorrelation function: the correlation between a series and its own lags, as a function of the lag.
+Ljung-Box test: a portmanteau test of zero autocorrelations up to lag m.
+White noise: iid shocks with finite mean and variance.
+First-order autoregression: a regression of the series on its own first lag.
+Equilibrium, or stationary, distribution: the limiting law a stationary autoregression settles into, whatever its start.
+Half-life: the horizon at which the expected deviation from the mean has halved.
+Unit root: phi equal to one, a random walk, with variance growing like t and no equilibrium.
+Vector autoregression: a system in which each series is regressed on the lags of all series.
+Kronecker product and vec: the matrix tools that turn the vector autoregression's covariance equation into a linear system.
+p-value: the null probability of a result at least as extreme as the one observed, where extreme is defined by the sample space.
+p-hacking: searching over analyses until one gives p below 0.05.
+Family-wise error rate: the probability of at least one false rejection across a family of tests.
+Bonferroni correction: testing each of m hypotheses at alpha over m to keep the family-wise rate at most alpha.
+Bayes factor: the ratio of the data's probability under two hypotheses; for point hypotheses, the likelihood ratio.
+Jeffreys-Lindley paradox: a significant p-value alongside a Bayes factor that favours the null.
+
+
+Support part seven. The whole class in five lines.
+
+One. A likelihood picks the estimator, but the sampling rule sets its bias and its p-values: one success in ten trials gives theta hat equal to 0.1 either way, yet a mean of 0.256 and a p-value of 0.0020 under inverse sampling.
+
+Two. Judge estimators by mean squared error, variance plus squared bias, worked out exactly, by Monte Carlo, or by bootstrap; the biased maximum beats twice the mean, and the nonparametric bootstrap fails on the edge of the support with a 63 per cent point mass.
+
+Three. Judge models by what they predict and assume: the coal data's overdispersion rejects one Poisson rate, two rates fit with a break near 1891 and a likelihood ratio of 70.0 that is not chi-squared, and a confident posterior does not make a model right.
+
+Four. Least squares is a projection and the Gaussian maximum likelihood estimator, the R squared cannot fall and so cannot select, and a first-order autoregression settles into a normal with variance sigma squared over one minus phi squared only when the absolute value of phi is below one.
+
+Five. A p-value is not evidence: 32 tries make significance likely, and a p-value of 0.036 can sit beside a posterior of only 0.31 for the alternative.
+
+This is the end of the Class 1 narration.

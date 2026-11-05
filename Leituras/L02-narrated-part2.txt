@@ -1,0 +1,453 @@
+Advanced Econometrics, Class 2. Introduction to statistical learning. Narrated study notes, part 2 of 3.
+
+How to listen. This file continues the Class 2 narration. It covers part three, classification, with logistic regression and discriminant analysis, and part four, counts, with Gaussian against Poisson regression. Every formula is spoken in words. Each section opens by naming its sources and page ranges and closes with a spoken checklist. Part 1 covered the map, the bias-variance decomposition, the reading of linear and log-linear coefficients, and cross-validation. Part 3 holds the support material.
+
+
+Part three, section 4. The logit model, its maximum likelihood estimator by iteratively reweighted least squares, and what the default and spam outputs actually say.
+
+This section covers the logistic part of the logistic regression and discriminant analysis deck, by Lopes and Marques, slides 4 to 38; the graduate school admission script and its seven pages of R output; ISLP section 4.3, printed pages 139 to 144, with equations 4.1 to 4.9, Tables 4.1 to 4.3 and Figure 4.3, and the confusion matrix vocabulary of section 4.4.2, printed pages 152 to 156, Tables 4.4 to 4.7; Wooldridge section 17.1, printed pages 525 to 531, with equations 17.2, 17.3, 17.7 and 17.10 to 17.12, and McFadden's pseudo R squared on page 531; and AME section 7.4, printed pages 138 to 139, with Tabela 7.1, and section 8.1.2, printed pages 142 to 143.
+
+The claim. A binary y is Bernoulli with an individual probability pi i, and logistic regression makes the log-odds, the log of pi i over one minus pi i, linear in x i. The log-likelihood is concave; its score is X transposed times y minus pi; its Hessian is minus X transposed W X; and one Newton-Raphson step is one weighted least squares fit on an adjusted response z. That is iteratively reweighted least squares, IRLS for short. Coefficients are read as odds ratios, e to the beta j. A probability cut-off c maps to a covariate cut-off, x star equal to the logit of c minus beta zero, over beta one. And a classifier is judged by its confusion matrix, not by one error rate. Six slips in the deck, on slides 9, 10, 15, 18, 22 and 38, are corrected where they arise, plus a reversed comment in the admission script.
+
+The notation. y i, zero or one, is the response of individual i, with one meaning "yes": default, spam, admitted. x i is the covariate vector with a leading one, and X the n by p plus one matrix with rows x i transposed. Beta is the coefficient vector, and eta i, equal to x i transposed beta, is the linear predictor, any real number. Pi i, the probability that y i equals one given x i, lies between zero and one; the deck also writes it g of x i transposed beta. g of mu, e to the mu over one plus e to the mu, is the logistic function; Wooldridge writes capital Lambda; and its inverse, the log of pi over one minus pi, is the logit. l of beta is the log-likelihood; W, the diagonal matrix of pi i times one minus pi i, is the weight matrix; z is the IRLS adjusted response. c is a probability cut-off, and x star the covariate value where the fitted probability equals c. TN, FP, FN and TP are the confusion matrix counts: true negatives, false positives, false negatives and true positives.
+
+Four point one. Intuition: why a straight line fails on a zero-one response.
+
+The default data, from ISLR, with 10,000 customers, slide 4, has 9,667 non-defaulters and 333 defaulters, slide 12. Regressing the zero-one indicator on balance by least squares, the linear probability model, ISLP equation 4.1, page 139, and Wooldridge section 17.1, page 525, gives, slide 13: the fitted probability equals minus 0.07519 plus 0.0001299 times balance.
+
+It crosses zero at 0.07519 over 0.0001299, which is 578.8, so every customer with a balance under 579 dollars gets a negative "probability". At a balance of 2000 it says minus 0.07519 plus 0.2598, which is 0.185, where the logit says 0.586. Wooldridge's two complaints, page 525, are exactly these: fitted values outside zero to one, and a constant partial effect. The fix is to model a transformation of pi that is free to range over the whole real line.
+
+The figure has two panels, drawn from the printed coefficients only, since the data are not on disk. On the left, the logistic curve for the probability of default given balance, with coefficients minus 10.6513 and 0.0055, against the least squares line, marked at balance 1000, 0.58 per cent, at 2000, 58.6 per cent, and at the 50 per cent cut-off, 1936.6. On the right, the balance plus student logit curves for students and non-students, with 50 per cent cut-offs at 1998 and 1873, and the probabilities at balance 1500, 5.4 and 10.5 per cent.
+
+The logit is flat near zero for balances below about 1,000, rises steepest where the fitted probability is one half, and saturates near one. The straight line cannot bend, so it is too high at small balances, too low at large ones, and wrong in sign at the left end. On the right the two curves are horizontal translates of each other: the dummy moves the intercept, which is all a dummy can do in a logit without interactions.
+
+Four point two. The model: the logistic function, the odds, and the logit. Slides 5 and 6.
+
+The model, slide 5, ISLP equation 4.2, page 139, Wooldridge equations 17.2 and 17.3, pages 525 to 526. Equation 1: pi i, the probability that y i equals one given x i, equals e to the x i transposed beta, over one plus e to the x i transposed beta, which is g of x i transposed beta.
+
+From equation 1 to the log-odds, one step at a time, writing eta i for x i transposed beta. Equation 2: one minus pi i equals one minus e to the eta over one plus e to the eta, which is one plus e to the eta minus e to the eta, over one plus e to the eta, which is one over one plus e to the eta. Divide equation 1 by equation 2. Equation 3: pi i over one minus pi i equals e to the eta i. These are the odds, ISLP equation 4.3, page 140. Take logs of equation 3. Equation 4: the log of pi i over one minus pi i equals x i transposed beta: the log-odds, or logit, ISLP equation 4.4, page 140.
+
+The generalized linear model reading, slide 6. y i is Bernoulli with probability pi i, with equation 5: the conditional mean of y i is pi i, which is g of x i transposed beta, and the conditional variance is pi i times one minus pi i. The logit is the link: it maps the mean to the scale on which the model is linear. Section 6 uses the same template with a log link.
+
+Four point two point one. Reading a coefficient: the odds ratio and the partial effect.
+
+Raise x j by one unit, everything else fixed. From equation 3 the odds go from e to the eta to e to the eta plus beta j. Equation 6: the odds at x j plus one over the odds at x j equals e to the beta j: the odds ratio, ISLP page 140.
+
+The effect on the probability is not constant. Differentiate equation 1 with the quotient rule. Equation 7: the derivative of g with respect to eta is e to the eta times one plus e to the eta minus e to the eta times e to the eta, over one plus e to the eta squared, which is e to the eta over one plus e to the eta squared, which is g of eta times one minus g of eta. So by the chain rule, equation 8: the derivative of pi i with respect to x i j is beta j times pi i times one minus pi i, which is at most beta j over four. The maximum, beta j over four, is at pi i equal to one half. Wooldridge equation 17.7, page 527, writes the partial effect as g of the linear predictor times beta j, and for the logit g at zero is 0.25.
+
+Worked, on default, with slide 15's coefficient of 0.0055 per dollar of balance. Four quantities. The odds ratio per dollar is e to the 0.0055, which is 1.0055. The odds ratio per 100 dollars is e to the 0.0055 times 100, e to the 0.55, which is 1.733, plus 73 per cent. The partial effect at the 50 per cent cut-off is 0.0055 times 0.5 times 0.5, which is 0.001375 per dollar, or 13.75 percentage points per 100 dollars. The partial effect at a balance of 1000, where the fitted probability is 0.005759, is 0.0055 times 0.005759 times 0.994241, which is 0.0000315 per dollar, or 0.31 percentage points per 100 dollars.
+
+The odds ratio is the same everywhere; the probability effect is 44 times larger at the cut-off than at a balance of 1,000. "A one-unit increase in balance raises the log-odds by 0.0055", the caption of ISLP Table 4.1, page 142, is exact; "raises the probability by 0.0055" is wrong.
+
+Four point three. The likelihood, the score and the Hessian. Slides 7 and 8.
+
+The likelihood, slide 7, ISLP equation 4.5, page 141, Wooldridge equation 17.10, page 528. Independent Bernoulli draws. Equation 9: the probability of y one to y n given the x's and beta is the product over i of pi i to the y i times one minus pi i to the one minus y i, which is the product of pi i over the individuals with y equal to one, times the product of one minus pi i over those with y equal to zero.
+
+This is the Bernoulli likelihood of Class 1 section 1 with one change: theta is no longer common; each pi i is tied to x i through equation 1.
+
+The log-likelihood, Wooldridge equation 17.11. Equation 10: l of beta equals the sum over i of y i log pi i plus one minus y i times log of one minus pi i.
+
+Rewrite each term in eta i. Group the y i terms: y i log pi i plus one minus y i log of one minus pi i equals y i times the log of pi i over one minus pi i, plus log of one minus pi i. Substitute equation 4 for the log-odds and equation 2 for one minus pi i. Equation 11: l of beta equals the sum over i of y i times x i transposed beta, plus the log of one over one plus e to the x i transposed beta; which is the sum of y i x i transposed beta minus the log of one plus e to the x i transposed beta.
+
+The score, slide 8. Differentiate equation 11; the derivative of the log of one plus e to the eta is e to the eta over one plus e to the eta, which is pi. Equation 12: the score equals the sum over i of y i x i minus pi i x i, which is the sum of x i times y i minus pi i, which is X transposed times y minus pi. Setting equation 12 to zero gives p plus one equations, nonlinear in beta because pi i is.
+
+The Hessian, slide 8. Differentiate equation 12 once more; only pi i depends on beta, and by equation 7, the derivative of pi i with respect to beta transposed is pi i times one minus pi i times x i transposed. Equation 13: the Hessian is minus the sum over i of x i x i transposed times pi i times one minus pi i, which is minus X transposed W X, with W the diagonal matrix of pi i times one minus pi i.
+
+Two consequences.
+
+First. Every pi i times one minus pi i is positive, so X transposed W X is positive definite when X has full column rank: the log-likelihood is strictly concave, and a stationary point is the unique maximum. A G-layer caution: if some linear combination of x separates the zeros from the ones perfectly, the log-likelihood keeps rising as beta grows without bound and no finite maximum likelihood estimate exists. That is the "unstable when classes are well-separated" bullet on slide 40.
+
+Second. The first row of equation 12 at beta hat, the intercept's column of ones, reads: the sum of y i minus pi i hat is zero. The average fitted probability equals the sample share of ones, which is 0.0333 in default, ISLP page 140.
+
+Four point four. Newton-Raphson is iteratively reweighted least squares. Slides 8 and 9.
+
+Newton-Raphson, slide 8. Starting from beta old, equation 14: beta new equals beta old minus the inverse of the Hessian times the score, both evaluated at beta old.
+
+Restating the goal: show that this step is a weighted least squares fit. Four steps.
+
+Step one. Substitute equations 12 and 13 into equation 14. Equation 15: beta new equals beta old minus the inverse of minus X transposed W X, times X transposed times y minus pi, which is beta old plus X transposed W X inverse times X transposed times y minus pi.
+
+Step two. Factor X transposed W X inverse out of both terms, writing beta old as X transposed W X inverse times X transposed W X times beta old. Then beta new equals X transposed W X inverse times the bracket X transposed W X beta old plus X transposed times y minus pi.
+
+Step three. Insert W times W inverse, the identity, in front of y minus pi; W is diagonal with positive entries. Equation 16: beta new equals X transposed W X inverse, times X transposed W, times the bracket X beta old plus W inverse times y minus pi, which is X transposed W X inverse times X transposed W z.
+
+Step four. Equation 17 defines the adjusted response: z equals X beta old plus W inverse times y minus pi; entry by entry, z i equals eta i old plus y i minus pi i over pi i times one minus pi i.
+
+Equation 16 is the weighted least squares estimator of a regression of z on X with weights W. Equation 18: beta new is the minimiser over beta of z minus X beta transposed, times W, times z minus X beta; its normal equations, X transposed W times z minus X beta equal to zero, give equation 16. Slide 9 prints the objective as z minus X beta transposed times z minus X beta; the weight matrix is needed, because without it the minimiser is X transposed X inverse times X transposed z, not equation 16. Recompute pi and W at beta new and repeat: the weights are re-weighted each pass, hence the name. R's glm reports "Fisher scoring iterations"; for the logit link Fisher scoring and Newton-Raphson coincide, because the Hessian does not depend on y.
+
+Standard errors come from the same matrix at convergence: the estimated variance of beta hat is X transposed W hat X inverse, the inverse observed information. That is the "Std. Error" column of every glm printout below, and the z statistic is beta j hat over its standard error, ISLP page 141, Wooldridge page 529.
+
+Four point four point one. Worked: IRLS by hand on the student table, slide 18.
+
+The slide prints the full two by two table, so this fit can be reproduced exactly; it is the only default model whose data are fully on the page. Non-defaulters: 6850 non-students and 2817 students, 9667 in all. Defaulters: 206 non-students and 127 students, 333 in all. Column totals: 7056 non-students and 2944 students, 10000 in all.
+
+The model: eta i equals beta zero plus beta one s i, with s i equal to one for a student.
+
+Iteration 1 from beta equal to zero and zero. Every pi i is g of zero, which is 0.5; every weight is 0.5 times 0.5, which is 0.25; and equation 17 gives z i equal to zero plus y i minus 0.5 over 0.25, which is 4 y i minus 2. With a constant W of 0.25 times the identity, equation 16 collapses to least squares of z on a dummy, that is, to group means of z. So beta zero after one iteration is 4 times 206 over 7056 minus 2, which is 4 times 0.029195 minus 2, which is minus 1.88322. And beta zero plus beta one is 4 times 127 over 2944 minus 2, which is 4 times 0.043139 minus 2, which is minus 1.82745; so beta one is 0.05577.
+
+The subsequent iterations, computed in the Python note, giving beta zero, beta one, and minus twice the log-likelihood.
+
+Iteration 1: minus 1.88322, 0.05577, 4116.20.
+Iteration 2: minus 2.78054, 0.15372, 3072.81.
+Iteration 3: minus 3.31150, 0.29836, 2917.50.
+Iteration 4: minus 3.48780, 0.39184, 2908.74.
+Iteration 5: minus 3.50400, 0.40477, 2908.683.
+Iteration 6: minus 3.50413, 0.40489, 2908.683.
+
+The limit in closed form. With one dummy, the two score equations split by group: the sum over non-students of y i minus pi zero is zero, and the sum over students of y i minus pi one is zero. So pi zero hat is 206 over 7056 and pi one hat is 127 over 2944: the group shares. Then by equations 4 and 6: beta zero hat is the log of 206 over 6850, which is minus 3.50413; and beta one hat is the log of 127 over 2817, divided by 206 over 6850, which is the log of 1.49913, which is 0.40489.
+
+The standard errors from X transposed W hat X inverse reduce to sums of reciprocal cell counts. The standard error of beta zero hat is the square root of one over 206 plus one over 6850, which is 0.07071. The standard error of beta one hat is the square root of one over 206 plus one over 6850 plus one over 127 plus one over 2817, which is 0.11502. Exactly the slide's 0.07071 and 0.11502. And minus twice the log-likelihood at the estimate, 2908.7, is the slide's residual deviance.
+
+The deck's two probabilities on slide 18 are off by a factor of ten. It prints 0.43 per cent and 0.29 per cent; the fitted values are 127 over 2944, which is 0.0431, or 4.31 per cent, and 206 over 7056, which is 0.0292, or 2.92 per cent, as ISLP prints on page 142. The odds ratio, e to the 0.40489, is 1.499: alone, being a student multiplies the odds of default by 1.5.
+
+Four point five. The default outputs, read. Slides 13, 15, 17, 18, 20 and 22.
+
+Three models, each with intercept, balance coefficient, student coefficient, residual deviance with degrees of freedom, and AIC.
+
+Balance only, slide 13: intercept minus 10.65, standard error 0.3612; balance 0.005499, standard error 0.0002204; residual deviance 1596.5 on 9998 degrees of freedom; AIC 1600.5.
+
+Student only, slide 18: intercept minus 3.50413, standard error 0.07071; student 0.40489, standard error 0.11502; residual deviance 2908.7 on 9998; AIC 2912.7.
+
+Balance plus student, slide 20: intercept minus 10.75, standard error 0.3692; balance 0.005738, standard error 0.0002318; student minus 0.7149, standard error 0.1475; residual deviance 1571.7 on 9997; AIC 1577.7.
+
+The null deviance is 2920.6 on 9999 degrees of freedom in all three. AIC equals the deviance plus twice the number of coefficients: 1596.5 plus 4 is 1600.5; 2908.7 plus 4 is 2912.7; 1571.7 plus 6 is 1577.7. The z values: minus 10.65 over 0.3612 is minus 29.49, and 0.005499 over 0.0002204 is 24.95, as printed.
+
+Four point five point one. Balance only: plug-in probabilities, slide 15 and ISLP page 142.
+
+At a balance of 1000. The linear predictor is minus 10.6513 plus 0.0055 times 1000, which is minus 10.6513 plus 5.5, which is minus 5.1513. Then by equation 1, the probability is e to the minus 5.1513 over one plus e to the minus 5.1513, which is 0.005792 over 1.005792, which is 0.005759, or 0.58 per cent.
+
+At a balance of 2000. The linear predictor is minus 10.6513 plus 11, which is 0.3487. The probability is e to the 0.3487 over one plus that, which is 1.41722 over 2.41722, which is 0.5863, or 58.6 per cent. Slide 15's second line keeps the label "x equal to 1000"; the arithmetic is for 2000.
+
+Four point five point two. From a probability cut-off to a balance cut-off, slide 17.
+
+Classify "yes" when the fitted probability at x is at least c. Since g is increasing, that holds if and only if the linear predictor is at least the logit of c. Set equality and solve. Equation 19: beta zero hat plus beta one hat x star equals the logit of c, so x star equals the logit of c minus beta zero hat, over beta one hat.
+
+At c equal to 0.5, the logit of 0.5 is log one, which is zero. So x star is zero minus minus 10.6513, over 0.0055, which is 10.6513 over 0.0055, which is 1936.6.
+
+The whole axis of slide 17, recomputed from equation 19, giving for each cut-off its logit, x star with slope 0.0055, x star with the unrounded slope 0.005499, and the slide's label.
+
+c equal to 0.1: logit minus 2.1972; 1537.1; 1537.4; label 1537.
+c equal to 0.2: logit minus 1.3863; 1684.5; 1684.9; label 1684.
+c equal to 0.3: logit minus 0.8473; 1782.5; 1782.9; label 1782.
+c equal to 0.4: logit minus 0.4055; 1862.9; 1863.2; label 1863.
+c equal to 0.5: logit zero; 1936.6; 1937.0; label 1936.
+c equal to 0.6: logit 0.4055; 2010.3; 2010.7; label 2010.
+c equal to 0.7: logit 0.8473; 2090.7; 2091.0; label 2091.
+c equal to 0.8: logit 1.3863; 2188.7; 2189.1; label 2189.
+c equal to 0.9: logit 2.1972; 2336.1; 2336.5; label 2336.
+
+The labels are the unrounded-slope column truncated to the dollar. A classifier on one covariate is a threshold on that covariate; moving c, as in section 5.10, just slides x star.
+
+Four point five point three. Balance plus student, and confounding. Slides 19 to 22, and ISLP section 4.3.4, pages 142 to 144.
+
+At a balance of 1500, for a student: the linear predictor is minus 10.75 plus 0.005738 times 1500 minus 0.7149 times one, which is minus 10.75 plus 8.607 minus 0.7149, which is minus 2.8579. The probability is e to the minus 2.8579 over one plus that, which is 0.057389 over 1.057389, which is 0.0543, or 5.4 per cent.
+
+For a non-student: the linear predictor is minus 10.75 plus 8.607, which is minus 2.1430, and the probability is 0.117302 over 1.117302, which is 0.1050, or 10.5 per cent.
+
+The 50 per cent cut-offs by group, from equation 19 with beta zero hat plus beta two hat times s in place of beta zero hat. For students: zero minus the quantity minus 10.75 minus 0.7149, over 0.005738, which is 11.4649 over 0.005738, which is 1998.1. For non-students: 10.75 over 0.005738, which is 1873.5.
+
+Slide 22 attaches 1873 to students and 1998 to non-students, and its legend colours the curves the same way; the printed coefficients say the reverse. With a negative student coefficient, minus 0.7149, a student needs a higher balance to reach 50 per cent. Slide 25, the Bayesian fit, draws the non-student curve above the student one, consistent with the coefficients.
+
+Confounding. Alone, student has a positive coefficient, 0.405: students default more. Given balance it is negative, minus 0.715, an odds ratio of e to the minus 0.7149, which is 0.489: half the odds at the same balance. Both are right: students carry larger balances, as slide 19's boxplots show, and balance drives default. ISLP's version adds income, Table 4.3, page 143, where income is not significant, with p equal to 0.71, and gets 0.058 against 0.105 at balance 1,500 and income 40,000, equations 4.8 and 4.9, page 144. The deck drops income and gets 0.054 against 0.105.
+
+Likelihood-ratio tests from the printed deviances, Wooldridge equation 17.12, page 529: the statistic is twice the difference in log-likelihoods, and for zero-one data the deviance is minus twice the log-likelihood. Three comparisons, each on one degree of freedom. Balance against the null: 2920.6 minus 1596.5, which is 1324.1. Student against the null: 2920.6 minus 2908.7, which is 11.9. Balance plus student against balance: 1596.5 minus 1571.7, which is 24.8. All far beyond the chi-squared critical value of 3.84. McFadden's pseudo R squared, Wooldridge page 531, one minus the unrestricted log-likelihood over the null log-likelihood: one minus 1596.5 over 2920.6, which is 0.453, for balance alone; 0.462 with student; and 0.004 for student alone.
+
+Four point six. Classifying a new individual: plug-in against posterior predictive. Slides 11 and 23.
+
+The deck plugs in the maximum likelihood estimate, slide 11. Equation 20: the estimated probability that the new individual has y equal to one, given his x and the data, is e to the x new transposed beta hat, over one plus e to the x new transposed beta hat. It classifies "yes" when equation 20 exceeds one minus equation 20, that is, with c equal to one half.
+
+The Bayesian answer, slide 23, integrates over the posterior instead. Equation 21: the predictive probability is the integral of the probability given beta times the posterior density of beta given the data. Equation 20 is equation 21 with all posterior mass at beta hat. Slides 24 and 25 show the posterior of the probability of default at balance 1500 for a student and a non-student, centred near 0.054 and 0.105. Named only here; the Bayesian logit is Classes 3 and 4.
+
+Four point seven. Course and graduate layers: deviance and residuals. Slide 10.
+
+The Pearson residual, r i, is y i minus pi i hat over the square root of pi i hat times one minus pi i hat. The deviance residual, equation 22: d i equals the sign of y i minus pi i hat, times the square root of two times the bracket y i log of y i over pi i hat, plus one minus y i times log of one minus y i over one minus pi i hat.
+
+For zero-one data the deviance is minus twice the log-likelihood. With y i either zero or one, y i log y i is zero and one minus y i times log of one minus y i is zero, with the convention zero log zero equals zero. So equation 23: d i squared equals two times minus y i log pi i hat minus one minus y i times log of one minus pi i hat, and the deviance, the sum of the d i squared, equals minus twice the log-likelihood at beta hat, by equation 10.
+
+A check on the null model: with a fitted probability of 0.0333 for everyone, minus two times the quantity 333 log 0.0333 plus 9667 log 0.9667 is 2920.6, the printed null deviance.
+
+Two slips on slide 10: the statistics are the Pearson chi-squared, the sum of r i squared, and the deviance, the sum of d i squared; the squares are missing. A G-layer caution: with one observation per covariate pattern, the chi-squared reference with n minus p degrees of freedom for the deviance itself is unreliable; differences of deviances between nested models, as in section 4.5.3, are the safe use.
+
+Four point eight. Graduate layer: regularized logistic regression, slides 26, 27 and 32 to 35. Named only.
+
+The penalized objective, slide 26, is minus the log-likelihood of equation 11 plus the elastic-net penalty: lambda times the bracket one minus alpha times the squared length of beta plus alpha times the sum of absolute values of beta. Alpha equal to one is the lasso, alpha equal to zero is ridge, and lambda is chosen by cross-validation, AME section 8.1.2, page 143. Ridge, lasso and elastic net are Classes 3 and 4; here they matter only as rows of the spam table.
+
+Four point nine. The spam confusion matrix. Slides 28 and 36 to 38.
+
+The data: 4,601 e-mails labelled spam, y equal to one, or ham, y equal to zero; 40 per cent spam; 57 word-frequency predictors, from Efron and Hastie, 2016, pages 113 to 115, cited on slide 28. Trained on 2,300, tested on 2,301, slide 33.
+
+The vocabulary, ISLP Tables 4.6 and 4.7, page 156, AME Tabela 7.1, page 138, with "positive" meaning spam. A ham predicted ham is a true negative. A ham predicted spam is a false positive: a real e-mail sent to the spam folder. A spam predicted ham is a false negative: a spam let through. A spam predicted spam is a true positive. The false negative rate is FN over FN plus TP, which is one minus sensitivity. The false positive rate is FP over FP plus TN, which is one minus specificity, the Type I error. And the false discovery rate is FP over FP plus TP, which is one minus precision.
+
+Worked, the glm row: 1325 true negatives, 80 false positives, 93 false negatives, 803 true positives; 2301 in all; 896 spam in the test set. The error rate is 80 plus 93 over 2301, which is 173 over 2301, which is 7.52 per cent. The false negative rate is 93 over 93 plus 803, which is 93 over 896, which is 10.38 per cent. The false positive rate is 80 over 80 plus 1325, which is 80 over 1405, which is 5.69 per cent. The sensitivity is 803 over 896, which is 89.62 per cent. The specificity is 1325 over 1405, which is 94.31 per cent. The precision is 803 over 803 plus 80, which is 803 over 883, which is 90.94 per cent. And the false discovery rate is 80 over 883, which is 9.06 per cent.
+
+All five methods, giving true negatives, false positives, false negatives and true positives, then the error, false negative and false positive rates, which match the slide, then the false discovery rate recomputed, then the slide's "false discovery" figure.
+
+glm: 1325, 80, 93, 803; error 7.52, false negative 10.38, false positive 5.69 per cent; false discovery rate 9.06; slide's figure 8.20.
+ridge: 1345, 60, 128, 768; error 8.17, false negative 14.29, false positive 4.27; false discovery rate 7.25; slide 6.28.
+elastic net: 1349, 56, 94, 802; error 6.52, false negative 10.49, false positive 3.99; false discovery rate 6.53; slide 5.88.
+lasso: 1347, 58, 95, 801; error 6.65, false negative 10.60, false positive 4.13; false discovery rate 6.75; slide 6.08.
+bayes: 1326, 79, 91, 805; error 7.39, false negative 10.16, false positive 5.62; false discovery rate 8.94; slide 8.10.
+
+The slide defines false discoveries as "false positives over positives", but its column divides the false positives by false positives plus all actual spam: 80 over 80 plus 896, which is 8.20, reproduces every row. Over predicted positives, the standard false discovery rate and the slide's own words, the glm figure is 9.06 per cent.
+
+Reading. Elastic net has the lowest error, 6.52 per cent, and the lowest false positive rate, 3.99 per cent; ridge lets the most spam through, 14.29 per cent. A mail filter cares more about false positives, a lost real e-mail, than false negatives, so the 50 per cent threshold behind these rows is not the right one for that loss; the cost-adjusted cut-off of section 5.10 is.
+
+Four point ten. Intuition: the graduate school admission script.
+
+The script, from Albert and Hu, 2020, Problem 8, pages 480 to 481, has 400 applicants, with admission, zero or one, on GRE and a dummy for a GPA of at least 3.5. It fits a linear model and a logistic model, then a Bayesian version by sampling importance resampling. The data are fetched from a URL and are not on disk, and the script prints no coefficient table, so only the figures can be read.
+
+Page 3 of the PDF: the linear and logistic fitted values almost coincide over GRE scores from 400 to 800 for both GPA groups, and stay inside about 0.1 to 0.55. When fitted probabilities stay in the middle of zero to one, the logistic curve is nearly linear, since its slope, beta times pi times one minus pi, barely changes, so the linear probability model is a fair approximation there. The two separate only at the extreme: at a GRE of 220, the linear model gives about 0.06 and the logistic about 0.11. In default, where most fitted probabilities are near zero, they disagree badly.
+
+The horizontal line, the sample admission rate, sits near 0.32, so about one third were admitted. The script's comment "2/3 admitted and 1/3 not admitted" has the shares reversed.
+
+Page 5 marks the maximum likelihood estimates, blue dots, at roughly minus 2.7 for the intercept, 0.0027 for GRE, and 0.6 for the GPA dummy. These are figure readings, approximate; the GPA odds ratio is then about e to the 0.6, about 1.8.
+
+The prior and posterior pages are the Bayesian logit, Classes 3 and 4.
+
+Spoken checklist for section 4. You should be able to say why the linear probability model fails and compute its zero crossing, 578.8. You should be able to derive the odds and the logit from the logistic function, read a coefficient as an odds ratio, and derive the partial effect beta times pi times one minus pi, at most beta over four. You should be able to derive the log-likelihood in eta form, the score X transposed times y minus pi, and the Hessian minus X transposed W X, and state the two consequences. You should be able to show in four steps that a Newton-Raphson step is a weighted least squares fit on z, and say why slide 9's objective needs W. You should be able to run IRLS on the student table and give the closed-form limit, minus 3.50413 and 0.40489, with standard errors from reciprocal cell counts. You should be able to compute 0.58 and 58.6 per cent, the cut-off 1936.6, and the group cut-offs 1998.1 for students and 1873.5 for non-students. You should be able to explain the confounding sign flip. And you should be able to compute every rate from the spam confusion matrix, including the false discovery rate of 9.06 per cent.
+
+
+Part three, section 5. The Bayes rule, the Gaussian cut-offs, and what unequal costs do to them.
+
+This section covers the discriminant part of the logistic regression and discriminant analysis deck, slides 40 to 65, after Mardia, Kent and Bibby, Multivariate Analysis, chapter 11, which is not on disk; ISLP section 4.4, printed pages 146 to 158, with equations 4.15 to 4.19, 4.24 and 4.26 to 4.28, Tables 4.4 and 4.5, the ROC curve and AUC on pages 154 to 155, and the parameter count on page 157; ISLP section 4.5.1, printed pages 161 to 163, equations 4.31 to 4.33; AME chapter 7, printed pages 134 to 135 and 138 to 139, with equation 7.1, Teorema 9 on page 135 and Tabela 7.1 on page 138; AME section 8.1.4, printed pages 147 to 149; and AME section 9.1, printed pages 169 to 171, on the ROC curve and the cost-weighted cut-off on page 170.
+
+The claim. Discriminant analysis models the density of x given y equal to k and turns it into the probability that y equals k given x with Bayes' theorem. The Bayes rule allocates to the class with the largest pi k times the density of x given class k, and no rule has a smaller probability of error. With two classes everything runs through h of x, the log density of x under class one minus the log density under class two: allocate to class one if and only if h of x exceeds the log of pi two c one two over pi one c two one. Equal Gaussian variances make h linear: one cut-off at the midpoint, linear discriminant analysis, LDA for short, and the Mahalanobis distance. Unequal variances make it quadratic: in the deck's example class one wins both tails, with cut-offs 1.680 and 10.001 and a total error of 0.251, against 0.369 for the equal-variance case.
+
+The notation. y, from one to kappa, is the class label, with kappa equal to two unless stated; x is the predictor vector. Pi k, the probability that y equals k, is the prior probability, and the priors sum to one; here pi k is a prior, not the Bernoulli mean of section 4. p k of x is the class-conditional density or probability mass function, with mean mu k and variance sigma k squared in one dimension, or mean vector mu k and covariance Sigma, or Sigma k, in several. R k is the allocation region of class k, and phi k of x, the indicator that x is in R k, is the allocation function. h of x is the discriminant function for two classes. p i j, the integral of phi i times p j, is the probability of allocating to class i an individual from class j. c i j, positive for i different from j, is the cost of allocating to i when the truth is j, and c k k is zero. Capital Phi is the standard normal distribution function. Alpha is Sigma inverse times mu one minus mu two, and mu bar is the average of the two means.
+
+Five point one. Intuition: two routes to the same posterior. Slide 40.
+
+Logistic regression, section 4, models the probability that y equals k given x directly. Discriminant analysis models how x is distributed within each class and inverts with Bayes' theorem. When the classes are Gaussian the two give posteriors of the same form, section 5.7.1, so why bother? Slide 40 and ISLP page 146 give three reasons: the logistic maximum likelihood estimate is unstable when the classes are well separated, and may not exist, as section 4.3 noted; it is unstable when n is small; and it is clumsy for more than two classes. Discriminant analysis has none of these problems, at the price of assuming a distribution for x.
+
+Five point two. Discriminant rules and the Bayes rule. Slides 41 and 42.
+
+A discriminant rule, slide 41: a partition of the predictor space into disjoint regions R one to R kappa whose union is the whole space; allocate x to class k if and only if x is in R k. The slide prints an intersection; a partition needs the union.
+
+Bayes' theorem, slide 42, ISLP equation 4.15, page 147. Equation 1: the probability that y equals k given x equals pi k times p k of x, divided by the sum over j of pi j times p j of x.
+
+The Bayes discriminant rule. Equation 2: allocate to k star, the class that maximises the posterior probability, which is the class that maximises pi k times p k of x, because the denominator of equation 1 is the same for every k. Equivalently, phi k of x is one if and only if pi k p k of x is the largest of the pi j p j of x. The maximum likelihood discriminant rule is equation 2 with equal priors, one over kappa each: the class that maximises p k of x.
+
+Five point two point one. Why equation 2 minimises the probability of error. AME Teorema 9, page 135.
+
+Two classes. An error happens when x is in R two but y is one, or x is in R one but y is two. So the probability of error is pi one p two one plus pi two p one two, which is pi one times the integral of phi two times p one, plus pi two times the integral of phi one times p two. Put both under one integral. Equation 3: the probability of error is the integral of phi two of x times pi one p one of x, plus phi one of x times pi two p two of x.
+
+At each x exactly one of phi one and phi two is one, so the integrand is either pi one p one of x, if we allocate to two, or pi two p two of x, if we allocate to one. The integral is smallest when, pointwise, we pay the smaller of the two: allocate to one if and only if pi one p one of x exceeds pi two p two of x, which is equation 2. AME writes the same rule as the probability of class one given x being at least one half, page 135; this is the zero-one loss risk, the probability that Y differs from g of X, of AME equation 7.1, page 134.
+
+Five point three. Two classes: the discriminant function. Slide 49.
+
+Equation 4: h of x equals the log of the density of x given y equal to one, minus the log of the density given y equal to two.
+
+The maximum likelihood rule: allocate to one if h of x is positive, to two if it is negative.
+
+The Bayes rule from equation 2. Equation 5: allocate to one if and only if pi one p one of x exceeds pi two p two of x, if and only if p one over p two exceeds pi two over pi one, if and only if h of x exceeds the log of pi two over pi one. That is, divide by pi one p two of x, which is positive, then take logs, which preserves order.
+
+The posterior is a logistic function of h. Divide the numerator and denominator of equation 1, with k equal to one, by pi one p one of x. Equation 6: the probability that y equals one given x equals one over one plus pi two p two over pi one p one, which is one over one plus e to the minus h of x minus log of pi one over pi two, which is g of h of x plus log of pi one over pi two, with g the logistic function of section 4. Rule 5 is the posterior exceeding one half, written on the h scale.
+
+Five point four. Worked: the zero-one predictor and the multinomial. Slides 43 and 44.
+
+Bernoulli, slide 43. x given class one is Bernoulli with probability one half; x given class two is Bernoulli with probability three quarters. By equation 4: h of zero is the log of one half over one quarter, which is log 2, which is 0.693, positive, so class one. h of one is the log of one half over three quarters, which is log of two thirds, which is minus 0.405, negative, so class two.
+
+The maximum likelihood misallocation probabilities: p two one, the probability that x equals one given class one, is one half; and p one two, the probability that x equals zero given class two, is one quarter. With equal priors, the probability of error is one half times the quantity one half plus one quarter, which is three eighths.
+
+Priors move the rule. x equal to zero goes to class one if and only if log 2 exceeds the log of pi two over pi one, if and only if pi two over pi one is less than 2, if and only if pi one exceeds one third. x equal to one goes to class one if and only if the log of two thirds exceeds the log of pi two over pi one, if and only if pi one exceeds three fifths. Hence three regimes. With pi one below one third: everything to class two. With pi one between one third and three fifths: the maximum likelihood rule, zero to class one and one to class two. With pi one above three fifths: everything to class one.
+
+Multinomial, slide 44. x given class one is multinomial with n trials and probabilities alpha one to alpha kappa; given class two, with probabilities beta one to beta kappa. The factor n factorial over the product of the x k factorials is common and cancels in equation 4. So h of x is the sum of x k log alpha k minus the sum of x k log beta k, which is the sum over k of x k log of alpha k over beta k. The maximum likelihood rule allocates to class one if and only if that sum is positive. Slide 44 prints "less than zero", a sign slip. The check: with kappa equal to 2, n equal to one, alpha equal to one half and one half, and beta equal to one quarter and three quarters, which is the Bernoulli example, x equal to one and zero gives log 2, positive, and must go to class one.
+
+Five point five. Univariate Gaussians: linear or quadratic h. Slides 45 to 47.
+
+x given class k is normal with mean mu k and variance sigma k squared, so the log density is minus log sigma k minus one half log two pi minus x minus mu k squared over two sigma k squared. Substitute into equation 4; the log two pi cancels. Equation 7: h of x equals the log of sigma two over sigma one, minus one half times the bracket x minus mu one over sigma one, squared, minus x minus mu two over sigma two, squared.
+
+The maximum likelihood rule, h positive. Move the log term and multiply by minus 2, flipping the inequality: x minus mu one over sigma one squared, minus x minus mu two over sigma two squared, is less than two log of sigma two over sigma one. Expand both squares and collect powers of x; this is slide 45's display. Equation 8: x squared times one over sigma one squared minus one over sigma two squared, minus 2 x times mu one over sigma one squared minus mu two over sigma two squared, plus mu one squared over sigma one squared minus mu two squared over sigma two squared, is less than two log of sigma two over sigma one.
+
+Five point five point one. Equal variances: the midpoint. Slide 45, last lines, and ISLP equations 4.18 and 4.19, page 148. With both standard deviations equal to sigma, the x squared term and the log vanish in equation 8: minus 2 x times mu one minus mu two over sigma squared, plus mu one squared minus mu two squared over sigma squared, is less than zero, if and only if mu one minus mu two times mu one plus mu two minus 2 x is less than zero. With mu one less than mu two, the first factor is negative, so the second must be positive. Equation 9: x is less than mu one plus mu two over two; equivalently, x is farther from mu two than from mu one. And equation 7 becomes linear: h of x equals mu one minus mu two over sigma squared, times x minus the midpoint.
+
+Five point five point two. Worked: the deck's example, with mu one equal to 1, mu two equal to 5, sigma one equal to 6 and sigma two equal to 2.5. Slide 46.
+
+Write equation 7 as a x squared plus b x plus c. The coefficient a is minus one half times one over 36 minus one over 6.25, which is minus one half times 0.027778 minus 0.16, which is 0.066111. The coefficient b is mu one over sigma one squared minus mu two over sigma two squared, one over 36 minus 5 over 6.25, which is 0.027778 minus 0.8, which is minus 0.772222. The coefficient c is minus one half times one over 36 minus 25 over 6.25, plus the log of 2.5 over 6, which is 1.986111 minus 0.875469, which is 1.110642.
+
+The roots of h of x equal to zero: x equals 0.772222 plus or minus the square root of 0.772222 squared minus 4 times 0.066111 times 1.110642, all over 2 times 0.066111; which is 0.772222 plus or minus the square root of 0.596327 minus 0.293703, over 0.132222; which is 0.772222 plus or minus 0.550113, over 0.132222. The lower root is 0.222109 over 0.132222, which is 1.680. The upper root is 1.322335 over 0.132222, which is 10.001.
+
+Because a is positive, h is a U: h is negative, class two, between the roots, and positive, class one, outside. So R one is everything below 1.680 together with everything above 10.001, and R two is the interval from 1.680 to 10.001. Checks against slide 46's right panel: h of minus 20 is 43.0, h of 20 is 12.1, and the minimum of h is minus 1.144, at x equal to minus b over 2 a, which is 5.840.
+
+A large x, say 12, seven units above mu two equal to 5, is allocated to class one, whose mean is 1. Class one's larger sigma gives it fatter tails, so far from both means it is the likelier source. That is what "quadratic" buys and what a single midpoint cut-off cannot do.
+
+Equal variances, both standard deviations equal to 6, slide 47. By equation 9 the cut-off is 1 plus 5 over 2, which is 3, and h of x is 1 minus 5 over 36 times x minus 3, which is minus x minus 3 over 9. So h of minus 20 is 23 over 9, which is 2.556, and h of 20 is minus 17 over 9, which is minus 1.889: the slide's line.
+
+The figure has two panels. On the left, the prior-weighted densities, one half times the normal with mean 1 and variance 36, and one half times the normal with mean 5 and variance 6.25, with the class-two region between 1.680 and 10.001 shaded: with equal priors class two owns only the band where its tall, narrow density is on top. The two curves cross twice, and outside the band the wide class-one density is higher. On the right, h of x for unequal variances, a U-shaped parabola, and for equal variances, a decreasing line through 3, with the zero threshold and the threshold for a cost ratio of 2, the log of one half. The parabola dips below zero only between 1.680 and 10.001, and below the dashed line at the log of one half only on a narrower band: lowering the threshold shrinks R two. The line crosses zero once, at 3.
+
+The interactive companion, the Two-Gaussian Classifier, lets you move the class means, standard deviations, prior and cost ratio and watch the allocation regions, the posterior threshold and the total misclassification probability. Set the two standard deviations equal to see the two cut-offs collapse to the midpoint.
+
+Five point six. Probabilities of misallocation through the normal distribution function. Slide 50.
+
+p i j, the integral of phi i times p j, is the probability that the region of class i catches an individual from class j. For Gaussians, standardise and use Phi.
+
+Equal variances, sigma equal to 6, cut-off 3. p two one, the probability that x exceeds 3 given class one, is one minus Phi of 3 minus 1 over 6, which is one minus Phi of 0.3333, which is one minus 0.6306, which is 0.3694. p one two, the probability that x is below 3 given class two, is Phi of 3 minus 5 over 6, which is Phi of minus 0.3333, which is 0.3694. The total with equal priors is one half times 0.3694 plus 0.3694, which is 0.3694.
+
+Unequal variances, cut-offs 1.680 and 10.001. p two one, the probability that x lies between 1.680 and 10.001 given class one, is Phi of 10.001 minus 1 over 6, minus Phi of 1.680 minus 1 over 6, which is Phi of 1.5001 minus Phi of 0.1133, which is 0.93321 minus 0.54510, which is 0.3881. p one two is Phi of 1.680 minus 5 over 2.5, plus one minus Phi of 10.001 minus 5 over 2.5, which is Phi of minus 1.3281 plus one minus Phi of 2.0003, which is 0.09208 plus 0.02273, which is 0.1148. The total with equal priors is one half times 0.3881 plus 0.1148, which is 0.2515.
+
+The maximum likelihood rule is not symmetric in its errors: it misallocates 39 per cent of class one but only 11 per cent of the tight class two. Equal total treatment of errors, zero-one loss, is a choice; section 5.10 changes it.
+
+Five point seven. p predictors with a common covariance: LDA and the Mahalanobis distance. Slide 48.
+
+x given class k is multivariate normal with mean mu k and covariance Sigma, positive definite. The log density is minus p over two log two pi, minus one half log of the determinant of Sigma, minus one half times x minus mu k transposed, Sigma inverse, x minus mu k. The first two terms do not depend on k, so the maximum likelihood rule is equation 10: allocate to the class that minimises x minus mu k transposed, Sigma inverse, x minus mu k, the squared Mahalanobis distance.
+
+Two classes: h is linear. From equation 4, h of x is minus one half times the difference of the two quadratic forms. Expand each quadratic form, using the symmetry of Sigma inverse: x minus mu k transposed Sigma inverse x minus mu k equals x transposed Sigma inverse x, minus 2 mu k transposed Sigma inverse x, plus mu k transposed Sigma inverse mu k. Substitute both; the x transposed Sigma inverse x terms cancel. So h of x equals mu one minus mu two transposed Sigma inverse x, minus one half times the quantity mu one transposed Sigma inverse mu one minus mu two transposed Sigma inverse mu two. That bracket factors as mu one minus mu two transposed Sigma inverse times mu one plus mu two, because the cross terms cancel. Equation 11: h of x equals mu one minus mu two transposed, Sigma inverse, times x minus the midpoint of the means; which is alpha transposed times x minus mu bar, with alpha equal to Sigma inverse times mu one minus mu two and mu bar the midpoint.
+
+Maximum likelihood: allocate to one if and only if alpha transposed times x minus mu bar is positive, slide 48. Bayes: if and only if it exceeds the log of pi two over pi one. The boundary is a hyperplane. ISLP writes the same rule as the largest delta k of x, equal to x transposed Sigma inverse mu k, minus one half mu k transposed Sigma inverse mu k, plus log pi k, equation 4.24, page 151; the one-dimensional case is equation 4.18, page 148. In practice the means, the covariance and the priors are replaced by the class means, the pooled covariance and the class shares n k over n, ISLP equations 4.20 and 4.21, page 149, and AME section 8.1.4.1, page 148: a plug-in Bayes rule.
+
+Five point seven point one. LDA's posterior is a logistic regression. Substitute equation 11 into equation 6: the probability that y equals one given x is g of alpha transposed times x minus mu bar, plus the log of pi one over pi two, which is g of gamma zero plus alpha transposed x, with gamma zero equal to the log of pi one over pi two minus alpha transposed mu bar. The log-odds are linear in x: the logit model, ISLP equation 4.32, page 162, "identical to the linear form of LDA", page 163. Same functional form, different estimator: LDA plugs in Gaussian maximum likelihood estimates of the means and covariance; logistic regression maximises the conditional likelihood of y given x and does not need x to be Gaussian.
+
+Five point seven point two. Worked: iris on the two sepal measurements, slides 53 to 56.
+
+Slide 54 prints the class means and maximum likelihood covariances, with 50 flowers in each class. Setosa: mean sepal length 5.006 and width 3.428; variance of length 0.122, covariance 0.097, variance of width 0.141. Versicolor: mean 5.936 and 2.770; variances and covariance 0.261, 0.083 and 0.096. Virginica: mean 6.588 and 2.974; 0.396, 0.092 and 0.102.
+
+The pooled covariance, with equal class sizes the average of the three, has first row 0.25967 and 0.09067, and second row 0.09067 and 0.11300. Its determinant is 0.25967 times 0.113 minus 0.09067 squared, which is 0.021122. Its inverse has first row 5.3499 and minus 4.2925, and second row minus 4.2925 and 12.2937.
+
+Flower 51, a versicolor with length 7.0 and width 3.2: its distance to virginica. The difference from the virginica mean is 0.412 and 0.226. The squared distance is 5.3499 times 0.412 squared, plus 2 times minus 4.2925 times 0.412 times 0.226, plus 12.2937 times 0.226 squared, which is 0.9081 minus 0.7994 plus 0.6279, which is 0.7367.
+
+All three printed flowers, with squared distances to setosa, versicolor and virginica, and the allocation. Flower 1, a setosa at 5.1 and 3.5: distances 0.053, 15.530 and 21.966; allocated to setosa, correct. Flower 51, a versicolor at 7.0 and 3.2: distances 25.814, 4.402 and 0.737; allocated to virginica, wrong. Flower 101, a virginica at 6.3 and 3.3: distances 10.581, 2.506 and 2.556; allocated to versicolor, wrong, in a near tie.
+
+Setosa against versicolor in the form of equation 11: alpha hat is Sigma hat inverse times the mean difference, minus 0.930 and 0.658, which gives minus 7.800 and 12.081. The midpoint is 5.471 and 3.099. For flower 1, alpha hat transposed times x minus mu bar is minus 7.800 times minus 0.371 plus 12.081 times 0.401, which is 2.894 plus 4.844, which is 7.738, positive: setosa.
+
+Sepals separate setosa and confuse the other two. Two of the three printed flowers land in the wrong class, in line with the partition plots' "app. error rate: 0.2" for both LDA and QDA, slides 56 and 57. R's lda routine divides the pooled covariance by n minus kappa; rescaling Sigma scales every distance by the same factor, so the equal-prior allocation is unchanged.
+
+Five point eight. Quadratic discriminant analysis, QDA: class-specific covariances. Slide 48, last bullet, and ISLP section 4.4.3, pages 156 to 158.
+
+With x given class k normal with mean mu k and covariance Sigma k, the log determinant and x transposed Sigma k inverse x terms no longer cancel. Equation 12: h of x equals one half the log of the determinant of Sigma two over the determinant of Sigma one, minus one half times the difference of the two quadratic forms, each with its own covariance. It is quadratic in x through minus one half x transposed times Sigma one inverse minus Sigma two inverse times x, ISLP equation 4.28, page 156. Section 5.5.2 is the one-dimensional case.
+
+Bias and variance: LDA estimates kappa times p means and one covariance, p times p plus one over two parameters; QDA estimates kappa times p times p plus one over two covariance parameters, ISLP page 157. More flexible, noisier with small n.
+
+Worked: the admission data, slides 58 to 65, from Ledolter. 85 applicants, three classes; the priors printed by lda are the class shares, 31 over 85, which is 0.3647; 26 over 85, which is 0.3059; and 28 over 85, which is 0.3294. For an applicant with GPA 3.21 and GMAT 497: the LDA posterior, slide 61, is 0.5180 for admit, 0.4816 for border and 0.0004 for not admit, so admit, in a near tie. The QDA posterior, slide 62, is 0.9227, 0.0769 and 0.0005, so admit.
+
+The partition plots give an apparent error of 0.082 for LDA, slide 64, against 0.035 for QDA, slide 65. Both are training, or resubstitution, errors, optimistic by construction; the honest comparison is a cross-validation estimate, section 3. The "coefficients of linear discriminants", LD1 and LD2, on slide 61 are Fisher's canonical directions, not the alpha of equation 11; named only. The data are loaded from a URL, not on disk, so these numbers are quoted, not recomputed.
+
+Five point nine. Admissibility. Slides 50 and 52.
+
+A rule d is as good as d prime if p k k is at least p prime k k for every class k; better if at least one inequality is strict; and admissible if no rule is better.
+
+Theorem, slides 50 and 52: all Bayes rules, the maximum likelihood rule included, are admissible. Theorem: under priors pi k, no rule has a larger posterior probability of correct allocation, or a smaller Bayes risk, than the Bayes rule for those priors; section 5.2.1 is its proof for two classes.
+
+Worked on the Bernoulli example of section 5.4. The four possible rules, each stated as where x equal to zero goes and where x equal to one goes, with p one one and p two two.
+
+Zero to class one and one to class two, the maximum likelihood rule: p one one one half, p two two three quarters; admissible, the Bayes rule for pi one between one third and three fifths.
+Both to class two: p one one zero, p two two one; admissible, the Bayes rule for pi one below one third.
+Both to class one: p one one one, p two two zero; admissible, the Bayes rule for pi one above three fifths.
+Zero to class two and one to class one, the reversed rule: p one one one half, p two two one quarter; inadmissible, because the maximum likelihood rule has the same p one one and a larger p two two.
+
+Admissible is a weak property: "all to class two" is admissible. It only rules out rules that are beaten everywhere; choosing among admissible rules needs priors and costs.
+
+Five point ten. Decision theory and unequal costs. Slides 51 and 52.
+
+The loss K of i and j is c i j for allocating to i when the truth is j, and zero on the diagonal. Equation 13: the risk of rule d for class k is the sum over j of c j k times p j k; and the Bayes risk is the sum over k of pi k times that risk, slide 51.
+
+Two classes. Only c two one, truth one sent to two, and c one two, truth two sent to one, survive. The Bayes risk is pi one c two one p two one plus pi two c one two p one two, which is the integral of phi two of x times pi one c two one p one of x, plus phi one of x times pi two c one two p two of x: the same structure as equation 3 with each term weighted by its cost. Minimise pointwise. Equation 14: allocate to one if and only if pi one c two one p one of x exceeds pi two c one two p two of x, if and only if h of x exceeds the log of pi two c one two over pi one c two one.
+
+On the posterior scale. Divide pi one c two one p one greater than pi two c one two p two by the sum of pi j p j of x and use equation 1. Equation 15: c two one times the posterior of class one exceeds c one two times one minus that posterior, if and only if the posterior of class one exceeds c one two over c one two plus c two one.
+
+This is AME's cut-off, l one over l zero plus l one, page 170, with l one equal to c one two, the cost of a false "one", and l zero equal to c two one, the cost of a missed "one". Equal costs give back one half and rule 5.
+
+Worked 1: the deck's Gaussians, with missing class one twice as costly, a cost ratio c two one over c one two of 2, and equal priors. The ratio is illustrative; the densities are slide 46's. Threshold 14 is the log of one half, which is minus 0.693. Solve h of x equal to minus 0.693 with the coefficients of section 5.5.2, which changes c to 1.110642 plus 0.693147, which is 1.803789. The roots are 3.228 and 8.453: R two shrinks from 1.680 to 10.001 down to 3.228 to 8.453.
+
+Two rules compared. The maximum likelihood rule, threshold zero: p two one 0.3881, p one two 0.1148, probability of error 0.2515, and expected cost one half times 2 times p two one plus one half times p one two, which is 0.3881 plus 0.0574, which is 0.4455. The cost rule, threshold the log of one half: p two one 0.2481, p one two 0.3228, probability of error 0.2855, and expected cost 0.2481 plus 0.1614, which is 0.4095.
+
+The cost rule makes more errors and costs less: it trades cheap errors for expensive ones. Push the ratio past e to the 1.144, which is 3.14, the depth of h's minimum, and the threshold sits below the minimum of h: R two is empty and everything is allocated to class one.
+
+Worked 2: ISLP's default threshold, equations 4.26 and 4.27, pages 153 to 154. Lowering the cut-off on the probability of default from 0.5 to 0.2 is equation 15 with c one two over c one two plus c two one equal to 0.2, that is, 0.8 c one two equals 0.2 c two one: a missed defaulter costing 4 times a false alarm. ISLP's LDA tables, two cut-offs. At 0.5, Table 4.4, page 152: 252 of 333 defaulters missed, 75.7 per cent; 23 false alarms; error rate 2.75 per cent; cost, with a missed defaulter costing 4 and a false alarm 1, 4 times 252 plus 23, which is 1031. At 0.2, Table 4.5, page 154: 138 of 333 missed, 41.4 per cent; 235 false alarms; error rate 3.73 per cent; cost 4 times 138 plus 235, which is 787.
+
+Slide 52's polio and flu sentence is the same idea: misdiagnosing polio as flu is the costly error, so the threshold for "polio" is lowered. For the spam filter of section 4.9 the costly error is the false positive, so the spam cut-off should rise above one half.
+
+Five point eleven. The ROC curve. AME section 9.1, pages 169 to 170, and ISLP pages 154 to 155.
+
+Sweeping the threshold in equation 14 from minus infinity to infinity traces every attainable pair of false positive rate and true positive rate; the ROC curve plots them, and the area under it, AUC, summarises all thresholds at once. ISLP reports an AUC of 0.95 for LDA on default, page 155. AME insists the curve be drawn on validation or test data, page 170.
+
+The figure shows the exact ROC curves for the deck's Gaussian example, with class two as the "positive" class, so the false positive rate is p two one and the true positive rate is one minus p one two, each point a threshold k in "allocate to two if h of x is below k". The unequal-variance curve, AUC 0.802, bows above the equal-variance curve, AUC 0.681, with the maximum likelihood operating points at 0.388 and 0.885, and at 0.369 and 0.631, and the diagonal. Both curves start at zero, zero, nothing allocated to two, and end at one, one, everything allocated to two. The unequal-variance curve lies above the other almost everywhere: the different spreads are extra information the quadratic rule exploits. The dots are the maximum likelihood rules of section 5.6; moving along a curve is moving the cost ratio of section 5.10.
+
+A G-layer result: the equal-variance AUC in closed form. With the score x itself, the AUC is the probability that a draw from class two exceeds an independent draw from class one. Their difference is normal with mean 5 minus 1 and variance 36 plus 36, so the AUC is Phi of 4 over the square root of 72, which is Phi of 0.4714, which is 0.681. The unequal-variance AUC, 0.802, is computed numerically.
+
+Spoken checklist for section 5. You should be able to state Bayes' theorem for classes and the Bayes rule, and prove for two classes that it minimises the probability of error. You should be able to write h of x and derive the Bayes threshold, the log of pi two over pi one, and show the posterior is a logistic function of h. You should be able to work the Bernoulli example, with its three prior regimes, and correct the multinomial sign slip. You should be able to derive h for two univariate Gaussians, the midpoint for equal variances, and the quadratic coefficients and roots, 1.680 and 10.001, for the deck's example. You should be able to compute the misallocation probabilities and the totals, 0.3694 and 0.2515. You should be able to derive the linear form of LDA, alpha transposed times x minus mu bar, show its posterior is a logit, and compute a Mahalanobis distance. You should be able to state admissibility and classify the four Bernoulli rules. And you should be able to derive the cost threshold, the log of pi two c one two over pi one c two one, and the posterior cut-off c one two over c one two plus c two one, and compute the cost comparison, 0.4455 against 0.4095.
+
+
+Part four, section 6. Counts with a log link: the blog visitor example, rate ratios, and the mean-variance check.
+
+This section covers the page Gaussian versus Poisson regression, by Lopes, dated October 27th, 2025, with data from Albert and Hu, 2020, Probability and Bayesian Modeling, section 8.8: 28 daily blog visitor counts and the linear and Poisson outputs; ISLP section 4.6, printed pages 167 to 173, with equations 4.35 to 4.42, the rate ratio reading on page 171, the mean-variance tie and non-negativity on page 172, and footnote 5 on overdispersion; and Wooldridge section 17.3, printed pages 543 to 546, with equations 17.31 to 17.35, the exponential of beta minus one reading on page 544, and the sigma hat squared adjustment on page 546.
+
+The claim. A count is modelled as Poisson with log lambda i equal to x i transposed beta, so a coefficient is a rate ratio, e to the beta j; fitted means are always positive; and the variance is tied to the mean. On the site's 28 days of blog visits, Gaussian and Poisson regressions on a weekend dummy give the same fitted means, 109 and 83.33 visitors, because the model is saturated in two groups. They differ in the variance they assume, constant at 140.4 against equal to the mean, and therefore in their standard errors. The data are mildly overdispersed, with sigma hat squared equal to 1.44, which widens the Poisson standard error by 20 per cent and changes no conclusion.
+
+The notation. y i is the number of visitors on day i, for 28 days in June 2018. w i is the page's weekend dummy, equal to one for the first three days of each week. Lambda i, the conditional mean of y i, is the Poisson mean, and alpha and beta are the intercept and slope of log lambda i equal to alpha plus beta w i, the page's letters. beta zero and beta one are the least squares intercept and slope of the Gaussian model, and s its residual standard error. n zero, 16, and S zero, 1744, are the number of weekdays and their total; n one, 12, and S one, 1000, are the same for the weekend group. Sigma squared is the dispersion factor in the variance of y given x equal to sigma squared times the mean, Wooldridge equation 17.35.
+
+Six point one. Intuition: the data and the question.
+
+Visitors to a baseball analytics blog, 28 consecutive days, in four weeks of seven. Week one: 95, 81, 85, 100, 111, 130, 113. Week two: 92, 65, 78, 96, 118, 120, 104. Week three: 91, 91, 79, 106, 91, 114, 110. Week four: 98, 61, 84, 96, 126, 119, 90.
+
+The page labels the weekdays Friday, Saturday, Sunday, Monday, Tuesday, Wednesday, Thursday, and sets the weekend dummy to one for the first three: Friday, Saturday and Sunday. June 1st, 2018 was a Friday.
+
+The group summaries, page output recomputed. Weekdays, Monday to Thursday, with the dummy zero: 16 days, total 1744, mean 109.00, standard deviation 12.15, variance 147.73, variance over mean 1.36. The "weekend", Friday to Sunday, with the dummy one: 12 days, total 1000, mean 83.33, standard deviation 11.42, variance 130.42, variance over mean 1.57.
+
+The question: how much lower is traffic on weekend days, and how sure are we? A count is non-negative, integer, and typically noisier when its mean is higher: three things the Gaussian linear model ignores, ISLP section 4.6.1, pages 167 to 169, Wooldridge page 543.
+
+Six point two. The Gaussian regression.
+
+Equation 1: y i equals beta zero plus beta one w i plus epsilon i, with the errors iid normal with mean zero and variance sigma epsilon squared.
+
+With one dummy, least squares reproduces the group means. The normal equations are: the sum of y i minus beta zero minus beta one w i is zero; and the sum of w i times y i minus beta zero minus beta one w i is zero. Subtracting the second from the first leaves the sum over weekdays of y i minus beta zero equal to zero, so beta zero hat is S zero over n zero; the second alone gives beta zero hat plus beta one hat equal to S one over n one. So beta zero hat is 1744 over 16, which is 109.000, and beta one hat is 1000 over 12 minus 109, which is 83.333 minus 109, which is minus 25.667.
+
+Standard errors, from the pooled residual variance with 28 minus 2, or 26, degrees of freedom. The page prints s equal to 11.85. The standard error of beta one hat is s times the square root of one over n zero plus one over n one, which is 11.8495 times the square root of one over 16 plus one over 12, which is 11.8495 times 0.38188, which is 4.525. The standard error of beta zero hat is s over the square root of n zero, which is 11.8495 over 4, which is 2.962.
+
+t equals minus 25.667 over 4.525, which is minus 5.67, with p equal to 5.8 times 10 to the minus 6, and the R squared is 0.553, all as printed. The reading: weekend days have 25.7 fewer visitors, in absolute terms, with one common spread, s squared equal to 140.4, for both groups.
+
+Six point three. The Poisson regression.
+
+The model, ISLP equations 4.35 to 4.37, pages 169 to 170, Wooldridge equations 17.31 and 17.32, page 544. Equation 2: y i given w i is Poisson with mean lambda i; the probability that y i equals k is e to the minus lambda i times lambda i to the k, over k factorial; and log lambda i equals alpha plus beta w i.
+
+The log-likelihood, ISLP equation 4.38, page 170, Wooldridge equation 17.33, page 545. Take logs of the probability mass function and sum. Equation 3: l of alpha and beta equals the sum over the 28 days of y i log lambda i minus lambda i minus log y i factorial, which is the sum of y i times alpha plus beta w i, minus e to the alpha plus beta w i, minus log y i factorial.
+
+The score. Differentiate equation 3; the derivative of e to the alpha plus beta w i with respect to alpha is lambda i, and with respect to beta is w i lambda i. Equation 4: the derivative with respect to alpha, the sum of y i minus lambda i, is zero; and the derivative with respect to beta, the sum of w i times y i minus lambda i, is zero. In matrix form, X transposed times y minus lambda is zero: the same shape as the logit score of section 4, equation 12. Both are canonical-link generalized linear models.
+
+Solve equation 4 in closed form. The second equation involves only weekend days, where lambda i is e to the alpha plus beta: S one minus n one times e to the alpha plus beta is zero, so e to the alpha hat plus beta hat is 1000 over 12, which is 83.333. Subtract it from the first; what remains are the weekdays, where lambda i is e to the alpha: S zero minus n zero times e to the alpha is zero, so e to the alpha hat is 1744 over 16, which is 109. Take logs: alpha hat is log 109, which is 4.69135; and beta hat is the log of 83.333 over 109, which is the log of 0.764526, which is minus 0.26850. These are the page's estimates. With no covariate at all, equation 4 would give lambda hat equal to y bar, the Poisson maximum likelihood estimator of Class 1 section 2; here each group gets its own sample mean.
+
+The Hessian and standard errors. Differentiate equation 4 again. Minus the Hessian is the sum over i of lambda i times the matrix with first row one and w i, and second row w i and w i; which is the matrix with first row n zero e to the alpha plus n one e to the alpha plus beta, and n one e to the alpha plus beta; and second row n one e to the alpha plus beta, and n one e to the alpha plus beta.
+
+At the estimate, n zero e to the alpha hat is 1744 and n one e to the alpha hat plus beta hat is 1000. So the information matrix has first row 2744 and 1000, and second row 1000 and 1000. Its determinant is 2744 times 1000 minus 1000 squared, which is 1,744,000. Its inverse is one over 1,744,000 times the matrix with first row 1000 and minus 1000, and second row minus 1000 and 2744. So the standard error of alpha hat is the square root of one over 1744, which is 0.02395, and the standard error of beta hat is the square root of one over 1744 plus one over 1000, which is 0.03967. These are the printed 0.02395 and 0.03967: each standard error is built from the group totals alone. The z statistic is minus 0.26850 over 0.03967, which is minus 6.77. The page's "Number of Fisher Scoring iterations: 4" is IRLS with W the diagonal matrix of the lambda i and z i equal to eta i plus y i minus lambda i over lambda i: section 4.4 with the log link.
+
+Six point four. Reading the two slopes.
+
+Gaussian: additive, in visitors: beta one hat is minus 25.667 per day.
+
+Poisson: multiplicative. From equation 2, lambda at w equal to one over lambda at w equal to zero is e to the alpha plus beta over e to the alpha, which is e to the beta: the rate ratio. ISLP page 171: "an increase in X j by one unit is associated with a change in E of Y by a factor of exp of beta j". Here e to the minus 0.26850 is 0.7645, so weekend traffic is 100 times 0.7645 minus one, which is minus 23.5 per cent relative to weekday traffic.
+
+Wooldridge's shortcut, 100 beta hat, minus 26.85 per cent, page 544, is the log approximation; for a dummy the exact change is 100 times the exponential of beta hat minus one, minus 23.55 per cent, on the same page. At an absolute beta near 0.27 the two differ by 3.30 points.
+
+Same means, different variance. The page's comparison. The Gaussian weekday mean, beta zero hat, is 109.0000, and the weekend mean, beta zero hat plus beta one hat, is 83.333. The Poisson weekday mean, e to the alpha hat, is 109.0002, and the weekend mean, e to the alpha hat plus beta hat, is 83.33345. The fourth-decimal gaps come from exponentiating the five-decimal printed coefficients.
+
+With two groups and two parameters both models are saturated in the means; what differs is the variance each assumes, hence t equal to minus 5.67 against z equal to minus 6.77. Compare the two models in four dimensions. The variance on weekdays: Gaussian, s squared equal to 140.4; Poisson, lambda equal to 109. The variance on the weekend: Gaussian, 140.4; Poisson, 83.3. Fitted values: Gaussian, can be negative in general; Poisson, always positive, ISLP page 172. The slope reading: Gaussian, minus 25.7 visitors; Poisson, times 0.7645, minus 23.5 per cent.
+
+Six point five. The mean-variance check and overdispersion.
+
+The Poisson model says the variance of y given x equals its mean, Wooldridge equation 17.34, page 545, ISLP page 172. The sample says 147.7 against 109, and 130.4 against 83.3: ratios of 1.36 and 1.57.
+
+The dispersion estimate, Wooldridge page 546: sigma hat squared equals one over n minus k minus one, times the sum of u i hat squared over y i hat, with u i hat equal to y i minus lambda i hat; that is, the Pearson chi-squared over its degrees of freedom. Here sigma hat squared is 37.546 over 26, which is 1.444, and sigma hat is 1.202.
+
+The quasi-Poisson correction, Wooldridge equation 17.35 and page 546: multiply the standard errors by sigma hat. The corrected standard error of beta hat is 1.202 times 0.03967, which is 0.0477, and the corrected z is minus 0.26850 over 0.0477, which is minus 5.63.
+
+The deviance view. The residual deviance is 38.324 on 26 degrees of freedom, a ratio of 1.47; the probability that a chi-squared with 26 degrees of freedom exceeds 38.324 is 0.056: borderline evidence of lack of fit. The likelihood-ratio test of the weekend effect is 85.141 minus 38.324, which is 46.82, on one degree of freedom, Wooldridge equation 17.12; under equation 17.35, divide by sigma hat squared: 46.82 over 1.444 is 32.4. The AIC is 221.76.
+
+The figure has two panels. On the left, the 28 daily counts by day, with weekday and Friday-to-Sunday markers, the common fitted step function at 109 and 83.3, the constant-width Gaussian band and the mean-dependent Poisson band, each plus or minus 1.96 standard deviations. On the right, group variance against group mean, with the lines variance equals mean, variance equals 1.444 times the mean, and variance equals 140.4.
+
+On the left the Gaussian band has the same width in both groups, while the Poisson band is narrower for the lower weekend mean: the square root of 83.3 is 9.1, against the square root of 109, 10.4. The weekday 130 and the weekend 65 and 61 sit outside the Poisson band, 109 plus or minus 20.5 and 83.3 plus or minus 17.9: three of 28, where about 1.4 are expected, which is the overdispersion. On the right both sample points lie above the Poisson line, variance equals mean, and close to the quasi-Poisson line, 1.444 times lambda; the Gaussian constant, 140.4, sits between them.
+
+With means near 100 the Poisson and Gaussian models nearly agree: a Poisson with a large mean is close to a normal. The log link earns its keep with small counts, where linear fits go negative, as in 9.6 per cent of ISLP's Bikeshare fitted values, page 168, and the variance visibly grows with the mean, ISLP page 172, recalling Figure 4.14. And Poisson standard errors are only right if the variance equals the mean: always check, and inflate by sigma hat when it fails. ISLP footnote 5, page 172: overdispersion "causes the Z-values to be inflated".
+
+Six point six. Graduate layer: one template for linear, logistic and Poisson regression. ISLP section 4.6.3, pages 172 to 173. Not examinable.
+
+ISLP equation 4.42, page 173: a link function eta applied to the conditional mean of Y equals beta zero plus beta one X one up to beta p X p.
+
+Three models in five dimensions. The linear model: Gaussian distribution, identity link, constant variance sigma squared, score X transposed times y minus X beta over sigma squared; Class 1 section 6. The logistic model: Bernoulli distribution, logit link, the log of mu over one minus mu, variance function mu times one minus mu, score X transposed times y minus pi; section 4. The Poisson model: Poisson distribution, log link, variance function mu, score X transposed times y minus lambda; this section.
+
+Each link is the canonical one for its distribution, which is why the score is always X transposed times the data minus the fitted mean, and why Newton-Raphson, Fisher scoring and IRLS coincide.
+
+Six point seven. Graduate layer: the page's Bayesian part, named only. The page continues with independent normal priors, alpha normal with mean 4.7 and standard deviation 0.1, and beta normal with mean minus 0.3 and standard deviation 0.1, a grid posterior and sampling importance resampling, ending with posterior densities of the weekday and weekend rates. Classes 3 and 4.
+
+Spoken checklist for section 6. You should be able to say what a count model must respect: non-negativity, integers, and variance growing with the mean. You should be able to show that least squares with one dummy reproduces the group means, and compute minus 25.667 with standard error 4.525. You should be able to write the Poisson log-likelihood with a log link, derive the score X transposed times y minus lambda, and solve it in closed form: alpha hat 4.69135, beta hat minus 0.26850. You should be able to derive the information matrix and the standard errors from the group totals, 0.02395 and 0.03967. You should be able to read the rate ratio, 0.7645, minus 23.5 per cent, against the log approximation, minus 26.85 per cent. You should be able to explain why both models give the same means but different standard errors. And you should be able to compute the dispersion estimate, 1.444, the quasi-Poisson standard error, 0.0477, and the likelihood-ratio statistic, 46.82, and 32.4 after correction.
+
+
+Recap of part 2. Logistic regression makes the log-odds linear; its score is X transposed times y minus pi, its Hessian minus X transposed W X, and a Newton-Raphson step is a weighted least squares fit, which converges on the student table to minus 3.50413 and 0.40489. Coefficients are odds ratios; a probability cut-off is a covariate cut-off, 1936.6 at one half; confounding flips the student sign; and a confusion matrix needs several rates, with a false discovery rate of 9.06 per cent for the spam model. Discriminant analysis uses the Bayes rule, which minimises the error probability; equal Gaussian variances give a midpoint and a linear rule, unequal ones give a quadratic rule with cut-offs 1.680 and 10.001 and total error 0.2515; unequal costs move the threshold to the log of pi two c one two over pi one c two one. Poisson regression reads coefficients as rate ratios, 0.7645 for the blog weekend, and ties the variance to the mean, a tie that fails mildly here with a dispersion of 1.444. Part 3 holds the pitfalls, the formula sheet, and the self-test.

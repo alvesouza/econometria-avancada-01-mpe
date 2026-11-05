@@ -1,0 +1,402 @@
+Advanced Econometrics, Class 7. More econometric models. Narrated study notes, part 1 of 3.
+
+How to listen.
+
+This is a listening version of the finished study notes for Class 7 of the course Econometria Avançada, in the professional master's in economics at Insper, taught by Hedibert Freitas Lopes. It carries the same content as the written notes, re-voiced for the ear. Every formula is spoken in words, the way you would dictate it to someone writing on a board, and then its meaning is said in plain language.
+
+The narration comes in three files. Part 1, this file, covers the map of the class and then part one of the notes, the general linear model with non-spherical errors: section 1, a general covariance matrix, generalized least squares and heteroskedasticity; section 2, Student t errors as a scale mixture of normals; and section 3, first-order autoregressive errors. Part 2 covers the hierarchical linear models of section 4 and the limited dependent variable models: section 5, the Tobit, and section 6, the probit, the ordered probit and the multinomial probit. Part 3 holds the support material: the pitfalls, the spoken formula sheet, the implementation described as a sequence of steps, the reading route and exercises, a true or false self-test, a glossary, and the whole class in five lines.
+
+A word on the three layers the notes use. The U layer is intuition: why noisy or correlated observations should count less; fat tails as random variances; pooling against separate fits; corners against censoring against truncation; and the fact that a cut throws away the scale. The C layer is the course layer, and it is what is examinable: generalized least squares and the general-covariance full conditionals of section 1; the scale-mixture derivation and the four conditionals of section 2; the autoregressive covariance matrix, its tridiagonal inverse, Prais-Winsten, the conditional for rho and the truncated-normal draw of section 3; the three panel models, every hierarchical conditional and the partial-pooling weight of section 4; the Tobit likelihood, data augmentation and Wooldridge's equations 17.24 to 17.30 of section 5; and the probit identification, the Albert-Chib sampler, the 1.6 rule, the ordered-probit cut-point update and the multinomial probit as a seemingly unrelated regression of section 6. All of it with the slides' and the books' own numbers. The G layer is graduate material: closed-form variance ratios of ordinary and generalized least squares under autoregressive errors and regressors; the Stein-lemma attenuation, beta times the probability that y is positive; Geweke's moment conditions; slow mixing of cut-points; identification schemes for the multinomial probit; and the multivariate probit. These are proved or named, and are not examinable unless the slides state them. Each time a G item comes up, the narration says so out loud.
+
+The books are cited by short names. Greenberg is Introduction to Bayesian Econometrics, first edition, used in place of the second edition the syllabus names. Wooldridge is Introductory Econometrics, sixth edition. Tsay is Analysis of Financial Time Series, third edition. Morettin and Singer is cited by its authors. The decks are GLM3, the general linear models deck, 32 slides; HLM, the hierarchical linear models deck, 33 slides; and the limited dependent variable models deck, 16 slides, which the narration calls the LDV deck. The site page is hierarchicalmodel, an R Markdown page on the nutrition of pregnant women.
+
+A word on scope. The final exam has no code: expect full conditionals, likelihoods, the scale mixture, partial pooling, Tobit moments, and the reading of printouts such as Wooldridge's tables and the slides' posterior summaries.
+
+
+Part zero. The map of Class 7.
+
+This part covers the map note: the one claim of the class, the reading order, the one result to hold, the numbers to memorize, the figures and companions, the scope, the place of the class in the course, and the errata found in the sources. The sources are the GLM3 deck, the HLM deck, the LDV deck and the hierarchicalmodel page. From Greenberg, sections 4.5 and 4.6, printed pages 50 to 53; sections 8.1 and 8.2, printed pages 111 to 129; and sections 9.2 and 9.3, printed pages 139 to 149. From Wooldridge, section 8.4, printed pages 254 to 262; section 12.3, printed pages 381 to 386; section 14.2, printed pages 441 to 442; sections 17.1 and 17.2, printed pages 525 to 543; and section 17.4, printed pages 547 to 553. From Tsay, section 2.9, printed pages 90 to 93. And from Morettin and Singer, sections 6.4 and 6.5, printed pages 215 to 220.
+
+The one claim. Every model of this class is the normal linear regression with one twist, and the twist is handled by adding something to the Gibbs sampler.
+
+A known covariance matrix, capital Omega, is a rotation: that is generalized least squares. A variance function needs one Metropolis step. Student t errors become normal once each observation carries its own latent variance. First-order autoregressive errors are one parameter, rho, and quasi-differencing.
+
+Hierarchical models put a prior with an estimated mean and an estimated variance on unit-level coefficients, so each unit's estimate is a partial-pooling average of its own data and the population.
+
+Limited dependent variables, the Tobit, the probit, and the ordered and multinomial probits, are regressions on a latent y star that is seen only through a cut. Draw y star from a truncated normal and it is ordinary least squares again. But the coefficients are effects on the latent scale, not effects on what is observed.
+
+The reading order. Three parts and three support notes.
+
+Part one, the general linear model with non-spherical errors, has three sections.
+
+Section 1 is the general covariance matrix and generalized least squares: GLM3 slides 3 to 15, and Wooldridge section 8.4, printed pages 254 to 262. It settles the following. A matrix P with P times Omega times P transposed equal to the identity makes generalized least squares equal to ordinary least squares on P y and P X. The full conditionals carry Omega inverse. Weighted least squares divides every column by the square root of h sub i. Wooldridge's Example 8.6 gives 0.787, standard error 0.063, against ordinary least squares 0.821, standard error 0.104. Alpha in a variance function h equal to e to the z transposed alpha needs a Metropolis-Hastings step. Feasible generalized least squares is the slides' starting point. Ordinary least squares loses a factor of 4.38 at alpha one equal to one. And the airline posterior has alpha two equal to 7.085. There is a slip on slide 8, in beta.
+
+Section 2 is Student t errors: GLM3 slides 16 to 21, and Greenberg sections 4.5 and 8.1.2, printed pages 50 to 52 and 114 to 116. It settles the t distribution as a scale mixture, derived. The latent variance omega sub i has, given the rest, an inverse-gamma distribution with shape nu plus one over two and scale nu plus epsilon i squared over sigma squared, all over two. The weight is nu plus one over nu plus epsilon i squared over sigma squared, which is below one if and only if the absolute value of epsilon i exceeds sigma. It covers the conditional for nu and its Metropolis-Hastings step; the exponential prior with mean 25, which puts probability 0.33 on nu at most 10; Geweke; and an outlier downweighted to 0.018. There is a slip on slide 6.
+
+Section 3 is first-order autoregressive errors: GLM3 slides 22 to 30, Wooldridge section 12.3, printed pages 381 to 386, and Tsay section 2.9, printed pages 90 to 93. It settles the covariance rho to the k; the tridiagonal inverse, Omega rho inverse equal to P transposed P; Prais-Winsten against Cochrane-Orcutt; the barium example, 2.94 with standard error 0.63, and rho hat equal to 0.293; equations 10 and 11 of that section, which say that naive standard errors are wrong by the factor one plus rho phi over one minus rho phi; and the "small sin" that makes rho an exact truncated-normal draw. There is a slip on slide 24.
+
+Part two, hierarchical or multilevel models, has one section.
+
+Section 4 is hierarchical linear models: HLM slides 3 to 23, the hierarchicalmodel page, Greenberg sections 4.6 and 9.3, Morettin and Singer section 6.4, and Wooldridge section 14.2. It settles the pooled model, the individual-effects model and the random-coefficient model; every conditional; the weight T V alpha over T V alpha plus sigma squared; the eight schools exactly, with a posterior median of tau of 5.23, and school A moving from 28.39 to 11.64; the pregnant women, with the pooled line minus 4.52639 plus 0.47633 x and the hierarchical sigma alpha equal to 3.21; and the random-effects theta. There are slips on slides 9, 13, 15 and 16.
+
+Part three, limited dependent variables, has two sections.
+
+Section 5 is the Tobit: LDV slides 4 to 10, Greenberg section 8.2.1, and Wooldridge sections 17.2 and 17.4. It settles censoring against truncation; the likelihood; Chib's data augmentation; Wooldridge's equations 17.24 to 17.30, derived; slide 9's probabilities 0.500, 0.249 and 0.104; the ordinary least squares slope equal to beta times the probability that y is positive; and the Mroz Tobit reproduced, with an education coefficient of 80.65 and an average partial effect scale factor of 0.589. There are two slips on slide 8.
+
+Section 6 is the probit, the ordered probit and the multinomial probit: LDV slides 11 to 15, Greenberg sections 8.2.2, 8.2.3 and 9.2, Wooldridge section 17.1, and Morettin and Singer section 6.5. It settles sigma equal to one; the partial effect, phi of x transposed beta times beta, which is at most 0.4 times beta; logit coefficients roughly 1.6 times probit coefficients, 1.61 in Mroz; the Albert-Chib sampler; ordered-probit cut-points as uniform draws, which mix slowly; the multinomial probit as a latent seemingly unrelated regression with a truncated multivariate normal; and the identification of the scale.
+
+The support notes are the formula sheet, which maps the exam specification to every numbered result and every number; the pitfalls note, with fourteen confusions, minimal counterexamples and a 30-item true or false self-test; and the Python note, which implements every sampler of the class in NumPy, without PyMC, and checks it with assertions against Wooldridge's Tables 8.1, 12.1, 17.1 and 17.3, the site's printout and the slides.
+
+The one result to hold. Theta, given everything else, is normal. Its variance is the inverse of the sum of V zero inverse and sigma to the minus two times X transposed Omega inverse X. Its mean is that same variance times the sum of V zero inverse beta zero and sigma to the minus two times X transposed Omega inverse y star.
+
+One conditional, five disguises. Omega known, or a variance function h of z and alpha: section 1. Omega diagonal, with latent omega sub i on the diagonal: section 2. Omega equal to Omega rho, the autoregressive covariance: section 3. y star equal to the data with the hidden part imputed: sections 5 and 6. And with beta read as the unit coefficients and beta zero and V zero read as the population mean and variance, it is the partial-pooling update of section 4. What changes between models is only what else is drawn around it.
+
+Now the numbers and cases to have memorized. Thirteen of them.
+
+First. Wooldridge's Example 8.6, weighted least squares with weights one over income: 0.787, standard error 0.063, against ordinary least squares 0.821, standard error 0.104. That is a 40 per cent smaller standard error, if h equal to income is right.
+
+Second. With h equal to e to the alpha one x and alpha one equal to one, the variance of ordinary least squares over the variance of generalized least squares is 4.38. That is the cost of ignoring Omega.
+
+Third. The airline variance: alpha two equal to 7.085, so an increase of 0.1 in the load factor doubles the variance, a factor of 2.03. That is Case I in data.
+
+Fourth. Nu exponential with mean 25: the probability that nu is at most 10 is 0.33, and the probability that nu is at least 40 is 0.20. That is slide 17's prior.
+
+Fifth. The t weight, nu plus one over nu plus e squared, equals one at an absolute residual e of one, and is 3 over 38 at e equal to 6 with nu equal to 2. That is automatic downweighting.
+
+Sixth. Vella and Verbeek, t with 5 degrees of freedom against normal errors: sigma squared is 0.105 against 0.165; 0.105 times 5 over 3 is 0.175; and the base-ten log Bayes factor is 4.83. The scale is not the variance.
+
+Seventh. Barium, Prais-Winsten: 2.94, standard error 0.63, against ordinary least squares 3.12, standard error 0.48; rho hat equal to 0.293; and t equal to minus 1.69. Serial correlation inflates the standard errors.
+
+Eighth. With rho equal to phi equal to 0.9, the naive ordinary least squares variance is too small by a factor of 9.53. What matters is the product rho phi.
+
+Ninth. The eight schools: the pooled estimate is 7.87, standard error 4.17; the posterior median of tau is 5.23; and school A moves from 28.39 to 10.24 at tau equal to 5.2, and to 11.64 fully Bayes. That is partial pooling.
+
+Tenth. The pregnant women: the pooled line is minus 4.52639 plus 0.47633 x; sigma y is 1.12 and sigma alpha is 3.21. Heterogeneity is much larger than noise.
+
+Eleventh. Slide 9's Tobit: the probability that y is zero is 0.500, 0.249 and 0.104 at a equal to 0, 0.7 and 1.3. It is capital Phi of minus two a over 2.062.
+
+Twelfth. The Mroz Tobit: the education coefficient is 80.65, and the average partial effect is 0.589 times 80.65, which is 47.5 hours, against ordinary least squares 28.8. The coefficient is not the effect.
+
+Thirteenth. Probit against logit: phi of zero is 0.399 against one quarter, which gives the factor 1.6; in Mroz, 0.391 over 0.243 is 1.61. It is a matter of scale, not substance.
+
+The figures. Seven figures are built by a script in the notes' figures folder, and every figure ends in assertions on its plotted numbers. The generalized least squares efficiency figure shows the variance ratio of ordinary to generalized least squares against alpha one, 4.38 at one, and the weighted least squares weights; it lives in section 1. The t scale-mixture figure shows the tails of the t against the normal, and the Gibbs weight against the residual for four values of nu; section 2. The autoregressive-errors figure shows rho to the k, and the ratios of ordinary to generalized least squares variance and of true to naive variance against rho, for phi equal to 0, 0.5 and 0.9; section 3. The eight-schools shrinkage figure shows the paths of the conditional means of theta i given the data and tau, and the exact posterior of tau; section 4. The pregnancy figure shows 68 individual fits pulled toward the population, and the pooled line against the woman lines; section 4. The Tobit moments figure shows beta x, the expected value of y given x, and the expected value of y given that y is positive, together with slide 9's probabilities of a zero and the ordinary least squares attenuation; section 5. And the probit, logit and ordered figure shows capital Phi against the logistic function at 1.6 z, and the ordered-probit category probabilities; section 6.
+
+Two interactive companion pages go with the notes. The Partial-Pooling Dial lets you move tau, the prior bound A, a data-precision multiplier kappa and the highlighted school, and read the conditional mean of theta i, the shrinkage factor B i, mu hat, the fully Bayes mean and the posterior of tau: 10.24 for school A at the default tau of 5.2. It is linked from section 4. The Censoring Dial lets you move the covariate mean a, beta, sigma and an evaluation point x zero, and read the probability of a zero, 0.249 at slide 9's a equal to 0.7, the ordinary least squares slope beta times the probability that y is positive, and Wooldridge's equations 17.24 to 17.30 at x zero. It is linked from section 5. Both pages are verified by a checking script that runs the pages' own JavaScript against an independent Python recomputation at both ends of every range, at the defaults and at the landmarks.
+
+The scope, said once in full. Examinable, the C layer: the derivations and readings of sections 1 to 6. The final exam has no code. Expect full conditionals, likelihoods, the scale mixture, partial pooling, Tobit moments, and reading printouts like Wooldridge's tables and the slides' posterior summaries.
+
+Proved but above the line, the G layer: equations 10 and 11 of section 3; the Stein-lemma attenuation; identification schemes for the multinomial probit; and the multivariate probit's Metropolis-Hastings step.
+
+Named only: seemingly unrelated regression as a topic, which belongs to Class 9 and Greenberg section 9.1; fixed against random effects and the Hausman test, not on the site schedule, with Wooldridge section 14.2 cited as the neighbour; the dugong growth curve and WinBUGS, HLM slides 22 to 33; sample selection, Wooldridge section 17.5; and Cowles' Metropolis-Hastings step for cut-points.
+
+Elsewhere: Poisson and other generalized linear models are in Class 2, section 6.
+
+The position of Class 7 in the course. Class 1, the review, supplied ordinary least squares as maximum likelihood when Omega is the identity, the first-order autoregression's moments, reused here for Omega rho, and conjugate Poisson-gamma updating, the pattern of every conditional here. Class 2, statistical learning, supplied the logit, the frequentist twin of the probit, partial effects and cut-offs, and the heteroskedastic noise of the motorcycle data. Classes 3 and 4, Bayesian learning, supplied Gibbs sampling, Metropolis-Hastings and conjugate normal and inverse-gamma priors: the toolkit every section uses. Classes 5 and 6, causal inference, supplied panel data and differences in differences, the fixed-effects side of the comparison between hierarchical and random-effects models. Class 7 itself covers non-spherical errors, hierarchical models and limited dependent variables. Class 8, univariate time series, treats autoregressive and moving-average errors as models in their own right, and its Student t stochastic volatility uses section 2's mixture. And Class 9, multivariate time series, has seemingly unrelated regressions and vector autoregressions: the generalized least squares with the identity Kronecker Sigma of section 6, subsection 4.
+
+The errata found while writing the notes. Ten of them.
+
+One. GLM3 slide 6 writes Case II as omega i inverse distributed inverse-gamma with parameters nu over two and nu over two. Correct: omega i is inverse-gamma, that is, omega i inverse is gamma with parameters nu over two and nu over two, as on slides 16 and 18. That is in section 2, subsection 2.
+
+Two. GLM3 slide 8 gives the true beta as 2.0 and 4.0. That is inconsistent with the slide's own scatter, with the ordinary least squares start of 9.12 and 0.62, and with the chains. That is in section 1, subsection 4.
+
+Three. GLM3 slide 24 writes the exponential of minus one half times epsilon transposed Omega rho inverse epsilon. Correct: the exponential of minus one half times sigma to the minus two times epsilon transposed Omega rho inverse epsilon. That is in section 3, subsection 4.
+
+Four. HLM slide 9: the last row of X star ends in X tilde one. Correct: X tilde N. That is in section 4, subsection 2.
+
+Five. HLM slide 13: the update for mu alpha uses sigma to the minus two times N and sigma to the minus two times the sum of the alpha i. Correct: V alpha inverse times N and V alpha inverse times the sum of the alpha i. That is in section 4, subsection 3.
+
+Six. HLM slide 15 writes V zero times beta zero inverse. Correct: V zero inverse times beta zero. That is in section 4, subsection 4.
+
+Seven. HLM slide 16 writes V beta tilde inverse equal to V beta inverse plus N times V zero. Correct: plus N times V zero inverse. That is in section 4, subsection 4.
+
+Eight. LDV slide 8 writes V beta inverse equal to V zero inverse plus sigma to the minus two times the inverse of X transposed X, and writes the mean without the sigma to the minus two on X transposed y star. Correct: sigma to the minus two times X transposed X, and the mean V beta times the sum of V zero inverse beta zero and sigma to the minus two X transposed y star. That is in section 5, subsection 4.
+
+Nine. LDV slides 5, 9 and 10 call censoring "truncation". Correct: it is censoring; truncation drops the units. That is in section 5, subsection 1.
+
+Ten. The hierarchicalmodel page, section 4.4.3, labels a plot "p of y new given x new and the data". Correct: it is the posterior of alpha i plus beta i x, with no sigma y noise added. That is in section 4, subsection 6.
+
+The practice for this class, by number only, with pages given in each section: Wooldridge 12.C2 and 12.C10; Greenberg 8.3 and 8.5; Greenberg 4.6, 9.2 and 9.3; Wooldridge 17.3, 17.C2, 17.C3 and 17.C9; Greenberg 8.6 and 8.7; Morettin and Singer 6.18 and 6.21; and Wooldridge 14.C5.
+
+Recap of part zero. One conditional, five disguises: the normal regression update with Omega inverse in it, where Omega is known, a variance function, latent variances, an autoregressive matrix, or a partial-pooling prior, and where y star is the data with its hidden part imputed. What changes between models is only what else is drawn around it.
+
+
+Part one, section 1. A general covariance matrix: known Omega is ordinary least squares after a rotation, and unknown Omega costs one Metropolis step.
+
+This section covers GLM3 slides 3 to 15: the general covariance, known Omega, diagonal Omega, Case I with omega i equal to h of z i and alpha, the simulated example on slide 8, and the US airline cost data on slides 11 to 15. It also covers Wooldridge section 8.4, printed pages 254 to 262, equations 8.21 to 8.34, with Example 8.6 and Table 8.1 on printed page 257; and Greenberg section 8.1.1, printed pages 111 to 112, equations 8.1 to 8.3 and Algorithm 8.1. The numbers are re-run in the Python checks, section 1.
+
+The claim, before the derivations. Take y equal to X beta plus epsilon, with epsilon normal with mean zero and variance sigma squared times Omega. Any matrix P with P times Omega times P transposed equal to the identity of size n turns the model into a standard regression of P y on P X. So generalized least squares is ordinary least squares on rotated data, and the Bayesian full conditionals are the familiar normal and inverse-gamma pair with X transposed X replaced by X transposed Omega inverse X. A diagonal Omega is the heteroskedastic case: generalized least squares becomes weighted least squares, with weights one over omega i. When omega i equal to h of z i and alpha is unknown, alpha has no conjugate conditional and is drawn by Metropolis-Hastings. The frequentist twin is feasible generalized least squares, whose first step, regressing the log of the squared residual on z i, is exactly the slides' starting value.
+
+The notation. y is n by one; X is n by k with full column rank; beta is k by one; and epsilon is y minus X beta. Sigma squared, positive, is the scale. Omega, n by n, symmetric and positive definite, is the error correlation or variance pattern, with entries omega i j. P is any n by n matrix with P Omega P transposed equal to the identity; for example, P equal to L inverse, where Omega equals L L transposed is the Cholesky factorization. The prior, slide 4: beta is normal with mean beta zero and variance V zero, and sigma squared is inverse-gamma with parameters nu zero over two and nu zero s zero squared over two. h of z i and alpha, positive, is the variance function; z i, p by one, holds its covariates, and alpha its parameters, slide 7. In Wooldridge's notation, the variance of u given x is sigma squared times h of x, and h sub i is h of x i, equation 8.21.
+
+One point one. Why the error covariance matters. The U layer.
+
+Ordinary least squares stays unbiased when the variance of epsilon is sigma squared Omega, because unbiasedness never used the variance. But two things break. The usual variance formula, sigma squared times the inverse of X transposed X, is wrong. And ordinary least squares is no longer the most precise linear unbiased estimator. Observations with large variance, the noisy ones, carry less information about beta and should count less. Correlated observations repeat part of each other's information and should not be counted twice. Generalized least squares does both, by first transforming the data into something that has spherical errors.
+
+One point two. The known-Omega case. Slides 3 to 5.
+
+The model, slide 3. Equation 1: y equals X beta plus epsilon, with epsilon normal with mean zero and variance sigma squared Omega.
+
+The rotation, slide 4. Take P with P Omega P transposed equal to the identity, and multiply equation 1 by P. Equation 2: P y equals P X beta plus P epsilon.
+
+The new error has mean zero and a variance computed in four steps. Equation 3: the variance of P epsilon equals P times the variance of epsilon times P transposed; which is P times sigma squared Omega times P transposed; which is sigma squared times P Omega P transposed; which is sigma squared times the identity.
+
+Write y star for P y, X star for P X, and epsilon star for P epsilon. Then equations 2 and 3 say that y star equals X star beta plus epsilon star, with epsilon star normal with mean zero and variance sigma squared times the identity. Given Omega, that is a standard linear regression, slide 4.
+
+Generalized least squares is ordinary least squares on equation 2. Ordinary least squares on the starred data is the inverse of X star transposed X star, times X star transposed y star. Substitute X star equal to P X and y star equal to P y. Equation 4: beta hat GLS equals the inverse of X transposed P transposed P X, times X transposed P transposed P y.
+
+From P Omega P transposed equal to the identity, Omega equals P inverse times the inverse of P transposed, so Omega inverse equals P transposed P. Substitute into equation 4. Equation 5: beta hat GLS equals the inverse of X transposed Omega inverse X, times X transposed Omega inverse y; and its variance is sigma squared times the inverse of X transposed Omega inverse X.
+
+P itself never matters; only P transposed P, which is Omega inverse. This was checked numerically in the Python checks, section 1: ordinary least squares on P y and P X equals equation 5 to machine precision.
+
+The full conditionals, slide 5. The likelihood of equation 1, equation 6: the density of y given beta and sigma squared is proportional to sigma squared to the minus n over two, times the exponential of minus one over two sigma squared, times y minus X beta transposed, times Omega inverse, times y minus X beta.
+
+Sigma squared given beta. Multiply equation 6 by the inverse-gamma kernel with parameters nu zero over two and nu zero s zero squared over two, which is sigma squared to the minus nu zero over two minus one, times the exponential of minus nu zero s zero squared over two sigma squared. Collect powers and exponents. The conditional density of sigma squared is proportional to sigma squared to the minus nu zero plus n over two, minus one, times the exponential of minus the sum of nu zero s zero squared and the quadratic form y minus X beta transposed Omega inverse y minus X beta, all over two sigma squared. So, equation 7: sigma squared given beta, Omega and y is inverse-gamma with parameters nu one over two and nu one s one squared over two, where nu one equals nu zero plus n, and nu one s one squared equals nu zero s zero squared plus y minus X beta transposed Omega inverse y minus X beta.
+
+Beta given sigma squared. Keep the terms of equation 6 times the prior that involve beta: minus one half times the bracket of sigma to the minus two times the quadratic form in Omega inverse, plus beta minus beta zero transposed V zero inverse beta minus beta zero. Expand and keep the quadratic and the linear terms in beta: minus one half times the bracket of beta transposed, times V zero inverse plus sigma to the minus two X transposed Omega inverse X, times beta, minus two beta transposed times V zero inverse beta zero plus sigma to the minus two X transposed Omega inverse y; plus a constant. Completing the square gives equation 8: beta given sigma squared, Omega and y is normal with mean beta one and variance V one, where V one inverse equals V zero inverse plus sigma to the minus two X transposed Omega inverse X, and V one inverse times beta one equals V zero inverse beta zero plus sigma to the minus two X transposed Omega inverse y.
+
+Equation 8 is a precision-weighted average of the prior mean and the generalized least squares estimate of equation 5. As V zero inverse tends to zero, beta one is beta hat GLS and V one is sigma squared times the inverse of X transposed Omega inverse X. With Omega equal to the identity it is Greenberg's equation 8.2, printed page 111. Alternating equations 7 and 8 is Greenberg's Algorithm 8.1, printed page 112, with Omega in place.
+
+One point three. Diagonal Omega: weighted least squares. Slide 6; Wooldridge section 8.4a.
+
+With Omega diagonal, with entries omega one up to omega n, slide 6, P is diagonal with entries omega i to the minus one half, and equation 2 divides row i by the square root of omega i. That is Wooldridge's transformed equation, 8.25 and 8.26, printed page 255, with h i equal to omega i. Equation 9: y i over the square root of h i equals beta zero times one over the square root of h i, plus beta one times x i one over the square root of h i, and so on up to beta k times x i k over the square root of h i, plus u i over the square root of h i.
+
+The constant is divided too: equation 9 has no intercept column of ones. Ordinary least squares on equation 9 minimizes, equation 10, the sum over i of y i minus x i transposed beta, squared, divided by h i. That is Wooldridge's equation 8.27, printed page 256. The residuals are weighted by one over h i, the variables by one over the square root of h i. Equation 10 is equation 5 written out, since X transposed Omega inverse X equals the sum over i of x i x i transposed over h i.
+
+Worked: Wooldridge's Example 8.6, Table 8.1, printed page 257. Net total financial wealth, the variable nettfa, in thousands of dollars, regressed on income, the variable inc, in thousands of dollars, for single people, n equal to 2,017. Weighted least squares under the assumption that the variance of u given income is sigma squared times income, so h i is income and the weight is one over income. Compare the two fits. Ordinary least squares with robust standard errors: intercept minus 10.57, standard error 2.53; income slope 0.821, standard error 0.104; R squared 0.0827. Weighted least squares with weights one over income: intercept minus 9.58, standard error 1.65; income slope 0.787, standard error 0.063; R squared 0.0709.
+
+All eight numbers are reproduced from the 401KSUBS data in the Python checks, section 1. The weighted standard error of the income slope is 0.063 over 0.104, which is 0.61 of the ordinary one: "almost 40 per cent smaller", in Wooldridge's words on printed page 257, provided the variance model is right. The R squared of weighted least squares is lower and not comparable: it measures the fit of the weighted problem, Wooldridge printed page 256.
+
+Case I against Case II, slide 6. The slides split diagonal Omega into two cases. Case I: omega i equal to h of z i and alpha, a deterministic function of covariates; that is this section. Case II: omega i random with an inverse-gamma law; that is the Student t model of section 2.
+
+One point four. Case I: omega i equal to h of z i and alpha, and why alpha needs Metropolis-Hastings. Slides 7 and 8.
+
+Variance functions, slide 7. h of z i and alpha can be the square of alpha one z i one plus and so on up to alpha p z i p; or, more commonly, the exponential of alpha one z i one plus and so on up to alpha p z i p. Wooldridge's equation 8.30, printed page 259, is the same exponential form.
+
+The conditional of alpha. Given beta and sigma squared, and writing e i for y i minus x i transposed beta, equation 6 becomes equation 11: the conditional density of alpha is proportional to the prior of alpha times the product over i of h of z i and alpha to the minus one half, times the exponential of minus e i squared over two sigma squared h of z i and alpha.
+
+For h equal to the exponential of z i transposed alpha, substitute and take logs. Equation 12: the log conditional of alpha equals the log prior of alpha, minus one half times the sum over i of z i transposed alpha, minus one over two sigma squared times the sum over i of e i squared times e to the minus z i transposed alpha, plus a constant.
+
+Alpha appears linearly and inside an exponential. No normal prior makes equation 12 a known family. So the sampler alternates equations 7 and 8, with Omega diagonal with entries h of z i and alpha, and a random-walk Metropolis-Hastings step for alpha: propose alpha dagger equal to alpha plus delta, with delta normal with mean zero and variance c squared times the identity, and accept with probability the minimum of one and the exponential of the log conditional at alpha dagger minus the log conditional at alpha. The random-walk proposal is symmetric, so it cancels.
+
+Identification, slide 8. With an intercept in z, sigma squared times h of z and alpha equals sigma squared times e to the alpha zero times e to the alpha one x. Sigma squared and e to the alpha zero enter only through their product, so the slide fixes sigma squared equal to one.
+
+The slide 8 design. n equal to 100; h equal to the exponential of alpha zero plus alpha one x i; x i standard normal; alpha equal to one and one. Priors: beta normal with mean zero and variance 100 times the identity of size two, and alpha the same. The chain starts at beta hat from ordinary least squares, and at the alpha from the regression of the log of the squared ordinary least squares residual on x i. Burn-in is 1000 draws, and every 20th draw is kept, up to M equal to 1000.
+
+The slip on slide 8. It prints beta equal to 2.0 and 4.0. But its own scatter, on slide 9, with y between 4 and 16 and a slope well under one, its ordinary least squares start, beta hat equal to 9.12 and 0.62, and its chains, centred near 9 and 0.7 on slide 10, are not consistent with that beta. The true beta of the run cannot be recovered from the deck. The alpha part, alpha equal to one and one with chains near one, is consistent.
+
+Re-run here with the printed beta, 2 and 4, and alpha equal to one and one, in the Python checks, section 1: seeded, 12,000 iterations, 2,000 burn-in, random-walk step 0.15. The Metropolis-Hastings acceptance rate is 0.55; the posterior means are beta equal to 2.20 and 3.97, and alpha equal to 0.93 and 1.12.
+
+One point four point one. Feasible generalized least squares is the slides' starting value. Wooldridge section 8.4b, printed pages 259 to 260.
+
+Wooldridge's feasible generalized least squares has four steps. First, take the ordinary least squares residuals u hat i. Second, regress the log of u hat i squared on the x variables, equation 8.32. Third, form h hat i as the exponential of the fitted values g hat i, equation 8.33. Fourth, run weighted least squares with weights one over h hat i. Step two is footnote 1 of slide 8.
+
+Why the log regression works. Under equation 8.30, u squared equals sigma squared times the exponential of delta zero plus delta one x one plus and so on, times v, where the expected value of v given x is one. Taking logs, the log of u squared equals alpha zero plus delta one x one plus and so on, plus an error e. That is equation 8.31. So the slopes are estimated consistently. The intercept absorbs the log of sigma squared plus the expected value of the log of v. For normal errors, v is chi-squared with one degree of freedom, and the expected value of its log is minus 1.27. That does not matter, because a constant factor in h cancels from weighted least squares.
+
+What ordinary least squares loses. For a fixed design and h equal to e to the alpha one x, the variance of the ordinary least squares estimator is the sandwich: sigma squared times the inverse of X transposed X, times X transposed Omega X, times the inverse of X transposed X. Compare it with equation 5.
+
+The efficiency figure. The left panel plots the ratio of the ordinary to the generalized least squares variance, for the intercept and for the slope, as alpha one grows from 0 to 2.5, on a log scale. It uses the exact variance ratio, with 100 normal-quantile design points standing in for x i standard normal as on slide 8. At alpha one equal to zero the ratio is one: ordinary least squares is generalized least squares. At the slide's alpha one equal to one, the ordinary least squares slope variance is 4.38 times the generalized least squares variance, and the curve climbs steeply after that, because e to the alpha one x makes a few large-x points carry almost all the noise. The right panel shows why: it plots the generalized least squares weights, one over h i, against x for alpha one equal to 0.5, 1 and 2. Generalized least squares gives those noisy points weights near zero; ordinary least squares gives them weight one.
+
+Robust standard errors fix the inference, not the efficiency. Ordinary least squares with heteroskedasticity-consistent standard errors, Wooldridge section 8.2, is valid whatever Omega is. Generalized or weighted least squares is better only if the variance model is right, Wooldridge section 8.4c, printed page 261. Example 8.6's weighted standard error is 40 per cent smaller under the assumption that h equals income.
+
+One point five. The US airline cost example. Slides 11 to 15.
+
+Greene's data: 6 airlines times 15 years, 1970 to 1984, 90 observations. The mean: log cost on log output, log fuel price and load factor. The variance: h equal to the exponential of alpha one plus alpha two times the load factor, LF.
+
+Starting values, slide 12. Ordinary least squares gives log cost equal to minus 10.7112 plus 1.1113 log output minus 0.5049 log fuel price plus 2.0197 load factor. The log squared residual regression gives minus 6.3723 plus 1.7032 load factor.
+
+Priors are normal with mean zero and variance ten to the fourth times the identity, for beta and for alpha. The sampler is random-walk Metropolis-Hastings with proposal variances 0.5 and 0.5, with a burn-in of 1000, a lag of 100, and 1000 kept draws, slide 13.
+
+The posterior, slide 14, read parameter by parameter: posterior mean, standard deviation, then the 2.5, 50 and 97.5 per cent quantiles.
+
+Beta one, the intercept: mean minus 10.733, standard deviation 0.211; quantiles minus 11.146, minus 10.730 and minus 10.317.
+
+Beta two, log output: mean 1.117, standard deviation 0.016; quantiles 1.086, 1.117 and 1.148.
+
+Beta three, log fuel price: mean minus 0.504, standard deviation 0.023; quantiles minus 0.549, minus 0.503 and minus 0.460.
+
+Beta four, load factor: mean 1.895, standard deviation 0.374; quantiles 1.178, 1.887 and 2.626.
+
+Alpha one: mean minus 3.968, standard deviation 0.157; quantiles minus 4.256, minus 3.964 and minus 3.667.
+
+Alpha two: mean 7.085, standard deviation 3.293; quantiles 0.572, 7.077 and 13.731.
+
+The reading. e to the alpha one, e to the minus 3.968, is 0.0189: the variance scale at a load factor of zero. Slide 15's histogram of e to the alpha one is centred near 0.02. The load factor ranges over about 0.4 to 0.7, slide 12. A rise of 0.1 multiplies the error variance by e to the 0.1 times 7.085, which is e to the 0.7085, which is 2.03. The 95 per cent interval of alpha two excludes zero, so heteroskedasticity in the load factor is supported. But it is wide, 0.57 to 13.7: the variance function is far less precisely learned than the mean. The betas barely move from ordinary least squares, as expected: heteroskedasticity changes precision, not location.
+
+The links. Class 1, section 6: ordinary least squares as maximum likelihood under spherical errors, the special case Omega equal to the identity. Class 2, section 3: the motorcycle noise is heteroskedastic, which shows in the pairs-bootstrap band against the formula band. Later: seemingly unrelated regression, GLM3 slides 31 and 32, is generalized least squares with Omega equal to the identity Kronecker Sigma; it returns in Class 9 and is used here only for the multinomial probit, in section 6, subsection 6.
+
+The practice, by number and printed page only. Wooldridge 12.C2, printed page 397, and 12.C10, printed page 399, are the autoregressive-error analogues, for section 3. Greenberg 8.5, printed page 132, is the Case II sampler of the next section. Case I has no assigned exercise: as a self-check, re-derive equations 11 and 12 for h equal to the square of z i transposed alpha.
+
+Spoken checklist for section 1. You should be able to show that P Omega P transposed equal to the identity makes the rotated errors spherical, in four steps, and derive beta hat GLS and its variance from ordinary least squares on P y and P X. You should be able to derive the inverse-gamma conditional for sigma squared and the normal conditional for beta with Omega inverse in place, and say what happens as the prior precision goes to zero. You should be able to write the weighted least squares transformed equation, say why the constant is divided too, and read Wooldridge's Example 8.6: 0.787 with standard error 0.063 against 0.821 with standard error 0.104, a ratio of 0.61. You should be able to write the log conditional of alpha for the exponential variance function, say why it needs a Metropolis-Hastings step, and say why sigma squared is fixed at one. You should be able to state the four steps of feasible generalized least squares and why the log regression estimates the slopes consistently. And you should be able to read the airline posterior: alpha two equal to 7.085, a rise of 0.1 in the load factor doubling the variance, a factor of 2.03.
+
+
+Part one, section 2. Student t errors: the t is a normal with a random variance, and that makes it Gibbs-friendly.
+
+This section covers GLM3 slides 16 to 21: Case II, with omega i inverse-gamma with parameters nu over two and nu over two; the prior of nu; the full conditionals; and the simulated example. It also covers Greenberg section 4.5, printed pages 50 to 52, on exchangeability, equations 4.8 and 4.9, and the marginalization to a t; section 4.6, printed pages 52 to 53, on a hierarchical nu; and section 8.1.2, printed pages 114 to 116, with equation 8.4, the Gibbs conditionals and the Vella and Verbeek results. The numbers are re-run in the Python checks, section 2.
+
+The claim, before the derivations. If epsilon i given omega i is normal with mean zero and variance sigma squared omega i, and omega i is inverse-gamma with parameters nu over two and nu over two, then marginally epsilon i is a t with nu degrees of freedom, location zero and scale sigma squared. The t is a scale mixture of normals. Keeping the omega i in the sampler turns a non-conjugate t regression into the heteroskedastic regression of section 1, with conjugate inverse-gamma omega i. Each observation gets the weight equal to the conditional expected value of omega i inverse, which is nu plus one over nu plus epsilon i squared over sigma squared. That weight is below one exactly when the absolute value of epsilon i exceeds sigma: outliers are downweighted automatically. The degrees of freedom nu get an exponential prior and a Metropolis step.
+
+The notation. Omega i, positive, is the observation-specific variance multiplier, slides 16 to 18; lambda i, equal to omega i inverse, is its precision, which Greenberg writes as lambda i in equation 8.4. Nu, positive, is the degrees of freedom; nu with a superscript zero, which the narration calls nu naught, is the prior mean of nu, slide 17; and sigma squared is the scale, not the variance. The inverse-gamma with parameters a and b has density b to the a over gamma of a, times w to the minus a minus one, times e to the minus b over w. The gamma with parameters a and b has density b to the a over gamma of a, times lambda to the a minus one, times e to the minus b lambda, so b is a rate. Omega is inverse-gamma with parameters a and b if and only if omega inverse is gamma with parameters a and b. The t with nu degrees of freedom, location zero and scale sigma squared has density proportional to one plus e squared over nu sigma squared, raised to the minus nu plus one over two; its variance is sigma squared times nu over nu minus two, for nu above two.
+
+Two point one. Fat tails as "some observations are noisier". The U layer.
+
+A Gaussian likelihood treats a residual of 5 sigma as nearly impossible: phi of 5 over phi of 0 is e to the minus 12.5. So ordinary least squares bends the line toward it. A t likelihood says such residuals happen. The mixture reading gives the mechanism: every observation draws its own variance, sigma squared omega i, and a few draw large ones. After seeing the data, an observation with a huge residual is inferred to have had a large omega i, and it counts little in the beta update. Greenberg, section 4.5, printed page 51, motivates the prior on omega i, his lambda i, by exchangeability: each lambda i belongs to observation i, but nothing tells us in advance which observations are the noisy ones, so they are drawn independently and identically from one distribution.
+
+Two point two. The scale-mixture identity. Slide 16; Greenberg printed page 52.
+
+The claim to prove: integrating the latent variance out of a normal gives a t. Three steps.
+
+Step one, the joint density of epsilon and omega given sigma squared, from the normal with variance sigma squared omega times the inverse-gamma with parameters nu over two and nu over two. Equation 1: f of epsilon and omega given sigma squared equals one over the square root of two pi sigma squared omega, times e to the minus epsilon squared over two sigma squared omega, times nu over two to the nu over two, over gamma of nu over two, times omega to the minus nu over two minus one, times e to the minus nu over two omega.
+
+Step two, collect the powers of omega and the exponents. Equation 2: f of epsilon and omega given sigma squared is proportional to omega to the minus nu plus one over two, minus one, times the exponential of minus one over omega times nu plus epsilon squared over sigma squared, all over two.
+
+As a function of omega, equation 2 is an inverse-gamma kernel with shape nu plus one over two and scale nu plus epsilon squared over sigma squared, over two.
+
+Step three, integrate over omega. The integral of an inverse-gamma kernel is gamma of a over b to the a, with a equal to nu plus one over two and b equal to nu plus epsilon squared over sigma squared, over two. So, equation 3: f of epsilon given sigma squared, the integral from zero to infinity of the joint density over omega, is proportional to nu plus epsilon squared over sigma squared, over two, raised to the minus nu plus one over two; which is proportional to one plus epsilon squared over nu sigma squared, raised to the minus nu plus one over two. That is the kernel of the t with nu degrees of freedom and scale sigma squared. End of proof. It was checked by quadrature at 20 pairs of nu and epsilon in the Python checks, section 2.
+
+Conditionally heteroskedastic, marginally homoskedastic, in Greenberg's words on printed page 52. The variance of epsilon i given omega i, sigma squared omega i, differs across i, but every epsilon i has the same marginal t distribution.
+
+The slip on slide 6. It writes Case II as "omega i inverse distributed inverse-gamma with parameters nu over two and nu over two". Slides 16 and 18, and Greenberg's lambda i distributed gamma with parameters nu over two and nu over two, use omega i inverse-gamma, that is, omega i inverse distributed gamma with parameters nu over two and nu over two: a gamma, not an inverse gamma. With omega i inverse distributed inverse-gamma, the marginal would not be a t.
+
+The scale-mixture figure. The left panel plots the densities of the standard normal and of t distributions with 2, 5, 10 and 25 degrees of freedom on a log scale from minus 6 to 6. On the log scale the normal is a parabola and the t's are much flatter. At an absolute residual of 6, the t with 5 degrees of freedom has density 6.9 times ten to the minus 4, against the normal's 6.1 times ten to the minus 9: about 110,000 times larger. The right panel plots the conditional mean of omega i inverse from equation 5 below, the weight observation i carries in the next beta draw, against the standardized residual, for the same values of nu, with the Gaussian weight constant at one. Every curve passes through one at an absolute standardized residual of one, since nu plus one over nu plus one is one; it exceeds one inside, and decays like nu over e squared outside. A 6 sigma residual gets the weight 3 over 38, which is 0.079, at nu equal to 2, and 26 over 61, which is 0.43, at nu equal to 25. Larger nu flattens the curve toward the Gaussian constant weight.
+
+Two point three. The full conditionals. Slide 18; Greenberg printed page 115.
+
+The model: y i equals x i transposed beta plus epsilon i; epsilon i given omega i is normal with mean zero and variance sigma squared omega i; and omega i is inverse-gamma with parameters nu over two and nu over two. The priors are as in section 1, beta normal and sigma squared inverse-gamma, plus a prior on nu.
+
+Omega i. Given everything else, only factor i of the likelihood and the prior of omega i involve it. With epsilon i equal to y i minus x i transposed beta, this is equation 2. So, equation 4: omega i given y, beta, sigma squared and nu is inverse-gamma with shape nu plus one over two and scale nu plus epsilon i squared over sigma squared, over two. Equivalently, lambda i is gamma with the same two parameters.
+
+The gamma mean, shape over rate, gives the weight. Equation 5: the conditional expected value of omega i inverse equals nu plus one over two, divided by nu plus epsilon i squared over sigma squared, over two; which is nu plus one over nu plus epsilon i squared over sigma squared.
+
+Beta and sigma squared. Given Omega diagonal with entries omega i, the model is Case I's: equations 7 and 8 of section 1 with that Omega. That is, V one inverse equals V zero inverse plus sigma to the minus two times the sum over i of x i x i transposed over omega i; V one inverse beta one equals V zero inverse beta zero plus sigma to the minus two times the sum over i of x i y i over omega i; and nu one s one squared equals nu zero s zero squared plus the sum over i of epsilon i squared over omega i. In Greenberg, printed page 115, delta one equals delta zero plus y minus X beta transposed, times capital Lambda, times y minus X beta.
+
+Nu. Only the priors of the omega i and the prior of nu involve nu. Multiply the n inverse-gamma densities. The product over i of nu over two to the nu over two, over gamma of nu over two, times omega i to the minus nu over two minus one, times e to the minus nu over two omega i, equals the bracket nu over two to the nu over two over gamma of nu over two, raised to the n, times the exponential of minus nu over two times the sum over i of log omega i plus omega i inverse, times the product over i of omega i inverse.
+
+With the exponential prior, p of nu proportional to e to the minus nu over nu naught, from subsection 4, and dropping the product of the omega i inverse, which is free of nu, we get equation 6: the conditional density of nu given the omegas is proportional to the bracket nu over two to the nu over two over gamma of nu over two, raised to the n, times the exponential of minus the bracket one over nu naught plus one half times the sum over i from one to n of log omega i plus omega i inverse, times nu, for nu positive.
+
+That is exactly slide 18. Equation 6 is no standard family, because nu sits inside a gamma function: nu needs a Metropolis-Hastings step. Greenberg, section 8.1.2, avoids it by fixing nu, equal to 5 in his example. Greenberg section 4.6, printed page 53, is the hierarchical version, with a prior on nu.
+
+Two point four. The prior of nu, and Geweke's warning. Slide 17.
+
+Nu is gamma with parameters one and one over nu naught, which is the exponential with mean nu naught, so the expected value of nu and its standard deviation both equal nu naught. With nu naught equal to 25: the probability that nu is at most 10 is one minus e to the minus 10 over 25, which is one minus 0.6703, which is 0.3297. The probability that nu is at least 40 is e to the minus 40 over 25, which is 0.2019.
+
+One third of the prior mass sits on fat tails, and one fifth on "practically normal": the t is close to the normal in its centre once nu is around 30 or more, Greenberg printed page 53. That is what "substantial prior on both" means on slide 17.
+
+Geweke, 1993, slide 17. With a flat prior on beta, the posterior mean of beta does not exist unless the prior probability that nu lies between zero and two is zero, and the posterior variance of beta does not exist unless the prior probability that nu lies between zero and four is zero. The t's own moments exist only for nu above one, for the mean, and above two, for the variance; under a flat prior on beta the posterior inherits that tail problem. Medians and quantiles still exist: report them, or use a proper prior on beta.
+
+Two point five. The simulated example, slides 19 to 21, and a re-run.
+
+The design, slide 19. n equal to 100; nu equal to 10; sigma squared equal to one; beta equal to 0.5, 1.0 and 2.0. Priors: beta zero equal to zero, V zero equal to 10 times the identity of size three, nu zero equal to 5, s zero squared equal to one, and nu naught equal to 25. The chain starts at ordinary least squares, at nu equal to 10, and at omega i equal to one. The random-walk proposal for nu is normal centred at the previous nu with standard deviation 0.25. Burn-in is 10,000, and every 100th draw is kept, up to M equal to 1000.
+
+What the slides show, slides 20 and 21. The beta and sigma squared chains mix well and cover the true values. The nu chain does not: its autocorrelation is still about 0.5 at lag 30 even after thinning by 100, and its histogram spreads over 5 to 60 around the true 10. Nu is weakly identified by 100 observations: only the few large residuals speak about the tails.
+
+The re-run, in the Python checks, section 2: the same design, with one observation shifted by plus 15 to create an outlier, 3,000 burn-in draws plus 20,000 draws, no thinning. Compare the three rows, intercept, beta one and beta two. The truth: 0.5, 1.0 and 2.0. Ordinary least squares: 0.54, 1.07 and 2.03. The t posterior mean: 0.43, 0.87 and 1.93.
+
+The posterior mean of nu is 3.8: the outlier drags the tails fatter than the true 10. The Metropolis-Hastings acceptance rate is 0.83, because a step of 0.25 is small for nu. The posterior mean weight of the outlier is 0.018, against a median weight of 1.06. Dropping the outlier moves the ordinary least squares intercept by more than twice what it moves the t posterior, and that is asserted. That is the robustness: the t fit ignores the outlier by itself, without anyone deleting it.
+
+Two point six. Greenberg's Vella and Verbeek comparison. Greenberg sections 8.1.1 and 8.1.2, printed pages 112 to 116.
+
+The union-membership coefficient, beta U, in a log-wage regression, under two error models. Gaussian errors: posterior mean of beta U 0.129, standard deviation 0.036, 95 per cent interval from 0.059 to 0.198; posterior mean of sigma squared 0.165; base-ten log marginal likelihood minus 152.78. Student t errors with nu equal to 5: posterior mean of beta U 0.128, standard deviation 0.033, 95 per cent interval from 0.062 to 0.192; posterior mean of sigma squared 0.105; base-ten log marginal likelihood minus 147.95.
+
+The coefficient hardly moves. Sigma squared does, and should. Under the t with 5 degrees of freedom the error variance is sigma squared times 5 over 3, which is 0.105 times 1.667, which is 0.175, close to the Gaussian 0.165: the two models describe about the same spread with different scale parameters. The base-ten log Bayes factor is minus 147.95 minus minus 152.78, which is 4.83, in favour of t errors, "strong evidence", Greenberg printed page 116. The t sampler's inefficiency factor is higher, 1.274 against 1.074, because the lambda i add autocorrelation.
+
+The links. The section 1 conditionals are reused in subsection 3. The Tobit and probit sections have t versions of the latent-data models, Greenberg exercises 8.6 and 8.7. Class 1, section 4: conjugate updating, the gamma-Poisson pattern that equation 4 repeats. Later, the same mixture gives Student t stochastic volatility in Class 8.
+
+The practice, by number and printed page only. Greenberg 8.3, printed page 132; Greenberg 8.5, printed page 132, the sampler of subsection 3; Greenberg 4.6, printed page 59, on the assumption behind subsection 1; and Greenberg 9.3, printed page 151, which belongs with the panel model of section 4.
+
+Spoken checklist for section 2. You should be able to derive the scale-mixture identity in three steps: write the joint density, recognise the inverse-gamma kernel in omega, and integrate it out to the t kernel. You should be able to say why slide 6's statement is a slip: a gamma, not an inverse gamma, for omega i inverse. You should be able to derive the conditional of omega i, its weight nu plus one over nu plus epsilon i squared over sigma squared, and say when it is below one. You should be able to write the beta and sigma squared conditionals as section 1's with Omega diagonal in the omegas, and derive the conditional of nu and say why it needs a Metropolis-Hastings step. You should be able to compute the prior probabilities 0.33 and 0.20 for the exponential with mean 25 and state Geweke's warning. And you should be able to read the Vella and Verbeek comparison: the coefficient barely moves, sigma squared moves from 0.165 to 0.105 because a scale is not a variance, 0.105 times 5 over 3 is 0.175, and the base-ten log Bayes factor is 4.83.
+
+
+Part one, section 3. First-order autoregressive errors: one parameter, rho, fills the whole n by n Omega, and generalized least squares is quasi-differencing.
+
+This section covers GLM3 slides 22 to 30: a parsimonious Omega with first-order autoregressive errors, the matrix Omega rho, the prior of rho, "a small sin", sampling from a truncated normal, and the simulated example. It also covers Wooldridge section 12.3, printed pages 381 to 386, equations 12.26 to 12.33, the feasible generalized least squares steps, and Example 12.4 with Table 12.1 on printed page 384; and Tsay section 2.9, printed pages 90 to 93, equations 2.43 to 2.46 and the interest-rate example. The numbers are re-run in the Python checks, section 3.
+
+The claim, before the derivations. First-order autoregressive errors, epsilon t equal to rho epsilon t minus one plus u t, give a correlation between epsilon t and epsilon t plus k equal to rho to the k: a full n by n covariance pinned down by one parameter. The inverse of Omega rho is tridiagonal, so generalized least squares is ordinary least squares on quasi-differenced data, y t minus rho y t minus one. Prais-Winsten keeps the first row, rescaled; Cochrane-Orcutt drops it. In the Gibbs sampler, beta and sigma squared keep the section 1 conditionals with Omega rho. Rho is drawn either by Metropolis-Hastings on its exact conditional or, after "a small sin", conditioning on the first error, exactly from a truncated normal, by the inverse-distribution-function formula of slide 26. How much ordinary least squares loses, and how wrong its standard errors are, depends on rho times the persistence of the regressor.
+
+The notation. y t equals x t transposed beta plus epsilon t, for t from one to n; epsilon t equals rho epsilon t minus one plus u t, with u t independent and identically normal with mean zero and variance sigma squared, and the absolute value of rho below one, slide 22. Wooldridge writes u t equal to rho u t minus one plus e t, equation 12.26, and sigma e squared for our sigma squared. Omega rho is the n by n matrix with entries rho to the absolute value of i minus j, over one minus rho squared, so the variance of epsilon is sigma squared Omega rho, slide 23. y tilde t, equal to y t minus rho y t minus one, and x tilde t, equal to x t minus rho x t minus one, are the quasi-differences, Wooldridge equation 12.29. Rho zero and V rho are the prior mean and variance of rho, truncated to the interval from minus one to one, slide 24. In subsection 3 only, x t is a stationary first-order autoregression with coefficient phi and variance sigma x squared.
+
+Three point one. The covariance of first-order autoregressive errors. Slide 22.
+
+Take variances in epsilon t equal to rho epsilon t minus one plus u t, with u t independent of epsilon t minus one, and with stationarity, so the variances of epsilon t and epsilon t minus one are both gamma zero. Then gamma zero equals rho squared gamma zero plus sigma squared, and so, equation 1: gamma zero equals sigma squared over one minus rho squared. That is Wooldridge's equation 12.27.
+
+Substitute the recursion k times: epsilon t plus k equals rho to the k times epsilon t, plus the sum, for j from zero to k minus one, of rho to the j times u t plus k minus j. The sum is independent of epsilon t. So, equation 2: the covariance of epsilon t and epsilon t plus k equals rho to the k times gamma zero, which is rho to the k times sigma squared over one minus rho squared; and the expected value of epsilon t is zero.
+
+Stacking equation 2 gives epsilon, given sigma squared and rho, normal with mean zero and variance sigma squared Omega rho, where the i j entry of Omega rho is rho to the absolute value of i minus j, over one minus rho squared, slide 23. And y given X, beta, sigma squared and rho is normal with mean X beta and variance sigma squared Omega rho: model 1 of section 1, with a one-parameter Omega. The full conditionals of beta and sigma squared are equations 7 and 8 of section 1, with Omega equal to Omega rho, slide 23.
+
+The autoregressive-errors figure. The left panel plots the autocorrelation, rho to the k, against the lag k, for rho equal to 0.3, 0.6, 0.9 and minus 0.6. That is the whole Omega: geometric decay, alternating in sign for negative rho. The right panel, on a log scale, plots the large-sample ratios of equations 10 and 11 of subsection 3, in their exact expressions, against rho from minus 0.95 to 0.95, for regressor persistence phi equal to 0, 0.5 and 0.9. Solid lines are the ratio of the ordinary to the generalized least squares variance; dashed lines are the ratio of the true to the naive ordinary least squares variance. With an independent regressor, phi equal to zero, the naive variance is right, the dashed line flat at one, yet ordinary least squares still loses to generalized least squares. With a persistent regressor, phi equal to 0.9, and positive rho, the naive formula understates the variance, by 9.5 times at rho equal to 0.9: standard errors too small by the square root of 9.53, which is 3.1.
+
+Three point two. Generalized least squares by quasi-differencing. Wooldridge section 12.3a, printed pages 382 to 383.
+
+The inverse of Omega rho is tridiagonal. The claim, equation 3: Omega rho inverse has first row one, minus rho, then zeros; each interior row has minus rho, one plus rho squared, minus rho, centred on the diagonal, with zeros elsewhere; and the last row ends in minus rho, one. So the diagonal is one, then one plus rho squared all the way down, then one in the last corner; the two off-diagonals are minus rho; and everything else is zero.
+
+It factors as Omega rho inverse equal to P transposed P, with the Prais-Winsten matrix P of equation 4. P has the square root of one minus rho squared in its top-left corner, ones on the rest of the diagonal, minus rho just below the diagonal, and zeros elsewhere.
+
+Check that equation 4 implies equation 3. Column j of P has one on the diagonal, or the square root of one minus rho squared for j equal to one, and minus rho just below. So the j j entry of P transposed P is one plus rho squared, for j strictly between one and n. The one one entry is one minus rho squared plus rho squared, which is one. The n n entry is one. And the j, j plus one entry is minus rho. End of proof. Both identities are asserted in the Python checks, section 3.
+
+P applied to the model. Row one of P y is the square root of one minus rho squared, times y one; row t, for t at least two, is y t minus rho y t minus one. So, equation 5: the square root of one minus rho squared times y one equals the square root of one minus rho squared times x one transposed beta, plus the square root of one minus rho squared times epsilon one. That is Wooldridge's equation 12.31. And equation 6: y t minus rho y t minus one equals x t minus rho x t minus one, transposed, times beta, plus u t, for t at least two. That is Wooldridge's equations 12.28 and 12.32.
+
+The errors are now white. u t equals epsilon t minus rho epsilon t minus one, for t at least two; and by equation 1, the variance of the square root of one minus rho squared times epsilon one is one minus rho squared times sigma squared over one minus rho squared, which is sigma squared. Ordinary least squares on equations 5 and 6 is the best linear unbiased estimator, Wooldridge printed page 383. With an intercept, the constant column becomes the square root of one minus rho squared in row one, and one minus rho in rows t at least two, Wooldridge equation 12.33.
+
+Feasible generalized least squares, Wooldridge section 12.3b, printed page 383. Three steps. First, the ordinary least squares residuals u hat t. Second, rho hat from regressing u hat t on u hat t minus one, Wooldridge equation 12.14. Third, ordinary least squares on equations 5 and 6 with rho hat. Prais-Winsten keeps equation 5; Cochrane-Orcutt drops it. Both are usually iterated until rho hat converges. Asymptotically they are the same; in a small sample, the first row can matter.
+
+Worked: Wooldridge's Example 12.4, Table 12.1, printed page 384, the BARIUM data, n equal to 131. Log Chinese barium imports on log chemical production, log gasoline production, the log exchange rate and three antidumping dummies. Reproduced exactly from the data in the Python checks, section 3; iterated Prais-Winsten converges in 11 steps. Compare ordinary least squares and Prais-Winsten, coefficient by coefficient.
+
+Log of chempi: ordinary least squares 3.12, standard error 0.48; Prais-Winsten 2.94, standard error 0.63.
+
+The dummy afdec6: ordinary least squares minus 0.565, standard error 0.286; Prais-Winsten minus 0.577, standard error 0.342.
+
+The intercept: ordinary least squares minus 17.80, standard error 21.05; Prais-Winsten minus 37.08, standard error 22.78.
+
+And rho hat, reported only for Prais-Winsten: 0.293.
+
+Every Prais-Winsten standard error is larger. Ordinary least squares ignores the positive serial correlation and understates sampling variation, Wooldridge printed page 384, and the t statistic of afdec6 falls to minus 0.577 over 0.342, which is minus 1.69. Iterated Cochrane-Orcutt gives rho hat equal to 0.293 and 2.95 for the log of chempi: close, as expected with 131 points.
+
+Tsay section 2.9, printed pages 90 to 93: the same issue in finance. Regressing the 3-year on the 1-year Treasury rate in levels gives r 3 t equal to 0.832 plus 0.930 r 1 t plus e t, with an R squared of 96.5 per cent, Tsay equation 2.44, but with unit-root-like residuals. In changes, c 3 t equal to 0.792 c 1 t plus e t, equation 2.45, still has serially correlated residuals, which Tsay models jointly as moving-average errors of order one, equation 2.46. In Tsay's words on printed page 90, this is "one of the most commonly misused econometric models because the serial dependence in e t is often overlooked".
+
+Three point three. How much ordinary least squares loses, in closed form. This subsection is part course and part G layer; the map lists equations 10 and 11 as proved but not examinable.
+
+A single demeaned regressor: x t is a first-order autoregression with coefficient phi and variance sigma x squared, independent of the errors. For ordinary least squares, beta hat minus beta equals the sum over t of x t epsilon t, divided by the sum over t of x t squared, and the sum of x t squared is approximately n sigma x squared.
+
+The numerator's variance, equation 7: the variance of the sum over t of x t epsilon t equals the double sum over s and t of the expected value of x s x t times the expected value of epsilon s epsilon t, which is the double sum over s and t of sigma x squared phi to the absolute value of s minus t, times gamma zero rho to the absolute value of s minus t.
+
+For large n, the double sum over s and t of rho phi to the absolute value of s minus t is approximately n times the bracket one plus twice the sum over k from one onward of rho phi to the k, which is n times one plus rho phi over one minus rho phi. Substitute into equation 7 and divide by n sigma x squared, squared. Equation 8: the variance of the ordinary least squares estimator is approximately gamma zero over n sigma x squared, times one plus rho phi over one minus rho phi.
+
+The naive formula, gamma zero hat over the sum of x t squared, which is approximately gamma zero over n sigma x squared, drops the last factor.
+
+Generalized least squares is ordinary least squares on equation 6. x tilde t, equal to x t minus rho x t minus one, has variance sigma x squared times one plus rho squared minus two rho phi, and the error u t has variance sigma squared, which is gamma zero times one minus rho squared by equation 1. So, equation 9: the variance of the generalized least squares estimator is approximately gamma zero times one minus rho squared, over n sigma x squared times one plus rho squared minus two rho phi.
+
+Divide equation 8 by the naive formula, and equation 8 by equation 9. Equation 10: the true ordinary least squares variance over the naive ordinary least squares variance equals one plus rho phi over one minus rho phi. Equation 11: the ordinary least squares variance over the generalized least squares variance equals one plus rho phi over one minus rho phi, times one plus rho squared minus two rho phi over one minus rho squared.
+
+The numbers at rho equal to 0.9. With phi equal to 0.9, equation 10 is 1.81 over 0.19, which is 9.53. With phi equal to zero, equation 10 is one, but equation 11 is one plus 0.81 over one minus 0.81, which is 9.53. Both are asserted in the figure script. The reading: the bias of the usual standard error comes from the product rho phi, with both series persistent in the same direction, the typical macro case; and the efficiency loss exists even when the standard error is right.
+
+Three point four. The conditional of rho. Slides 24 to 26.
+
+Exact, slide 24. With the prior rho normal with mean rho zero and variance V rho, truncated to the interval from minus one to one, and with epsilon equal to y minus X beta: equation 12, the conditional density of rho given epsilon and sigma squared is proportional to the determinant of Omega rho to the minus one half, times the exponential of minus one over two sigma squared times epsilon transposed Omega rho inverse epsilon, times the exponential of minus rho minus rho zero, squared, over two V rho, times the indicator that the absolute value of rho is below one.
+
+The slip on slide 24: its exponent reads minus 0.5 times epsilon transposed Omega rho inverse epsilon, without the sigma to the minus two. The factor is needed, since the variance of epsilon is sigma squared Omega rho. The prior term is written there as rho squared minus two rho rho zero, which is the same up to a constant. Because the determinant of Omega rho is one over one minus rho squared, and equation 3 is quadratic in rho except for its corners, equation 12 is not a standard density: it needs a Metropolis-Hastings step.
+
+"A small sin", slide 25. Treat epsilon one as given, and drop its factor. Then the likelihood is that of the regression epsilon t equal to rho epsilon t minus one plus u t, for t from two to n. Write epsilon tilde for the vector epsilon one up to epsilon n minus one, and epsilon for the vector epsilon two up to epsilon n. The exponent in rho is minus one half times the bracket of epsilon minus rho epsilon tilde, transposed, times epsilon minus rho epsilon tilde, over sigma squared, plus rho minus rho zero, squared, over V rho. Expanded, it is minus one half times the bracket of rho squared times epsilon tilde transposed epsilon tilde over sigma squared plus one over V rho, minus two rho times epsilon tilde transposed epsilon over sigma squared plus rho zero over V rho; plus a constant.
+
+That is a normal kernel restricted to the interval from minus one to one. Equation 13: rho given y, X, beta and sigma squared is normal truncated to the interval from minus one to one, with mean rho one and variance V rho bar, where V rho bar is the inverse of V rho inverse plus sigma to the minus two times epsilon tilde transposed epsilon tilde, and rho one is V rho bar times the sum of V rho inverse rho zero and sigma to the minus two epsilon tilde transposed epsilon.
+
+The "sin" costs one observation's information out of n. It is Wooldridge's Cochrane-Orcutt choice, now in a Bayesian sampler.
+
+Drawing from a normal with mean mu and variance sigma squared truncated to the interval from a to b, slide 26. For y in that interval the distribution function is, equation 14: u, the probability that Y is at most y, equals capital Phi of y minus mu over sigma, minus A, all over B minus A; where A is capital Phi of a minus mu over sigma, and B is capital Phi of b minus mu over sigma.
+
+Solve equation 14 for y. Equation 15: y equals mu plus sigma times capital Phi inverse of u B plus one minus u times A, with u uniform on zero to one.
+
+Equation 15 is exact; it is the inverse-distribution-function method. The Python checks, section 3, confirm that it equals scipy's truncated-normal quantile function on 999 quantiles. One practical caveat: if the interval lies deep in the upper tail, A and B both round to one. Then reflect, sending y to minus y, and work in the lower tail. The truncated-normal helper in the Python file does this, and it is the sampler reused by the Tobit and probit sections.
+
+Three point five. The simulated example, slides 27 to 30, and a re-run.
+
+The design, slide 27. n equal to 200; rho equal to 0.9; sigma squared equal to one; beta equal to 2.0 and 4.0 on two regressors. Priors: beta zero equal to zero, V zero equal to 100 times the identity of size two, nu zero equal to 5, s zero squared equal to one, rho zero equal to 0.9, and V rho equal to 100. The chain starts at generalized least squares: beta hat equal to 1.94 and 3.93, sigma squared hat equal to 1.12, and rho hat equal to 0.94. Burn-in is 1000, and 2000 draws are kept. Slides 29 and 30 show chains for beta one, beta two and sigma squared that mix quickly; the posterior of rho sits between 0.85 and 1.00.
+
+The re-run, in the Python checks, section 3: beta and sigma squared from the exact Omega conditionals using equation 3, rho from equation 13 drawn by equation 15, with 1,000 burn-in draws plus 5,000 draws. The posterior means are beta equal to 1.97 and 4.06, sigma squared equal to 1.03, and rho equal to 0.871. No Metropolis-Hastings is needed anywhere: the small sin buys an exact Gibbs step.
+
+The links. The truncated-normal draw of equation 15 comes back in the Tobit section. Class 1, section 7: the first-order autoregression, stationarity with the absolute value of phi below one, the equilibrium variance of equation 1, and ordinary least squares as conditional maximum likelihood, the same "drop the first observation" choice as equation 13. Class 8 treats autoregressive and moving-average errors and model building in their own right.
+
+The practice, by number and printed page only. Wooldridge 12.C2, printed page 397, with the WAGEPRC data; and Wooldridge 12.C10, printed page 399, with the PHILLIPS data.
+
+Spoken checklist for section 3. You should be able to derive gamma zero equal to sigma squared over one minus rho squared and the covariance rho to the k times gamma zero, and write the entries of Omega rho. You should be able to write the tridiagonal inverse, show that the Prais-Winsten matrix P gives P transposed P equal to it, and write the transformed first row and the quasi-differenced rows, including what happens to the intercept column. You should be able to state the three feasible steps and the difference between Prais-Winsten and Cochrane-Orcutt, and read the barium table: 2.94 with standard error 0.63 against 3.12 with standard error 0.48, rho hat 0.293, and a t statistic of minus 1.69 for afdec6. You should be able to say, from equations 10 and 11, that the standard-error bias is driven by the product rho phi and that the efficiency loss remains when phi is zero: 9.53 in both cases at 0.9. And you should be able to write the exact conditional of rho, say why it needs Metropolis-Hastings, derive the truncated-normal conditional after the small sin, and derive the inverse-distribution-function draw.
+
+Recap of part 1. Every model in part one of the notes is the normal regression with a non-spherical Omega, and the same conditional for beta and sigma squared runs with Omega inverse in place of the identity. A known Omega is a rotation: generalized least squares is ordinary least squares on P y and P X, and a diagonal Omega is weighted least squares, 0.787 with standard error 0.063 against 0.821 with standard error 0.104 in Wooldridge's Example 8.6. A variance function costs one Metropolis-Hastings step for alpha; ignoring it costs ordinary least squares a factor of 4.38 at alpha one equal to one, and on the airline data a rise of 0.1 in the load factor doubles the variance. Student t errors are a scale mixture of normals: with latent variances in the sampler, the conditionals are conjugate, each observation carries the weight nu plus one over nu plus its squared standardized residual, an outlier falls to 0.018, and nu needs its own Metropolis step under an exponential prior with mean 25. First-order autoregressive errors fill Omega with rho to the k, its inverse is tridiagonal, Prais-Winsten quasi-differences the data, barium gives 2.94 with standard error 0.63 and rho hat 0.293, the naive standard errors are wrong by one plus rho phi over one minus rho phi, and a small sin makes rho an exact truncated-normal draw. Part 2 moves to hierarchical models and limited dependent variables.
+

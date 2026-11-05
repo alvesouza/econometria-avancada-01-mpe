@@ -1,0 +1,1555 @@
+% =============================================================================
+% L05 (Classes 5+6) --- textbook exercises with solutions. Built from the MPE list template
+% (~/.claude/commands/templates/lista-exam.tex).
+%
+% TWO MODES (one source file):
+%   \solucoesfalse  -> blank LIST (space to solve)
+%   \solucoestrue   -> ANSWER KEY (same file)
+%
+% Compile (copyable PDF, global lmodern+cmap rule):
+%   pdflatex lista-L05-book-exercises.tex  (run 2x) ; check: pdffonts ... (all Type 1)
+% Numbers: python Listas/L05-book-exercises-check.py reproduces and asserts every number.
+% =============================================================================
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}   % Type 1 vector fonts (replaces PK bitmaps)
+\usepackage{cmap}      % ToUnicode CMap -> copyable text and accents
+\usepackage[english]{babel}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage[a4paper,margin=2.2cm]{geometry}
+\usepackage{enumitem}
+\usepackage{fancyhdr}
+\usepackage{comment}
+% One cut file per job: parallel builds in one folder would otherwise share comment.cut and
+% swap solutions. Redefine DefaultCutFileName; overriding CommentCutFile alone is reset by comment.sty.
+\def\DefaultCutFileName{\def\CommentCutFile{\jobname.cut}}
+\usepackage{needspace}
+\usepackage{xcolor}
+\usepackage{microtype}
+\usepackage{booktabs}
+\usepackage{graphicx}
+
+% ====================== CONFIGURATION ======================
+\newif\ifsolucoes
+\solucoesfalse                 % <<<< \solucoestrue for the ANSWER KEY; \solucoesfalse for the LIST
+
+\newcommand{\disciplina}{Econometria Avançada --- MPE (Insper)}
+\newcommand{\listatema}{L05 --- Introduction to causal inference (Classes 5+6): textbook exercises}
+\newcommand{\espacoresol}{4.5cm}   % height of the solving space in the blank list
+
+% ====================== MACHINERY ======================
+\ifsolucoes\includecomment{sol}\else\excludecomment{sol}\fi
+
+\pagestyle{fancy}\fancyhf{}
+\lhead{\footnotesize\disciplina}
+\rhead{\footnotesize List L05\ifsolucoes{} --- Solutions\fi}
+\cfoot{\footnotesize\thepage}
+\renewcommand{\headrulewidth}{0.3pt}
+\setlength{\headheight}{14pt}
+
+\setlist{topsep=2pt,itemsep=2pt}
+\newcounter{questao}
+% Equations are numbered per question, (Q<question>.<n>), so they never collide with the
+% books' own numbers, which keep their printed tags, e.g. (11.4) or (13.9).
+\renewcommand{\theequation}{Q\thequestao.\arabic{equation}}
+
+% Block header
+\newcommand{\bloco}[3]{\bigskip\noindent
+  {\large\bfseries\color{blue!55!black}Block #1 --- #2}\hfill\textit{(#3)}\par
+  \noindent\rule{\linewidth}{0.3pt}\smallskip}
+
+% Question (automatic numbering; resets the equation counter)
+\newcommand{\questao}[1]{\refstepcounter{questao}\setcounter{equation}{0}\medskip\needspace{5\baselineskip}\noindent
+  \textbf{Question \thequestao.}~#1\par}
+% Source line that opens every question (estilo-avaliacao §5, book questions)
+\newcommand{\fonte}[1]{\par\noindent{\small\textit{Source:} #1}\par\smallskip}
+
+% Notation list that opens every solution (estilo-avaliacao §4, "Equations, notation and layout").
+\newenvironment{notacao}{\par\smallskip\noindent\textbf{Notation.}\begin{itemize}[leftmargin=1.4em,topsep=1pt,itemsep=0pt]\small}{\end{itemize}}
+\allowdisplaybreaks
+
+% Solving space in the blank list
+\newcommand{\resolespaco}{\ifsolucoes\else\par\textit{Solution:}\vspace{\espacoresol}\par\fi}
+
+% Solution step (use inside sol)
+\newcommand{\passo}[2]{\par\smallskip\noindent\textbf{Step --- #1.}~#2}
+\newcommand{\intuicao}[1]{\par\smallskip\noindent\textit{Intuition.}~#1}
+\newcommand{\refbib}[1]{\par\smallskip\noindent{\footnotesize\color{black!60}\textbf{Ref:} #1}}
+
+% =============================================================================
+\begin{document}
+\begin{center}
+  {\Large\bfseries \disciplina}\\[2pt]
+  {\large Exercise list: \listatema}\ifsolucoes\\[2pt]\textit{Solutions}\fi
+\end{center}
+\vspace{2pt}
+
+{\footnotesize\noindent\textbf{Instructions.} These are the \emph{Practice} items of Classes 5+6 in
+\texttt{Map/class-plan.md}. Every question opens with a source line. Book statements (Wooldridge,
+Greenberg) are reproduced verbatim from the book PDF. \emph{Mostly Harmless Econometrics} has no
+end-of-chapter exercises: for each of its worked examples the table is reproduced verbatim and the
+question is original. Computer exercises are solved in Python (\texttt{statsmodels},
+\texttt{linearmodels}); \texttt{Listas/L05-book-exercises-check.py} reproduces and asserts every number
+in the solutions. Show your steps.\par}
+
+% =============================================================================
+\bloco{1}{MHE worked examples}{MHE Ch.~2--6 \,\textbullet\, Questions 1--6}
+
+% ---------------------------------------------------------------- Q1
+\questao{The STAR experiment: balance, selection bias and covariates (MHE Tables 2.2.1--2.2.2).}
+\fonte{Angrist and Pischke (2008), \textit{Mostly Harmless Econometrics: An Empiricist's Companion},
+\S2.2, Tables 2.2.1 and 2.2.2, printed pp.~14--15. The source has no exercise; the statement is
+original. The table numbers are reproduced verbatim from the PDF (table notes shortened).}
+
+\begin{center}\small
+\textit{Table 2.2.1: Comparison of treatment and control characteristics in the Tennessee STAR experiment}\\[2pt]
+\begin{tabular}{llrrrr}
+\toprule
+\multicolumn{6}{c}{Students who entered STAR in kindergarten}\\
+& Variable & Small & Regular & Regular/Aide & Joint $P$-value\\
+\midrule
+1. & Free lunch & .47 & .48 & .50 & .09\\
+2. & White/Asian & .68 & .67 & .66 & .26\\
+3. & Age in 1985 & 5.44 & 5.43 & 5.42 & .32\\
+4. & Attrition rate & .49 & .52 & .53 & .02\\
+5. & Class size in kindergarten & 15.10 & 22.40 & 22.80 & .00\\
+6. & Percentile score in kindergarten & 54.70 & 48.90 & 50.00 & .00\\
+\bottomrule
+\end{tabular}\\[2pt]
+\parbox{0.9\linewidth}{\footnotesize Notes (excerpt): ``Adapted from Krueger (1999), Table 1. The table shows
+means of variables by treatment status. The $P$-value in the last column is for the $F$-test of
+equality of variable means across all three groups.''}
+
+\medskip
+\textit{Table 2.2.2: Experimental estimates of the effect of class-size assignment on test scores}\\[2pt]
+\begin{tabular}{lcccc}
+\toprule
+Explanatory variable & (1) & (2) & (3) & (4)\\
+\midrule
+Small class & 4.82 & 5.37 & 5.36 & 5.37\\
+ & (2.19) & (1.26) & (1.21) & (1.19)\\
+Regular/aide class & .12 & .29 & .53 & .31\\
+ & (2.23) & (1.13) & (1.09) & (1.07)\\
+White/Asian (1 = yes) & -- & -- & 8.35 & 8.44\\
+ & & & (1.35) & (1.36)\\
+Girl (1 = yes) & -- & -- & 4.48 & 4.39\\
+ & & & (.63) & (.63)\\
+Free lunch (1 = yes) & -- & -- & -13.15 & -13.07\\
+ & & & (.77) & (.77)\\
+White teacher & -- & -- & -- & -.57\\
+ & & & & (2.10)\\
+Teacher experience & -- & -- & -- & .26\\
+ & & & & (.10)\\
+Master's degree & -- & -- & -- & -0.51\\
+ & & & & (1.06)\\
+School fixed effects & No & Yes & Yes & Yes\\
+R$^2$ & .01 & .25 & .31 & .31\\
+\bottomrule
+\end{tabular}\\[2pt]
+\parbox{0.9\linewidth}{\footnotesize Note (excerpt): ``The dependent variable is the Stanford Achievement Test
+percentile score. Robust standard errors that allow for correlated residuals within classes are shown
+in parentheses. The sample size is 5681.''}
+\end{center}
+
+\begin{enumerate}[label=(\alph*)]
+\item What null hypothesis does the ``Joint $P$-value'' column test? Using rows 1--3 of Table 2.2.1,
+did randomization balance the groups at the 5\% level? Why should rows 4--6 not be read as balance checks?
+\item Write the observed difference in mean scores between small and regular classes as the effect on
+the treated plus selection bias, and explain why random assignment makes the coefficient on
+\emph{Small class} an estimate of the average causal effect.
+\item Using column (1) of Table 2.2.2, compute the $t$ statistic and a 95\% confidence interval for the
+small-class effect; repeat with column (4). Is the regular/aide effect in column (1) significant?
+\item From column (2) to column (3) the small-class coefficient barely moves while its standard error
+falls from 1.26 to 1.21. Explain both facts, and show that the fall in the standard error is about what
+the rise in $R^2$ from .25 to .31 predicts.
+\item The text says the effect is about $.2\sigma$, where $\sigma$ is the standard deviation of the
+kindergarten percentile score. What $\sigma$ does column (4) imply? Is it plausible for a percentile scale?
+\end{enumerate}
+\resolespaco
+\begin{sol}
+\begin{notacao}
+\item $Y_i$: percentile score of pupil $i$ (0--100); $D_i\in\{0,1\}$: assigned to a small class;
+$Y_{1i},Y_{0i}$: potential scores with and without a small class.
+\item $\hat\rho$: estimated coefficient on \emph{Small class}; $\widehat{se}$: its standard error;
+$t=\hat\rho/\widehat{se}$; $X_i$: covariates (race, sex, free lunch, teacher traits).
+\item $R^2_k$: $R^2$ of column $k$; $\sigma$: standard deviation of the percentile score ($\sigma>0$).
+\end{notacao}
+
+\passo{(a) balance}{For each variable the test is $H_0:\mu_{\text{small}}=\mu_{\text{regular}}=\mu_{\text{aide}}$
+(equal group means). Rows 1--3 have $p=.09,.26,.32$, all above .05, so equality is not rejected: the
+pre-assignment traits are balanced, as random assignment predicts. Rows 4--6 are measured \emph{after}
+assignment, so they are outcomes of the treatment: row 5 (15.10 against 22.40) shows the experiment
+created the class-size gap (the ``first stage''), row 6 is the effect itself, and row 4 ($p=.02$) flags
+differential attrition, a threat for later grades but not for kindergarten scores.}
+
+\passo{(b) selection bias}{Write $Y_i=Y_{0i}+(Y_{1i}-Y_{0i})D_i$, so the observed difference in means is
+\begin{equation}
+E[Y_i\mid D_i=1]-E[Y_i\mid D_i=0]=E[Y_{1i}\mid D_i=1]-E[Y_{0i}\mid D_i=0].\label{q1:obs}
+\end{equation}
+Adding and subtracting $E[Y_{0i}\mid D_i=1]$ in \eqref{q1:obs} gives
+\begin{equation}
+E[Y_i\mid D_i=1]-E[Y_i\mid D_i=0]=\underbrace{E[Y_{1i}-Y_{0i}\mid D_i=1]}_{\text{effect on the treated}}
++\underbrace{E[Y_{0i}\mid D_i=1]-E[Y_{0i}\mid D_i=0]}_{\text{selection bias}}.\label{q1:dec}
+\end{equation}
+Random assignment makes $D_i$ independent of $(Y_{0i},Y_{1i})$:
+\begin{equation}
+E[Y_{0i}\mid D_i=1]=E[Y_{0i}\mid D_i=0],\qquad E[Y_{1i}-Y_{0i}\mid D_i=1]=E[Y_{1i}-Y_{0i}].\label{q1:ind}
+\end{equation}
+Substituting \eqref{q1:ind} into \eqref{q1:dec}, the selection-bias term is $(0)$ and the first term is
+the average treatment effect. A regression of $Y_i$ on a treatment dummy returns exactly the difference in
+group means, so $\hat\rho$ in column (1) estimates the average causal effect of a small class (relative to
+a regular class with a part-time aide).}
+
+\passo{(c) inference}{With $t=\hat\rho/\widehat{se}$ and the interval $\hat\rho\pm1.96\,\widehat{se}$,
+column (1) gives
+\begin{align}
+t&=\frac{(4.82)}{(2.19)}=2.2009,\label{q1:t1}\\
+\hat\rho\pm1.96\,\widehat{se}&=(4.82)\pm(1.96)(2.19)=4.82\pm4.2924=[0.5276,\;9.1124].\label{q1:ci1}
+\end{align}
+Column (4) gives
+\begin{align}
+t&=\frac{(5.37)}{(1.19)}=4.5126,\label{q1:t4}\\
+\hat\rho\pm1.96\,\widehat{se}&=(5.37)\pm(1.96)(1.19)=5.37\pm2.3324=[3.0376,\;7.7024].\label{q1:ci4}
+\end{align}
+Both exceed 1.96, so the small-class effect is significant. The regular/aide coefficient has
+$t=(.12)/(2.23)=0.0538$: no evidence that an aide matters.}
+
+\passo{(d) covariates}{Let $X_i$ be the added covariates and $\pi$ the slope of $X_i$ on $D_i$. By the
+omitted-variables formula (MHE \S3.2.2, pp.~44--47),
+\begin{equation}
+\rho^{\text{short}}=\rho^{\text{long}}+\gamma'\pi,\label{q1:ovb}
+\end{equation}
+where $\gamma$ is the effect of $X_i$ on $Y_i$. Randomization makes $\pi\approx0$, so by \eqref{q1:ovb}
+the coefficient barely changes (5.37 against 5.36). The covariates do explain scores, which lowers the
+residual variance. With homoskedastic errors,
+\begin{equation}
+\widehat{se}(\hat\rho)\approx\sqrt{\frac{(1-R^2)\,V(Y_i)}{n\,V(\tilde D_i)}},\label{q1:se}
+\end{equation}
+where $\tilde D_i$ is the residual of $D_i$ on the other regressors; since $D_i$ is unrelated to $X_i$,
+$V(\tilde D_i)$ is unchanged. Dividing \eqref{q1:se} for column (3) by \eqref{q1:se} for column (2):
+\begin{align}
+\frac{\widehat{se}_3}{\widehat{se}_2}&\approx\sqrt{\frac{1-R^2_3}{1-R^2_2}}=\sqrt{\frac{1-(.31)}{1-(.25)}}=\sqrt{\frac{0.69}{0.75}}=0.95917,\label{q1:ratio}\\
+\widehat{se}_3&\approx(1.26)(0.95917)=1.20855,\label{q1:se3}
+\end{align}
+which rounds to the reported 1.21. (The table's clustered standard errors make \eqref{q1:se} an approximation.)}
+
+\passo{(e) effect size}{Setting $.2\sigma$ equal to the column (4) estimate,
+\begin{equation}
+\sigma=\frac{(5.37)}{(0.2)}=26.85.\label{q1:sigma}
+\end{equation}
+A percentile rank spread evenly over $[0,100]$ has standard deviation $100/\sqrt{12}=28.8675$, so 26.85 is
+plausible. The raw gap in Table 2.2.1, row 6, is $(54.70)-(48.90)=5.80$, close to the regression estimates.}
+
+\intuicao{Randomization removes selection bias, so the simple comparison is already causal; covariates
+buy precision, not identification. If adding controls had moved $\hat\rho$ a lot, that would have been a
+sign the randomization failed.}
+\refbib{MHE \S2.1--2.3 (pp.~10--18), selection bias and regression analysis of experiments; \S3.2.2 (pp.~44--47), OVB formula.}
+\end{sol}
+
+% ---------------------------------------------------------------- Q2
+\questao{Returns to schooling and omitted-variables bias (MHE Table 3.2.1).}
+\fonte{Angrist and Pischke (2008), \textit{Mostly Harmless Econometrics}, \S3.2.2, Table 3.2.1, printed
+p.~62. The source has no exercise; the statement is original. Table reproduced verbatim from the PDF.}
+
+\begin{center}\small
+\textit{Table 3.2.1: Estimates of the returns to education for men in the NLSY}\\[2pt]
+\begin{tabular}{lccccc}
+\toprule
+ & (1) & (2) & (3) & (4) & (5)\\
+\midrule
+Controls: & None & Age & Col.~(2) and & Col.~(3) and & Col.~(4), with\\
+ & & dummies & additional & AFQT score & occupation\\
+ & & & controls* & & dummies\\
+\midrule
+ & 0.132 & 0.131 & 0.114 & 0.087 & 0.066\\
+ & (0.007) & (0.007) & (0.007) & (0.009) & (0.010)\\
+\bottomrule
+\end{tabular}\\[2pt]
+\parbox{0.9\linewidth}{\footnotesize Notes: ``Data are from the National Longitudinal Survey of Youth (1979
+cohort, 2002 survey). The table reports the coefficient on years of schooling in a regression of log wages
+on years of schooling and the indicated controls. Standard errors are shown in parentheses. The sample is
+restricted to men and weighted by NLSY sampling weights. The sample size is 2434.
+*Additional controls are mother's and father's years of schooling and dummy variables for race and Census region.''}
+\end{center}
+
+\begin{enumerate}[label=(\alph*)]
+\item Write the long regression of log wages on schooling, the column (3) controls and AFQT, and the
+auxiliary regression of AFQT on schooling and the same controls. Derive the omitted-variables-bias
+(OVB) formula that links the schooling coefficients in columns (3) and (4).
+\item Compute the change in the schooling coefficient attributable to AFQT, and to the family-background
+controls (column (2) to column (3)). What do the signs say about the correlations involved?
+\item Suppose the auxiliary regression of AFQT (in standard-deviation units) on schooling, with the column
+(3) controls, had slope 0.15 (a hypothetical value, not in the book). What effect of one standard deviation
+of AFQT on log wages does the OVB formula then imply?
+\item Column (5) is half of column (1). Why is column (5) \emph{not} the most credible estimate of the
+return to schooling?
+\item Give a 95\% confidence interval for the return to schooling in column (4).
+\end{enumerate}
+\resolespaco
+\begin{sol}
+\begin{notacao}
+\item $Y_i$: log wage; $S_i$: years of schooling; $A_i$: AFQT score (standard-deviation units);
+$X_i$: the column (3) controls.
+\item $\rho$: schooling coefficient in the long regression (with $A_i$); $\rho^s$: in the short one
+(without $A_i$); $\gamma$: AFQT coefficient; $\delta_{AS}$: slope of $A_i$ on $S_i$ given $X_i$.
+\end{notacao}
+
+\passo{(a) OVB formula}{The long, auxiliary and short regressions are
+\begin{align}
+Y_i&=\alpha+\rho S_i+X_i'\beta+\gamma A_i+e_i,\label{q2:long}\\
+A_i&=\delta_0+\delta_{AS}S_i+X_i'\pi+v_i,\label{q2:aux}\\
+Y_i&=\alpha^s+\rho^sS_i+X_i'\beta^s+e^s_i.\label{q2:short}
+\end{align}
+Substituting \eqref{q2:aux} into \eqref{q2:long}:
+\begin{equation}
+Y_i=\alpha+\rho S_i+X_i'\beta+\gamma\left(\delta_0+\delta_{AS}S_i+X_i'\pi+v_i\right)+e_i.\label{q2:sub}
+\end{equation}
+Collecting terms in \eqref{q2:sub}:
+\begin{equation}
+Y_i=(\alpha+\gamma\delta_0)+(\rho+\gamma\delta_{AS})S_i+X_i'(\beta+\gamma\pi)+(\gamma v_i+e_i).\label{q2:coll}
+\end{equation}
+The error $\gamma v_i+e_i$ is uncorrelated with $S_i$ and $X_i$ ($v_i$ is an OLS residual, $e_i$ is the
+long-regression residual), so \eqref{q2:coll} is the short regression \eqref{q2:short} and
+\begin{equation}
+\rho^s=\rho+\gamma\,\delta_{AS}.\label{q2:ovb}
+\end{equation}}
+
+\passo{(b) the numbers}{Column (3) is the short regression and column (4) the long one. From \eqref{q2:ovb}:
+\begin{equation}
+\gamma\,\delta_{AS}=\rho^s-\rho=(0.114)-(0.087)=0.027.\label{q2:biasA}
+\end{equation}
+The bias is positive, so $\gamma$ and $\delta_{AS}$ have the same sign: AFQT is positively related to both
+wages and schooling. The family-background block lowers the coefficient by $(0.131)-(0.114)=0.017$, again
+positive: parents' schooling raises both the son's schooling and his wage.}
+
+\passo{(c) implied AFQT effect}{Solving \eqref{q2:biasA} for $\gamma$ with $\delta_{AS}=0.15$:
+\begin{equation}
+\gamma=\frac{0.027}{\delta_{AS}}=\frac{0.027}{(0.15)}=0.18,\label{q2:gamma}
+\end{equation}
+i.e.\ one standard deviation of AFQT would raise wages by about 18 log points, holding schooling fixed.}
+
+\passo{(d) bad control}{Occupation is itself an outcome of schooling. Conditioning on it compares men
+within occupations, which (i) removes a channel through which schooling raises wages and (ii) creates
+selection bias, because the men with low schooling who reach a given occupation differ in unobservables
+from those with high schooling in the same occupation. Column (5), $0.066/0.132=0.50$ of column (1), mixes
+these two effects and has no causal interpretation. Column (4) is preferred, keeping in mind that AFQT may
+itself be partly affected by schooling (a ``proxy control'').}
+
+\passo{(e) interval}{Column (4): $(0.087)\pm(1.96)(0.009)=0.087\pm0.01764=[0.06936,\;0.10464]$.}
+
+\intuicao{Each block of controls lowers the coefficient because each omitted factor is positively
+correlated with both schooling and wages. The OVB formula tells you the direction of the bias before you
+run anything; the bad-control argument tells you where to stop adding controls.}
+\refbib{MHE \S3.2.2 (pp.~44--47), OVB formula; \S3.2.3 (pp.~47--50), bad control; W \S3.3, omitted-variable bias.}
+\end{sol}
+
+% ---------------------------------------------------------------- Q3
+\questao{Wald and 2SLS estimates: quarter of birth and the draft lottery (MHE Tables 4.1.1--4.1.3).}
+\fonte{Angrist and Pischke (2008), \textit{Mostly Harmless Econometrics}, \S4.1, Tables 4.1.1, 4.1.2 and
+4.1.3, printed pp.~92, 96 and 97. The source has no exercise; the statement is original. Table numbers
+reproduced verbatim from the PDF (notes shortened).}
+
+\begin{center}\small
+\textit{Table 4.1.1: 2SLS estimates of the economic returns to schooling}\\[2pt]
+\resizebox{\linewidth}{!}{%
+\begin{tabular}{lcccccccc}
+\toprule
+ & \multicolumn{2}{c}{OLS} & \multicolumn{6}{c}{2SLS}\\
+\cmidrule(lr){2-3}\cmidrule(lr){4-9}
+ & (1) & (2) & (3) & (4) & (5) & (6) & (7) & (8)\\
+\midrule
+Years of education & 0.075 & 0.072 & 0.103 & 0.112 & 0.106 & 0.108 & 0.089 & 0.061\\
+ & (0.0004) & (0.0004) & (0.024) & (0.021) & (0.026) & (0.019) & (0.016) & (0.031)\\[3pt]
+\textit{Covariates:} & & & & & & & & \\
+Age (in quarters) & & & & & & & & $\checkmark$\\
+Age (in quarters) squared & & & & & & & & $\checkmark$\\
+9 year of birth dummies & & $\checkmark$ & & & $\checkmark$ & $\checkmark$ & $\checkmark$ & $\checkmark$\\
+50 state of birth dummies & & $\checkmark$ & & & $\checkmark$ & $\checkmark$ & $\checkmark$ & $\checkmark$\\[3pt]
+\textit{Instruments:} & & & \shortstack{dummy\\for\\QOB=1} & \shortstack{dummy\\for\\QOB=1\\or\\QOB=2}
+ & \shortstack{dummy\\for\\QOB=1} & \shortstack{full set\\of QOB\\dummies}
+ & \shortstack{full set\\of QOB\\dummies\\int. with\\year of\\birth\\dummies}
+ & \shortstack{full set\\of QOB\\dummies\\int. with\\year of\\birth\\dummies}\\
+\bottomrule
+\end{tabular}}\\[2pt]
+\parbox{0.92\linewidth}{\footnotesize Notes (excerpt): ``The table reports OLS and 2SLS estimates of the returns to
+schooling using the the Angrist and Krueger (1991) 1980 Census sample. [\dots] The sample size is 329,509.
+Robust standard errors are reported in parentheses.''}
+
+\medskip
+\textit{Table 4.1.2: Wald estimates of the returns to schooling using quarter of birth instruments}\\[2pt]
+\begin{tabular}{lccc}
+\toprule
+ & (1) & (2) & (3)\\
+ & Born in the 1st & Born in the 3rd & Difference\\
+ & or 2nd quarter of & or 4th quarter of & (std.\ error)\\
+ & year & year & (1)-(2)\\
+\midrule
+ln (weekly wage) & 5.8916 & 5.9051 & -0.01349\\
+ & & & (0.00337)\\
+Years of education & 12.6881 & 12.8394 & -0.1514\\
+ & & & (0.0162)\\
+Wald estimate of return to education & & & 0.0891\\
+ & & & (0.0210)\\
+OLS estimate of return to education & & & 0.0703\\
+ & & & (0.0005)\\
+\bottomrule
+\end{tabular}\\[2pt]
+\parbox{0.92\linewidth}{\footnotesize Notes (excerpt): ``Adapted from a re-analysis of Angrist and Krueger (1991) by
+Angrist and Imbens (1995). [\dots] The sample size is 329,509.''}
+
+\medskip
+\textit{Table 4.1.3: Wald estimates of the effects of military service on the earnings of white men born in 1950}\\[2pt]
+\begin{tabular}{lccccc}
+\toprule
+ & \multicolumn{2}{c}{Earnings} & \multicolumn{2}{c}{Veteran Status} & Wald Estimate\\
+\cmidrule(lr){2-3}\cmidrule(lr){4-5}
+Earnings year & Mean & Eligibility Effect & Mean & Eligibility Effect & of Veteran Effect\\
+ & (1) & (2) & (3) & (4) & (5)\\
+\midrule
+1981 & 16,461 & -435.8 & 0.267 & 0.159 & -2,741\\
+ & & (210.5) & & (0.040) & (1,324)\\
+1971 & 3,338 & -325.9 & & & -2050\\
+ & & (46.6) & & & (293)\\
+1969 & 2,299 & -2.0 & & & \\
+ & & (34.5) & & & \\
+\bottomrule
+\end{tabular}\\[2pt]
+\parbox{0.92\linewidth}{\footnotesize Notes (excerpt): ``Adapted from Angrist (1990), Tables 2 and 3. Standard errors are
+shown in parentheses. [\dots] Figures are in nominal dollars. [\dots] There are about 13,500 individuals in the sample.''}
+\end{center}
+
+\begin{enumerate}[label=(\alph*)]
+\item Derive the Wald estimator for a binary instrument and state the assumptions under which it
+identifies a causal effect.
+\item Table 4.1.2: compute the Wald estimate from column (3) and check it against 0.0891. Approximate its
+standard error treating the first stage as known, and compare with 0.0210.
+\item Table 4.1.3: compute the Wald estimates for 1981 and 1971 from columns (2) and (4), their approximate
+standard errors, and each as a share of mean earnings. What is the 1969 row for?
+\item Table 4.1.1: is the 2SLS estimate in column (3) significantly different from the OLS estimate in
+column (1)? Use a Hausman-type statistic with $V(\hat\rho_{IV}-\hat\rho_{OLS})=V(\hat\rho_{IV})-V(\hat\rho_{OLS})$.
+Why is the standard error in column (8) larger than in columns (6)--(7), even though (8) uses as many instruments?
+\end{enumerate}
+\resolespaco
+\begin{sol}
+\begin{notacao}
+\item $Y_i$: outcome (log weekly wage, or annual earnings in dollars); $D_i$: treatment (years of
+schooling, or veteran status $\in\{0,1\}$); $Z_i\in\{0,1\}$: instrument (born in quarters 1--2, or draft-eligible).
+\item $\rho$: causal effect of $D_i$; $\eta_i$: structural error; $\pi=E[D_i\mid Z_i=1]-E[D_i\mid Z_i=0]$:
+first stage; $\phi=E[Y_i\mid Z_i=1]-E[Y_i\mid Z_i=0]$: reduced form.
+\end{notacao}
+
+\passo{(a) Wald estimator}{Take the constant-effect model and the instrument assumption
+\begin{equation}
+Y_i=\alpha+\rho D_i+\eta_i,\qquad E[\eta_i\mid Z_i]=E[\eta_i].\label{q3:struct}
+\end{equation}
+Conditioning \eqref{q3:struct} on $Z_i=z$:
+\begin{equation}
+E[Y_i\mid Z_i=z]=\alpha+\rho\,E[D_i\mid Z_i=z]+E[\eta_i].\label{q3:cond}
+\end{equation}
+Subtracting \eqref{q3:cond} at $z=0$ from \eqref{q3:cond} at $z=1$:
+\begin{equation}
+\phi=\rho\,\pi.\label{q3:rf}
+\end{equation}
+Dividing \eqref{q3:rf} by $\pi\neq0$:
+\begin{equation}
+\rho=\frac{\phi}{\pi}=\frac{E[Y_i\mid Z_i=1]-E[Y_i\mid Z_i=0]}{E[D_i\mid Z_i=1]-E[D_i\mid Z_i=0]}.\label{q3:wald}
+\end{equation}
+Assumptions: $Z_i$ as good as randomly assigned (independence), $Z_i$ affects $Y_i$ only through $D_i$
+(exclusion), and $\pi\neq0$ (first stage). With heterogeneous effects and monotonicity (no defiers),
+\eqref{q3:wald} is the local average treatment effect on compliers (MHE \S4.4).}
+
+\passo{(b) quarter of birth}{Substituting column (3) of Table 4.1.2 into \eqref{q3:wald}:
+\begin{equation}
+\hat\rho=\frac{(-0.01349)}{(-0.1514)}=0.089102,\label{q3:wqob}
+\end{equation}
+which rounds to the reported 0.0891. (The rounded means give $5.8916-5.9051=-0.0135$ and
+$12.6881-12.8394=-0.1513$.) Treating $\pi$ as known, $\widehat{se}(\hat\rho)\approx\widehat{se}(\hat\phi)/|\hat\pi|$:
+\begin{equation}
+\widehat{se}(\hat\rho)\approx\frac{(0.00337)}{(0.1514)}=0.022259,\label{q3:seqob}
+\end{equation}
+close to 0.0210; the delta method adds the sampling noise in $\hat\pi$ and its covariance with $\hat\phi$.
+The Wald estimate (0.0891) exceeds OLS (0.0703).}
+
+\passo{(c) draft lottery}{Substituting columns (2) and (4) of Table 4.1.3 into \eqref{q3:wald}:
+\begin{align}
+\hat\rho_{1981}&=\frac{(-435.8)}{(0.159)}=-2740.88,\label{q3:w81}\\
+\hat\rho_{1971}&=\frac{(-325.9)}{(0.159)}=-2049.69,\label{q3:w71}
+\end{align}
+matching $-2{,}741$ and $-2050$. Dividing the reduced-form standard errors by the first stage, as in
+\eqref{q3:seqob}: $(210.5)/(0.159)=1323.90$ and $(46.6)/(0.159)=293.08$, matching (1,324) and (293). As
+shares of mean earnings: $2740.88/16461=0.16651$ in 1981 and $2049.69/3338=0.61405$ in 1971, so service
+cut earnings by about 17\% ten years later and by much more while the men were still in the army. The
+1969 row is a placebo: earnings before anyone born in 1950 was drafted cannot depend on veteran status,
+and indeed $t=(-2.0)/(34.5)=-0.0580$. A zero there supports the exclusion restriction.}
+
+\passo{(d) OLS against 2SLS}{The Hausman-type statistic with the given variance:
+\begin{equation}
+H=\frac{(0.103)-(0.075)}{\sqrt{(0.024)^2-(0.0004)^2}}=\frac{0.028}{0.023997}=1.1668<1.96,\label{q3:haus}
+\end{equation}
+so the difference is not significant: quarter of birth is too weak a source of variation to separate the two.
+Column (8) adds age in quarters and its square. Within a year of birth, age in quarters is a linear
+function of quarter of birth, so these controls absorb much of the instrument's variation: the first stage
+weakens and the standard error rises (0.031 against 0.016--0.019). Columns (7)--(8) also use 30 instruments,
+which pulls 2SLS towards OLS when the instruments are weak (the many-weak-instruments bias discussed in MHE Ch.~4).}
+
+\intuicao{The Wald estimator rescales the effect of the instrument on the outcome by its effect on the
+treatment. The QOB first stage is tiny (0.15 years), so small reduced-form effects translate into
+imprecise IV estimates; the draft first stage is larger (16 points), so the estimates are informative.}
+\refbib{MHE \S4.1 (pp.~84--102), IV and the Wald estimator; \S4.4 (pp.~111--129), LATE; W \S15.1 (pp.~462--471).}
+\end{sol}
+
+% ---------------------------------------------------------------- Q4
+\questao{Card and Krueger: difference-in-differences by hand (MHE Table 5.2.1).}
+\fonte{Angrist and Pischke (2008), \textit{Mostly Harmless Econometrics}, \S5.2, Table 5.2.1, printed
+p.~171. The source has no exercise; the statement is original. Table reproduced verbatim from the PDF.}
+
+\begin{center}\small
+\textit{Table 5.2.1: Average employment per store before and after the New Jersey minimum wage increase}\\[2pt]
+\begin{tabular}{llccc}
+\toprule
+ & & PA & NJ & Difference, NJ-PA\\
+ & Variable & (i) & (ii) & (iii)\\
+\midrule
+1. & FTE employment before, & 23.33 & 20.44 & -2.89\\
+ & all available observations & (1.35) & (0.51) & (1.44)\\
+2. & FTE employment after, & 21.17 & 21.03 & -0.14\\
+ & all available observations & (0.94) & (0.52) & (1.07)\\
+3. & Change in mean FTE & -2.16 & 0.59 & 2.76\\
+ & employment & (1.25) & (0.54) & (1.36)\\
+\bottomrule
+\end{tabular}\\[2pt]
+\parbox{0.9\linewidth}{\footnotesize Notes (excerpt): ``Adapted from Card and Krueger (1994), Table 3. The table
+reports average full-time equivalent (FTE) employment at restaurants in Pennsylvania and New Jersey before
+and after a minimum wage increase in New Jersey. [\dots] Standard errors are reported in parentheses''}
+\end{center}
+
+\begin{enumerate}[label=(\alph*)]
+\item Compute the difference-in-differences estimate twice: as the difference of the two states' changes,
+and as the change in the NJ--PA gap. Reconcile with 2.76.
+\item Write the regression $Y_{ist}=\alpha+\gamma NJ_s+\lambda d_t+\delta(NJ_s\cdot d_t)+\varepsilon_{ist}$ and
+give the value of each coefficient implied by the table. State the identifying assumption.
+\item Compute the $t$ statistic and a 95\% interval for the DiD estimate, and show that its standard
+error is what independent samples in the two states imply.
+\item Is the sign of the estimate what a competitive labor-demand model predicts?
+\end{enumerate}
+\resolespaco
+\begin{sol}
+\begin{notacao}
+\item $Y_{ist}$: FTE employment of store $i$ in state $s\in\{PA,NJ\}$ at $t\in\{\text{before},\text{after}\}$;
+$\bar Y_{st}$: cell mean; $Y_{0ist}$: employment without the minimum-wage rise.
+\item $NJ_s$, $d_t$: dummies for New Jersey and for the after period; $\gamma_s,\lambda_t$: state and time
+effects; $\delta$: causal effect of the minimum wage on FTE employment.
+\end{notacao}
+
+\passo{(a) two ways}{The DiD estimator is
+\begin{equation}
+\hat\delta=(\bar Y_{NJ,a}-\bar Y_{NJ,b})-(\bar Y_{PA,a}-\bar Y_{PA,b}).\label{q4:did}
+\end{equation}
+Substituting rows 1--2:
+\begin{align}
+\hat\delta&=\big((21.03)-(20.44)\big)-\big((21.17)-(23.33)\big)\label{q4:sub1}\\
+&=(0.59)-(-2.16)=2.75.\label{q4:res1}
+\end{align}
+Rearranging \eqref{q4:did} as the change in the gap and substituting column (iii):
+\begin{equation}
+\hat\delta=(\bar Y_{NJ,a}-\bar Y_{PA,a})-(\bar Y_{NJ,b}-\bar Y_{PA,b})=(-0.14)-(-2.89)=2.75.\label{q4:res2}
+\end{equation}
+The table's 2.76 comes from unrounded cell means.}
+
+\passo{(b) regression}{Common trends means
+\begin{equation}
+E[Y_{0ist}\mid s,t]=\gamma_s+\lambda_t.\label{q4:ct}
+\end{equation}
+With $Y_{ist}=Y_{0ist}+\delta\,NJ_s d_t$, the NJ change is $(\lambda_a-\lambda_b)+\delta$ and the PA change
+is $\lambda_a-\lambda_b$; their difference is $\delta$, which is what \eqref{q4:did} estimates. In the
+regression the four cells are $\alpha$, $\alpha+\gamma$, $\alpha+\lambda$, $\alpha+\gamma+\lambda+\delta$, so
+\begin{equation}
+\hat\alpha=23.33,\quad\hat\gamma=(20.44)-(23.33)=-2.89,\quad\hat\lambda=(21.17)-(23.33)=-2.16,\quad\hat\delta=2.75.\label{q4:coefs}
+\end{equation}
+The identifying assumption is \eqref{q4:ct}: without the rise, NJ employment would have moved like PA employment.}
+
+\passo{(c) inference}{If the two states' samples are independent, the variance of a difference is the sum of the variances:
+\begin{equation}
+\widehat{se}(\hat\delta)=\sqrt{(1.25)^2+(0.54)^2}=\sqrt{1.5625+0.2916}=\sqrt{1.8541}=1.36165,\label{q4:se}
+\end{equation}
+the reported 1.36. Then $t=(2.76)/(1.36)=2.0294$ and $2.76\pm(1.96)(1.36)=2.76\pm2.6656=[0.0944,\;5.4256]$:
+significant at 5\%, but the interval is wide.}
+
+\passo{(d) interpretation}{A competitive model predicts lower employment in NJ, so $\delta<0$. The estimate
+is positive: employment fell in PA and rose slightly in NJ. Either the market is not competitive
+(monopsony), or common trends fails; MHE shows that longer payroll data from the same states weaken the
+original result, which is why pre-period trends should be checked.}
+
+\intuicao{DiD uses the control state's change as the counterfactual change for the treated state; the
+state effect $\gamma$ absorbs any permanent NJ--PA gap, so only differential trends can bias $\hat\delta$.}
+\refbib{MHE \S5.2 (pp.~169--181), differences-in-differences; W \S13.2 (pp.~406--412).}
+\end{sol}
+
+% ---------------------------------------------------------------- Q5
+\questao{Incumbency and the sharp regression-discontinuity design (MHE Figure 6.1.2).}
+\fonte{Angrist and Pischke (2008), \textit{Mostly Harmless Econometrics}, \S6.1, Figure 6.1.2 and text,
+printed pp.~194--195. The source has no exercise; the statement is original. Caption and numbers from the
+text reproduced verbatim; the two fitted values at the cutoff are read off the figure (not printed in the book).}
+
+\smallskip
+\noindent Figure 6.1.2 (caption, verbatim): ``Probability of winning an election by past and future vote
+share (from Lee, 2008). (a) Candidate's probability of winning election $t+1$, by margin of victory in
+election $t$: local averages and parametric fit. (b) Candidate's accumulated number of past election
+victories, by margin of victory in election $t$: local averages and parametric fit.'' The text states
+that the winner is determined by $D_i=1(x_i\geq.0)$, where $x_i$ is the vote share margin of victory; that
+the dots are ``the average win rate in non-overlapping windows of share margins that are .005 wide''; that
+the lines are fitted from ``a Logit model for the probability of winning as a function of the cutoff
+indicator $D_i=1(x_i\geq0)$, a $4^{th}$-order polynomial in $x_i$, and interactions between the polynomial
+terms and $D_i$''; and that ``incumbency appears to raise party re-election probabilities by about 40
+percentage points.'' In panel (a) the fitted curve reaches about 0.14 just left of zero and about 0.58
+just right of zero; in panel (b) the two fitted curves nearly meet at zero (both close to one past victory).
+
+\begin{enumerate}[label=(\alph*)]
+\item Write the sharp RD model with a polynomial control and define the estimand as a jump in a
+conditional expectation. State the identifying assumption.
+\item Estimate the incumbency effect from panel (a) and compare it with ``about 40 percentage points''.
+\item What does panel (b) test, and what does it show?
+\item Give two reasons why an RD estimate could be spurious here, and a check for each.
+\end{enumerate}
+\resolespaco
+\begin{sol}
+\begin{notacao}
+\item $x_i$: Democratic vote-share margin in election $t$ (running variable, cutoff $0$);
+$D_i=1(x_i\geq0)$: Democrat won election $t$ (incumbency).
+\item $Y_i$: Democrat wins election $t+1$; $Y_{0i},Y_{1i}$: potential outcomes; $f(\cdot)$: smooth
+function of $x_i$ (a polynomial); $\rho$: incumbency effect at the cutoff.
+\end{notacao}
+
+\passo{(a) model}{Assume $E[Y_{0i}\mid x_i]=f(x_i)$ and a constant effect $\rho$:
+\begin{equation}
+Y_i=f(x_i)+\rho D_i+\eta_i,\qquad D_i=1(x_i\geq0).\label{q5:model}
+\end{equation}
+Taking limits of $E[Y_i\mid x_i]$ in \eqref{q5:model} from each side of $0$, with $f$ continuous:
+\begin{align}
+\lim_{x\downarrow0}E[Y_i\mid x_i=x]&=f(0)+\rho,\label{q5:right}\\
+\lim_{x\uparrow0}E[Y_i\mid x_i=x]&=f(0).\label{q5:left}
+\end{align}
+Subtracting \eqref{q5:left} from \eqref{q5:right}:
+\begin{equation}
+\rho=\lim_{x\downarrow0}E[Y_i\mid x_i=x]-\lim_{x\uparrow0}E[Y_i\mid x_i=x].\label{q5:jump}
+\end{equation}
+Identifying assumption: $E[Y_{0i}\mid x_i]$ and $E[Y_{1i}\mid x_i]$ are continuous at $0$. Because $D_i$ is
+a deterministic function of $x_i$, there is no other confounder once $f(x_i)$ is controlled for.}
+
+\passo{(b) the jump}{Substituting the fitted values at the cutoff into \eqref{q5:jump}:
+\begin{equation}
+\hat\rho\approx(0.58)-(0.14)=0.44,\label{q5:est}
+\end{equation}
+an incumbency advantage of roughly 40 percentage points, as the text says.}
+
+\passo{(c) panel (b)}{Past victories are determined before election $t$, so they cannot be caused by
+$D_i$. If close elections are as good as random, their conditional mean must be continuous at $0$:
+\eqref{q5:jump} applied to this variable should be zero. The two fitted curves nearly meet at $0$, so there
+is no visible jump: this balance check supports the design, as a covariate-balance table does in an experiment.}
+
+\passo{(d) threats}{(i) Misspecified $f$: a nonlinear $E[Y_{0i}\mid x_i]$ fitted with too rigid a polynomial
+can show up as a jump. Check: higher-order and side-specific polynomials (the interactions with $D_i$ in
+the footnote), and local estimates in narrow windows around $0$. (ii) Manipulation: if candidates could
+sort just above $0$ (recounts, fraud), units on the two sides would differ. Check: the density of $x_i$
+near $0$ (McCrary test) and balance of pre-determined covariates such as panel (b).}
+
+\intuicao{Bare winners and bare losers are alike in everything but the election outcome, so the
+discontinuity at a zero margin isolates what winning itself does to the next election.}
+\refbib{MHE \S6.1 (pp.~189--196), sharp RD; class slides and site example on RDD (minimum drinking age and motor-vehicle deaths).}
+\end{sol}
+
+% ---------------------------------------------------------------- Q6
+\questao{Maimonides' rule and fuzzy RD as IV (MHE Table 6.2.1).}
+\fonte{Angrist and Pischke (2008), \textit{Mostly Harmless Econometrics}, \S6.2, Table 6.2.1 and text,
+printed pp.~199--202. The source has no exercise; the statement is original. Table and the rule
+reproduced verbatim from the PDF.}
+
+\smallskip
+\noindent The text defines the predicted class size from Maimonides' rule (class size capped at 40) as
+\[
+m_{sc}=\frac{e_s}{\operatorname{int}\left[\frac{(e_s-1)}{40}\right]+1},
+\]
+``where int(x) is the integer part of a real number, x'', $e_s$ is enrollment in the grade, and
+estimates by 2SLS ``an equation like $y_{isc}=\alpha_0+\alpha_1d_s+\beta_1e_s+\beta_2e_s^2+\dots+\beta_pe_s^p+\rho n_{sc}+\eta_{isc}$''
+(6.2.6), with $n_{sc}$ class size, $d_s$ the proportion of disadvantaged students, and $m_{sc}$ as instrument.
+
+\begin{center}\small
+\textit{Table 6.2.1: OLS and fuzzy RD estimates of the effects of class size on fifth grade math scores}\\[2pt]
+\resizebox{\linewidth}{!}{%
+\begin{tabular}{lcccccccc}
+\toprule
+ & \multicolumn{3}{c}{OLS} & \multicolumn{5}{c}{2SLS}\\
+\cmidrule(lr){2-4}\cmidrule(lr){5-9}
+ & & & & \multicolumn{2}{c}{Full sample} & \multicolumn{3}{c}{Discontinuity samples}\\
+\cmidrule(lr){5-6}\cmidrule(lr){7-9}
+ & & & & & & \multicolumn{2}{c}{+/- 5} & +/- 3\\
+ & (1) & (2) & (3) & (4) & (5) & (6) & (7) & (8)\\
+\midrule
+\textit{Mean score} & & 67.3 & & 67.3 & & 67.0 & & 67.0\\
+\textit{(s.d.)} & & (9.6) & & (9.6) & & (10.2) & & (10.6)\\
+\textit{Regressors} & & & & & & & & \\
+Class size & .322 & .076 & .019 & -.230 & -.261 & -.185 & -.443 & -.270\\
+ & (.039) & (.036) & (.044) & (.092) & (.113) & (.151) & (.236) & (.281)\\
+Percent disadvantaged & & -.340 & -.332 & -.350 & -.350 & -.459 & -.435 & \\
+ & & (.018) & (.018) & (.019) & (.019) & (.049) & (.049) & \\
+Enrollment & & & .017 & .041 & .062 & & .079 & \\
+ & & & (.009) & (.012) & (.037 & & (.036) & \\
+Enrollment squared/100 & & & & & -.010 & & & \\
+ & & & & & (.016) & & & \\
+Segment 1 (enrollment 36-45) & & & & & & & & -12.6\\
+ & & & & & & & & (3.80)\\
+Segment 2 (enrollment 76-85) & & & & & & & & -2.89\\
+ & & & & & & & & (2.41)\\
+Root MSE & 9.36 & 8.32 & 8.30 & 8.40 & 8.42 & 8.79 & 9.10 & 10.2\\
+R-squared & .048 & .249 & .252 & & & & & \\
+N & & 2,018 & & & 2,018 & & 471 & 302\\
+\bottomrule
+\end{tabular}}\\[2pt]
+\parbox{0.92\linewidth}{\footnotesize Notes: ``Adapted from Angrist and Lavy (1999). The table reports estimates of
+equation (6.2.6) in the text using class averages. Standard errors, reported in parentheses, are corrected
+for within-school correlation.'' (The missing parenthesis in ``(.037'' is in the original.)}
+\end{center}
+
+\begin{enumerate}[label=(\alph*)]
+\item Compute $m_{sc}$ for enrollments $e_s=40,41,80,81,120,121$. Why does the rule generate a
+\emph{fuzzy} rather than a sharp RD?
+\item Write the first and second stages of the 2SLS model. Which variables play the roles of the
+instrument, the running variable and the treatment?
+\item Explain the sign and the movement of the OLS class-size coefficient across columns (1)--(3).
+\item Using column (4) and the text's round slope of $-.25$, how much would a 7-pupil cut in class size
+raise math scores, in points and in standard deviations of the class-average score (9.6)? Give the $t$
+statistics in columns (4) and (8).
+\item Compare the ratio of the standard errors in columns (8) and (5) with $\sqrt{2018/302}$. What does the
+comparison say?
+\end{enumerate}
+\resolespaco
+\begin{sol}
+\begin{notacao}
+\item $e_s$: grade enrollment in school $s$ (pupils, integer $\geq1$); $m_{sc}$: class size predicted by the
+rule; $n_{sc}$: actual class size; $d_s$: percent disadvantaged.
+\item $y_{sc}$: class-average math score; $\rho$: effect of one more pupil per class on the score;
+$\pi_m$: first-stage coefficient on $m_{sc}$; $\operatorname{int}(x)$: integer part of $x$.
+\end{notacao}
+
+\passo{(a) the rule}{Substituting each enrollment into the rule:
+\begin{align}
+m(40)&=\frac{40}{\operatorname{int}(39/40)+1}=\frac{40}{(0)+1}=40,&
+m(41)&=\frac{41}{\operatorname{int}(40/40)+1}=\frac{41}{(1)+1}=20.5,\label{q6:m1}\\
+m(80)&=\frac{80}{\operatorname{int}(79/40)+1}=\frac{80}{(1)+1}=40,&
+m(81)&=\frac{81}{\operatorname{int}(80/40)+1}=\frac{81}{(2)+1}=27,\label{q6:m2}\\
+m(120)&=\frac{120}{\operatorname{int}(119/40)+1}=\frac{120}{(2)+1}=40,&
+m(121)&=\frac{121}{\operatorname{int}(120/40)+1}=\frac{121}{(3)+1}=30.25.\label{q6:m3}
+\end{align}
+Predicted class size drops sharply after each multiple of 40. The design is fuzzy because actual class size
+$n_{sc}$ does not follow the rule exactly (some schools split grades below 40), so crossing a cutoff changes
+the \emph{expected} class size, not class size itself with certainty.}
+
+\passo{(b) 2SLS}{The first stage and the second stage are
+\begin{align}
+n_{sc}&=\pi_0+\pi_1d_s+\pi_2e_s+\dots+\pi_m\,m_{sc}+\xi_{sc},\label{q6:fs}\\
+y_{sc}&=\alpha_0+\alpha_1d_s+\beta_1e_s+\dots+\rho\,n_{sc}+\eta_{sc}.\label{q6:ss}
+\end{align}
+The instrument is $m_{sc}$ (the role of $t_i$), the running variable is $e_s$ (the role of $x_i$, controlled
+smoothly), and the treatment is $n_{sc}$ (the role of $d_i$). Identification comes from the jumps in
+$m_{sc}$ at 40, 80, 120 conditional on smooth functions of $e_s$.}
+
+\passo{(c) OLS}{Column (1), $+.322$: larger classes are found in larger, more advantaged schools, and
+weak pupils are often put in smaller classes, so class size is positively correlated with omitted
+determinants of scores. Controlling for percent disadvantaged removes most of this (.076), and adding
+enrollment brings it to .019, insignificant. By the OVB logic of Question 2, the OLS coefficients are
+biased upwards.}
+
+\passo{(d) magnitudes}{The effect of a change $\Delta n=-7$ is $\rho\,\Delta n$. With column (4) and with the
+text's slope:
+\begin{align}
+\Delta y&=(-0.230)(-7)=1.61,\label{q6:d4}\\
+\Delta y&=(-0.25)(-7)=1.75,\label{q6:d25}\\
+\frac{\Delta y}{\text{s.d.}}&=\frac{(1.75)}{(9.6)}=0.18229,\label{q6:es}
+\end{align}
+about $.18\sigma$, close to the STAR estimate of about $.2\sigma$ in Question 1. The $t$ statistics in
+columns (4) and (8) are
+\begin{equation}
+t_4=\frac{(-.230)}{(.092)}=-2.5,\qquad t_8=\frac{(-.270)}{(.281)}=-0.9609.\label{q6:t}
+\end{equation}}
+
+\passo{(e) precision}{The ratio of standard errors and the square root of the ratio of sample sizes are
+\begin{align}
+\frac{\widehat{se}_8}{\widehat{se}_5}&=\frac{(.281)}{(.113)}=2.4867,\label{q6:ser}\\
+\sqrt{\frac{2018}{302}}&=\sqrt{6.6821}=2.5850.\label{q6:nr}
+\end{align}
+Standard errors scale with $1/\sqrt{N}$, so shrinking the sample to the $\pm3$ window costs precision
+almost exactly in proportion to $\sqrt{N}$: the estimate stays near $-.25$ but becomes insignificant.}
+
+\intuicao{The rule is an accident of administration that shifts class size up and down independently of
+the school's quality once enrollment is controlled for smoothly; 2SLS rescales the score jumps at the
+cutoffs by the class-size jumps, exactly like a Wald estimator.}
+\refbib{MHE \S6.2 (pp.~196--202), fuzzy RD is IV; Question 3 for the Wald logic.}
+\end{sol}
+
+% =============================================================================
+\bloco{2}{Instrumental variables with the CARD data}{Wooldridge Ch.~15 \,\textbullet\, Questions 7--8}
+
+% ---------------------------------------------------------------- Q7
+\questao{Wooldridge, Computer Exercise 15.C3.}
+\fonte{Wooldridge (2016), \textit{Introductory Econometrics: A Modern Approach}, 6th ed., Chapter 15,
+Computer Exercise C3, printed pp.~492--493, reproduced verbatim.}
+
+\noindent\textbf{C3} Use the data in CARD for this exercise.
+\begin{enumerate}[label=(\roman*)]
+\item The equation we estimated in Example 15.4 can be written as
+\[\log(wage)=\beta_0+\beta_1educ+\beta_2exper+\dots+u,\]
+where the other explanatory variables are listed in Table 15.1. In order for IV to be consistent, the IV
+for $educ$, $nearc4$, must be uncorrelated with $u$. Could $nearc4$ be correlated with things in the error
+term, such as unobserved ability? Explain.
+\item For a subsample of the men in the data set, an IQ score is available. Regress $IQ$ on $nearc4$ to
+check whether average IQ scores vary by whether the man grew up near a four-year college. What do you conclude?
+\item Now, regress $IQ$ on $nearc4$, $smsa66$, and the 1966 regional dummy variables $reg662$, \dots,
+$reg669$. Are $IQ$ and $nearc4$ related after the geographic dummy variables have been partialled out?
+Reconcile this with your findings from part (ii).
+\item From parts (ii) and (iii), what do you conclude about the importance of controlling for $smsa66$ and
+the 1966 regional dummies in the $\log(wage)$ equation?
+\end{enumerate}
+\resolespaco
+\begin{sol}
+\begin{notacao}
+\item $IQ_i$: IQ score (available for 2,061 of the 3,010 men); $nearc4_i\in\{0,1\}$: grew up near a
+four-year college; $smsa66_i$: lived in an SMSA in 1966; $reg66k_i$: 1966 region dummies ($k=2,\dots,9$).
+\item $u_i$: error of the wage equation; $\theta$: coefficient on $nearc4$; $G_i$: the geographic dummies.
+\end{notacao}
+
+\noindent\textit{Code} (data \texttt{Aula/class-05-06/materials/card.csv}, CR line endings, ``.'' = missing):
+\begingroup\footnotesize
+\begin{verbatim}
+import pandas as pd, statsmodels.formula.api as smf
+card = pd.read_csv("Aula/class-05-06/materials/card.csv", lineterminator="\r", na_values=".")
+iq = card.dropna(subset=["IQ"])                                   # n = 2,061
+regs = "+".join(f"reg66{i}" for i in range(2, 10))
+a = smf.ols("IQ ~ nearc4", iq).fit()                              # part (ii)
+b = smf.ols("IQ ~ nearc4 + smsa66 + " + regs, iq).fit()           # part (iii)
+print(b.f_test("smsa66=0," + ",".join(f"reg66{i}=0" for i in range(2, 10))))
+\end{verbatim}
+\endgroup
+\noindent\textit{Key output:}
+\begingroup\footnotesize
+\begin{verbatim}
+(ii)  IQ ~ nearc4                         n = 2061, R2 = 0.0059
+             coef      se       t        p
+Intercept  100.611   0.627
+nearc4       2.596   0.745   3.483   0.0005
+(iii) IQ ~ nearc4 + smsa66 + reg662..reg669          R2 = 0.0626
+Intercept  104.773
+nearc4       0.348   0.814   0.427   0.669
+smsa66       1.089   0.809      (reg665 -8.475, reg667 -8.394)
+F(9, 2050) for the geographic dummies = 13.80, p < 0.001;  corr(nearc4, smsa66) = 0.412
+\end{verbatim}
+\endgroup
+
+\passo{(i) exogeneity}{Yes, it could. Families that value education, or parents with more schooling and
+income, may choose to live near colleges; and colleges are in cities, where schools are better and
+measured ability higher. Any such factor raises wages directly (it is in $u$) and is correlated with
+$nearc4$, which would violate $\operatorname{Cov}(nearc4,u)=0$.}
+
+\passo{(ii) unconditional}{The simple regression gives
+\begin{equation}
+\widehat{IQ}=100.611+2.596\,nearc4,\qquad t=\frac{(2.5962)}{(0.7455)}=3.4825,\label{q7:simple}
+\end{equation}
+so men who grew up near a four-year college have IQs about 2.6 points higher on average, a significant
+difference ($p=0.0005$). Taken alone, this suggests $nearc4$ is correlated with ability.}
+
+\passo{(iii) conditional}{With the geographic controls,
+\begin{equation}
+\widehat{IQ}=104.773+0.348\,nearc4+1.089\,smsa66+G_i'\hat\psi,\qquad t=\frac{(0.3479)}{(0.8144)}=0.4272,\label{q7:cond}
+\end{equation}
+with $p=0.669$: once geography is partialled out, IQ and $nearc4$ are unrelated. The geographic
+dummies are jointly very significant ($F=13.80$). Reconciliation by the OVB formula of Question 2:
+the short coefficient 2.596 equals the long coefficient 0.348 plus (effect of geography on IQ) $\times$
+(relation of geography to $nearc4$). Men near colleges are more often urban ($\operatorname{corr}(nearc4,
+smsa66)=0.412$) and live in regions with higher average IQ; that, not proximity, produced part (ii).}
+
+\passo{(iv) implication}{$nearc4$ is a plausible instrument only \emph{conditional on} $smsa66$ and the
+1966 regional dummies. They must be in the $\log(wage)$ equation (and hence in the first stage), as in
+Table 15.1; dropping them would let geography-driven ability differences contaminate the IV estimate.}
+
+\intuicao{Instrument validity is a conditional statement. A regression of a proxy for the omitted factor
+(IQ) on the instrument, with and without the controls, is a cheap falsification test of that statement.}
+\refbib{W \S15.1--15.2 and Example 15.4 (pp.~462--474); MHE \S4.1 (pp.~84--102); site example \texttt{example1-iv-card}.}
+\end{sol}
+
+% ---------------------------------------------------------------- Q8
+\questao{Wooldridge, Computer Exercise 15.C5.}
+\fonte{Wooldridge (2016), \textit{Introductory Econometrics: A Modern Approach}, 6th ed., Chapter 15,
+Computer Exercise C5, printed p.~493, reproduced verbatim.}
+
+\noindent\textbf{C5} Use the data in CARD for this exercise.
+\begin{enumerate}[label=(\roman*)]
+\item In Table 15.1, the difference between the IV and OLS estimates of the return to education is
+economically important. Obtain the reduced form residuals, $\hat v_2$, from the reduced form regression
+$educ$ on $nearc4$, $exper$, $exper^2$, $black$, $smsa$, $south$, $smsa66$, $reg662$, \dots,
+$reg669$---see Table 15.1. Use these to test whether $educ$ is exogenous; that is, determine if the
+difference between OLS and IV is statistically significant.
+\item Estimate the equation by 2SLS, adding $nearc2$ as an instrument. Does the coefficient on $educ$ change much?
+\item Test the single overidentifying restriction from part (ii).
+\end{enumerate}
+\resolespaco
+\begin{sol}
+\begin{notacao}
+\item $\log(wage)_i$ ($lwage$): log hourly wage; $educ_i$: years of schooling; $x_i$: the exogenous
+controls of Table 15.1 ($exper$, $exper^2$, $black$, $smsa$, $south$, $smsa66$, $reg662$--$reg669$).
+\item $nearc4_i$, $nearc2_i$: grew up near a four-year / two-year college (instruments); $v_{2i}$:
+reduced-form error; $\theta$: coefficient of $u_{1i}$ on $v_{2i}$.
+\item $\hat u_i$: 2SLS residuals; $R^2_u$: $R^2$ of the overidentification regression; $n=3010$; $q$:
+number of overidentifying restrictions.
+\end{notacao}
+
+\noindent\textit{Code:}
+\begingroup\footnotesize
+\begin{verbatim}
+from linearmodels.iv import IV2SLS
+X  = "exper+expersq+black+smsa+south+smsa66+" + regs
+rf = smf.ols("educ ~ nearc4 + " + X, card).fit()                 # reduced form
+card["v2hat"] = rf.resid
+cf = smf.ols("lwage ~ educ + " + X + " + v2hat", card).fit()      # part (i)
+iv2 = IV2SLS.from_formula("lwage ~ 1 + " + X + " + [educ ~ nearc4 + nearc2]",
+                          card).fit(cov_type="unadjusted", debiased=True)   # part (ii)
+card["u2sls"] = iv2.resids
+ov = smf.ols("u2sls ~ nearc4 + nearc2 + " + X, card).fit()        # part (iii)
+print(ov.nobs * ov.rsquared, iv2.sargan)
+\end{verbatim}
+\endgroup
+\noindent\textit{Key output:}
+\begingroup\footnotesize
+\begin{verbatim}
+Table 15.1 replicated: OLS educ 0.0747 (0.0035);  IV (nearc4) educ 0.1315 (0.0550)
+(i)   reduced form: nearc4 0.320 (0.088), t = 3.64;  R2 = 0.477
+      lwage ~ educ + X + v2hat:  educ 0.1315;  v2hat -0.0571 (0.0528), t = -1.081, p = 0.280
+      heteroskedasticity-robust (HC1) t on v2hat = -1.101
+(ii)  2SLS with nearc4, nearc2:  educ 0.1571 (0.0526)
+      first stage: nearc4 0.321 (0.088), nearc2 0.123 (0.077)
+(iii) R2 of u2sls on all exogenous variables = 0.00041467;  n*R2 = 1.248;  p = 0.264
+      linearmodels Sargan statistic = 1.248, chi2(1)
+\end{verbatim}
+\endgroup
+
+\passo{(i) control-function test}{Write the structural equation, the reduced form and the projection of
+$u_1$ on $v_2$:
+\begin{align}
+lwage_i&=\beta_0+\beta_1educ_i+x_i'\beta+u_{1i},\label{q8:struct}\\
+educ_i&=\pi_0+\pi_1nearc4_i+x_i'\pi+v_{2i},\label{q8:rf}\\
+u_{1i}&=\theta\,v_{2i}+e_{1i}.\label{q8:proj}
+\end{align}
+Since $nearc4$ and $x_i$ are exogenous, $educ$ is correlated with $u_1$ only through $v_2$, so $educ$ is
+exogenous if and only if $\theta=0$. Substituting \eqref{q8:proj} into \eqref{q8:struct} and replacing
+$v_2$ by $\hat v_2$:
+\begin{equation}
+lwage_i=\beta_0+\beta_1educ_i+x_i'\beta+\theta\,\hat v_{2i}+\text{error}_i.\label{q8:cf}
+\end{equation}
+The $t$ statistic on $\hat v_2$ in \eqref{q8:cf} is
+\begin{equation}
+t=\frac{\hat\theta}{\widehat{se}(\hat\theta)}=\frac{(-0.05706)}{(0.05281)}=-1.0805,\label{q8:t}
+\end{equation}
+with $p=0.280$ (robust $t=-1.101$). We do not reject $H_0:\theta=0$: although the IV estimate (0.1315) is
+almost twice OLS (0.0747), the difference is not statistically significant, because the IV estimate is
+imprecise. (The coefficient on $educ$ in \eqref{q8:cf} equals the IV estimate, 0.1315, an algebraic identity.)}
+
+\passo{(ii) adding nearc2}{2SLS with both instruments gives $\hat\beta_1=0.1571$ (0.0526). The change is
+\begin{equation}
+0.1571-0.1315=0.0256,\label{q8:change}
+\end{equation}
+about half a standard error: a moderate increase, with a slightly smaller standard error. $nearc2$ has a
+smaller and less precise first-stage coefficient (0.123, se 0.077) than $nearc4$ (0.321, se 0.088), so it adds little.}
+
+\passo{(iii) overidentification}{Regress the 2SLS residuals on all exogenous variables (both instruments
+and $x_i$); under $H_0$ that all instruments are exogenous, $nR^2_u\sim\chi^2_q$ with
+$q=2-1=1$ (instruments minus endogenous regressors). Substituting:
+\begin{equation}
+nR^2_u=(3010)(0.00041467)=1.24816,\label{q8:nr2}
+\end{equation}
+below the 5\% critical value $\chi^2_{1,0.95}=3.841$ ($p=0.264$). We do not reject the overidentifying
+restriction: the two instruments give estimates (0.1315 alone, 0.1571 together) that are statistically
+compatible. The test only checks that the instruments agree; it cannot detect a bias they share.}
+
+\intuicao{The Hausman test asks whether OLS and IV differ by more than sampling noise; with a weak-ish
+instrument the IV noise is large, so even a big point difference is not significant. The overidentification
+test asks whether two instruments tell the same story.}
+\refbib{W \S15.5 (pp.~481--484), testing for endogeneity and overidentifying restrictions; Table 15.1 (p.~474); MHE \S4.1 (pp.~84--102).}
+\end{sol}
+
+% =============================================================================
+\bloco{3}{Difference-in-differences}{Wooldridge Ch.~13 \,\textbullet\, Questions 9--11}
+
+% ---------------------------------------------------------------- Q9
+\questao{Wooldridge, Problem 13.2.}
+\fonte{Wooldridge (2016), \textit{Introductory Econometrics: A Modern Approach}, 6th ed., Chapter 13,
+Problem 2, printed p.~425, reproduced verbatim. Equation (13.9), which the problem refers to, is
+reproduced from p.~410 for reference.}
+
+\noindent\textbf{2} Using the data in KIELMC, the following equations were estimated using the years 1978 and 1981:
+\[
+\begin{aligned}
+\widehat{\log(price)}&=\underset{(.26)}{11.49}-\underset{(.058)}{.547}\,nearinc+\underset{(.080)}{.394}\,y81\cdot nearinc\\
+n&=321,\ R^2=.220
+\end{aligned}
+\]
+and
+\[
+\begin{aligned}
+\widehat{\log(price)}&=\underset{(.27)}{11.18}+\underset{(.044)}{.563}\,y81-\underset{(.067)}{.403}\,y81\cdot nearinc\\
+n&=321,\ R^2=.337.
+\end{aligned}
+\]
+Compare the estimates on the interaction term $y81\cdot nearinc$ with those from equation (13.9). Why are
+the estimates so different?
+
+\smallskip
+\noindent\textit{For reference, equation (13.9), p.~410:}
+\[
+\widehat{\log(price)}=\underset{(.31)}{11.29}+\underset{(.045)}{.457}\,y81-\underset{(.055)}{.340}\,nearinc-\underset{(.083)}{.063}\,y81\cdot nearinc,\qquad n=321,\ R^2=.409.\tag{13.9}
+\]
+\resolespaco
+\begin{sol}
+\begin{notacao}
+\item $\log(price)_i$: log selling price of house $i$; $y81_i$: sold in 1981 (after the incinerator was
+announced); $nearinc_i$: within three miles of the incinerator site.
+\item $\mu_{gt}$: mean log price in cell $g\in\{\text{far},\text{near}\}$, $t\in\{78,81\}$;
+$\beta_0,\delta_0,\beta_1,\delta_1$: the coefficients of (13.9) on the constant, $y81$, $nearinc$, $y81\cdot nearinc$.
+\item $n_{gt}$: number of sales in cell $(g,t)$; in KIELMC $n_{\text{far},78}=123$, $n_{\text{far},81}=102$,
+$n_{\text{near},78}=56$, $n_{\text{near},81}=40$.
+\end{notacao}
+
+\passo{cell means from (13.9)}{(13.9) has four parameters for four cells, so it fits the cell means exactly:
+\begin{equation}
+\mu_{\text{far},78}=\beta_0,\quad\mu_{\text{far},81}=\beta_0+\delta_0,\quad\mu_{\text{near},78}=\beta_0+\beta_1,\quad\mu_{\text{near},81}=\beta_0+\delta_0+\beta_1+\delta_1.\label{q9:cells}
+\end{equation}}
+
+\passo{first equation (no $y81$)}{Its regressors define three groups: far houses in both years (constant
+only), near houses in 1978 (constant $+$ $nearinc$) and near houses in 1981 (all three). OLS on group
+dummies fits group means, so the interaction coefficient is
+\begin{equation}
+\hat\theta_1=\mu_{\text{near},81}-\mu_{\text{near},78}.\label{q9:e1}
+\end{equation}
+Substituting \eqref{q9:cells} into \eqref{q9:e1}:
+\begin{align}
+\hat\theta_1&=(\beta_0+\delta_0+\beta_1+\delta_1)-(\beta_0+\beta_1)\label{q9:e1sub}\\
+&=\delta_0+\delta_1=(.457)+(-.063)=.394,\label{q9:e1res}
+\end{align}
+exactly the reported .394. The intercept is the pooled far mean,
+$11.29+.457\,(102/225)=11.4972\approx11.49$.}
+
+\passo{second equation (no $nearinc$)}{Now the groups are all 1978 sales, far 1981 sales and near 1981
+sales, so
+\begin{equation}
+\hat\theta_2=\mu_{\text{near},81}-\mu_{\text{far},81}.\label{q9:e2}
+\end{equation}
+Substituting \eqref{q9:cells} into \eqref{q9:e2}:
+\begin{align}
+\hat\theta_2&=(\beta_0+\delta_0+\beta_1+\delta_1)-(\beta_0+\delta_0)\label{q9:e2sub}\\
+&=\beta_1+\delta_1=(-.340)+(-.063)=-.403,\label{q9:e2res}
+\end{align}
+again exactly the reported value. The intercept is the pooled 1978 mean,
+$11.29-.340\,(56/179)=11.1836\approx11.18$.}
+
+\passo{why they differ}{Each short equation imposes a false restriction. The first sets $\delta_0=0$ (no
+general change in prices from 1978 to 1981), so its interaction is the change in prices of near houses,
+which mixes the aggregate appreciation ($+.457$) with the incinerator effect. The second sets $\beta_1=0$
+(near and far houses equally priced before the incinerator), so its interaction is the 1981 near--far gap,
+which mixes the pre-existing location discount ($-.340$) with the effect. Only (13.9), with both controls,
+isolates the difference-in-differences $\hat\delta_1=-.063$. (Fitting the three equations to KIELMC
+reproduces all coefficients; the intercept standard errors are .026 and .027 in the data, so the printed
+(.26) and (.27) appear to have lost a zero.)}
+
+\intuicao{A DiD regression needs both a group dummy and a period dummy; dropping either one lets the
+interaction soak up the omitted level difference, a textbook case of omitted-variable bias with dummies.}
+\refbib{W Example 13.3 (pp.~407--410) and Table 13.3 (p.~411); MHE \S5.2 (pp.~169--171).}
+\end{sol}
+
+% ---------------------------------------------------------------- Q10
+\questao{Wooldridge, Problem 13.6.}
+\fonte{Wooldridge (2016), \textit{Introductory Econometrics: A Modern Approach}, 6th ed., Chapter 13,
+Problem 6, printed p.~426, reproduced verbatim.}
+
+\noindent\textbf{6} In 1985, neither Florida nor Georgia had laws banning open alcohol containers in vehicle
+passenger compartments. By 1990, Florida had passed such a law, but Georgia had not.
+\begin{enumerate}[label=(\roman*)]
+\item Suppose you can collect random samples of the driving-age population in both states, for 1985 and
+1990. Let $arrest$ be a binary variable equal to unity if a person was arrested for drunk driving during
+the year. Without controlling for any other factors, write down a linear probability model that allows you
+to test whether the open container law reduced the probability of being arrested for drunk driving. Which
+coefficient in your model measures the effect of the law?
+\item Why might you want to control for other factors in the model? What might some of these factors be?
+\item Now, suppose that you can only collect data for 1985 and 1990 at the county level for the two
+states. The dependent variable would be the fraction of licensed drivers arrested for drunk driving during
+the year. How does this data structure differ from the individual-level data described in part (i)? What
+econometric method would you use?
+\end{enumerate}
+\resolespaco
+\begin{sol}
+\begin{notacao}
+\item $arrest_i\in\{0,1\}$: person $i$ arrested for drunk driving in the year; $y90_i$: observed in 1990;
+$FL_i$: lives in Florida (treated state); Georgia is the control.
+\item $\delta_1$: effect of the open-container law on the arrest probability; $x$: other factors;
+$arrrate_{ct}$: fraction of licensed drivers arrested in county $c$, year $t$; $a_c$: county effect.
+\end{notacao}
+
+\passo{(i) the model}{The linear probability model is
+\begin{equation}
+arrest_i=\beta_0+\delta_0\,y90_i+\beta_1\,FL_i+\delta_1\,y90_i\cdot FL_i+u_i.\label{q10:lpm}
+\end{equation}
+Taking expectations of \eqref{q10:lpm} in the four state--year cells and differencing as in Question 4:
+\begin{equation}
+\delta_1=\big[P(FL,90)-P(FL,85)\big]-\big[P(GA,90)-P(GA,85)\big],\label{q10:did}
+\end{equation}
+where $P(s,t)$ is the arrest probability in state $s$, year $t$. $\delta_1$ measures the effect of the law;
+test $H_0:\delta_1=0$ against $H_1:\delta_1<0$ with the $t$ statistic on the interaction
+(heteroskedasticity-robust, since an LPM is heteroskedastic).}
+
+\passo{(ii) controls}{The samples are independent cross sections, so their composition can change
+differently in the two states between 1985 and 1990; then \eqref{q10:did} would mix the law's effect with
+composition effects. Candidates: age, sex, income, education, urban residence, and state-level factors that
+may have changed differently, such as police enforcement and sobriety checkpoints, beer taxes, the legal
+blood-alcohol limit or the drinking age. Controls that do not change differently still help by lowering the
+residual variance and the standard error of $\hat\delta_1$.}
+
+\passo{(iii) county data}{Now the unit is the county, observed in both years: a two-period panel, and the
+outcome is a proportion. Write
+\begin{equation}
+arrrate_{ct}=\beta_0+\delta_0\,y90_t+\delta_1\,y90_t\cdot FL_c+x_{ct}'\gamma+a_c+u_{ct},\label{q10:panel}
+\end{equation}
+where $a_c$ is a time-constant county effect. First-differencing \eqref{q10:panel} between 1990 and 1985:
+\begin{equation}
+\Delta arrrate_c=\delta_0+\delta_1\,FL_c+\Delta x_c'\gamma+\Delta u_c,\label{q10:fd}
+\end{equation}
+which removes $a_c$ and is estimated by OLS on one observation per county (first-differencing, equal to
+fixed effects with two periods). Because the outcome is a fraction, weight by the number of licensed
+drivers, and since the law varies only at the state level with just two states, standard errors should
+allow for state-level correlation and be read with caution.}
+
+\intuicao{The individual design compares the change in Florida with the change in Georgia across
+different people; the county design follows the same counties, so differencing removes their permanent
+differences.}
+\refbib{W \S13.2 (pp.~406--412), policy analysis with pooled cross sections; \S13.3--13.4, two-period panels and first differencing.}
+\end{sol}
+
+% ---------------------------------------------------------------- Q11
+\questao{Wooldridge, Computer Exercise 13.C3.}
+\fonte{Wooldridge (2016), \textit{Introductory Econometrics: A Modern Approach}, 6th ed., Chapter 13,
+Computer Exercise C3, printed p.~427, reproduced verbatim.}
+
+\noindent\textbf{C3} Use the data in KIELMC for this exercise.
+\begin{enumerate}[label=(\roman*)]
+\item The variable $dist$ is the distance from each home to the incinerator site, in feet. Consider the model
+\[\log(price)=\beta_0+\delta_0y81+\beta_1\log(dist)+\delta_1y81\cdot\log(dist)+u.\]
+If building the incinerator reduces the value of homes closer to the site, what is the sign of $\delta_1$?
+What does it mean if $\beta_1>0$?
+\item Estimate the model from part (i) and report the results in the usual form. Interpret the coefficient
+on $y81\cdot\log(dist)$. What do you conclude?
+\item Add $age$, $age^2$, $rooms$, $baths$, $\log(intst)$, $\log(land)$, and $\log(area)$ to the equation.
+Now, what do you conclude about the effect of the incinerator on housing values?
+\item Why is the coefficient on $\log(dist)$ positive and statistically significant in part (ii) but not in
+part (iii)? What does this say about the controls used in part (iii)?
+\end{enumerate}
+\resolespaco
+\begin{sol}
+\begin{notacao}
+\item $\log(price)_i$: log selling price; $\log(dist)_i$: log distance to the incinerator site (feet);
+$y81_i$: sold in 1981.
+\item $\beta_1$: price--distance elasticity in 1978; $\beta_1+\delta_1$: the elasticity in 1981;
+$intst$: distance to the interstate; $land$, $area$: lot and house area (square feet).
+\end{notacao}
+
+\noindent\textit{Code} (KIELMC from the \texttt{wooldridge} package, saved as \texttt{Listas/data/kielmc.csv}):
+\begingroup\footnotesize
+\begin{verbatim}
+k  = pd.read_csv("Listas/data/kielmc.csv")
+m2 = smf.ols("lprice ~ y81 + ldist + y81ldist", k).fit()                          # part (ii)
+m3 = smf.ols("lprice ~ y81 + ldist + y81ldist + age + agesq + rooms + baths"
+             " + lintst + lland + larea", k).fit()                                # part (iii)
+\end{verbatim}
+\endgroup
+\noindent\textit{Key output:}
+\begingroup\footnotesize
+\begin{verbatim}
+(ii)  lprice ~ y81 + ldist + y81ldist          n = 321, R2 = 0.396
+             coef      se       t        p
+Intercept   8.058    0.508
+y81        -0.011    0.805
+ldist       0.317    0.052    6.15
+y81ldist    0.048    0.082    0.589    0.556
+(iii) + age, agesq, rooms, baths, lintst, lland, larea          R2 = 0.787
+y81        -0.2254   0.4947
+ldist       0.0009   0.0446   0.021
+y81ldist    0.0625   0.0503   1.242    0.215
+lintst     -0.0600;  larea 0.3507;  corr(ldist, lintst) = 0.781
+\end{verbatim}
+\endgroup
+
+\passo{(i) signs}{From the model, the price--distance elasticity is
+\begin{equation}
+\frac{\partial\log(price)}{\partial\log(dist)}=\beta_1+\delta_1\,y81,\label{q11:elas}
+\end{equation}
+equal to $\beta_1$ in 1978 and $\beta_1+\delta_1$ in 1981. If the incinerator lowers the value of nearby
+homes, being farther away becomes worth more after it is built, so the elasticity rises: $\delta_1>0$.
+$\beta_1>0$ means that already in 1978, before the incinerator was rumored, homes farther from the future
+site sold for more: the site was in a less valuable area (as Example 13.3 found with $nearinc$).}
+
+\passo{(ii) estimates}{The results in the usual form:
+\begin{equation}
+\widehat{\log(price)}=\underset{(0.508)}{8.058}-\underset{(0.805)}{0.011}\,y81+\underset{(0.052)}{0.317}\log(dist)+\underset{(0.082)}{0.048}\,y81\cdot\log(dist),\quad n=321,\ R^2=0.396.\label{q11:ii}
+\end{equation}
+By \eqref{q11:elas}, after the incinerator a 1\% greater distance adds about 0.048\% more to the price than
+before. The $t$ statistic is $(0.0482)/(0.0818)=0.589$ ($p=0.556$): the sign is as predicted but there is no
+statistical evidence of an incinerator effect.}
+
+\passo{(iii) with controls}{With the house characteristics, $\hat\delta_1=0.0625$ (0.0503), $t=1.242$,
+$p=0.215$. The estimate is larger but still not significant at conventional levels, so this specification,
+which uses distance rather than the \emph{nearinc} dummy, gives no firm evidence that the incinerator lowered
+housing values (contrast the $-.132$, $t\approx-2.53$, that Wooldridge reports with $nearinc$ and the same controls).}
+
+\passo{(iv) the role of the controls}{In (ii) $\log(dist)$ has coefficient 0.317 with $t=6.15$; in (iii)
+0.0009 with $t=0.021$. Homes far from the site differ systematically: they are larger, on larger lots, newer,
+and farther from the interstate ($\operatorname{corr}(\log dist,\log intst)=0.781$). In (ii) $\log(dist)$ picks
+up these characteristics (omitted-variable bias); in (iii) they are controlled for and the pure location
+effect of distance vanishes. So the controls capture what made distant homes more expensive before the
+incinerator, which is exactly why they belong in the DiD regression.}
+
+\intuicao{A continuous treatment intensity (distance) replaces the near/far dummy; the DiD logic is the
+same, but now the identifying variation is the change in the price--distance gradient.}
+\refbib{W Example 13.3 (pp.~407--410); Kiel and McClain (1995); MHE \S5.2 (pp.~169--181), regression DD with covariates.}
+\end{sol}
+
+% =============================================================================
+\bloco{4}{Bayesian treatment models}{Greenberg Ch.~11 \,\textbullet\, Questions 12--15}
+
+\noindent\textit{Context for Questions 12--15} (Greenberg 2007, \S11.1, printed pp.~169--172; the model and
+the results the exercises refer to, reproduced verbatim, selected passages). The response is related to the
+covariates and the treatment assignment through
+\[
+y_{0i}=x_i'\beta_0+u_{0i},\qquad y_{1i}=x_i'\beta_1+u_{1i},\tag{11.1}
+\]
+``where $x_i$ is a $K_1$ vector of covariates, a 0 subscript indicates assignment to the control group, and
+1 indicates assignment to the treatment group.'' Assignment is modeled by
+\[
+s_i^*=x_i'\gamma_1+z_i'\gamma_2+v_i,\qquad s_i=\begin{cases}1,&\text{if }s_i^*>0,\\0,&\text{if }s_i^*\leq0,\end{cases}\tag{11.2}
+\]
+\[
+y_i=(1-s_i)y_{0i}+s_iy_{1i},\tag{11.3}
+\]
+``where $z_i$ is a $K_2\times1$ vector of instrumental variables.''
+\[
+\operatorname{Cov}(u_{0i},v_i)\equiv\Sigma_0=\begin{pmatrix}\sigma_{00}&\sigma_{0v}\\\sigma_{0v}&1\end{pmatrix},\qquad
+\operatorname{Cov}(u_{1i},v_i)\equiv\Sigma_1=\begin{pmatrix}\sigma_{11}&\sigma_{1v}\\\sigma_{1v}&1\end{pmatrix},
+\]
+``where $\sigma_{vv}=1$ because of the probit specification.'' ``Let $\beta=(\beta_0',\beta_1',\gamma_1',\gamma_2')'$,
+$\gamma=(\gamma_1',\gamma_2')'$,
+$X_{ji}=\begin{pmatrix}(1-j)x_i'&jx_i'&0&0\\0&0&x_i'&z_i'\end{pmatrix}$, [\dots] $N_0=\{i:s_i=0\}$,
+$N_1=\{i:s_i=1\}$, and $n_0$ and $n_1$, respectively, are the number of observations in $N_0$ and $N_1$. We
+assume a Gaussian prior distribution for $\beta\sim N_p(b_0,B_0)$, where $p=3K_1+K_2$. [\dots] we
+reparameterize the variances in $\Sigma_j$ as $\omega_{jj}=\sigma_{jj}-\sigma_{jv}^2$ [\dots]. We define
+$\psi_j=(\omega_{jj},\sigma_{jv})$ and specify the prior distributions
+$\pi(\psi_j)=\pi(\omega_{jj})\pi(\sigma_{jv}\mid\omega_{jj})=\mathrm{IG}(\nu_{j0}/2,d_{j0}/2)N(m_{j0},\omega_{jj}M_{j0})$.''
+\[
+y_{ji}\mid s_i^*,\beta_j,\gamma,\psi_j\sim N(x_i'\beta_j+\sigma_{jv}e_i,\omega_{jj}),\tag{11.4}
+\]
+``where $e_i=s_i^*-x_i'\gamma_1-z_i'\gamma_2$. Let $Y_j$, $X_j$, $Z_j$, $S_j^*$, and $E_j$, respectively, contain
+the values of $y_{ji}$, $x_i$, $z_i$, $s_i^*$, and $e_i$ for $i\in N_j$. Then''
+\[
+Y_j\mid S_j^*,\beta_j,\gamma,\psi_j\sim N_{n_j}\big(X_j\beta_j+\sigma_{jv}E_j,\ \omega_{jj}I_{n_j}\big).\tag{11.5}
+\]
+\[
+E(Y_j\mid S_j^*,\beta_j,\gamma,\omega_{jj})=X_j\beta_j+m_{j0}E_j,\tag{11.6}
+\]
+\[
+\operatorname{Var}(Y_j\mid S_j^*,\gamma,\omega_{jj})=\omega_{jj}\big(I_{n_j}+E_jM_{j0}E_j'\big).\tag{11.7}
+\]
+\[
+f(y_{ji},s_i=j\mid x_i,z_i,\beta,\psi_j)=N(y_{ji}\mid x_i'\beta_j,\sigma_{jj})\,\Phi\!\left((2j-1)\frac{\mu_{ji}}{\phi_j}\right).\tag{11.8}
+\]
+\textbf{Algorithm 11.1: Gibbs algorithm for treatment model (Chib, in press-a)}
+\begin{description}[leftmargin=2.2em,font=\normalfont\bfseries]
+\item[11.1] Sample $\psi_j$ conditioned on $(y,s^*,X,Z,\beta)$\\
+(a) Drawing $\omega_{jj}$ marginalized over $\sigma_{jv}$ from
+$\mathrm{IG}\left(\frac{\nu_{j0}+n_j}{2},\frac{d_{j0}+d_j}{2}\right)$, where
+$d_j=(Y_j-X_j\beta_j-m_{j0}E_j)'\big(I_{n_j}+E_jM_{j0}E_j'\big)^{-1}(Y_j-X_j\beta_j-m_{j0}E_j)$,\\
+(b) Drawing $\sigma_{jv}$ conditioned on $\omega_{jj}$ from $N(c_j,\omega_{jj}C_j)$, where
+$c_j=C_j\big[M_{j0}^{-1}m_{j0}+E_j'(Y_j-X_j\beta_j)\big]$, $C_j=\big(M_{j0}^{-1}+E_j'E_j\big)^{-1}$.
+\item[11.2] Sample $\beta$ conditioned on $(y,s^*,\psi_0,\psi_1)$ from $N_p(\hat\beta,B)$, where
+$\hat\beta=B\big(B_0^{-1}b_0+\sum_{i\in N_0}X_{0i}'\Sigma_0^{-1}y_i^*+\sum_{i\in N_1}X_{1i}'\Sigma_1^{-1}y_i^*\big)$,
+$B=\big(B_0^{-1}+\sum_{i\in N_0}X_{0i}'\Sigma_0^{-1}X_{0i}+\sum_{i\in N_1}X_{1i}'\Sigma_1^{-1}X_{1i}\big)^{-1}$,
+and $y_i^*=(y_i,s_i^*)'$.
+\item[11.3] Sample $s^*$ conditioned on $(y,X,Z,\beta,\psi_0,\psi_1)$ by drawing $s_i^*$ from
+$\mathrm{TN}_{(-\infty,0)}(\mu_{0i},\phi_0^2)$ if $s_i=0$, $\mathrm{TN}_{(0,\infty)}(\mu_{1i},\phi_1^2)$ if $s_i=1$, where
+$\mu_{ji}=x_i'\gamma_1+z_i'\gamma_2+\sigma_{jv}\sigma_{jj}^{-1}(y_{ji}-x_i'\beta_j)$, $\phi_j^2=1-\sigma_{jv}^2\sigma_{jj}^{-1}$.
+\end{description}
+
+\noindent\textit{Common notation for the solutions.} $j\in\{0,1\}$: untreated/treated; $\Phi$: standard
+normal c.d.f.; $\mathrm{IG}(\alpha,\beta)$ has density proportional to $\omega^{-(\alpha+1)}e^{-\beta/\omega}$
+($\omega>0$); $\mathrm{TN}_{(a,b)}$: normal truncated to $(a,b)$. The bivariate-normal conditioning rule
+(Greenberg, Appendix A, eq.~A.9) is used throughout: if $(a,b)'$ is bivariate normal,
+\[
+a\mid b\sim N\!\left(\mu_a+\frac{\sigma_{ab}}{\sigma_{bb}}(b-\mu_b),\ \sigma_{aa}-\frac{\sigma_{ab}^2}{\sigma_{bb}}\right).\tag{A.9}
+\]
+
+% ---------------------------------------------------------------- Q12
+\questao{Greenberg, Exercise 11.1.}
+\fonte{Greenberg (2007), \textit{Introduction to Bayesian Econometrics}, 1st ed., Chapter 11, Exercise
+11.1, printed p.~180, reproduced verbatim.}
+
+\noindent\textbf{11.1} Verify (11.4).
+\resolespaco
+\begin{sol}
+\begin{notacao}
+\item $u_{ji},v_i$: errors of the outcome and assignment equations, jointly $N_2(0,\Sigma_j)$;
+$\sigma_{jj}>0$, $\sigma_{jv}$ real, $\omega_{jj}=\sigma_{jj}-\sigma_{jv}^2>0$.
+\item $e_i=s_i^*-x_i'\gamma_1-z_i'\gamma_2$: the value of $v_i$ implied by $s_i^*$ and $\gamma$.
+\end{notacao}
+
+\passo{the ingredients}{From (11.1), (11.2) and the covariance matrix $\Sigma_j$:
+\begin{align}
+y_{ji}&=x_i'\beta_j+u_{ji},\label{q12:y}\\
+s_i^*&=x_i'\gamma_1+z_i'\gamma_2+v_i,\label{q12:s}\\
+\begin{pmatrix}u_{ji}\\v_i\end{pmatrix}&\sim N_2\!\left(\begin{pmatrix}0\\0\end{pmatrix},\begin{pmatrix}\sigma_{jj}&\sigma_{jv}\\\sigma_{jv}&1\end{pmatrix}\right),\label{q12:joint}\\
+\sigma_{jj}&=\omega_{jj}+\sigma_{jv}^2.\label{q12:omega}
+\end{align}}
+
+\passo{conditioning on $s^*$ fixes $v$}{Given $s_i^*$ and $\gamma$, solving \eqref{q12:s} for $v_i$:
+\begin{equation}
+v_i=s_i^*-x_i'\gamma_1-z_i'\gamma_2=e_i.\label{q12:e}
+\end{equation}
+So conditioning on $(s_i^*,\gamma)$ is conditioning on $v_i=e_i$.}
+
+\passo{conditional distribution of $u$}{Apply (A.9) with $a=u_{ji}$, $b=v_i$, and from \eqref{q12:joint}
+$\mu_a=\mu_b=0$, $\sigma_{aa}=\sigma_{jj}$, $\sigma_{ab}=\sigma_{jv}$, $\sigma_{bb}=1$. The mean is
+\begin{align}
+E(u_{ji}\mid v_i)&=(0)+\frac{(\sigma_{jv})}{(1)}\big(v_i-(0)\big)\label{q12:m1}\\
+&=\sigma_{jv}e_i,\label{q12:m2}
+\end{align}
+using \eqref{q12:e}. The variance is
+\begin{align}
+\operatorname{Var}(u_{ji}\mid v_i)&=(\sigma_{jj})-\frac{(\sigma_{jv})^2}{(1)}\label{q12:v1}\\
+&=\omega_{jj},\label{q12:v2}
+\end{align}
+by \eqref{q12:omega}.}
+
+\passo{back to $y$}{Given $(s_i^*,\beta_j,\gamma,\psi_j)$, $x_i'\beta_j$ in \eqref{q12:y} is a constant, so
+$y_{ji}$ is $u_{ji}$ shifted by $x_i'\beta_j$. Substituting \eqref{q12:m2} and \eqref{q12:v2}:
+\begin{equation}
+y_{ji}\mid s_i^*,\beta_j,\gamma,\psi_j\sim N\big(x_i'\beta_j+(\sigma_{jv}e_i),\ (\omega_{jj})\big),\label{q12:res}
+\end{equation}
+which is (11.4). The distribution depends on $\psi_j=(\omega_{jj},\sigma_{jv})$ only, which is why the
+reparameterization was chosen. Independence across $i$ then stacks \eqref{q12:res} into (11.5).}
+
+\intuicao{Once the latent assignment index is known, the assignment error $v_i$ is known, and the part of
+the outcome error correlated with it, $\sigma_{jv}e_i$, becomes a regressor: this is a Bayesian control
+function, the analogue of adding $\hat v_2$ in Question 8.}
+\refbib{Greenberg \S11.1 (pp.~168--172) and Appendix A (eq.~A.9); compare the control-function test of W \S15.5 (Question 8).}
+\end{sol}
+
+% ---------------------------------------------------------------- Q13
+\questao{Greenberg, Exercise 11.2.}
+\fonte{Greenberg (2007), \textit{Introduction to Bayesian Econometrics}, 1st ed., Chapter 11, Exercise
+11.2, printed p.~180, reproduced verbatim.}
+
+\noindent\textbf{11.2} Verify (11.6) and (11.7).
+\resolespaco
+\begin{sol}
+\begin{notacao}
+\item $Y_j,X_j,E_j$: stacked $y_{ji}$, $x_i'$, $e_i$ for $i\in N_j$ ($n_j\times1$, $n_j\times K_1$, $n_j\times1$).
+\item $m_{j0}$, $M_{j0}>0$: prior mean and scale of $\sigma_{jv}$ given $\omega_{jj}$; $\eta_j$: prior
+deviation of $\sigma_{jv}$ from $m_{j0}$; $\varepsilon_j$: the $n_j$-vector of conditional errors in (11.5).
+\end{notacao}
+
+\passo{model and prior}{(11.5) and the prior on $\sigma_{jv}$ are
+\begin{align}
+Y_j&=X_j\beta_j+\sigma_{jv}E_j+\varepsilon_j,\qquad\varepsilon_j\sim N_{n_j}(0,\omega_{jj}I_{n_j}),\label{q13:model}\\
+\sigma_{jv}&=m_{j0}+\eta_j,\qquad\eta_j\sim N(0,\omega_{jj}M_{j0}),\label{q13:prior}
+\end{align}
+with $\eta_j$ independent of $\varepsilon_j$ given $\omega_{jj}$ (prior information versus sampling noise).}
+
+\passo{marginalize $\sigma_{jv}$}{Substituting \eqref{q13:prior} into \eqref{q13:model}:
+\begin{equation}
+Y_j=X_j\beta_j+(m_{j0}+\eta_j)E_j+\varepsilon_j.\label{q13:sub}
+\end{equation}
+Separating the fixed and random parts of \eqref{q13:sub}:
+\begin{equation}
+Y_j=X_j\beta_j+m_{j0}E_j+\big(\eta_jE_j+\varepsilon_j\big).\label{q13:split}
+\end{equation}
+Given $(S_j^*,\gamma)$, $E_j$ is fixed, so $\eta_jE_j+\varepsilon_j$ is a linear combination of independent
+normals and is normal.}
+
+\passo{the mean}{Taking expectations of the bracket in \eqref{q13:split}:
+\begin{equation}
+E\big(\eta_jE_j+\varepsilon_j\big)=E_j\,E(\eta_j)+E(\varepsilon_j)=E_j(0)+(0)=0,\label{q13:mean}
+\end{equation}
+so $E(Y_j\mid S_j^*,\beta_j,\gamma,\omega_{jj})=X_j\beta_j+m_{j0}E_j$, which is (11.6).}
+
+\passo{the variance}{By independence of $\eta_j$ and $\varepsilon_j$,
+\begin{align}
+\operatorname{Var}\big(\eta_jE_j+\varepsilon_j\big)&=E_j\operatorname{Var}(\eta_j)E_j'+\operatorname{Var}(\varepsilon_j)\label{q13:v1}\\
+&=E_j(\omega_{jj}M_{j0})E_j'+(\omega_{jj}I_{n_j})\label{q13:v2}\\
+&=\omega_{jj}\big(I_{n_j}+E_jM_{j0}E_j'\big),\label{q13:v3}
+\end{align}
+substituting the variances from \eqref{q13:model}--\eqref{q13:prior} in \eqref{q13:v2} and factoring
+$\omega_{jj}$ in \eqref{q13:v3}. This is (11.7). (The variance does not involve $\beta_j$, which is why the
+book omits it from the conditioning set in (11.7).)}
+
+\intuicao{Integrating out $\sigma_{jv}$ turns its prior uncertainty into extra, correlated noise along the
+direction $E_j$: observations with large $|e_i|$ get more variance because the control-function term is
+uncertain.}
+\refbib{Greenberg \S11.1 (pp.~170--171); conjugate normal--inverse-gamma regression, Greenberg Ch.~4.}
+\end{sol}
+
+% ---------------------------------------------------------------- Q14
+\questao{Greenberg, Exercise 11.3.}
+\fonte{Greenberg (2007), \textit{Introduction to Bayesian Econometrics}, 1st ed., Chapter 11, Exercise
+11.3, printed p.~181, reproduced verbatim.}
+
+\noindent\textbf{11.3} Verify (11.8).
+\resolespaco
+\begin{sol}
+\begin{notacao}
+\item $f(y_{ji},s_i=j\mid\cdot)$: joint density of the observed outcome and probability of the observed
+assignment for unit $i$ in group $j$; $N(y\mid m,s^2)$: normal density at $y$.
+\item $\mu_{ji}$, $\phi_j^2$: conditional mean and variance of $s_i^*$ given $y_{ji}$ (defined in step 11.3);
+$\Phi(-a)=1-\Phi(a)$.
+\end{notacao}
+
+\passo{factor the joint}{Write the joint as marginal times conditional:
+\begin{equation}
+f(y_{ji},s_i=j\mid\cdot)=f(y_{ji}\mid\cdot)\,P(s_i=j\mid y_{ji},\cdot).\label{q14:fac}
+\end{equation}}
+
+\passo{the marginal of $y$}{From \eqref{q12:y} and \eqref{q12:joint} in Question 12,
+$u_{ji}\sim N(0,\sigma_{jj})$, so
+\begin{equation}
+f(y_{ji}\mid\cdot)=N(y_{ji}\mid x_i'\beta_j,\sigma_{jj}).\label{q14:marg}
+\end{equation}}
+
+\passo{$s^*$ given $y$}{$(y_{ji},s_i^*)$ is bivariate normal with means $(x_i'\beta_j,\ x_i'\gamma_1+z_i'\gamma_2)$,
+variances $(\sigma_{jj},1)$ and covariance $\operatorname{Cov}(u_{ji},v_i)=\sigma_{jv}$. Apply (A.9) with
+$a=s_i^*$, $b=y_{ji}$:
+\begin{align}
+E(s_i^*\mid y_{ji})&=(x_i'\gamma_1+z_i'\gamma_2)+\frac{(\sigma_{jv})}{(\sigma_{jj})}\big(y_{ji}-x_i'\beta_j\big)=\mu_{ji},\label{q14:mu}\\
+\operatorname{Var}(s_i^*\mid y_{ji})&=(1)-\frac{(\sigma_{jv})^2}{(\sigma_{jj})}=\phi_j^2,\label{q14:phi}
+\end{align}
+the definitions in step 11.3 of Algorithm 11.1.}
+
+\passo{the probabilities}{For $j=1$, standardizing with \eqref{q14:mu}--\eqref{q14:phi}:
+\begin{align}
+P(s_i=1\mid y_{1i})&=P(s_i^*>0\mid y_{1i})=1-\Phi\!\left(\frac{0-\mu_{1i}}{\phi_1}\right)\label{q14:p1a}\\
+&=\Phi\!\left(\frac{\mu_{1i}}{\phi_1}\right),\label{q14:p1b}
+\end{align}
+by $1-\Phi(-a)=\Phi(a)$. For $j=0$:
+\begin{equation}
+P(s_i=0\mid y_{0i})=P(s_i^*\leq0\mid y_{0i})=\Phi\!\left(\frac{0-\mu_{0i}}{\phi_0}\right)=\Phi\!\left(-\frac{\mu_{0i}}{\phi_0}\right).\label{q14:p0}
+\end{equation}
+Since $2j-1=1$ for $j=1$ and $2j-1=-1$ for $j=0$, \eqref{q14:p1b} and \eqref{q14:p0} are both
+\begin{equation}
+P(s_i=j\mid y_{ji})=\Phi\!\left((2j-1)\frac{\mu_{ji}}{\phi_j}\right).\label{q14:both}
+\end{equation}}
+
+\passo{assemble}{Substituting \eqref{q14:marg} and \eqref{q14:both} into \eqref{q14:fac}:
+\begin{equation}
+f(y_{ji},s_i=j\mid x_i,z_i,\beta,\psi_j)=\big(N(y_{ji}\mid x_i'\beta_j,\sigma_{jj})\big)\Big(\Phi\!\left((2j-1)\tfrac{\mu_{ji}}{\phi_j}\right)\Big),\label{q14:res}
+\end{equation}
+which is (11.8); for $j=0$ it is the book's $N(y_{0i}\mid x_i'\beta_0,\sigma_{00})\Phi(-\mu_{0i}/\phi_0)$.}
+
+\intuicao{The likelihood contribution is ``probability of the outcome'' times ``probit probability of the
+observed assignment, updated by what the outcome reveals about the assignment error''; with $\sigma_{jv}=0$
+it splits into a regression and an ordinary probit.}
+\refbib{Greenberg \S11.1 (p.~172), marginal likelihood by Chib's method; \S8.2.2 (binary probit with latent data).}
+\end{sol}
+
+% ---------------------------------------------------------------- Q15
+\questao{Greenberg, Exercise 11.4.}
+\fonte{Greenberg (2007), \textit{Introduction to Bayesian Econometrics}, 1st ed., Chapter 11, Exercise
+11.4, printed p.~181, reproduced verbatim.}
+
+\noindent\textbf{11.4} Verify the conditional posterior distributions used in Algorithm 11.1.
+\resolespaco
+\begin{sol}
+\begin{notacao}
+\item $r_j=Y_j-X_j\beta_j-m_{j0}E_j$: residual from the marginal mean (11.6); $A_j=I_{n_j}+E_jM_{j0}E_j'$;
+$w_j=Y_j-X_j\beta_j$.
+\item $\epsilon_i=y_i^*-X_{ji}\beta$: the $2\times1$ error of unit $i\in N_j$, $\epsilon_i\sim N_2(0,\Sigma_j)$;
+$\propto$: proportional to, as a function of the parameter being sampled.
+\end{notacao}
+
+\passo{(a) $\omega_{jj}$ marginalized over $\sigma_{jv}$}{By Bayes, using the marginal density of $Y_j$ from
+Question 13 and the IG prior:
+\begin{equation}
+\pi(\omega_{jj}\mid\cdot)\propto N_{n_j}\big(Y_j\mid X_j\beta_j+m_{j0}E_j,\ \omega_{jj}A_j\big)\ \pi(\omega_{jj}).\label{q15:a0}
+\end{equation}
+The normal density is proportional to $|\omega_{jj}A_j|^{-1/2}\exp\{-r_j'(\omega_{jj}A_j)^{-1}r_j/2\}$, and
+$|\omega_{jj}A_j|=\omega_{jj}^{n_j}|A_j|$, so
+\begin{equation}
+N_{n_j}(\cdot)\propto\omega_{jj}^{-n_j/2}\exp\left\{-\frac{d_j}{2\omega_{jj}}\right\},\qquad d_j=r_j'A_j^{-1}r_j.\label{q15:a1}
+\end{equation}
+The prior $\mathrm{IG}(\nu_{j0}/2,d_{j0}/2)$ is
+\begin{equation}
+\pi(\omega_{jj})\propto\omega_{jj}^{-(\nu_{j0}/2+1)}\exp\left\{-\frac{d_{j0}}{2\omega_{jj}}\right\}.\label{q15:a2}
+\end{equation}
+Substituting \eqref{q15:a1} and \eqref{q15:a2} into \eqref{q15:a0}:
+\begin{align}
+\pi(\omega_{jj}\mid\cdot)&\propto\left(\omega_{jj}^{-n_j/2}e^{-d_j/(2\omega_{jj})}\right)\left(\omega_{jj}^{-(\nu_{j0}/2+1)}e^{-d_{j0}/(2\omega_{jj})}\right)\label{q15:a3}\\
+&=\omega_{jj}^{-\left(\frac{\nu_{j0}+n_j}{2}+1\right)}\exp\left\{-\frac{d_{j0}+d_j}{2\,\omega_{jj}}\right\},\label{q15:a4}
+\end{align}
+the kernel of $\mathrm{IG}\big((\nu_{j0}+n_j)/2,(d_{j0}+d_j)/2\big)$, with $d_j$ as in step 11.1(a).}
+
+\passo{(b) $\sigma_{jv}$ given $\omega_{jj}$}{The likelihood (11.5) and the prior give
+\begin{equation}
+\pi(\sigma_{jv}\mid\omega_{jj},\cdot)\propto\exp\left\{-\frac{(w_j-\sigma_{jv}E_j)'(w_j-\sigma_{jv}E_j)}{2\omega_{jj}}\right\}\exp\left\{-\frac{(\sigma_{jv}-m_{j0})^2}{2\omega_{jj}M_{j0}}\right\}.\label{q15:b0}
+\end{equation}
+Multiplying the exponent of \eqref{q15:b0} by $-2\omega_{jj}$ and expanding:
+\begin{equation}
+\sigma_{jv}^2E_j'E_j-2\sigma_{jv}E_j'w_j+w_j'w_j+M_{j0}^{-1}\big(\sigma_{jv}^2-2\sigma_{jv}m_{j0}+m_{j0}^2\big).\label{q15:b1}
+\end{equation}
+Collecting powers of $\sigma_{jv}$ in \eqref{q15:b1}:
+\begin{equation}
+\sigma_{jv}^2\big(M_{j0}^{-1}+E_j'E_j\big)-2\sigma_{jv}\big(M_{j0}^{-1}m_{j0}+E_j'w_j\big)+\text{const}.\label{q15:b2}
+\end{equation}
+With $C_j=(M_{j0}^{-1}+E_j'E_j)^{-1}$ and $c_j=C_j(M_{j0}^{-1}m_{j0}+E_j'w_j)$, \eqref{q15:b2} is
+\begin{equation}
+C_j^{-1}\big(\sigma_{jv}-c_j\big)^2+\text{const},\label{q15:b3}
+\end{equation}
+so $\pi(\sigma_{jv}\mid\omega_{jj},\cdot)\propto\exp\{-(\sigma_{jv}-c_j)^2/(2\omega_{jj}C_j)\}$, i.e.\
+$N(c_j,\omega_{jj}C_j)$ with $w_j=Y_j-X_j\beta_j$, as in step 11.1(b).}
+
+\passo{(c) $\beta$}{For $i\in N_j$ stack $y_i^*=(y_i,s_i^*)'$. By the definition of $X_{ji}$,
+\begin{equation}
+X_{ji}\beta=\begin{pmatrix}(1-j)x_i'\beta_0+jx_i'\beta_1\\x_i'\gamma_1+z_i'\gamma_2\end{pmatrix},\qquad y_i^*=X_{ji}\beta+\epsilon_i,\quad\epsilon_i\sim N_2(0,\Sigma_j),\label{q15:c0}
+\end{equation}
+a SUR system. Prior times likelihood:
+\begin{equation}
+\pi(\beta\mid\cdot)\propto\exp\left\{-\tfrac12(\beta-b_0)'B_0^{-1}(\beta-b_0)\right\}\prod_{j=0}^{1}\prod_{i\in N_j}\exp\left\{-\tfrac12(y_i^*-X_{ji}\beta)'\Sigma_j^{-1}(y_i^*-X_{ji}\beta)\right\}.\label{q15:c1}
+\end{equation}
+Multiplying the exponent of \eqref{q15:c1} by $-2$ and collecting terms in $\beta$:
+\begin{equation}
+\beta'\Big(B_0^{-1}+\sum_{j}\sum_{i\in N_j}X_{ji}'\Sigma_j^{-1}X_{ji}\Big)\beta-2\beta'\Big(B_0^{-1}b_0+\sum_{j}\sum_{i\in N_j}X_{ji}'\Sigma_j^{-1}y_i^*\Big)+\text{const}.\label{q15:c2}
+\end{equation}
+Writing the first bracket as $B^{-1}$ and the second as $B^{-1}\hat\beta$, \eqref{q15:c2} becomes
+\begin{equation}
+(\beta-\hat\beta)'B^{-1}(\beta-\hat\beta)+\text{const},\label{q15:c3}
+\end{equation}
+so $\beta\mid\cdot\sim N_p(\hat\beta,B)$ with $B$ and $\hat\beta$ exactly as in step 11.2.}
+
+\passo{(d) $s_i^*$}{Given everything else, $s_i^*$ enters only unit $i$'s joint density and the indicator
+that ties it to the observed $s_i$:
+\begin{equation}
+\pi(s_i^*\mid\cdot)\propto N_2\big(y_i^*\mid X_{ji}\beta,\Sigma_j\big)\big[1(s_i=0)1(s_i^*\leq0)+1(s_i=1)1(s_i^*>0)\big].\label{q15:d0}
+\end{equation}
+Factor the bivariate density as $f(y_{ji})f(s_i^*\mid y_{ji})$; $f(y_{ji})$ does not involve $s_i^*$, and by
+\eqref{q14:mu}--\eqref{q14:phi} of Question 14 $f(s_i^*\mid y_{ji})=N(s_i^*\mid\mu_{ji},\phi_j^2)$. Substituting
+into \eqref{q15:d0}:
+\begin{equation}
+\pi(s_i^*\mid\cdot)\propto N\big(s_i^*\mid\mu_{ji},\phi_j^2\big)\big[1(s_i=0)1(s_i^*\leq0)+1(s_i=1)1(s_i^*>0)\big],\label{q15:d1}
+\end{equation}
+i.e.\ $\mathrm{TN}_{(-\infty,0)}(\mu_{0i},\phi_0^2)$ when $s_i=0$ and $\mathrm{TN}_{(0,\infty)}(\mu_{1i},\phi_1^2)$ when
+$s_i=1$, as in step 11.3 (whether $0$ is included is a set of probability zero).}
+
+\intuicao{Every block is conjugate once the latent $s^*$ is filled in: given $s^*$ the model is a normal
+SUR regression with a control-function term, so the Gibbs sampler only cycles through inverse-gamma,
+normal and truncated-normal draws.}
+\refbib{Greenberg \S11.1 (pp.~170--172), Algorithm 11.1; \S9.1 (pp.~134--139), SUR; \S8.2.2, truncated-normal latent data.}
+\end{sol}
+
+\end{document}

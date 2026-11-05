@@ -1,0 +1,3478 @@
+% =============================================================================
+% Poisson inference and Monte Carlo methods for inference --- book exercises (verbatim statements),
+% original math and conceptual questions, every one with a programming part; full solutions.
+% Built from the MPE exam template (lista-exam.tex). One source, two outputs:
+%   \solucoesfalse  -> blank list (space to work)
+%   \solucoestrue   -> answer key (same file)
+% Compile: pdflatex (2x); check: pdffonts <file>.pdf (Type 1 only).
+% Every number printed in the solutions is reproduced and asserted by
+%   python Listas/poisson-monte-carlo-check.py
+% Scaffold notebook for the programming parts: Listas/lista-poisson-monte-carlo.ipynb
+% =============================================================================
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}   % Type 1 vector fonts (replaces PK bitmaps)
+\usepackage{cmap}      % ToUnicode CMap -> copyable text and accents
+\usepackage[brazil,english]{babel}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage[a4paper,margin=2.2cm]{geometry}
+\usepackage{enumitem}
+\usepackage{fancyhdr}
+\usepackage{comment}
+% One cut file per job: parallel builds in one folder would otherwise share comment.cut and
+% swap solutions. Redefine DefaultCutFileName; overriding CommentCutFile alone is reset by comment.sty.
+\def\DefaultCutFileName{\def\CommentCutFile{\jobname.cut}}
+\usepackage{needspace}
+\usepackage{xcolor}
+\usepackage{microtype}
+\usepackage{booktabs}
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.16}
+
+% ====================== CONFIGURATION ======================
+\newif\ifsolucoes
+\solucoesfalse                 % <<<< \solucoestrue for the ANSWER KEY; \solucoesfalse for the LIST
+
+\newcommand{\disciplina}{Econometria Avançada --- MPE (Insper)}
+\newcommand{\listatema}{\textit{Poisson inference and Monte Carlo methods for inference}}
+\newcommand{\espacoresol}{4.5cm}   % height of the working space in the blank list
+
+% ====================== MACHINERY ======================
+\ifsolucoes\includecomment{sol}\else\excludecomment{sol}\fi
+
+\pagestyle{fancy}\fancyhf{}
+\lhead{\footnotesize\disciplina}
+\rhead{\footnotesize Poisson \& Monte Carlo\ifsolucoes{} --- Solutions\fi}
+\cfoot{\footnotesize\thepage}
+\renewcommand{\headrulewidth}{0.3pt}
+\setlength{\headheight}{14pt}
+
+\setlist{topsep=2pt,itemsep=2pt}
+\newcounter{questao}
+\numberwithin{equation}{questao}   % equation (q.m): question q, equation m
+
+% Block header (one block per topic)
+\newcommand{\bloco}[3]{\bigskip\noindent
+  {\large\bfseries\color{blue!55!black}Block #1 --- #2}\hfill\textit{(#3)}\par
+  \noindent\rule{\linewidth}{0.3pt}\smallskip}
+
+% Question (automatic numbering)
+\newcommand{\questao}[1]{\refstepcounter{questao}\medskip\needspace{5\baselineskip}\noindent
+  \textbf{Question \thequestao.}~#1\par}
+% Source line that opens every question
+\newcommand{\fonte}[1]{\par\noindent{\small\textbf{Source:} #1}\par\smallskip}
+% Programming part added to every question
+\newcommand{\programacao}{\par\smallskip\noindent\textbf{Programming (added, not in the book).}~}
+% Multiple-choice options and key
+\newenvironment{alternativas}{\begin{enumerate}[label=\Alph*.,leftmargin=2.2em,topsep=1pt]}{\end{enumerate}}
+\newcommand{\gabarito}[1]{\ifsolucoes\par\noindent\textbf{Key:}~#1\fi}
+% Notation list that opens every solution (estilo-avaliacao §4, "Equations, notation and layout").
+\newenvironment{notacao}{\par\smallskip\noindent\textbf{Notation.}\begin{itemize}[leftmargin=1.4em,topsep=1pt,itemsep=0pt]\small}{\end{itemize}}
+\allowdisplaybreaks
+\setlength{\emergencystretch}{3em}   % long \texttt seeds and function names
+
+% Working space in the blank list
+\newcommand{\resolespaco}{\ifsolucoes\else\par\textit{Solution:}\vspace{\espacoresol}\par\fi}
+
+% Solution step (use inside sol)
+\newcommand{\passo}[2]{\par\smallskip\noindent\textbf{Step --- #1.}~#2}
+\newcommand{\intuicao}[1]{\par\smallskip\noindent\textit{Intuition.}~#1}
+\newcommand{\refbib}[1]{\par\smallskip\noindent{\footnotesize\color{black!60}\textbf{Ref:} #1}}
+\newcommand{\rubrica}[1]{\par\needspace{4\baselineskip}\smallskip\noindent\textbf{Grading rubric.}\begin{itemize}[leftmargin=1.4em,topsep=1pt]\small#1\end{itemize}}
+\newcommand{\solhead}{\par\medskip\noindent{\color{blue!55!black}\rule{\linewidth}{0.3pt}}\par\noindent\textbf{Solution.}}
+\newcommand{\codehead}{\par\smallskip\noindent\textbf{Code and output (programming part).}\par}
+
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\Var}{\operatorname{Var}}
+\newcommand{\Cov}{\operatorname{Cov}}
+\newcommand{\1}{\mathbf{1}}
+
+% =============================================================================
+\begin{document}
+\begin{center}
+  {\Large\bfseries \disciplina}\\[2pt]
+  {\large Exercise list: \listatema}\ifsolucoes\\[2pt]\textit{Solutions}\fi
+\end{center}
+\vspace{2pt}
+
+{\footnotesize\noindent\textbf{Instructions.} Seven blocks, from Poisson likelihood theory to MCMC.
+Each block has (i) textbook exercises reproduced verbatim from the book PDF (statements from
+Portuguese-language books stay in Portuguese), (ii) an original math question (derivations and
+proofs, ending with a parameter analysis) and (iii) an original conceptual question in exam form.
+Every question carries a \emph{Programming} part added to the book's text: solve it in Python
+(NumPy/SciPy/statsmodels) with the seeds given; the scaffold notebook
+\texttt{Listas/lista-poisson-monte-carlo.ipynb} lists the steps. The script
+\texttt{Listas/poisson-monte-carlo-check.py} reproduces and asserts every number printed in the
+solutions. Multiple choice (3 points): one correct option, no penalty. True/False (2 points): score
+$=\max\{0,\text{correct}-\text{wrong}/2\}\times$ item value; blank items do not count. Book
+abbreviations: B = Bolfarine \& Sandoval (2010), G = Greenberg (2008, 1st ed.), I = ISLP (2023),
+MS = Morettin \& Singer (2021). The coal-mining series used throughout (British mine disasters per
+year, 1851--1962, Jarrett 1979) is
+\par\smallskip
+\noindent\texttt{1851--1878: 4 5 4 1 0 4 3 4 0 6 3 3 4 0 2 6 3 3 5 4 5 3 1 4 4 1 5 5}\\
+\texttt{1879--1906: 3 4 2 5 2 2 3 4 2 1 3 2 2 1 1 1 1 3 0 0 1 0 1 1 0 0 3 1}\\
+\texttt{1907--1934: 0 3 2 2 0 1 1 1 0 1 0 1 0 0 0 2 1 0 0 0 1 1 0 2 3 3 1 1}\\
+\texttt{1935--1962: 2 1 1 1 1 2 4 2 0 0 0 1 4 0 0 0 1 0 0 0 0 0 1 0 0 1 0 1}
+\par\smallskip\noindent
+($n=112$ years, 191 disasters; 127 in the first 41 years, 1851--1891).\par}
+
+% =============================================================================
+\bloco{1}{Poisson likelihood: sufficiency, information, Cramér--Rao, UMVU}{B 2.4, 2.6, 2.5; original}
+
+\questao{B 2.4 --- $X_1+2X_2$ is not sufficient for a Poisson mean.}
+\fonte{Bolfarine, H. and Sandoval, M.~C. (2010), \textit{Introdução à Inferência Estatística},
+Chapter~2, §2.6 Exercícios, Exercício~2.4, p.~32 [PDF p.~38]; the book gives no answer ---
+reproduced verbatim.}
+
+\begin{otherlanguage}{brazil}
+\textbf{2.4.} Sejam $X_1,X_2$ uma amostra aleatória da variável aleatória $X\sim\mathit{Poisson}(\theta)$.
+Mostre que $T=X_1+2X_2$ não é suficiente para $\theta$.
+\end{otherlanguage}
+\programacao Write \texttt{cond\_pmf(t, theta, w2)} that enumerates every pair $(x_1,x_2)$ with
+$x_1+w_2x_2=t$ and returns $P(X_1=x_1,X_2=x_2\mid X_1+w_2X_2=t)$. Print it for $T=X_1+2X_2$
+($w_2=2$) at $t=2$ and $t=4$, for $\theta=1$ and $\theta=2$. Repeat for $S=X_1+X_2$ ($w_2=1$) at
+$s=4$ and check that the result is the Binomial$(4,1/2)$ p.m.f.\ for both values of $\theta$.
+\resolespaco
+\begin{sol}
+\solhead
+\begin{notacao}
+\item $X_1,X_2$ i.i.d.\ Poisson$(\theta)$, $P(X=x)=\theta^xe^{-\theta}/x!$, $\theta>0$; $T=X_1+2X_2$; $S=X_1+X_2$.
+\item Sufficiency (Definição 2.2.1): $P(\mathbf X=\mathbf x\mid T=t)$ does not depend on $\theta$.
+\end{notacao}
+
+\passo{Pick a value of $T$}{The pairs with $T=2$ are}
+\begin{equation}\label{q1:set}
+\{T=2\}=\{(X_1,X_2)=(2,0)\}\cup\{(X_1,X_2)=(0,1)\}.
+\end{equation}
+
+\passo{Probabilities}{By independence,}
+\begin{align}
+P(X_1=2,X_2=0)&=\frac{\theta^2e^{-\theta}}{2!}\cdot e^{-\theta}=\frac{\theta^2e^{-2\theta}}{2}, \label{q1:p20}\\
+P(X_1=0,X_2=1)&=e^{-\theta}\cdot\theta e^{-\theta}=\theta e^{-2\theta}. \label{q1:p01}
+\end{align}
+Adding \eqref{q1:p20} and \eqref{q1:p01} as \eqref{q1:set} requires:
+\begin{equation}\label{q1:pT}
+P(T=2)=e^{-2\theta}\Big(\frac{\theta^2}{2}+\theta\Big).
+\end{equation}
+
+\passo{Conditional probability}{Dividing \eqref{q1:p20} by \eqref{q1:pT}:}
+\[
+P(X_1=2,X_2=0\mid T=2)=\frac{\theta^2e^{-2\theta}/2}{e^{-2\theta}(\theta^2/2+\theta)}=\frac{\theta^2/2}{\theta^2/2+\theta}.
+\]
+Dividing numerator and denominator by $\theta/2$:
+\begin{equation}\label{q1:cond}
+P(X_1=2,X_2=0\mid T=2)=\frac{\theta}{\theta+2},
+\end{equation}
+which depends on $\theta$ ($1/3=0.3333$ at $\theta=1$, $2/4=0.5$ at $\theta=2$). So $T$ is not
+sufficient.
+
+\passo{Contrast with $S$}{For $S=X_1+X_2$, $S\sim$ Poisson$(2\theta)$, and for $0\le x_1\le s$}
+\begin{equation}\label{q1:S}
+P(X_1=x_1\mid S=s)=\frac{\frac{\theta^{x_1}e^{-\theta}}{x_1!}\frac{\theta^{s-x_1}e^{-\theta}}{(s-x_1)!}}{\frac{(2\theta)^se^{-2\theta}}{s!}}
+=\binom{s}{x_1}\Big(\frac12\Big)^{s},
+\end{equation}
+free of $\theta$: $S$ is sufficient (as the factorization criterion also shows).
+
+\codehead
+{\small
+\begin{verbatim}
+def cond_pmf(t, theta, w2):
+    pts = [(t - w2 * x2, x2) for x2 in range(t // w2 + 1)]
+    pr = np.array([poisson.pmf(a, theta) * poisson.pmf(b, theta) for a, b in pts])
+    return pts, pr / pr.sum()
+# T=2:  theta=1 -> P((2,0)|T=2) = 0.3333 ; theta=2 -> 0.5000
+# T=4:  pairs (4,0),(2,1),(0,2): theta=1 -> 0.04, 0.48, 0.48
+#                                 theta=2 -> 0.10, 0.60, 0.30
+# S=4:  theta=1 and theta=2 -> 0.0625, 0.25, 0.375, 0.25, 0.0625 = Binomial(4, 1/2)
+\end{verbatim}
+}
+The $t=4$ row confirms \eqref{q1:cond} is not an accident of $t=2$: the conditional law moves with
+$\theta$, whereas \eqref{q1:S} does not.
+
+\intuicao{The sufficient statistic here is $X_1+X_2$. Weighting $X_2$ twice merges sample points with
+different totals: $T=2$ mixes ``two events'' with ``one event'', and the split between these cases
+still carries information about $\theta$.}
+\refbib{Bolfarine \& Sandoval (2010), §2.2 (estatísticas suficientes, pp.~20--23; Exemplo 2.2.4).}
+\end{sol}
+
+% -----------------------------------------------------------------------------
+\questao{B 2.6 --- the information identity.}
+\fonte{Bolfarine, H. and Sandoval, M.~C. (2010), \textit{Introdução à Inferência Estatística},
+Chapter~2, §2.6 Exercícios, Exercício~2.6, p.~33 [PDF p.~39]; the book gives no answer ---
+reproduced verbatim.}
+
+\begin{otherlanguage}{brazil}
+\textbf{2.6.} Seja $f(x|\theta)$ uma função densidade para a qual as condições de regularidade
+estão satisfeitas. Mostre que
+\[
+E\left[\left(\frac{\partial\log f(X|\theta)}{\partial\theta}\right)^2\right]
+=-E\left[\frac{\partial^2\log f(X|\theta)}{\partial\theta^2}\right].
+\]
+\end{otherlanguage}
+\programacao (i) For $X\sim$ Poisson$(\theta)$ with $\theta=3$, compute $E[U]$, $E[U^2]$ and
+$-E[\partial^2\log f/\partial\theta^2]$, with $U=\partial\log f(X|\theta)/\partial\theta$, by summing over
+$x=0,\dots,399$, and compare with $1/\theta$. (ii) Do the same for $X\sim U(0,\theta)$ with
+$\theta=2$, by numerical integration (\texttt{scipy.integrate.quad}), and explain the result.
+\resolespaco
+\begin{sol}
+\solhead
+\begin{notacao}
+\item $f(x|\theta)$: density (sums replace integrals for a p.m.f.); $\theta$ in an open interval $\Theta$.
+\item $U(\theta)=\partial\log f(X|\theta)/\partial\theta$: score of one observation;
+  $I_F(\theta)=E[U^2]$: Fisher information.
+\item Regularity conditions (B §2.3): the support $A=\{x:f(x|\theta)>0\}$ does not depend on
+  $\theta$, and $\int f(x|\theta)dx$ can be differentiated twice under the integral sign.
+\end{notacao}
+
+\passo{The density integrates to one}{For every $\theta\in\Theta$,}
+\begin{equation}\label{q2:norm}
+\int_A f(x|\theta)\,dx=1 .
+\end{equation}
+Differentiating \eqref{q2:norm} in $\theta$ under the integral sign (regularity):
+\begin{equation}\label{q2:d1}
+\int_A\frac{\partial f(x|\theta)}{\partial\theta}\,dx=0 .
+\end{equation}
+
+\passo{Score has mean zero}{On $A$, the chain rule for the logarithm gives}
+\begin{equation}\label{q2:dlog}
+\frac{\partial f(x|\theta)}{\partial\theta}=\frac{\partial\log f(x|\theta)}{\partial\theta}\,f(x|\theta).
+\end{equation}
+Substituting \eqref{q2:dlog} into \eqref{q2:d1}:
+\begin{equation}\label{q2:EU}
+\int_A\Big(\frac{\partial\log f(x|\theta)}{\partial\theta}\,f(x|\theta)\Big)dx=0
+\quad\Longleftrightarrow\quad E[U]=0 .
+\end{equation}
+
+\passo{Differentiate once more}{Differentiating the left side of \eqref{q2:EU} under the integral
+sign and using the product rule:}
+\begin{equation}\label{q2:d2}
+\int_A\Big[\frac{\partial^2\log f(x|\theta)}{\partial\theta^2}f(x|\theta)
++\frac{\partial\log f(x|\theta)}{\partial\theta}\,\frac{\partial f(x|\theta)}{\partial\theta}\Big]dx=0 .
+\end{equation}
+Substituting \eqref{q2:dlog} for $\partial f/\partial\theta$ in the second term of \eqref{q2:d2}:
+\[
+\int_A\Big[\frac{\partial^2\log f(x|\theta)}{\partial\theta^2}f(x|\theta)
++\frac{\partial\log f(x|\theta)}{\partial\theta}\Big(\frac{\partial\log f(x|\theta)}{\partial\theta}f(x|\theta)\Big)\Big]dx=0 .
+\]
+Writing both integrals as expectations:
+\begin{equation}\label{q2:res}
+E\Big[\frac{\partial^2\log f(X|\theta)}{\partial\theta^2}\Big]+E\Big[\Big(\frac{\partial\log f(X|\theta)}{\partial\theta}\Big)^2\Big]=0,
+\end{equation}
+which rearranges to the identity. $\blacksquare$
+
+\passo{Poisson check}{$\log f=x\log\theta-\theta-\log x!$, so}
+\begin{equation}\label{q2:pois}
+U=\frac{X}{\theta}-1,\qquad \frac{\partial^2\log f}{\partial\theta^2}=-\frac{X}{\theta^2}.
+\end{equation}
+From \eqref{q2:pois} and $E(X)=\Var(X)=\theta$: $E[U^2]=\Var(X)/\theta^2=1/\theta$ and
+$-E[-X/\theta^2]=\theta/\theta^2=1/\theta$; both sides of \eqref{q2:res} equal $1/\theta$.
+
+\passo{Where regularity fails}{For $U(0,\theta)$, $\log f=-\log\theta$ on $(0,\theta)$, so the
+score is the constant $-1/\theta$ and $\partial^2\log f/\partial\theta^2=1/\theta^2$. Then
+$E[U]=-1/\theta\neq0$, $E[U^2]=1/\theta^2$ but $-E[\partial^2\log f/\partial\theta^2]=-1/\theta^2$.
+The step \eqref{q2:d1} is what breaks: by Leibniz's rule
+$0=\frac{d}{d\theta}\int_0^\theta\frac1\theta dx=\frac1\theta+\int_0^\theta\big(-\frac{1}{\theta^2}\big)dx$,
+the boundary term $1/\theta$ appears because the support moves with $\theta$.}
+
+\codehead
+{\small
+\begin{verbatim}
+th = 3.0; x = np.arange(400); f = poisson.pmf(x, th)
+U, H = x / th - 1, -x / th**2
+print(np.sum(f * U), np.sum(f * U**2), -np.sum(f * H))   # 0.000000  0.333333  0.333333
+th = 2.0                                  # U(0, 2): score = -1/th on (0, th)
+EU  = quad(lambda u: (-1 / th) / th, 0, th)[0]           # -0.5
+EU2 = quad(lambda u: (1 / th**2) / th, 0, th)[0]         #  0.25
+mEH = -quad(lambda u: (1 / th**2) / th, 0, th)[0]        # -0.25
+\end{verbatim}
+}
+The Poisson values equal $1/\theta=0.333333$; for the uniform $E[U^2]=0.25$ but
+$-E[\partial^2\log f/\partial\theta^2]=-0.25$ and $E[U]=-0.5$, as derived.
+
+\intuicao{The score has mean zero because the model's total probability cannot change with
+$\theta$; information measures how much the score fluctuates, and the curvature of the expected
+log-likelihood measures the same thing. When the support depends on $\theta$, the data can rule
+values out sharply, the likelihood is not smooth at its peak, and both identities fail.}
+\refbib{Bolfarine \& Sandoval (2010), §2.3 (desigualdade da informação, pp.~23--28; Exemplo 2.3.1,
+Poisson); §3.1 (Exemplo 3.1.1, the uniform).}
+\end{sol}
+
+% -----------------------------------------------------------------------------
+\questao{B 2.5 --- the Cramér--Rao bound for $g(\theta)$.}
+\fonte{Bolfarine, H. and Sandoval, M.~C. (2010), \textit{Introdução à Inferência Estatística},
+Chapter~2, §2.6 Exercícios, Exercício~2.5, p.~33 [PDF p.~39]; the book gives no answer ---
+reproduced verbatim.}
+
+\begin{otherlanguage}{brazil}
+\textbf{2.5.} Sejam $X_1,\dots,X_n$ uma amostra aleatória da variável aleatória $X$ com função de
+densidade (ou de probabilidade) $f(x|\theta)$ para a qual as condições de regularidade estão
+satisfeitas. Seja $\hat\gamma$ um estimador não viciado para $g(\theta)$. Mostre que
+\[
+Var(\hat\gamma)\ge\frac{(g'(\theta))^2}{nE\left[\left(\frac{\partial\log f(X|\theta)}{\partial\theta}\right)^2\right]}.
+\]
+\end{otherlanguage}
+\programacao Take $X\sim$ Poisson$(\theta)$, $g(\theta)=\theta$, $\theta=2$, $n=10$. With
+\texttt{np.random.default\_rng(3)} draw $200{,}000$ samples of size $n$; for each compute
+$\overline X$ and $S^2=\sum_i(X_i-\overline X)^2/(n-1)$ (both unbiased for $\theta$). Print the
+simulated means and variances of both estimators next to the bound $\theta/n$ and to the exact
+$\Var(S^2)=\theta/n+2\theta^2/(n-1)$.
+\resolespaco
+\begin{sol}
+\solhead
+\begin{notacao}
+\item $\mathbf X=(X_1,\dots,X_n)$ i.i.d.\ $f(x|\theta)$; $L(\theta;\mathbf x)=\prod_if(x_i|\theta)$.
+\item $U_n=\sum_{i=1}^n\partial\log f(X_i|\theta)/\partial\theta$: score of the sample;
+  $I_F(\theta)=E[(\partial\log f(X|\theta)/\partial\theta)^2]$.
+\item $\hat\gamma=\hat\gamma(\mathbf X)$ with $E_\theta(\hat\gamma)=g(\theta)$ for all $\theta$; $g$ differentiable.
+\end{notacao}
+
+\passo{Unbiasedness, differentiated}{Unbiasedness reads}
+\begin{equation}\label{q3:unb}
+\int\hat\gamma(\mathbf x)\,L(\theta;\mathbf x)\,d\mathbf x=g(\theta).
+\end{equation}
+Differentiating \eqref{q3:unb} under the integral (regularity) and substituting
+$\partial L/\partial\theta=U_n(\mathbf x)L$, the sample analogue of \eqref{q2:dlog}:
+\begin{equation}\label{q3:cov0}
+\int\hat\gamma(\mathbf x)\,\big(U_n(\mathbf x)L(\theta;\mathbf x)\big)\,d\mathbf x=g'(\theta)
+\quad\Longleftrightarrow\quad E[\hat\gamma\,U_n]=g'(\theta).
+\end{equation}
+
+\passo{It is a covariance}{Each term of $U_n$ has mean zero by \eqref{q2:EU} (Question~2), so
+$E[U_n]=0$ and \eqref{q3:cov0} becomes}
+\begin{equation}\label{q3:cov}
+\Cov(\hat\gamma,U_n)=E[\hat\gamma U_n]-E[\hat\gamma]\,(0)=g'(\theta).
+\end{equation}
+
+\passo{Variance of the score}{The terms of $U_n$ are i.i.d.\ with mean zero, so}
+\begin{equation}\label{q3:varU}
+\Var(U_n)=\sum_{i=1}^n\Var\Big(\frac{\partial\log f(X_i|\theta)}{\partial\theta}\Big)=nE\Big[\Big(\frac{\partial\log f(X|\theta)}{\partial\theta}\Big)^2\Big]=nI_F(\theta).
+\end{equation}
+
+\passo{Cauchy--Schwarz}{For any two variables with finite variance,
+$\Cov(A,B)^2\le\Var(A)\Var(B)$. With $A=\hat\gamma$, $B=U_n$, substituting \eqref{q3:cov} and
+\eqref{q3:varU}:}
+\[
+(g'(\theta))^2\le\Var(\hat\gamma)\,\big(nI_F(\theta)\big).
+\]
+Dividing by $nI_F(\theta)>0$:
+\begin{equation}\label{q3:CR}
+\Var(\hat\gamma)\ge\frac{(g'(\theta))^2}{nI_F(\theta)} .\qquad\blacksquare
+\end{equation}
+Equality in Cauchy--Schwarz holds iff $U_n=a(\theta)\,(\hat\gamma-g(\theta))$ with probability one:
+the bound is attained only by estimators that are affine in the score.
+
+\passo{Poisson, $g(\theta)=\theta$}{From \eqref{q2:pois}, $I_F(\theta)=1/\theta$, so
+\eqref{q3:CR} gives the bound $\theta/n$. $U_n=\sum_i(X_i/\theta-1)=\frac{n}{\theta}(\overline X-\theta)$
+is affine in $\overline X$, so $\overline X$ attains it: $\Var(\overline X)=\theta/n$. The sample
+variance $S^2$ is also unbiased ($\Var X=\theta$), but by the standard formula
+$\Var(S^2)=\mu_4/n-\sigma^4(n-3)/(n(n-1))$ with the Poisson moments $\sigma^2=\theta$,
+$\mu_4=\theta+3\theta^2$:}
+\begin{equation}\label{q3:varS2}
+\Var(S^2)=\frac{\theta+3\theta^2}{n}-\frac{\theta^2(n-3)}{n(n-1)}=\frac{\theta}{n}+\frac{2\theta^2}{n-1}>\frac{\theta}{n}.
+\end{equation}
+At $\theta=2$, $n=10$: bound $=2/10=0.2$, and \eqref{q3:varS2} gives
+$0.2+2(4)/9=0.2+0.888889=1.088889$.
+
+\codehead
+{\small
+\begin{verbatim}
+rng = np.random.default_rng(3)
+X = rng.poisson(2.0, size=(200_000, 10))
+xb, s2 = X.mean(1), X.var(1, ddof=1)
+print(xb.mean(), xb.var(ddof=1))   # 2.0014  0.1997   (bound 0.2)
+print(s2.mean(), s2.var(ddof=1))   # 1.9995  1.0871   (exact 1.088889)
+\end{verbatim}
+}
+Both estimators are unbiased; only $\overline X$ sits at the bound, and $S^2$ is more than five
+times as variable, as \eqref{q3:varS2} predicts.
+
+\intuicao{An unbiased estimator must move one-for-one with $g(\theta)$; the score is the direction
+in which the data move most when $\theta$ moves. The covariance between the two is pinned at
+$g'(\theta)$, so an estimator can only be precise if it loads heavily on the score. $\overline X$ is
+the score up to scale; $S^2$ also reacts to the spread of the data, which adds noise.}
+\refbib{Bolfarine \& Sandoval (2010), §2.3, Teorema 2.3.1 and Corolário (pp.~24--27).}
+\end{sol}
+
+% -----------------------------------------------------------------------------
+\questao{Original math question --- estimating the probability of an accident-free day.}
+\fonte{Original question (not from a book).}
+
+The Federal Highway Police (PRF) counts serious accidents per day on a stretch of the BR-116. Model
+the daily counts $X_1,\dots,X_n$ as i.i.d.\ Poisson$(\theta)$, $\theta>0$, and let
+$T=\sum_{i=1}^nX_i$. The indicator the PRF reports is $\psi=P(X=0)=e^{-\theta}$.
+\begin{enumerate}[label=\textbf{(\alph*)},leftmargin=2.4em]
+\item Find the maximum likelihood estimator $\hat\psi$ of $\psi$, its exact expectation, and the sign
+of its bias for every $n\ge1$ and $\theta>0$.
+\item Find the uniformly minimum-variance unbiased estimator (UMVU) $\tilde\psi$ of $\psi$. Prove
+every step (sufficiency and completeness of $T$ may be quoted from B, Exemplo~2.5.4).
+\item Find $\Var(\tilde\psi)$ in closed form and compare it with the Cramér--Rao bound for
+$g(\theta)=e^{-\theta}$. Is there an efficient unbiased estimator of $\psi$ for finite $n$? Prove your
+answer.
+\item Parameter analysis: let $\rho(\theta,n)=\Var(\tilde\psi)/\text{CR bound}$. Prove the signs of
+$\partial\rho/\partial\theta$ and of the change in $\rho$ with $n$, find the limits $n\to\infty$,
+$\theta\to0$ and the value at $n=1$, and interpret them for the PRF.
+\end{enumerate}
+\programacao With $\theta=1.5$, $n=10$ and \texttt{np.random.default\_rng(4)}, simulate
+$200{,}000$ samples; print the simulated mean of $\hat\psi$ against (a), the mean and variance of
+$\tilde\psi$ against (b)--(c), the bound, and the mean squared error of $\hat\psi$. Then print
+$\rho(1.5,n)$ for $n=1,2,5,10,50,1000$.
+\resolespaco
+\begin{sol}
+\solhead
+\begin{notacao}
+\item $X_i\sim$ Poisson$(\theta)$ i.i.d., $\theta>0$; $T=\sum_iX_i\sim$ Poisson$(n\theta)$; $\overline X=T/n$.
+\item $\psi=e^{-\theta}\in(0,1)$; $\hat\psi$: MLE; $\tilde\psi$: UMVU; $W=\1\{X_1=0\}$.
+\item $G_T(s)=E[s^T]$, $s\ge0$: probability generating function of $T$.
+\item $\rho(\theta,n)=\Var(\tilde\psi)/\mathrm{CR}(\theta,n)$; $x=\theta/n>0$.
+\end{notacao}
+
+\passo{(a) The generating function of $T$}{For $\mu=n\theta$,}
+\[
+G_T(s)=\sum_{t=0}^\infty s^t\frac{e^{-\mu}\mu^t}{t!}=e^{-\mu}\sum_{t=0}^\infty\frac{(s\mu)^t}{t!}=e^{-\mu}e^{s\mu},
+\]
+that is,
+\begin{equation}\label{q4:pgf}
+G_T(s)=\exp\{n\theta(s-1)\}.
+\end{equation}
+
+\passo{(a) MLE and its mean}{The MLE of $\theta$ is $\overline X$ (Question~14, \eqref{q14:score});
+by invariance of the MLE (B, §3.1), $\hat\psi=e^{-\overline X}=(e^{-1/n})^T$. Substituting
+$s=e^{-1/n}$ into \eqref{q4:pgf}:}
+\begin{equation}\label{q4:Emle}
+E[\hat\psi]=\exp\{n\theta(e^{-1/n}-1)\}.
+\end{equation}
+
+\passo{(a) Sign of the bias}{$e^{-u}$ is strictly convex, so it lies above its tangent at $0$:
+$e^{-u}>1-u$ for $u\ne0$. With $u=1/n$:}
+\begin{equation}\label{q4:tan}
+e^{-1/n}-1>-\frac1n .
+\end{equation}
+Multiplying \eqref{q4:tan} by $n\theta>0$ and exponentiating (an increasing map), \eqref{q4:Emle}
+gives
+\[
+E[\hat\psi]>\exp\{n\theta(-1/n)\}=e^{-\theta}=\psi .
+\]
+The MLE is biased upwards for every $n$ and $\theta$.
+
+\passo{(b) An unbiased start}{$E[W]=P(X_1=0)=e^{-\theta}=\psi$, so $W$ is unbiased. By
+Rao--Blackwell, $E[W\mid T]$ is unbiased with variance no larger; by Lehmann--Scheffé (B,
+Teorema~2.5.3), with $T$ complete and sufficient, it is the UMVU.}
+
+\passo{(b) Conditional law of $X_1$ given $T$}{$X_1$ and $\sum_{i\ge2}X_i\sim$ Poisson$((n-1)\theta)$
+are independent, so for $0\le x_1\le t$:}
+\[
+P(X_1=x_1\mid T=t)=\frac{\dfrac{\theta^{x_1}e^{-\theta}}{x_1!}\cdot\dfrac{((n-1)\theta)^{t-x_1}e^{-(n-1)\theta}}{(t-x_1)!}}{\dfrac{(n\theta)^te^{-n\theta}}{t!}} .
+\]
+Cancelling $\theta^te^{-n\theta}$:
+\begin{equation}\label{q4:bin}
+P(X_1=x_1\mid T=t)=\binom{t}{x_1}\Big(\frac1n\Big)^{x_1}\Big(1-\frac1n\Big)^{t-x_1},
+\end{equation}
+a Binomial$(t,1/n)$, free of $\theta$.
+
+\passo{(b) The UMVU}{Setting $x_1=0$ in \eqref{q4:bin}:}
+\begin{equation}\label{q4:umvu}
+\tilde\psi=E[W\mid T]=P(X_1=0\mid T)=\Big(1-\frac1n\Big)^{T}.
+\end{equation}
+Check: substituting $s=1-1/n$ into \eqref{q4:pgf}, $E[\tilde\psi]=\exp\{n\theta(-1/n)\}=e^{-\theta}$.
+
+\passo{(c) Variance of the UMVU}{$\tilde\psi^2=((1-1/n)^2)^T$; substituting $s=(1-1/n)^2$ into
+\eqref{q4:pgf}:}
+\[
+E[\tilde\psi^2]=\exp\Big\{n\theta\Big(\Big(1-\frac1n\Big)^2-1\Big)\Big\}=\exp\Big\{n\theta\Big(-\frac2n+\frac1{n^2}\Big)\Big\}=e^{-2\theta+\theta/n}.
+\]
+Subtracting $(E\tilde\psi)^2=e^{-2\theta}$:
+\begin{equation}\label{q4:varU}
+\Var(\tilde\psi)=e^{-2\theta}\big(e^{\theta/n}-1\big).
+\end{equation}
+
+\passo{(c) Cramér--Rao bound}{With $g(\theta)=e^{-\theta}$, $(g'(\theta))^2=e^{-2\theta}$, and
+$I_F=1/\theta$ (Question~2), \eqref{q3:CR} gives}
+\begin{equation}\label{q4:CR}
+\mathrm{CR}(\theta,n)=\frac{e^{-2\theta}}{n(1/\theta)}=\frac{\theta e^{-2\theta}}{n}.
+\end{equation}
+Dividing \eqref{q4:varU} by \eqref{q4:CR}, with $x=\theta/n$:
+\begin{equation}\label{q4:rho}
+\rho(\theta,n)=\frac{e^{x}-1}{x}=\frac{1}{x}\sum_{k\ge1}\frac{x^k}{k!}=1+\frac x2+\frac{x^2}{6}+\dots>1 .
+\end{equation}
+
+\passo{(c) No efficient estimator}{By \eqref{q4:rho} the UMVU, which has the smallest variance among
+unbiased estimators, stays strictly above the bound; hence no unbiased estimator of $e^{-\theta}$
+attains it for finite $n$. Equivalently, by the equality condition after \eqref{q3:CR}, an efficient
+estimator would be affine in $U_n=\frac n\theta(\overline X-\theta)$, i.e.\ $a+b\overline X$, whose
+mean $a+b\theta$ is linear in $\theta$ and cannot equal $e^{-\theta}$. So a UMVU exists while an
+efficient estimator does not.}
+
+\passo{(d) Signs}{Let $r(x)=(e^x-1)/x$. Its derivative is}
+\begin{equation}\label{q4:dr}
+r'(x)=\frac{xe^x-(e^x-1)}{x^2}=\frac{h(x)}{x^2},\qquad h(x)=xe^x-e^x+1 .
+\end{equation}
+$h(0)=0$ and $h'(x)=e^x+xe^x-e^x=xe^x>0$ for $x>0$, so $h(x)>0$ and, by \eqref{q4:dr}, $r'(x)>0$.
+Since $x=\theta/n$:
+\[
+\frac{\partial\rho}{\partial\theta}=\frac1n\,r'(x)>0,\qquad \rho\text{ decreases as }n\text{ grows}.
+\]
+
+\passo{(d) Limits}{From \eqref{q4:rho}: $\rho\to1$ as $x\to0$, i.e.\ as $n\to\infty$ (fixed $\theta$)
+or $\theta\to0$ (fixed $n$); at $n=1$, $\rho=(e^\theta-1)/\theta$ and $\tilde\psi=(1-1)^{X_1}=\1\{X_1=0\}=W$
+(with $0^0=1$): with one day of data the only unbiased estimator based on $T$ is the indicator itself.}
+
+\passo{(d) Reading}{The bound is nearly attained when accidents are rare relative to the sample
+(small $\theta/n$): the PRF loses little by using any reasonable estimator. On busy stretches
+(large $\theta$) with few days of data, the bound is far from attainable, and it understates the
+real uncertainty of the indicator. Asymptotically both $\hat\psi$ and $\tilde\psi$ are efficient.}
+
+\passo{Numbers}{$\theta=1.5$, $n=10$: $\psi=e^{-1.5}=0.223130$; \eqref{q4:Emle}:
+$\exp\{15(e^{-0.1}-1)\}=0.239923$, bias $0.016792$; \eqref{q4:varU}:
+$e^{-3}(e^{0.15}-1)=0.008057$; \eqref{q4:CR}: $1.5e^{-3}/10=0.007468$; \eqref{q4:rho}:
+$\rho=0.008057/0.007468=1.078895$.}
+
+\codehead
+{\small
+\begin{verbatim}
+rng = np.random.default_rng(4)
+T = rng.poisson(1.5, size=(200_000, 10)).sum(1)
+mle, umvu = np.exp(-T / 10), (1 - 1 / 10) ** T
+print(mle.mean(), umvu.mean(), umvu.var(ddof=1))   # 0.239825  0.223033  0.008042
+print(np.mean((mle - np.exp(-1.5))**2))            # 0.008638 (exact MSE 0.008657)
+rho = lambda n: (np.exp(1.5 / n) - 1) / (1.5 / n)
+# n = 1, 2, 5, 10, 50, 1000 -> 2.321126 1.489333 1.166196 1.078895 1.015151 1.000750
+\end{verbatim}
+}
+The simulated values match (a)--(c) within Monte Carlo error; the $\rho$ column falls
+monotonically to 1, as (d) proves.
+
+\intuicao{The MLE plugs $\overline X$ into a convex function, so Jensen pushes it up. The UMVU
+replaces $e^{-1/n}$ by its first-order approximation $1-1/n$, exactly the correction that removes
+the bias. The Cramér--Rao bound is a local, linear benchmark: it is attainable only for parameters
+that are linear in the sufficient statistic's mean, which is why $e^{-\theta}$ misses it.}
+\refbib{Bolfarine \& Sandoval (2010), §2.3 (Cramér--Rao), §2.5 (Teorema 2.5.3 and Exemplo 2.5.4),
+§3.1 (invariance); Exercício 2.10 for the same Rao--Blackwell step with Bernoulli data.}
+\rubrica{
+\item (a) MLE by invariance and $E[\hat\psi]$ via the p.g.f.: 2 pts; bias sign proved (convexity): 1 pt.
+\item (b) $W$ unbiased and Rao--Blackwell/Lehmann--Scheffé named: 1 pt; \eqref{q4:bin} derived: 2 pts; \eqref{q4:umvu}: 1 pt.
+\item (c) \eqref{q4:varU}: 2 pts; \eqref{q4:CR}: 1 pt; $\rho>1$ and no efficient estimator, proved: 2 pts.
+\item (d) sign of $r'$ proved: 2 pts; limits: 1 pt; reading: 1 pt. Signs stated without proof: max.\ half of (d).
+\item Programming: correct simulation and comparison with (a)--(c): 2 pts.
+}
+\end{sol}
+
+% -----------------------------------------------------------------------------
+\questao{Original conceptual question --- sufficiency, information and optimal estimators (10 points).}
+\fonte{Original question (not from a book).}
+
+The PRF models the daily number of accidents on a stretch of road as $X_1,\dots,X_n$ i.i.d.\
+Poisson$(\theta)$, $T=\sum_iX_i$.
+
+\textbf{a)} (3 points) Which statement about $T$ is correct?
+\begin{alternativas}
+\item $T$ is sufficient for $\theta$ because its expectation, $n\theta$, depends on $\theta$.
+\item $T$ is sufficient for $\theta$ because the law of the sample given $T=t$ is multinomial $(t;1/n,\dots,1/n)$, free of $\theta$.
+\item $T$ is sufficient for $\theta$ only for large $n$, when $\overline X$ is approximately normal by the CLT.
+\item $\overline X$ is sufficient for $\theta$ but $T$ is not, because only $\overline X$ is unbiased for $\theta$.
+\end{alternativas}
+\gabarito{B}
+\begin{sol}
+\passo{Why}{B: by the computation of \eqref{q4:bin} for all coordinates, $P(\mathbf X=\mathbf x\mid T=t)=\frac{t!}{\prod x_i!}n^{-t}$, free of $\theta$ (Definição 2.2.1). A: a statistic whose mean depends on $\theta$ need not be sufficient ($X_1$ alone is a counterexample). C: sufficiency is an exact finite-sample property, unrelated to the CLT. D: $T$ and $\overline X=T/n$ are one-to-one, so they carry the same information; sufficiency does not involve unbiasedness.}
+\refbib{B §2.2 (Definição 2.2.1, Exemplo 2.2.4).}
+\end{sol}
+
+\textbf{b)} (3 points) The Cramér--Rao lower bound for the variance of unbiased estimators of $\theta^2$ is:
+\begin{alternativas}
+\item $\theta/n$ (the bound for $\theta$ itself).
+\item $4\theta^2/n$ (squared derivative, unit information).
+\item $2\theta^3/n$ (derivative not squared).
+\item $4\theta^3/n$ (squared derivative over $n/\theta$).
+\item $4\theta^3/n^2$ (information counted twice).
+\end{alternativas}
+\gabarito{D}
+\begin{sol}
+\passo{Why}{By \eqref{q3:CR} with $g(\theta)=\theta^2$, $(g')^2=4\theta^2$ and $nI_F=n/\theta$: bound $=4\theta^2\theta/n=4\theta^3/n$ (D). A ignores $g$; B drops $I_F=1/\theta$; C forgets to square $g'$; E divides by $n$ twice.}
+\end{sol}
+
+\textbf{c)} (2 points, T or F) If an unbiased estimator of $g(\theta)$ attains the Cramér--Rao bound at every $\theta$, then it is the UMVU of $g(\theta)$.
+\gabarito{T}
+\begin{sol}
+\passo{Why}{Every unbiased estimator has variance at least the bound \eqref{q3:CR}; one that attains it has the minimum variance at every $\theta$, which is the definition of UMVU.}
+\end{sol}
+
+\textbf{d)} (2 points, T or F) If a UMVU estimator of $g(\theta)$ exists, then it attains the Cramér--Rao bound.
+\gabarito{F}
+\begin{sol}
+\passo{Why}{The converse of (c) fails. Question~4: $\tilde\psi=(1-1/n)^T$ is the UMVU of $e^{-\theta}$, yet $\Var(\tilde\psi)/\mathrm{CR}=\rho>1$ by \eqref{q4:rho}.}
+\refbib{B §2.3--2.5.}
+\end{sol}
+
+\programacao For $\theta=2$, $n=10$: $T(T-1)/n^2=\overline X^2-\overline X/n$ is unbiased for $\theta^2$
+and a function of the complete sufficient $T$, hence the UMVU. Compute its exact variance by summing
+over $T\sim$ Poisson$(n\theta)$ ($t=0,\dots,399$) and compare it with the bound of (b).
+\begin{sol}
+\codehead
+{\small
+\begin{verbatim}
+t = np.arange(400); pt = poisson.pmf(t, 20); est = t * (t - 1) / 100
+np.sum(pt * est), np.sum(pt * est**2) - 16      # 4.0 (unbiased)  3.28
+4 * 2**3 / 10                                   # bound 3.2 ; ratio 1.025
+\end{verbatim}
+}
+The exact variance is $4\theta^3/n+2\theta^2/n^2=3.2+0.08=3.28>3.2$: a second UMVU that misses the
+bound, confirming that (d) is false.
+\end{sol}
+
+% =============================================================================
+\bloco{2}{Poisson tests and intervals}{B 6.5, 6.11; original}
+
+\questao{B 6.5 --- UMP test for a Poisson mean and its power function.}
+\fonte{Bolfarine, H. and Sandoval, M.~C. (2010), \textit{Introdução à Inferência Estatística},
+Chapter~6, §6.7 Exercícios, Exercício~6.5, p.~115 [PDF p.~121]; the book gives no answer ---
+reproduced verbatim.}
+
+\begin{otherlanguage}{brazil}
+\textbf{6.5.} Sejam $X_1,\dots,X_n$ uma amostra aleatória da variável aleatória $X\sim\mathit{Poisson}(\theta)$.\\
+i) Encontre o teste UMP para testar $H_0:\theta=\theta_0$ versus $H_1:\theta>\theta_0$.\\
+ii) Seja $\alpha=0,05$, faça o gráfico da função poder para $\theta_0=1$ e $n=25$ (use o Teorema
+do limite central).
+\end{otherlanguage}
+\programacao For $\theta_0=1$, $n=25$, $\alpha=0.05$: (1) find the smallest integer $c$ with
+$P(T>c\mid\theta_0)\le\alpha$, $T=\sum_iX_i$, and the randomization probability $\gamma$ that makes
+the size exactly $0.05$; (2) print, for $\theta\in\{1,1.2,1.5,2\}$, the CLT power from (ii), the
+exact power of the test ``reject if $T>c$'' and that of the randomized test; (3) plot the three
+power curves on $\theta\in[0.8,2.2]$.
+\resolespaco
+\begin{sol}
+\solhead
+\begin{notacao}
+\item $X_i\sim$ Poisson$(\theta)$ i.i.d.; $T=\sum_iX_i\sim$ Poisson$(n\theta)$; $\overline X=T/n$.
+\item $\phi(T)\in[0,1]$: test function (probability of rejecting $H_0$); $\pi(\theta)=E_\theta[\phi(T)]$: power.
+\item $c\in\{0,1,\dots\}$, $\gamma\in[0,1)$: critical value and randomization; $z_{0.95}=1.644854$.
+\end{notacao}
+
+\passo{(i) Likelihood ratio}{For a fixed $\theta_1>\theta_0$,}
+\begin{equation}\label{q6:lr}
+\frac{L(\theta_1;\mathbf x)}{L(\theta_0;\mathbf x)}=\frac{\theta_1^te^{-n\theta_1}/\prod x_i!}{\theta_0^te^{-n\theta_0}/\prod x_i!}
+=\Big(\frac{\theta_1}{\theta_0}\Big)^{t}e^{-n(\theta_1-\theta_0)},
+\end{equation}
+strictly increasing in $t$ because $\theta_1/\theta_0>1$.
+
+\passo{(i) Neyman--Pearson}{The most powerful size-$\alpha$ test of $\theta_0$ against $\theta_1$
+rejects when \eqref{q6:lr} exceeds a constant (B, Lema de Neyman--Pearson); by monotonicity, when
+$T$ exceeds a constant. With the randomization needed for a discrete $T$:}
+\begin{equation}\label{q6:phi}
+\phi(T)=\begin{cases}1,&T>c,\\ \gamma,&T=c,\\ 0,&T<c,\end{cases}\qquad
+P_{\theta_0}(T>c)+\gamma P_{\theta_0}(T=c)=\alpha .
+\end{equation}
+$c$ and $\gamma$ depend only on $\theta_0$, $n$, $\alpha$, not on $\theta_1$: the same test is most
+powerful against every $\theta_1>\theta_0$, hence UMP for $H_1:\theta>\theta_0$ (B, §6.3: families
+with monotone likelihood ratio in $T$).
+
+\passo{(ii) CLT version}{Under $\theta$, $\overline X\approx N(\theta,\theta/n)$. The size-$\alpha$
+rule rejects when $\overline X>k$ with}
+\begin{equation}\label{q6:k}
+k=\theta_0+z_{0.95}\sqrt{\theta_0/n}.
+\end{equation}
+Substituting $\theta_0=1$, $n=25$ into \eqref{q6:k}:
+\[
+k=1+(1.644854)\sqrt{1/25}=1+1.644854\,(0.2)=1.328971 .
+\]
+The power function is
+\begin{equation}\label{q6:pow}
+\pi(\theta)=P_\theta(\overline X>k)\approx1-\Phi\Big(\frac{k-\theta}{\sqrt{\theta/n}}\Big).
+\end{equation}
+Substituting $\theta=1.5$: $\pi(1.5)\approx1-\Phi\big((1.328971-1.5)/\sqrt{1.5/25}\big)=1-\Phi(-0.698223)=0.757481$;
+likewise $\pi(1)=0.05$, $\pi(1.2)=0.278042$, $\pi(2)=0.991165$.
+\begin{center}
+\begin{tikzpicture}
+\begin{axis}[width=0.7\linewidth,height=5cm,xlabel={$\theta$},ylabel={$\pi(\theta)$},
+  xmin=0.8,xmax=2.2,ymin=0,ymax=1.02,grid=major,legend pos=south east,legend style={font=\scriptsize}]
+\addplot[blue!60!black,thick,mark=*,mark size=1.2pt] coordinates {(0.8,0.0016) (0.9,0.0119) (1.0,0.0500)
+  (1.1,0.1375) (1.2,0.2780) (1.3,0.4495) (1.4,0.6180) (1.5,0.7575) (1.6,0.8580) (1.7,0.9226)
+  (1.8,0.9604) (1.9,0.9808) (2.0,0.9912) (2.1,0.9961) (2.2,0.9983)};
+\addlegendentry{CLT approximation \eqref{q6:pow}}
+\addplot[red!70!black,dashed] coordinates {(0.8,0.05) (2.2,0.05)};
+\addlegendentry{$\alpha=0.05$}
+\end{axis}
+\end{tikzpicture}
+\end{center}
+
+\passo{Exact test (programming)}{$T\sim$ Poisson$(25)$ under $H_0$: the smallest $c$ with
+$P(T>c)\le0.05$ is $c=33$, size $P(T>33)=0.049780$; \eqref{q6:phi} gives
+$\gamma=(0.05-0.049780)/P(T=33)=0.010133$. Since $25k=33.22$, the CLT rule $\overline X>k$ is the
+same as $T>33$: its true size is $0.049780$, and its true power is the exact column below.}
+
+\codehead
+{\small
+\begin{verbatim}
+c = 33; size = poisson.sf(c, 25)                       # 0.049780
+gam = (0.05 - size) / poisson.pmf(c, 25)               # 0.010133
+for th in (1, 1.2, 1.5, 2):
+    clt = 1 - norm.cdf((1.328971 - th) / np.sqrt(th / 25))
+    ex = poisson.sf(c, 25 * th); rnd = ex + gam * poisson.pmf(c, 25 * th)
+# theta   CLT       exact     randomized
+# 1.0     0.050000  0.049780  0.050000
+# 1.2     0.278042  0.255551  0.256158
+# 1.5     0.757481  0.738112  0.738642
+# 2.0     0.991165  0.993021  0.993047
+\end{verbatim}
+}
+The CLT curve overstates the power near $\theta_0$ by about two points (the Poisson is right-skewed)
+and understates it slightly at $\theta=2$; randomization adds at most $\gamma P(T=33)$.
+
+\intuicao{All the information about $\theta$ is in the total count, and larger totals always point
+to larger rates, so ``reject when the count is large'' is optimal against every larger rate at
+once. The discreteness of counts is why an exact 5\% test needs a coin flip at the boundary.}
+\refbib{Bolfarine \& Sandoval (2010), §6.2 (Lema de Neyman--Pearson), §6.3 (testes UMP), Exemplo 6.3.2.}
+\end{sol}
+
+% -----------------------------------------------------------------------------
+\questao{B 6.11 --- likelihood ratio test for two Poisson means.}
+\fonte{Bolfarine, H. and Sandoval, M.~C. (2010), \textit{Introdução à Inferência Estatística},
+Chapter~6, §6.7 Exercícios, Exercício~6.11, p.~116 [PDF p.~122]; the book gives no answer ---
+reproduced verbatim.}
+
+\begin{otherlanguage}{brazil}
+\textbf{6.11.} Sejam $X_1,\dots,X_n$ uma amostra aleatória da variável aleatória $X\sim\mathit{Poisson}(\theta_1)$
+e sejam $Y_1,\dots,Y_m$ uma amostra aleatória da variável aleatória $Y\sim\mathit{Poisson}(\theta_2)$
+sendo as amostras independentes.\\
+i) Encontre o teste da RVG(aproximado) para testar $H_0:\theta_1=\theta_2$ versus $H_1:\theta_1\neq\theta_2$.\\
+ii) Sendo $n=5$, $\sum x_i=3,8$; $m=8$; $\sum y_i=4,8$, qual a sua conclusão a um nível de
+significância de 5\%?
+\end{otherlanguage}
+\programacao Write \texttt{lr2(sx, sy, n, m)} returning $-2\log\lambda$ from the two totals. Apply it
+to the printed data. Then estimate the true size of the approximate test (reject when
+$-2\log\lambda>3.841$) for $n=5$, $m=8$ by simulating $100{,}000$ pairs of samples under $H_0$ with
+$\theta_1=\theta_2=0.66$ and with $\theta_1=\theta_2=3$ (\texttt{np.random.default\_rng(7)}).
+\resolespaco
+\begin{sol}
+\solhead
+\begin{notacao}
+\item $s_x=\sum_ix_i$, $s_y=\sum_jy_j$; $\overline x=s_x/n$, $\overline y=s_y/m$.
+\item $\hat\theta_0=(s_x+s_y)/(n+m)$: MLE of the common mean under $H_0$.
+\item $\lambda(\mathbf x,\mathbf y)$: generalized likelihood ratio (RVG); $\chi^2_{1,0.95}=3.841459$.
+\end{notacao}
+
+\passo{(i) Likelihood}{By independence,}
+\begin{equation}\label{q7:L}
+L(\theta_1,\theta_2)=\frac{\theta_1^{s_x}e^{-n\theta_1}\,\theta_2^{s_y}e^{-m\theta_2}}{\prod_ix_i!\prod_jy_j!}.
+\end{equation}
+Maximizing $\log L$ in each rate separately gives $\hat\theta_1=\overline x$ and
+$\hat\theta_2=\overline y$ (as in \eqref{q14:score}). Under $H_0$, \eqref{q7:L} becomes
+\[
+L(\theta,\theta)=\frac{\theta^{s_x+s_y}e^{-(n+m)\theta}}{\prod_ix_i!\prod_jy_j!},
+\]
+maximized at $\hat\theta_0$.
+
+\passo{(i) The statistic}{Dividing the restricted by the unrestricted maximum (factorials cancel):}
+\[
+\lambda=\frac{\hat\theta_0^{\,s_x+s_y}e^{-(n+m)\hat\theta_0}}{\overline x^{\,s_x}e^{-n\overline x}\,\overline y^{\,s_y}e^{-m\overline y}} .
+\]
+Taking $-2\log$:
+\[
+-2\log\lambda=2\Big[s_x\log\frac{\overline x}{\hat\theta_0}+s_y\log\frac{\overline y}{\hat\theta_0}\Big]
+-2\big[n\overline x+m\overline y-(n+m)\hat\theta_0\big].
+\]
+The second bracket is $(s_x+s_y)-(s_x+s_y)=0$, so
+\begin{equation}\label{q7:stat}
+-2\log\lambda=2\Big[s_x\log\frac{\overline x}{\hat\theta_0}+s_y\log\frac{\overline y}{\hat\theta_0}\Big].
+\end{equation}
+$H_1$ has two free parameters and $H_0$ one, so under $H_0$, $-2\log\lambda\to\chi^2_1$ in
+distribution (B, Teorema~6.5.1): reject at 5\% when \eqref{q7:stat} exceeds $3.841459$.
+
+\passo{(ii) The printed data}{\emph{Book error:} a sum of Poisson counts is an integer, but the book
+prints $\sum x_i=3{,}8$ and $\sum y_i=4{,}8$ (reading them as means does not help either:
+$m\overline y=38.4$). Statistic \eqref{q7:stat} only needs the totals, so we evaluate it with the
+printed values: $\overline x=3.8/5=0.76$, $\overline y=4.8/8=0.6$, $\hat\theta_0=8.6/13=0.661538$.}
+Substituting into \eqref{q7:stat}:
+\[
+-2\log\lambda=2\Big[(3.8)\log\frac{0.76}{0.661538}+(4.8)\log\frac{0.6}{0.661538}\Big]
+=2\,[0.527251+(-0.468665)]=0.117173 .
+\]
+Since $0.117173<3.841459$ (p-value $0.7321$), $H_0:\theta_1=\theta_2$ is not rejected at 5\%.
+
+\codehead
+{\small
+\begin{verbatim}
+def lr2(sx, sy, n, m):
+    th0 = (sx + sy) / (n + m)
+    t = lambda s, k: np.where(s > 0, s * np.log(np.where(s > 0, s, 1) / (k * th0)), 0.)
+    return 2 * (t(sx, n) + t(sy, m))           # 0 log 0 = 0
+lr2(3.8, 4.8, 5, 8)                            # 0.117173 ; p = chi2.sf(., 1) = 0.7321
+rng = np.random.default_rng(7)
+for th in (0.66, 3.0):
+    sx, sy = rng.poisson(5 * th, 100_000), rng.poisson(8 * th, 100_000)
+    print(np.mean(lr2(sx, sy, 5, 8) > 3.841459))   # 0.06949 (th=0.66), 0.05167 (th=3)
+\end{verbatim}
+}
+With expected totals of only 3.3 and 5.3 events the $\chi^2_1$ approximation over-rejects (size
+about 7\%); with means near 3 per observation it is close to 5\%.
+
+\intuicao{The statistic compares how well one common rate explains both samples against two separate
+rates; it is twice the gain in log-likelihood from letting the rates differ. Wilks' $\chi^2_1$ is a
+large-count result: with a handful of events its tail is too light.}
+\refbib{Bolfarine \& Sandoval (2010), §6.5 (razão de verossimilhanças generalizada, Teorema 6.5.1,
+Exemplo 6.5.5 for one Poisson sample).}
+\end{sol}
+
+% -----------------------------------------------------------------------------
+\questao{Original math question --- three confidence intervals for a Poisson rate.}
+\fonte{Original question (not from a book).}
+
+The National Civil Defence records the yearly number of dam incidents in a region, modelled as
+$X_1,\dots,X_n$ i.i.d.\ Poisson$(\theta)$; $T=\sum_iX_i$, $z=z_{1-\alpha/2}$.
+\begin{enumerate}[label=\textbf{(\alph*)},leftmargin=2.4em]
+\item Derive the Wald interval from the CLT and Slutsky's theorem. Show that it degenerates when
+$T=0$ and prove that, for fixed $n$, its coverage tends to $0$ as $\theta\to0$.
+\item Derive the score interval by inverting $|\overline X-\theta|\le z\sqrt{\theta/n}$. Prove that
+both endpoints are non-negative and find the interval when $T=0$.
+\item Prove that $P(T\le t;\mu)=P(G_{t+1}>\mu)$ for $T\sim$ Poisson$(\mu)$ and $G_{t+1}\sim$
+Gamma$(t+1,1)$. Use it to write the exact (Garwood) interval with gamma quantiles and prove that its
+coverage is at least $1-\alpha$ for every $\theta$.
+\item Parameter analysis: sign of the shift of the score interval's centre relative to
+$\overline X$; ratio of the score and Wald half-widths and its limit as $n\to\infty$; limits of the
+three coverages as $\theta\to0$.
+\end{enumerate}
+\programacao Write \texttt{intervals(t, n)} returning the three 95\% intervals and
+\texttt{coverage(theta, n)} computing their \emph{exact} coverage by summing $P(T=t)$ over the
+$t$ whose interval contains $\theta$ (no simulation). Print the coverages for $n=10$ and
+$\theta\in\{0.1,1,5\}$, and the three intervals for the coal data 1851--1891 ($n=41$, $T=127$).
+\resolespaco
+\begin{sol}
+\solhead
+\begin{notacao}
+\item $T\sim$ Poisson$(n\theta)$, $\overline X=T/n$; $\alpha\in(0,1)$, $z=z_{1-\alpha/2}$ ($1.959964$ for 95\%).
+\item $F_t(\mu)=P(T\le t;\mu)$ for $T\sim$ Poisson$(\mu)$; $G_a\sim$ Gamma$(a,1)$ with quantile $q_p(a)$.
+\item $C(\theta)$: coverage probability $P_\theta(\theta\in\text{interval})$.
+\end{notacao}
+
+\passo{(a) Wald}{By the CLT, $\sqrt n(\overline X-\theta)/\sqrt\theta\to N(0,1)$; $\overline X\to\theta$ in
+probability, so by Slutsky}
+\begin{equation}\label{q8:wpiv}
+\frac{\overline X-\theta}{\sqrt{\overline X/n}}\xrightarrow{d}N(0,1),
+\qquad\text{interval}\quad \overline X\pm z\sqrt{\overline X/n}.
+\end{equation}
+If $T=0$, \eqref{q8:wpiv} gives $[0,0]$, which excludes every $\theta>0$. Hence
+\begin{equation}\label{q8:wcov}
+C_{W}(\theta)\le1-P_\theta(T=0)=1-e^{-n\theta}\xrightarrow[\theta\to0]{}0 .
+\end{equation}
+
+\passo{(b) Score}{Squaring the inequality, $(\overline X-\theta)^2\le z^2\theta/n$; expanding:}
+\begin{equation}\label{q8:quad}
+\theta^2-\Big(2\overline X+\frac{z^2}{n}\Big)\theta+\overline X^2\le0 .
+\end{equation}
+The roots of \eqref{q8:quad} are
+\begin{equation}\label{q8:score}
+\theta_\pm=\overline X+\frac{z^2}{2n}\pm z\sqrt{\frac{\overline X}{n}+\frac{z^2}{4n^2}} .
+\end{equation}
+Their product is $\overline X^2\ge0$ and their sum $2\overline X+z^2/n>0$, so neither root is
+negative. With $T=0$, \eqref{q8:score} gives $[0,\,z^2/n]$.
+
+\passo{(c) The Poisson--gamma identity}{Differentiate $F_t(\mu)=\sum_{j=0}^te^{-\mu}\mu^j/j!$:}
+\[
+F_t'(\mu)=\sum_{j=0}^t\Big(-\frac{e^{-\mu}\mu^j}{j!}\Big)+\sum_{j=1}^t\frac{e^{-\mu}\mu^{j-1}}{(j-1)!}.
+\]
+The second sum is the first without its last term, so the sum telescopes:
+\begin{equation}\label{q8:dF}
+F_t'(\mu)=-\frac{e^{-\mu}\mu^t}{t!}<0 .
+\end{equation}
+Since $F_t(\mu)\to0$ as $\mu\to\infty$, integrating \eqref{q8:dF} from $\mu$ to $\infty$:
+\begin{equation}\label{q8:id}
+F_t(\mu)=\int_\mu^\infty\frac{u^te^{-u}}{t!}\,du=P(G_{t+1}>\mu). \qquad\blacksquare
+\end{equation}
+
+\passo{(c) Garwood limits}{The upper limit solves $F_T(n\theta_U)=\alpha/2$; by \eqref{q8:id},
+$P(G_{T+1}>n\theta_U)=\alpha/2$. The lower limit solves $P(T'\ge T;n\theta_L)=\alpha/2$, i.e.\
+$1-F_{T-1}(n\theta_L)=\alpha/2$, and by \eqref{q8:id} $P(G_T\le n\theta_L)=\alpha/2$. So}
+\begin{equation}\label{q8:gar}
+\theta_L=\frac{q_{\alpha/2}(T)}{n}\ (\theta_L=0\text{ if }T=0),\qquad \theta_U=\frac{q_{1-\alpha/2}(T+1)}{n}.
+\end{equation}
+
+\passo{(c) Coverage}{Fix $\theta$ and let $t^*$ be the largest $t$ with $F_t(n\theta)\le\alpha/2$.
+By \eqref{q8:dF}, $F_t$ is decreasing in $\mu$, so $\theta>\theta_U(t)\iff F_t(n\theta)<F_t(n\theta_U(t))=\alpha/2$;
+and $F_t(n\theta)$ increases in $t$, so this happens only for $t\le t^*$. Hence
+$P_\theta(\theta>\theta_U)\le P_\theta(T\le t^*)=F_{t^*}(n\theta)\le\alpha/2$. The same argument on the
+upper tail gives $P_\theta(\theta<\theta_L)\le\alpha/2$, so $C_{G}(\theta)\ge1-\alpha$ for every
+$\theta$. $\blacksquare$}
+
+\passo{(d) Parameter analysis}{By \eqref{q8:score} the score interval is centred at
+$\overline X+z^2/(2n)$: shifted \emph{up} (sign $+$), towards the side where the Poisson is
+skewed, and the shift vanishes at rate $1/n$. The half-width ratio is}
+\begin{equation}\label{q8:ratio}
+\frac{z\sqrt{\overline X/n+z^2/(4n^2)}}{z\sqrt{\overline X/n}}=\sqrt{1+\frac{z^2}{4n\overline X}}>1,
+\qquad\to1\ (n\to\infty).
+\end{equation}
+As $\theta\to0$: $C_W\to0$ by \eqref{q8:wcov}; $C_S\ge P(T=0)=e^{-n\theta}\to1$, because the $T=0$
+interval $[0,z^2/n]$ contains every $\theta\le z^2/n$; and $C_G\ge0.95$ always, tending to 1 since
+the $T=0$ interval $[0,q_{1-\alpha/2}(1)/n]$ covers small $\theta$. Reading: for rare events the
+Wald interval is unusable, the score interval is a good default, and the exact interval is the safe
+(conservative) choice.
+
+\codehead
+{\small
+\begin{verbatim}
+def intervals(t, n, z=1.959964, al=0.05):
+    xb = t / n
+    wald = (xb - z*np.sqrt(xb/n), xb + z*np.sqrt(xb/n))
+    c, h = xb + z**2/(2*n), z*np.sqrt(xb/n + z**2/(4*n**2))
+    exact = (0.0 if t == 0 else gamma.ppf(al/2, t)/n, gamma.ppf(1-al/2, t+1)/n)
+    return wald, (c - h, c + h), exact
+# exact coverage, n = 10:   theta   Wald      score     exact
+#                           0.1     0.631526  0.919699  0.981012
+#                           1       0.925728  0.962622  0.975386
+#                           5       0.948781  0.944398  0.952638
+# coal 1851-1891 (n=41, T=127): Wald [2.558837, 3.636285]
+#     score [2.603651, 3.685165]  exact [2.582297, 3.685510]
+\end{verbatim}
+}
+At $\theta=0.1$ the Wald coverage $0.6315$ is close to the bound \eqref{q8:wcov},
+$1-e^{-1}=0.6321$; the exact interval is above $0.95$ at every $\theta$, as proved.
+
+\intuicao{Wald uses the estimated variance $\overline X/n$, which is zero exactly when the data are
+least informative; the score interval uses the variance at the hypothesized $\theta$ and never
+collapses. Inverting exact tail probabilities trades length for a guaranteed coverage.}
+\refbib{Bolfarine \& Sandoval (2010), §5.2 (quantidades pivotais), §5.3 (intervalos aproximados);
+Class~1 deck, \textit{Poisson} (asymptotic interval).}
+\rubrica{
+\item (a) pivot \eqref{q8:wpiv} with CLT and Slutsky named: 2 pts; \eqref{q8:wcov}: 2 pts.
+\item (b) \eqref{q8:quad}--\eqref{q8:score}: 2 pts; non-negativity proved: 1 pt; $T=0$ case: 1 pt.
+\item (c) telescoping \eqref{q8:dF} and identity \eqref{q8:id}: 3 pts; limits \eqref{q8:gar}: 2 pts; coverage proof: 2 pts.
+\item (d) shift sign, \eqref{q8:ratio} and the three limits with reading: 3 pts (limits without proof: max.\ half).
+\item Programming: exact coverage by enumeration (not simulation) and coal intervals: 2 pts.
+}
+\end{sol}
+
+% -----------------------------------------------------------------------------
+\questao{Original conceptual question --- tests and intervals for counts (10 points).}
+\fonte{Original question (not from a book).}
+
+\textbf{a)} (3 points) To test $H_0:\theta=5$ against $H_1:\theta\ne5$ with a Poisson sample (B,
+Exemplo~6.5.5), one uses $-2\log\lambda=2n[\overline x\log(\overline x/5)-(\overline x-5)]$. For
+large $n$, under $H_0$ this statistic is approximately:
+\begin{alternativas}
+\item $\chi^2_n$, one degree of freedom for each observation in the sample.
+\item $N(0,1)$, because $\overline X$ is asymptotically normal under $H_0$.
+\item $\chi^2_1$, the number of free parameters in $H_1$ minus that in $H_0$.
+\item $\chi^2_2$, because the alternative $\theta\ne5$ has two sides.
+\end{alternativas}
+\gabarito{C}
+\begin{sol}
+\passo{Why}{C: Wilks (B, Teorema 6.5.1), $1-0=1$ degree of freedom. A confuses sample size with
+dimension; B: the signed root is $N(0,1)$, the statistic itself is its square; D: two-sidedness is
+already built into squaring, not into extra degrees of freedom.}
+\end{sol}
+
+\textbf{b)} (3 points) Over $n=12$ years a dam recorded no incident ($\overline x=0$). The 95\%
+Wald interval for the yearly rate $\theta$ is:
+\begin{alternativas}
+\item $[0,0]$, a degenerate interval of zero length.
+\item $[0,\,3.84/12]$, from inverting the score statistic.
+\item $[0,\,1.96/12]$, from the normal quantile over $n$.
+\item $[-0.16,\,0.16]$, from a symmetric normal band.
+\end{alternativas}
+\gabarito{A}
+\begin{sol}
+\passo{Why}{A: by \eqref{q8:wpiv}, $0\pm1.96\sqrt{0/12}$. B is the \emph{score} interval
+$[0,z^2/n]=[0,0.320122]$ of \eqref{q8:score}, a correct answer to a different question; C and D
+have no derivation behind them.}
+\end{sol}
+
+\textbf{c)} (2 points, T or F) For Poisson data, a UMP test of $H_0:\theta\le\theta_0$ against
+$H_1:\theta>\theta_0$ exists because the likelihood ratio is monotone in $T=\sum X_i$.
+\gabarito{T}
+\begin{sol}
+\passo{Why}{\eqref{q6:lr} is increasing in $t$ for $\theta_1>\theta_0$; the test \eqref{q6:phi} does
+not depend on $\theta_1$ (B §6.3).}
+\end{sol}
+
+\textbf{d)} (2 points, T or F) Because a UMP test exists for the one-sided alternative, a UMP test
+also exists for $H_0:\theta=\theta_0$ against $H_1:\theta\ne\theta_0$.
+\gabarito{F}
+\begin{sol}
+\passo{Why}{The most powerful test against $\theta_1>\theta_0$ rejects for large $T$, the one
+against $\theta_1<\theta_0$ for small $T$; no single test is most powerful on both sides. Two-sided
+problems use the GLR test of (a) instead.}
+\refbib{B §6.3--6.5.}
+\end{sol}
+
+\programacao Check (a) by simulation. Draw $100{,}000$ samples of size $n=50$ from
+Poisson$(5)$, through their totals $T\sim$ Poisson$(250)$, using the generator
+\texttt{np.random.default\_rng(9)}; compute the statistic of (a) for each and report the fraction
+above $\chi^2_{1,0.95}=3.841$.
+\begin{sol}
+\codehead
+{\small
+\begin{verbatim}
+rng = np.random.default_rng(9); xb = rng.poisson(250, 100_000) / 50
+lr = 2 * 50 * (xb * np.log(xb / 5) - (xb - 5))
+np.mean(lr > 3.841459)                          # 0.04866
+\end{verbatim}
+}
+The rejection rate $0.0487$ is close to $0.05$: with $n\theta_0=250$ expected events the $\chi^2_1$
+approximation is accurate (compare Question~7, where 3 to 5 events gave about 7\%).
+\end{sol}
+
+% =============================================================================
+\bloco{3}{Two Poisson regimes: equal rates and the change point}{G 3.8, 7.3; original}
+
+\questao{G 3.8 --- Bayes factor for two typists.}
+\fonte{Greenberg, E. (2008), \textit{Introduction to Bayesian Econometrics}, 1st ed., Cambridge
+University Press, Chapter~3, §3.5 Exercises, Exercise~3.8, p.~40 [PDF p.~55]; the book gives no
+answer --- reproduced verbatim. Table~3.2, to which it refers, is reproduced from §3.2.4, p.~38
+[PDF p.~53].}
+
+3.8 Suppose the number of typographical errors per page has a Poisson distribution $P(\theta)$. Sam
+types the first $m$ pages of a manuscript and makes $e_1$ errors in total, and Levi types the last
+$m$ pages and makes $e_2$ errors. Let Sam's error rate be $\theta_1$ and Levi's error rate be
+$\theta_2$. To compare model $M_1:\theta_1=\theta_2=\theta$ with model $M_2:\theta_1\neq\theta_2$,
+produce a table like Table~3.2 for $m=100$ with 10 total errors and for $m=200$ with 20 total errors
+and Sam's error proportions of 0.9, 0.8, 0.7, 0.6, and 0.5. Take $G(1,1)$ as a prior for $\theta_1$
+and $\theta_2$.
+
+\begin{center}\small
+\emph{Referred to (Greenberg 2008, p.~38):}\quad \textbf{Table 3.2.} Bayes Factors for Selected Possible Outcomes\\[2pt]
+\begin{tabular}{ccrr}
+\toprule
+Michaela & Lila & \multicolumn{2}{c}{log$_{10}$(Bayes factor)}\\
+Proportion heads & Proportion heads & $m=10$ & $m=100$\\
+\midrule
+0.1 & 0.9 & $-2.506$ & $-30.775$\\
+0.2 & 0.8 & $-1.200$ & $-15.793$\\
+0.3 & 0.7 & $-0.348$ & $-6.316$\\
+0.4 & 0.6 & $0.138$ & $-0.975$\\
+0.5 & 0.5 & $0.297$ & $0.756$\\
+\bottomrule
+\end{tabular}
+\end{center}
+\programacao Compute the table from the closed form. Then check the cell $m=100$, $(e_1,e_2)=(9,1)$
+by Monte Carlo integration over the prior: with \texttt{np.random.default\_rng(10)} draw
+$10^6$ values from $G(1,1)$ for each of the three integrals ($M_1$; $M_2$'s two factors), average
+the integrands, and report $\log_{10}\hat B_{12}$ with its delta-method standard error.
+\resolespaco
+\begin{sol}
+\solhead
+\begin{notacao}
+\item $y_{1i}$, $y_{2i}$ ($i=1,\ldots,m$): errors on page $i$ typed by Sam and by Levi; $e_1=\sum_iy_{1i}$, $e_2=\sum_iy_{2i}$, $e=e_1+e_2$.
+\item $\theta,\theta_1,\theta_2>0$: error rates per page; prior $G(1,1)$, i.e.\ $\pi(\theta)=e^{-\theta}$.
+\item $P=\prod_iy_{1i}!\prod_iy_{2i}!$; $m_j(y)$: marginal likelihood of $M_j$; $B_{12}=m_1(y)/m_2(y)$.
+\end{notacao}
+
+\passo{The gamma integral}{For $a,b>0$ (Greenberg App.~A.1.7),}
+\begin{equation}\label{q10:gi}
+\int_0^\infty\theta^{a-1}e^{-b\theta}d\theta=\frac{\Gamma(a)}{b^{a}}.
+\end{equation}
+
+\passo{Marginal likelihood of $M_1$}{All $2m$ pages share $\theta$:}
+\begin{align}
+m_1(y)&=\int_0^\infty\prod_{i}\frac{\theta^{y_{1i}}e^{-\theta}}{y_{1i}!}\prod_{i}\frac{\theta^{y_{2i}}e^{-\theta}}{y_{2i}!}\,e^{-\theta}\,d\theta\label{q10:m1a}\\
+&=\frac1P\int_0^\infty\theta^{e}e^{-(2m+1)\theta}d\theta.\label{q10:m1b}
+\end{align}
+Substituting \eqref{q10:gi} with $a=e+1$, $b=2m+1$:
+\begin{equation}\label{q10:m1}
+m_1(y)=\frac1P\,\frac{\Gamma(e+1)}{(2m+1)^{e+1}}.
+\end{equation}
+
+\passo{Marginal likelihood of $M_2$}{The two rates have independent priors, so the integral factorises:}
+\begin{align}
+m_2(y)&=\frac1P\int_0^\infty\theta_1^{e_1}e^{-(m+1)\theta_1}d\theta_1\int_0^\infty\theta_2^{e_2}e^{-(m+1)\theta_2}d\theta_2\label{q10:m2a}\\
+&=\frac1P\,\frac{\Gamma(e_1+1)}{(m+1)^{e_1+1}}\,\frac{\Gamma(e_2+1)}{(m+1)^{e_2+1}}.\label{q10:m2}
+\end{align}
+
+\passo{Bayes factor}{Dividing \eqref{q10:m1} by \eqref{q10:m2}; $P$ cancels, so only the totals matter:}
+\begin{align}
+B_{12}&=\frac{\Gamma(e+1)\,(m+1)^{e+2}}{(2m+1)^{e+1}\,\Gamma(e_1+1)\,\Gamma(e_2+1)},\label{q10:B}\\
+\log_{10}B_{12}&=\frac{\ln\Gamma(e+1)+(e+2)\ln(m+1)-(e+1)\ln(2m+1)-\ln\Gamma(e_1+1)-\ln\Gamma(e_2+1)}{\ln10}.\label{q10:logB}
+\end{align}
+
+\passo{One entry worked out}{$m=100$, $e=10$, Sam's proportion $0.9$, so $e_1=9$, $e_2=1$. The
+pieces of \eqref{q10:logB}: $\ln\Gamma(11)=\ln10!=15.104413$; $12\ln101=12(4.615121)=55.381446$;
+$11\ln201=11(5.303305)=58.336354$; $\ln\Gamma(10)=\ln9!=12.801827$; $\ln\Gamma(2)=0$. Substituting:}
+\begin{align}
+\log_{10}B_{12}&=\frac{(15.104413)+(55.381446)-(58.336354)-(12.801827)-(0)}{2.302585}\label{q10:w1}\\
+&=\frac{-0.652323}{2.302585}=-0.283.\label{q10:w2}
+\end{align}
+
+\passo{The table}{The same computation for every cell:}
+\begin{center}
+\begin{tabular}{ccrcr}
+\toprule
+& \multicolumn{2}{c}{$m=100$, $e=10$} & \multicolumn{2}{c}{$m=200$, $e=20$}\\
+\cmidrule(lr){2-3}\cmidrule(lr){4-5}
+Sam's proportion & $(e_1,e_2)$ & $\log_{10}B_{12}$ & $(e_1,e_2)$ & $\log_{10}B_{12}$\\
+\midrule
+0.9 & (9, 1) & $-0.283$ & (18, 2) & $-1.717$\\
+0.8 & (8, 2) & $0.370$ & (16, 4) & $-0.310$\\
+0.7 & (7, 3) & $0.796$ & (14, 6) & $0.593$\\
+0.6 & (6, 4) & $1.039$ & (12, 8) & $1.105$\\
+0.5 & (5, 5) & $1.118$ & (10, 10) & $1.271$\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\passo{Reading it}{On Jeffreys' scale (Greenberg Table~3.1), with 10 errors even a 9--1 split
+favours $M_2$ only weakly ($\log_{10}B_{21}=0.283<1/2$), while an even split gives strong support to
+$M_1$ ($1<1.118<3/2$). Doubling the evidence (20 errors) sharpens everything: an 18--2 split now
+gives very strong evidence for $M_2$ ($3/2<1.717<2$), and equal shares strengthen $M_1$ ($1.271$).}
+
+\passo{Monte Carlo check (programming)}{Each marginal likelihood in \eqref{q10:m1b}--\eqref{q10:m2a}
+is a prior expectation, e.g.\ $P\,m_1(y)=E_{\pi}[\theta^{e}e^{-2m\theta}]$ with $\theta\sim G(1,1)$, so it
+can be estimated by averaging the integrand over prior draws (Greenberg §5.4 with $h=\pi$). If
+$\hat m=\bar d$ averages $G$ draws $d_g$, the delta method gives
+$\Var(\ln\hat m)\approx\Var(d)/(G\bar d^{\,2})$, and the three estimates are independent.}
+
+\codehead
+{\small
+\begin{verbatim}
+rng = np.random.default_rng(10); G, m, e1, e2 = 10**6, 100, 9, 1
+h = lambda t, k, r: np.exp(k * np.log(t) - r * t)
+d1 = h(rng.exponential(1, G), e1 + e2, 2 * m)          # M1 integrand
+d2a, d2b = h(rng.exponential(1, G), e1, m), h(rng.exponential(1, G), e2, m)
+lB = np.log10(d1.mean() / (d2a.mean() * d2b.mean()))   # -0.28295
+cv2 = lambda d: d.var(ddof=1) / (G * d.mean()**2)
+se = np.sqrt(cv2(d1) + cv2(d2a) + cv2(d2b)) / np.log(10)   # 0.00312
+\end{verbatim}
+}
+$-0.28295\pm0.00312$ brackets the exact $-0.28330$. Prior sampling works here because the prior
+$G(1,1)$ still puts mass near the likelihood's peak ($\theta\approx0.05$); with a more concentrated
+likelihood most draws would contribute nothing.
+
+\intuicao{The Bayes factor automatically penalises the extra parameter of $M_2$: it pays off only
+when the split is lopsided enough to beat that Occam penalty, and the same proportions carry more
+weight when they rest on more errors (compare the two $m$ columns, as in Table~3.2).}
+\refbib{Greenberg (2008), §3.2.4 (Bayes factors, Tables 3.1--3.2, pp.~33--38) and §5.4
+(Monte Carlo integration).}
+\end{sol}
+
+% -----------------------------------------------------------------------------
+\questao{G 7.3 --- Gibbs sampler for the coal-mining switch point (computer exercise).}
+\fonte{Greenberg, E. (2008), \textit{Introduction to Bayesian Econometrics}, 1st ed., Cambridge
+University Press, Chapter~7, §7.5 Exercises, Exercise~7.3, p.~106 [PDF p.~121]; the book gives no
+answer --- reproduced verbatim. Equations (7.3) and (7.4), to which the exercise refers, are
+reproduced verbatim from §7.1.1, pp.~93--94 [PDF pp.~108--109].}
+
+\emph{Equations referred to (Greenberg 2008, pp.~93--94):}
+\[
+p(y_i)=\begin{cases}\dfrac{e^{-\theta_1}\theta_1^{y_i}}{y_i!}, & \text{for } i=1,\dots,k,\\[8pt]
+\dfrac{e^{-\theta_2}\theta_2^{y_i}}{y_i!}, & \text{for } i=k+1,\dots,n,\end{cases}\tag{7.3}
+\]
+``where $y_i=0,1,\dots,$ and the switch point $k$ is unknown. The specification is completed by
+assigning the conditionally conjugate priors,
+\[
+\theta_1\sim G(\alpha_{10},\beta_{10}),\quad \theta_2\sim G(\alpha_{20},\beta_{20}),\quad
+\pi(k=j)=1/n,\quad j=1,\dots,n.\text{''}\tag{7.4}
+\]
+
+7.3 Construct a Gibbs algorithm to analyze the Poisson model with unknown switch point. Given the
+specification in Equations (7.3) and (7.4), show that
+\[
+\pi(\theta_1,\theta_2,k\mid y)\propto\theta_1^{\alpha_{10}-1}e^{-\beta_{10}\theta_1}\theta_2^{\alpha_{20}-1}e^{-\beta_{20}\theta_2}
+\prod_{i=1}^{k}e^{-\theta_1}\theta_1^{y_i}\prod_{i=k+1}^{n}e^{-\theta_2}\theta_2^{y_i},
+\]
+and verify that
+\begin{gather*}
+\theta_1\mid y,k\sim G\Big(\alpha_{10}+\sum_{1}^{k}y_i,\ \beta_{10}+k\Big),\\
+\theta_2\mid k,y\sim G\Big(\alpha_{20}+\sum_{k+1}^{n}y_i,\ \beta_{20}+n-k\Big),\\
+\pi(k\mid y,\theta_1,\theta_2)=\frac{e^{k(\theta_2-\theta_1)}(\theta_1/\theta_2)^{\sum_1^ky_i}}
+{\sum_{k=1}^{n}e^{k(\theta_2-\theta_1)}\,(\theta_1/\theta_2)^{\sum_1^ky_i}},\qquad k=1,\dots,n.
+\end{gather*}
+Apply your algorithm to the mining disaster data analyzed by Carlin et al.\ (1992a); the data may be
+found in the article. Your analysis should generate marginal posterior distributions for
+$\theta_1$, $\theta_2$, $p(k)$, and the marginal likelihood computed by the method of Chib (1995).
+For simplicity, set $\alpha_{10}=\alpha_{20}=0.5$ and $\beta_{10}=\beta_{20}=1.0$. (Curiously,
+although these data have been analyzed from the Bayesian viewpoint in several papers, none of them
+present historical material that might shed light on when changes in parameters took place. For
+example, changes in government regulation, technology, or the location of mines might be expected
+to affect the probability of a disaster. A more general version of the model permits multiple
+switch points if necessary.)
+\programacao Beyond the book's tasks (use the coal series of the Instructions,
+\texttt{np.random.default\_rng(2026)}, start $k^{(0)}=56$, 1{,}000 burn-in and $G=10{,}000$ kept
+draws): (1) compute the \emph{exact} $p(k\mid y)$ by integrating $\theta_1,\theta_2$ out analytically
+and report the total-variation distance between it and the Gibbs frequencies of $k$; (2) report the
+numerical standard error of the posterior mean of $\theta_1$ by batch means (50 batches of 200),
+the i.i.d.\ standard error $s/\sqrt G$, and their squared ratio (inefficiency factor).
+\resolespaco
+\begin{sol}
+\solhead
+\begin{notacao}
+\item $y_i$: number of British coal-mining disasters in year $i$, $i=1$ (1851) to $n=112$ (1962);
+  the series of Carlin, Gelfand \& Smith (1992) is Jarrett (1979), total $S=\sum_iy_i=191$.
+\item $k\in\{1,\dots,n\}$: switch point, the last year of regime 1 (year $1850+k$); $k=n$ means no change.
+\item $\theta_1,\theta_2>0$: disaster rates before and after the switch;
+  $S_k=\sum_{i=1}^ky_i$ (so $\sum_{k+1}^ny_i=S-S_k$).
+\item $G(a,b)$: gamma with shape $a$, rate $b$; $\alpha_{10}=\alpha_{20}=\alpha=0.5$,
+  $\beta_{10}=\beta_{20}=\beta=1$.
+\item $g=1,\dots,G$: Gibbs iteration; $\theta^*=(\theta_1^*,\theta_2^*)$: point where Chib's
+  identity is evaluated; $m(y)$: marginal likelihood.
+\end{notacao}
+
+\passo{Joint posterior}{By (7.3) and independence, the likelihood is}
+\begin{equation}\label{q11:lik}
+p(y\mid\theta_1,\theta_2,k)=\prod_{i=1}^k\frac{e^{-\theta_1}\theta_1^{y_i}}{y_i!}
+\prod_{i=k+1}^n\frac{e^{-\theta_2}\theta_2^{y_i}}{y_i!},
+\end{equation}
+and by (7.4) the prior is
+\begin{equation}\label{q11:prior}
+\pi(\theta_1,\theta_2,k)=\frac{\beta_{10}^{\alpha_{10}}}{\Gamma(\alpha_{10})}\theta_1^{\alpha_{10}-1}e^{-\beta_{10}\theta_1}
+\cdot\frac{\beta_{20}^{\alpha_{20}}}{\Gamma(\alpha_{20})}\theta_2^{\alpha_{20}-1}e^{-\beta_{20}\theta_2}\cdot\frac1n .
+\end{equation}
+Multiplying \eqref{q11:lik} by \eqref{q11:prior} and dropping the factors free of
+$(\theta_1,\theta_2,k)$ (the $y_i!$, the gamma constants, $1/n$) gives the expression in the statement:
+\begin{equation}\label{q11:joint}
+\pi(\theta_1,\theta_2,k\mid y)\propto\theta_1^{\alpha_{10}-1}e^{-\beta_{10}\theta_1}\theta_2^{\alpha_{20}-1}e^{-\beta_{20}\theta_2}
+\prod_{i=1}^{k}e^{-\theta_1}\theta_1^{y_i}\prod_{i=k+1}^{n}e^{-\theta_2}\theta_2^{y_i}.
+\end{equation}
+
+\passo{Full conditional of $\theta_1$}{Keeping in \eqref{q11:joint} only the factors with $\theta_1$:}
+\[
+\pi(\theta_1\mid y,k,\theta_2)\propto\theta_1^{\alpha_{10}-1}e^{-\beta_{10}\theta_1}\big(e^{-k\theta_1}\theta_1^{S_k}\big).
+\]
+Adding exponents:
+\begin{equation}\label{q11:t1}
+\pi(\theta_1\mid y,k)\propto\theta_1^{\alpha_{10}+S_k-1}e^{-(\beta_{10}+k)\theta_1}
+\;\Longrightarrow\;\theta_1\mid y,k\sim G(\alpha_{10}+S_k,\ \beta_{10}+k).
+\end{equation}
+
+\passo{Full conditional of $\theta_2$}{In the same way, the $\theta_2$ factors of \eqref{q11:joint}
+are}
+\[
+\pi(\theta_2\mid y,k,\theta_1)\propto\theta_2^{\alpha_{20}-1}e^{-\beta_{20}\theta_2}\big(e^{-(n-k)\theta_2}\theta_2^{S-S_k}\big),
+\]
+so, adding exponents,
+\begin{equation}\label{q11:t2}
+\theta_2\mid y,k\sim G(\alpha_{20}+S-S_k,\ \beta_{20}+n-k).
+\end{equation}
+Neither \eqref{q11:t1} nor \eqref{q11:t2} involves the other rate: given $k$, $\theta_1$ and $\theta_2$
+are independent.
+
+\passo{Full conditional of $k$}{The factors of \eqref{q11:joint} that change with $k$ are the two
+products:}
+\begin{equation}\label{q11:k0}
+\pi(k\mid y,\theta_1,\theta_2)\propto e^{-k\theta_1}\theta_1^{S_k}\,e^{-(n-k)\theta_2}\theta_2^{S-S_k}.
+\end{equation}
+Dividing \eqref{q11:k0} by the $k$-free factor $e^{-n\theta_2}\theta_2^{S}$:
+\begin{equation}\label{q11:k}
+\pi(k\mid y,\theta_1,\theta_2)\propto e^{k(\theta_2-\theta_1)}\Big(\frac{\theta_1}{\theta_2}\Big)^{S_k},
+\qquad k=1,\dots,n,
+\end{equation}
+and normalising over $k=1,\dots,n$ gives the formula in the statement.
+
+\passo{Algorithm}{Start at $k^{(0)}=56$. For $g=1,\dots,11{,}000$: draw $\theta_1^{(g)}$ from
+\eqref{q11:t1} and $\theta_2^{(g)}$ from \eqref{q11:t2} given $k^{(g-1)}$; compute the $n$ weights
+\eqref{q11:k} on the log scale, normalise, and draw $k^{(g)}$. Discard 1{,}000 burn-in draws and keep
+$G=10{,}000$ (NumPy seed 2026).}
+
+\passo{Exact benchmark}{Because the priors are conjugate given $k$, $\theta_1,\theta_2$ integrate out
+of \eqref{q11:lik}$\times$\eqref{q11:prior} in closed form, by \eqref{q10:gi}:}
+\begin{equation}\label{q11:pyk}
+p(y\mid k)=\frac{1}{\prod_iy_i!}\cdot\frac{\beta^\alpha\,\Gamma(\alpha+S_k)}{\Gamma(\alpha)\,(\beta+k)^{\alpha+S_k}}
+\cdot\frac{\beta^\alpha\,\Gamma(\alpha+S-S_k)}{\Gamma(\alpha)\,(\beta+n-k)^{\alpha+S-S_k}} ,
+\end{equation}
+so the exact marginal likelihood and posterior of $k$ are
+\begin{equation}\label{q11:exact}
+m(y)=\sum_{k=1}^n\frac1n\,p(y\mid k),\qquad p(k\mid y)=\frac{p(y\mid k)/n}{m(y)},
+\end{equation}
+giving $\log m(y)=-179.4590$, $\E(\theta_1\mid y)=3.0500$, $\E(\theta_2\mid y)=0.9147$. These check the
+sampler.
+
+\passo{Marginal posteriors}{Gibbs output (exact values from \eqref{q11:exact} for $k$):}
+\begin{center}\small
+\begin{tabular}{lccc}
+\toprule
+ & Posterior mean & Posterior sd & 95\% interval \\
+\midrule
+$\theta_1$ (before) & 3.0506 & 0.2809 & $[2.530,\ 3.635]$\\
+$\theta_2$ (after)  & 0.9166 & 0.1163 & $[0.701,\ 1.156]$\\
+\bottomrule
+\end{tabular}
+\qquad
+\begin{tabular}{cccc}
+\toprule
+$k$ & year & $p(k\mid y)$ Gibbs & exact \\
+\midrule
+41 & 1891 & 0.2471 & 0.2482\\
+40 & 1890 & 0.1849 & 0.1848\\
+39 & 1889 & 0.1433 & 0.1414\\
+42 & 1892 & 0.0987 & 0.1010\\
+37 & 1887 & 0.0881 & 0.0898\\
+36 & 1886 & 0.0742 & 0.0745\\
+\bottomrule
+\end{tabular}
+\end{center}
+The posterior of $k$ has mean $40.14$ and mode $k=41$ (1891); $P(36\le k\le46\mid y)=0.98$, i.e.\ the
+switch happened between 1886 and 1896 with high probability. Disasters fell from about 3.05 to
+about 0.92 per year.
+
+\passo{Marginal likelihood by Chib (1995)}{For any $\theta^*$, Bayes' theorem rearranged gives the
+identity}
+\begin{equation}\label{q11:chib}
+\log m(y)=\log p(y\mid\theta^*)+\log\pi(\theta^*)-\log\pi(\theta^*\mid y).
+\end{equation}
+Here $k$ is a latent parameter, so the likelihood term sums it out with its prior:
+\begin{equation}\label{q11:lstar}
+p(y\mid\theta^*)=\sum_{k=1}^n\frac1n\,p(y\mid\theta_1^*,\theta_2^*,k).
+\end{equation}
+For the ordinate, conditional independence of $\theta_1,\theta_2$ given $k$ (from \eqref{q11:t1} and
+\eqref{q11:t2}) gives the Rao--Blackwell estimate
+\begin{equation}\label{q11:ord}
+\hat\pi(\theta^*\mid y)=\frac1G\sum_{g=1}^G G\big(\theta_1^*\mid\alpha+S_{k^{(g)}},\beta+k^{(g)}\big)\,
+G\big(\theta_2^*\mid\alpha+S-S_{k^{(g)}},\beta+n-k^{(g)}\big),
+\end{equation}
+with $G(\cdot\mid a,b)$ the gamma density. At the posterior means $\theta^*=(3.0506,\ 0.9166)$:
+$\log p(y\mid\theta^*)=-172.2563$ from \eqref{q11:lstar}, $\log\pi(\theta^*)=-5.6261$ from (7.4), and
+$\log\hat\pi(\theta^*\mid y)=1.5765$ from \eqref{q11:ord}. Substituting into \eqref{q11:chib}:
+\[
+\log\hat m(y)=(-172.2563)+(-5.6261)-(1.5765)=-179.4589 ,
+\]
+against the exact $-179.4590$ from \eqref{q11:exact}.
+
+\passo{Added: exactness and numerical standard error}{The total-variation distance
+$\frac12\sum_k|\hat p(k)-p(k\mid y)|$ between the Gibbs frequencies and \eqref{q11:exact} is
+$0.0077$. For $\E(\theta_1\mid y)$, batch means give n.s.e.\ $=0.003035$ against the i.i.d.\ value
+$0.2809/\sqrt{10{,}000}=0.002809$; the inefficiency factor $(0.003035/0.002809)^2=1.167$ says the
+chain is almost as informative as independent draws (Greenberg §7.3).}
+
+\codehead
+{\small
+\begin{verbatim}
+cs, ks = np.cumsum(y), np.arange(1, n + 1)        # S_k and k = 1..n
+rng, k = np.random.default_rng(2026), n // 2
+for g in range(11000):
+    t1 = rng.gamma(a0 + cs[k-1], 1 / (b0 + k))          # (11.4) theta1 | k
+    t2 = rng.gamma(a0 + S - cs[k-1], 1 / (b0 + n - k))  # (11.5) theta2 | k
+    lp = ks * (t2 - t1) + cs * np.log(t1 / t2)          # (11.7) log pi(k | ...)
+    p = np.exp(lp - lp.max()); k = rng.choice(ks, p=p / p.sum())
+# theta1 3.0506 (0.2809), theta2 0.9166 (0.1163), mode k = 41 (1891)
+# Chib: -172.2563 + (-5.6261) - 1.5765 = -179.4589 ; exact -179.4590
+bm = th1.reshape(50, 200).mean(1)
+nse = bm.std(ddof=1) / np.sqrt(50)                  # 0.003035 (iid: 0.002809)
+\end{verbatim}
+}
+
+\intuicao{The data choose a sharp break: about three disasters a year until around 1890, under one
+afterwards, with the switch year pinned down within a few years. The Gibbs sampler works because
+each block is easy given the others: rates are conjugate gammas given $k$, and $k$ is a discrete
+draw over 112 years given the rates. On the historical question Greenberg raises, the posterior
+mass near 1887--1891 sits close to the Coal Mines Regulation Act of 1887, a candidate explanation
+that this model does not test. Chib's identity recovers the exact marginal likelihood to the fourth
+decimal.}
+\refbib{Greenberg (2008), §7.1.1 (pp.~91--95), §7.3 (n.s.e., batch means) and §7.4 (Chib 1995);
+Class~1 deck \textit{Poisson with breakpoint}.}
+\end{sol}
+
+% -----------------------------------------------------------------------------
+\questao{Original math question --- likelihood ratio for a change point.}
+\fonte{Original question (not from a book).}
+
+Counts $y_1,\dots,y_n$ are independent with $y_i\sim$ Poisson$(\theta_1)$ for $i\le\tau$ and
+Poisson$(\theta_2)$ for $i>\tau$, $1\le\tau<n$. Let $S=\sum_{i=1}^ny_i>0$ and $S_\tau=\sum_{i\le\tau}y_i$.
+\begin{enumerate}[label=\textbf{(\alph*)},leftmargin=2.4em]
+\item For known $\tau$, derive the MLEs and the statistic $\Lambda_\tau=-2\log\lambda_\tau$ for
+$H_0:\theta_1=\theta_2$. Show that $\Lambda_\tau=2S\,\mathrm{KL}(p\,\|\,\pi)$, the Kullback--Leibler
+divergence between Bernoulli$(p)$ and Bernoulli$(\pi)$ with $p=S_\tau/S$ and $\pi=\tau/n$, and
+prove that $\Lambda_\tau\ge0$ with equality iff $p=\pi$.
+\item Prove that under $H_0$, conditionally on $S$, $S_\tau\sim$ Binomial$(S,\tau/n)$ whatever the
+common rate, and use it to build an exact test for known $\tau$.
+\item For unknown $\tau$, let $M=\max_{1\le\tau<n}\Lambda_\tau$ (the profile-likelihood statistic) and
+$\hat\tau$ its argmax. Prove that, under $H_0$, $P(M>c)\ge P(\Lambda_{\tau_0}>c)$ for any fixed
+$\tau_0$ and $c$, and conclude what happens to a test that compares $M$ with the $\chi^2_1$ critical
+value.
+\item Parameter analysis: for fixed $S$ and $\pi$, prove the sign of $\partial\Lambda_\tau/\partial p$
+and the convexity of $\Lambda_\tau$ in $p$; find its limits as $p\to0$ and $p\to1$; say how
+$\Lambda_\tau$ scales with $S$ at a fixed $p$. Interpret.
+\end{enumerate}
+\programacao For the coal series ($n=112$): compute $\Lambda_\tau$ for $\tau=1,\dots,111$, $\hat\tau$
+and $M$; the conditional binomial p-value of (b) at $\tau=\hat\tau$ (and why it is not a valid
+p-value once $\tau$ was chosen by the data); and the null distribution of $M$ by a parametric
+bootstrap (2{,}000 series of 112 i.i.d.\ Poisson$(S/n)$ counts, \texttt{np.random.default\_rng(12)}):
+its 95\% quantile, the rejection rate of the rule ``$M>3.841$'' and the bootstrap p-value of the
+observed $M$.
+\resolespaco
+\begin{sol}
+\solhead
+\begin{notacao}
+\item $n_1=\tau$, $n_2=n-\tau$; $\hat\theta_1=S_\tau/\tau$, $\hat\theta_2=(S-S_\tau)/(n-\tau)$, $\hat\theta=S/n$.
+\item $p=S_\tau/S\in[0,1]$: share of events before $\tau$; $\pi=\tau/n\in(0,1)$: share of time before $\tau$.
+\item $\mathrm{KL}(p\|\pi)=p\log\frac p\pi+(1-p)\log\frac{1-p}{1-\pi}$ (with $0\log0=0$).
+\end{notacao}
+
+\passo{(a) MLEs}{The log-likelihood is
+$\ell=S_\tau\log\theta_1-\tau\theta_1+(S-S_\tau)\log\theta_2-(n-\tau)\theta_2+\text{const}$; its two
+score equations separate and give $\hat\theta_1$, $\hat\theta_2$ of the Notation (as in
+\eqref{q14:score}); under $H_0$ the pooled MLE is $\hat\theta=S/n$.}
+
+\passo{(a) The statistic}{As in \eqref{q7:stat} of Question~7, with $(n,m)$ replaced by
+$(\tau,n-\tau)$ (the linear terms cancel because $\tau\hat\theta_1+(n-\tau)\hat\theta_2=S=n\hat\theta$):}
+\begin{equation}\label{q12:L}
+\Lambda_\tau=2\Big[S_\tau\log\frac{\hat\theta_1}{\hat\theta}+(S-S_\tau)\log\frac{\hat\theta_2}{\hat\theta}\Big].
+\end{equation}
+
+\passo{(a) KL form}{The ratios in \eqref{q12:L} are}
+\begin{equation}\label{q12:ratios}
+\frac{\hat\theta_1}{\hat\theta}=\frac{S_\tau/\tau}{S/n}=\frac{S_\tau/S}{\tau/n}=\frac p\pi,\qquad
+\frac{\hat\theta_2}{\hat\theta}=\frac{(S-S_\tau)/S}{(n-\tau)/n}=\frac{1-p}{1-\pi}.
+\end{equation}
+Substituting \eqref{q12:ratios} and $S_\tau=Sp$ into \eqref{q12:L}:
+\begin{equation}\label{q12:KL}
+\Lambda_\tau=2\Big[(Sp)\log\frac p\pi+(S(1-p))\log\frac{1-p}{1-\pi}\Big]=2S\,\mathrm{KL}(p\|\pi).
+\end{equation}
+
+\passo{(a) Non-negativity}{$-\log$ is strictly convex, so by Jensen's inequality over the two-point
+law $(p,1-p)$:}
+\[
+\mathrm{KL}(p\|\pi)=-\Big[p\log\frac\pi p+(1-p)\log\frac{1-\pi}{1-p}\Big]\ge-\log\Big[p\frac\pi p+(1-p)\frac{1-\pi}{1-p}\Big]=-\log1=0,
+\]
+with equality iff $\pi/p=(1-\pi)/(1-p)$, i.e.\ $p=\pi$. By \eqref{q12:KL}, $\Lambda_\tau\ge0$, zero iff
+the share of events equals the share of time.
+
+\passo{(b) Conditional law}{Under $H_0$ with common rate $\theta$, $S_\tau\sim$ Poisson$(\tau\theta)$
+and $S-S_\tau\sim$ Poisson$((n-\tau)\theta)$ independently, so for $0\le s\le S$:}
+\[
+P(S_\tau=s\mid S)=\frac{\frac{(\tau\theta)^se^{-\tau\theta}}{s!}\frac{((n-\tau)\theta)^{S-s}e^{-(n-\tau)\theta}}{(S-s)!}}{\frac{(n\theta)^Se^{-n\theta}}{S!}}
+=\binom Ss\Big(\frac\tau n\Big)^s\Big(1-\frac\tau n\Big)^{S-s},
+\]
+the same cancellation as \eqref{q4:bin}. An exact level-$\alpha$ test for known $\tau$ rejects when
+$S_\tau$ is in the tails of Binomial$(S,\pi)$; its size is at most $\alpha$ for every $\theta$
+because the conditional law does not involve $\theta$.
+
+\passo{(c) The maximum dominates}{For every sample, $M=\max_\tau\Lambda_\tau\ge\Lambda_{\tau_0}$.
+Hence $\{\Lambda_{\tau_0}>c\}\subseteq\{M>c\}$ and}
+\begin{equation}\label{q12:dom}
+P_{H_0}(M>c)\ge P_{H_0}(\Lambda_{\tau_0}>c).
+\end{equation}
+For fixed $\tau_0$, $\Lambda_{\tau_0}\to\chi^2_1$ under $H_0$ (one restriction; B Teorema 6.5.1), so
+with $c=3.841$ the right side of \eqref{q12:dom} tends to $0.05$: comparing $M$ with $\chi^2_1$
+gives a test whose size is at least 5\% and, since the maximum runs over many correlated
+statistics, in practice far larger. Searching for the break and then testing it as if it were
+known is a multiple-testing error; the null law of $M$ must be simulated.
+
+\passo{(d) Signs and convexity}{Differentiating \eqref{q12:KL} in $p$:}
+\begin{equation}\label{q12:dp}
+\frac{\partial\Lambda_\tau}{\partial p}=2S\Big[\log\frac p\pi+1-\log\frac{1-p}{1-\pi}-1\Big]
+=2S\log\frac{p(1-\pi)}{(1-p)\pi},
+\end{equation}
+negative for $p<\pi$, zero at $p=\pi$, positive for $p>\pi$ (the argument of the log exceeds 1
+iff $p>\pi$). Differentiating \eqref{q12:dp} again:
+\[
+\frac{\partial^2\Lambda_\tau}{\partial p^2}=2S\Big(\frac1p+\frac1{1-p}\Big)=\frac{2S}{p(1-p)}>0 .
+\]
+Limits from \eqref{q12:KL}: $p\to0$ gives $2S\log\frac1{1-\pi}$; $p\to1$ gives $2S\log\frac1\pi$.
+At fixed $p$, $\Lambda_\tau$ is linear in $S$.
+
+\passo{(d) Reading}{Evidence of a break grows with the gap between the share of disasters and
+the share of years before $\tau$, symmetrically in the KL sense, and doubles when the number of
+events doubles at the same shares: a 66\%--37\% split is weak with 10 events and overwhelming with
+191.}
+
+\passo{Coal data (programming)}{The maximum is at $\hat\tau=41$ (1891): $S_{41}=127$, $p=127/191$,
+$\pi=41/112$; $\hat\theta_1=127/41=3.097561$, $\hat\theta_2=64/71=0.901408$, $\hat\theta=191/112=1.705357$,
+and $M=\Lambda_{41}=69.99$. Under $H_0$, $E(S_{41}\mid S)=191\cdot41/112=69.92$, while 127 were
+observed: the binomial tail $P(S_{41}\ge127)=5.4\times10^{-17}$. That number is not a valid p-value,
+since $\tau=41$ was chosen because it maximizes the evidence. The bootstrap null law of $M$ has 95\%
+quantile $10.08$ (not $3.84$); the rule $M>3.841$ rejects in $56.75\%$ of null series, which
+quantifies (c); none of the 2{,}000 null values reaches $69.99$ (bootstrap p-value $<1/2000$).}
+
+\codehead
+{\small
+\begin{verbatim}
+def lr_tau(y):
+    n, S = len(y), y.sum(); tau = np.arange(1, n); s1 = np.cumsum(y)[:-1]
+    xlogy = lambda a, b: np.where(a > 0, a * np.log(np.where(a > 0, a, 1) / b), 0.)
+    return 2 * (xlogy(s1, tau * S / n) + xlogy(S - s1, (n - tau) * S / n))
+L = lr_tau(y); L.argmax() + 1, L.max()          # 41, 69.99
+binom.sf(126, 191, 41 / 112)                    # 5.4e-17
+rng = np.random.default_rng(12)
+M = np.array([lr_tau(rng.poisson(191 / 112, 112)).max() for _ in range(2000)])
+np.quantile(M, .95), np.mean(M > 3.841), np.mean(M >= 69.99)   # 10.08 0.5675 0.0
+\end{verbatim}
+}
+
+\intuicao{A change point turns a count series into a split of events between two periods; the
+likelihood ratio measures how far that split is from the split of time. Choosing the period that
+looks most different and then testing it as if fixed inflates the evidence, the same trap as
+reporting the best of many specifications.}
+\refbib{Class~1 deck \textit{Poisson with breakpoint} (LR at 1891 $=69.99$); Bolfarine \& Sandoval
+(2010), §6.5; Greenberg (2008), §7.1.1 for the Bayesian treatment.}
+\rubrica{
+\item (a) MLEs and \eqref{q12:L}: 3 pts; \eqref{q12:ratios}--\eqref{q12:KL}: 2 pts; Jensen proof: 2 pts.
+\item (b) conditional binomial derived and the exact test: 3 pts.
+\item (c) \eqref{q12:dom} and the conclusion about the $\chi^2_1$ rule: 3 pts (claim without the inclusion argument: max.\ 1).
+\item (d) \eqref{q12:dp} with sign, convexity, limits, scaling and reading: 4 pts.
+\item Programming: $\hat\tau$, $M$, binomial tail and bootstrap quantile: 3 pts.
+}
+\end{sol}
+
+% -----------------------------------------------------------------------------
+\questao{Original conceptual question --- switch points and Bayes factors (10 points).}
+\fonte{Original question (not from a book).}
+
+\textbf{a)} (3 points) In the Gibbs sampler of Question~11, the full conditional distribution of the
+switch point $k$ is:
+\begin{alternativas}
+\item uniform on $\{1,\dots,n\}$, its prior, because $k$ does not appear in the gamma conditionals.
+\item a gamma distribution, because the gamma prior is conjugate to the Poisson likelihood.
+\item Binomial$(S,k/n)$, the conditional law of the first-segment count given the total.
+\item discrete on $\{1,\dots,n\}$ with weights proportional to $e^{k(\theta_2-\theta_1)}(\theta_1/\theta_2)^{S_k}$.
+\end{alternativas}
+\gabarito{D}
+\begin{sol}
+\passo{Why}{D is \eqref{q11:k}. A: $k$ enters the likelihood through which years use which rate,
+so the data update it. B: $k$ is discrete; conjugacy concerns the rates. C confuses the
+conditional law of the \emph{data} $S_k$ under $H_0$ (Question~12(b)) with the posterior of the
+\emph{parameter} $k$.}
+\end{sol}
+
+\textbf{b)} (3 points) The Bayes factor $B_{12}$ of Question~10 depends on the page-level data only
+through:
+\begin{alternativas}
+\item the individual page counts, through the product of factorials $\prod_iy_{1i}!\prod_iy_{2i}!$.
+\item the totals $e_1$ and $e_2$ (given $m$), because the factorials cancel in the ratio.
+\item the grand total $e=e_1+e_2$, because model $M_1$ pools the two typists' pages.
+\item the proportion $e_1/e$ alone, whatever the number of errors behind it.
+\end{alternativas}
+\gabarito{B}
+\begin{sol}
+\passo{Why}{B: \eqref{q10:B}. A: $P$ appears in both marginal likelihoods and cancels. C: $M_2$ uses
+$e_1$ and $e_2$ separately. D: the table shows that the same proportion gives different factors
+for $e=10$ and $e=20$.}
+\end{sol}
+
+\textbf{c)} (2 points, T or F) In the switch-point model with independent gamma priors, $\theta_1$
+and $\theta_2$ are independent a posteriori \emph{given} $k$.
+\gabarito{T}
+\begin{sol}
+\passo{Why}{\eqref{q11:t1} does not involve $\theta_2$ and \eqref{q11:t2} does not involve
+$\theta_1$; the joint \eqref{q11:joint} factorizes for fixed $k$.}
+\end{sol}
+
+\textbf{d)} (2 points, T or F) Hence $\theta_1$ and $\theta_2$ are also independent in their
+marginal posterior, after $k$ is integrated out.
+\gabarito{F}
+\begin{sol}
+\passo{Why}{The marginal posterior is a mixture over $k$ of product densities, and mixing products
+creates dependence. Here a later $k$ lowers both conditional means ($k=36$: $3.18$ and $0.97$;
+$k=44$: $2.90$ and $0.89$, from \eqref{q11:t1}--\eqref{q11:t2}), so averaging over $p(k\mid y)$
+gives an exact posterior correlation of $0.060$, not $0$. Conditional independence does not imply
+marginal independence.}
+\end{sol}
+
+\programacao Using the Gibbs draws of Question~11, compute the sample correlation of
+$(\theta_1^{(g)},\theta_2^{(g)})$; compute the exact posterior correlation from the mixture over
+$p(k\mid y)$ of the moments of the two conditional gammas $\theta_j\mid y,k$ given in the statement
+of Question~11.
+\begin{sol}
+\codehead
+{\small
+\begin{verbatim}
+np.corrcoef(th1, th2)[0, 1]                     # 0.0708 (Gibbs)
+m1, m2 = (a0 + cs) / (b0 + ks), (a0 + S - cs) / (b0 + n - ks)     # E(theta_j | k)
+v1 = np.sum(pk * ((a0 + cs) / (b0 + ks)**2 + m1**2)) - np.sum(pk * m1)**2
+v2 = np.sum(pk * ((a0 + S - cs) / (b0 + n - ks)**2 + m2**2)) - np.sum(pk * m2)**2
+(np.sum(pk * m1 * m2) - np.sum(pk * m1) * np.sum(pk * m2)) / np.sqrt(v1 * v2)   # 0.0600
+\end{verbatim}
+}
+Both are clearly positive (the Gibbs value carries Monte Carlo error of about $0.01$), so (d) is false.
+\end{sol}
+
+% =============================================================================
+\bloco{4}{Bayesian gamma--Poisson: posterior, predictive, Bayes estimators}{G 2.2, 3.2, 3.5; B 4.9/5.12; original}
+
+\questao{G 2.2 --- gamma--Poisson conjugacy.}
+\fonte{Greenberg, E. (2008), \textit{Introduction to Bayesian Econometrics}, 1st ed., Cambridge
+University Press, Chapter~2, §2.5 Exercises, Exercise~2.2, p.~19 [PDF p.~34]; the book gives no
+answer --- reproduced verbatim.}
+
+2.2 The Poisson distribution has probability mass function
+\[ p(y_i\mid\theta)=\frac{\theta^{y_i}e^{-\theta}}{y_i!},\qquad \theta>0,\ y_i=0,1,\dots, \]
+and let $y_1,\dots,y_n$ be a random sample from this distribution.
+\begin{enumerate}[label=\textbf{(\alph*)},leftmargin=2.4em]
+\item Show that the gamma distribution $G(\alpha,\beta)$ is a conjugate prior distribution for the
+Poisson distribution.
+\item Show that $\bar y$ is the MLE for $\theta$.
+\item Write the mean of the posterior distribution as a weighted average of the mean of the prior
+distribution and the MLE.
+\item What happens to the weight on the prior mean as $n$ becomes large?
+\end{enumerate}
+\programacao Use the coal counts 1851--1891 ($n=41$) and the prior $G(0.5,1)$ of G~7.3. Evaluate
+the unnormalized posterior $\theta^{\alpha+s-1}e^{-(\beta+n)\theta}$ on a grid of $200{,}001$ points in
+$(0,10]$ (work on the log scale), normalize it with the trapezoidal rule, and compare its mean with
+the closed form of (c). Print the prior weight $w$ for $n=1,10,41,112,1000$.
+\resolespaco
+\begin{sol}
+\solhead
+\begin{notacao}
+\item $y_i\in\{0,1,\dots\}$: counts; $\theta>0$: Poisson rate; $s=\sum_{i=1}^ny_i$, $\bar y=s/n$.
+\item $G(\alpha,\beta)$, $\alpha,\beta>0$: gamma with shape $\alpha$ and rate $\beta$ (Greenberg's
+  convention, App.~A), $\pi(\theta)=\frac{\beta^\alpha}{\Gamma(\alpha)}\theta^{\alpha-1}e^{-\beta\theta}$,
+  mean $\alpha/\beta$.
+\item $\ell(\theta)$: log-likelihood; $\hat\theta$: MLE; $w$: weight on the prior mean.
+\end{notacao}
+
+\passo{(a) Likelihood}{Independence gives}
+\begin{equation}\label{q14:lik}
+p(y\mid\theta)=\prod_{i=1}^n\frac{\theta^{y_i}e^{-\theta}}{y_i!}=\frac{\theta^{s}e^{-n\theta}}{\prod_iy_i!}.
+\end{equation}
+
+\passo{(a) Posterior}{Bayes' theorem, $\pi(\theta\mid y)\propto p(y\mid\theta)\pi(\theta)$, with
+\eqref{q14:lik} and the gamma prior, dropping factors free of $\theta$:}
+\begin{equation}\label{q14:post0}
+\pi(\theta\mid y)\propto\big(\theta^{s}e^{-n\theta}\big)\big(\theta^{\alpha-1}e^{-\beta\theta}\big).
+\end{equation}
+Adding exponents in \eqref{q14:post0}:
+\begin{equation}\label{q14:post}
+\pi(\theta\mid y)\propto\theta^{\alpha+s-1}e^{-(\beta+n)\theta},
+\end{equation}
+the kernel of $G(\alpha+s,\ \beta+n)$. Prior and posterior are both gamma, so the gamma family is
+conjugate for the Poisson likelihood.
+
+\passo{(b) MLE}{Taking logs of \eqref{q14:lik}:}
+\begin{equation}\label{q14:ll}
+\ell(\theta)=s\log\theta-n\theta-\sum_i\log y_i!.
+\end{equation}
+Differentiating \eqref{q14:ll} and setting the score to zero:
+\begin{equation}\label{q14:score}
+\ell'(\theta)=\frac{s}{\theta}-n=0\;\Longrightarrow\;\hat\theta=\frac{s}{n}=\bar y .
+\end{equation}
+The second derivative $\ell''(\theta)=-s/\theta^2<0$ when $s>0$, so \eqref{q14:score} is a maximum. (If
+$s=0$, $\ell(\theta)=-n\theta$ decreases and the supremum is at the boundary $0=\bar y$.)
+
+\passo{(c) Posterior mean as a weighted average}{The mean of the gamma \eqref{q14:post} is}
+\begin{equation}\label{q14:pm}
+\E(\theta\mid y)=\frac{\alpha+s}{\beta+n}.
+\end{equation}
+Substituting $\alpha=\beta(\alpha/\beta)$ and $s=n\bar y$ into \eqref{q14:pm}:
+\[
+\E(\theta\mid y)=\frac{\beta\,(\alpha/\beta)+n\,(\bar y)}{\beta+n}.
+\]
+Splitting the fraction:
+\begin{equation}\label{q14:wavg}
+\E(\theta\mid y)=\underbrace{\frac{\beta}{\beta+n}}_{w}\cdot\frac{\alpha}{\beta}
++\underbrace{\frac{n}{\beta+n}}_{1-w}\cdot\bar y .
+\end{equation}
+
+\passo{(d) Large $n$}{From \eqref{q14:wavg},}
+\begin{equation}\label{q14:lim}
+w=\frac{\beta}{\beta+n}\xrightarrow[n\to\infty]{}0,
+\end{equation}
+so the posterior mean converges to the MLE $\bar y$; the posterior variance $(\alpha+s)/(\beta+n)^2$
+also goes to zero at rate $1/n$.
+
+\passo{Numerical illustration}{Coal-mining disasters 1851--1891 ($n=41$, $s=127$,
+$\bar y=3.097561$) with the prior of G~7.3, $\alpha=0.5$, $\beta=1$. By \eqref{q14:lim},
+$w=1/(1+41)=0.023810$; by \eqref{q14:wavg},}
+\[
+\E(\theta\mid y)=0.023810\,(0.5)+0.976190\,(3.097561)=0.011905+3.023810=3.035714,
+\]
+which equals \eqref{q14:pm}: $(0.5+127)/(1+41)=127.5/42=3.035714$.
+
+\codehead
+{\small
+\begin{verbatim}
+grid = np.linspace(1e-6, 10, 200_001)
+ker = np.exp((0.5 + 127 - 1) * np.log(grid) - (1 + 41) * grid - 300)  # -300: scale
+pm = trapezoid(grid * ker, grid) / trapezoid(ker, grid)                 # 3.035714
+w = {n: 1 / (1 + n) for n in (1, 10, 41, 112, 1000)}
+# 0.500000  0.090909  0.023810  0.008850  0.000999
+\end{verbatim}
+}
+
+\intuicao{The prior acts like $\beta$ extra periods of data containing $\alpha$ events in total.
+After $n$ real periods it weighs $\beta/(\beta+n)$; with 41 years of data a prior worth one year
+moves the estimate only from $3.098$ to $3.036$.}
+\refbib{Greenberg (2008), §2.2 (pp.~12--18) and App.~A (gamma distribution); the Class~1 deck
+\textit{first Bayesian example} (Poisson with an exponential prior, the case $\alpha=1$).}
+\end{sol}
+
+% -----------------------------------------------------------------------------
+\questao{G 3.2 --- Poisson--gamma predictive distribution.}
+\fonte{Greenberg, E. (2008), \textit{Introduction to Bayesian Econometrics}, 1st ed., Cambridge
+University Press, Chapter~3, §3.5 Exercises, Exercise~3.2, p.~39 [PDF p.~54]; the book gives no
+answer --- reproduced verbatim.}
+
+3.2 Compute the predictive distribution for $y_{n+1}$ if the $y_i$ have independent Poisson
+distributions with parameter $\theta$, given that the first $n$ experiments yielded
+$y_1,y_2,\ldots,y_n$ events, respectively. Assume the prior distribution $G(\alpha,\beta)$.
+\programacao For the coal data 1851--1891 with prior $G(0.5,1)$, simulate the predictive by
+composition (Greenberg §5.2): draw $\theta^{(g)}$ from the posterior and then
+$y^{(g)}\sim$ Poisson$(\theta^{(g)})$, $g=1,\dots,10^6$, with \texttt{np.random.default\_rng(15)}.
+Compare the simulated frequencies of $y=0,1,2,3$, mean and variance with your closed form, and
+check the closed form at $y=0,\dots,3$ against numerical integration of the predictive integral.
+\resolespaco
+\begin{sol}
+\solhead
+\begin{notacao}
+\item $y_i$, $s=\sum_{i\le n}y_i$, $\theta$, $\alpha$, $\beta$ as in Question~14; $y\in\{0,1,\ldots\}$: value of $y_{n+1}$.
+\item $\alpha_1=\alpha+s$, $\beta_1=\beta+n$: posterior parameters.
+\end{notacao}
+\passo{Posterior}{By \eqref{q14:post} of Question~14, $\theta\mid y_{1:n}\sim G(\alpha_1,\beta_1)$, and
+$y_{n+1}$ is independent of $y_{1:n}$ given $\theta$.}
+\passo{Predictive integral}{Integrating the Poisson p.m.f.\ against the posterior:}
+\begin{align}
+p(y_{n+1}=y\mid y_{1:n})&=\int_0^\infty\frac{\theta^{y}e^{-\theta}}{y!}\,\frac{\beta_1^{\alpha_1}}{\Gamma(\alpha_1)}\theta^{\alpha_1-1}e^{-\beta_1\theta}\,d\theta\label{q15:a}\\
+&=\frac{\beta_1^{\alpha_1}}{\Gamma(\alpha_1)\,y!}\int_0^\infty\theta^{\alpha_1+y-1}e^{-(\beta_1+1)\theta}d\theta.\label{q15:b}
+\end{align}
+Substituting the gamma integral \eqref{q10:gi} with $a=\alpha_1+y$, $b=\beta_1+1$ into \eqref{q15:b}:
+\begin{align}
+p(y_{n+1}=y\mid y_{1:n})&=\frac{\beta_1^{\alpha_1}}{\Gamma(\alpha_1)\,y!}\cdot\frac{\Gamma(\alpha_1+y)}{(\beta_1+1)^{\alpha_1+y}}\label{q15:c}\\
+&=\frac{\Gamma(\alpha_1+y)}{\Gamma(\alpha_1)\,y!}\left(\frac{\beta_1}{\beta_1+1}\right)^{\alpha_1}\left(\frac{1}{\beta_1+1}\right)^{y},\qquad y=0,1,\ldots\label{q15:nb}
+\end{align}
+This is the negative binomial with $r=\alpha_1$ and success probability $p=\beta_1/(\beta_1+1)$.
+\passo{Moments}{For that negative binomial, $E=r(1-p)/p$ and $\operatorname{Var}=r(1-p)/p^2$; substituting $r=\alpha_1$, $p=\beta_1/(\beta_1+1)$:}
+\begin{align}
+E(y_{n+1}\mid y_{1:n})&=\frac{\alpha_1}{\beta_1},\label{q15:m}\\
+\operatorname{Var}(y_{n+1}\mid y_{1:n})&=\frac{\alpha_1}{\beta_1}\Big(1+\frac{1}{\beta_1}\Big).\label{q15:v}
+\end{align}
+\passo{Numbers}{Coal data 1851--1891 with $G(0.5,1)$: $\alpha_1=127.5$, $\beta_1=42$. From
+\eqref{q15:nb}, $P(y_{n+1}=0)=(42/43)^{127.5}=0.049780$ and
+$P(y_{n+1}=3)=\frac{(129.5)(128.5)(127.5)}{3!}(42/43)^{127.5}(1/43)^3=0.221403$; from
+\eqref{q15:m}--\eqref{q15:v}, $E=127.5/42=3.035714$ and $\operatorname{Var}=(3.035714)(1+1/42)=3.107993$.}
+
+\codehead
+{\small
+\begin{verbatim}
+a1, b1 = 127.5, 42.0
+pmf = lambda y: nbinom.pmf(y, a1, b1 / (b1 + 1))  # (15.4)
+[pmf(k) for k in range(4)]                         # 0.049780 0.147604 0.220548 0.221403
+quad(lambda t: poisson.pmf(3, t) * gamma.pdf(t, a1, scale=1/b1), 0, 10)[0]   # 0.221403
+rng = np.random.default_rng(15)
+yp = rng.poisson(rng.gamma(a1, 1 / b1, 10**6))    # composition
+yp.mean(), yp.var(ddof=1)                          # 3.035098  3.101461
+[np.mean(yp == k) for k in range(4)]               # 0.049581 0.147294 0.221058 0.221849
+\end{verbatim}
+}
+The simulated frequencies differ from \eqref{q15:nb} by at most $0.0006$, about one Monte Carlo
+standard error ($\sqrt{p(1-p)/10^6}\le0.0005$).
+
+\intuicao{The predictive variance exceeds the mean (a Poisson with known $\theta$ would have them
+equal): the factor $1+1/\beta_1$ is the extra spread coming from not knowing $\theta$, and it
+vanishes as $n$ (hence $\beta_1$) grows. Composition sampling is exactly how the predictive is
+defined: draw a parameter, then data given that parameter.}
+\refbib{Greenberg (2008), §3.2.3 (prediction), §5.2 (composition), App.~A.1.3 (negative binomial)
+and A.1.7.}
+\end{sol}
+
+% -----------------------------------------------------------------------------
+\questao{G 3.5 --- the posterior median minimizes expected absolute loss.}
+\fonte{Greenberg, E. (2008), \textit{Introduction to Bayesian Econometrics}, 1st ed., Cambridge
+University Press, Chapter~3, §3.5 Exercises, Exercise~3.5, p.~39 [PDF p.~54]; the book gives no
+answer --- reproduced verbatim.}
+
+3.5 Show that the median of the posterior distribution minimizes loss under the absolute value loss
+function.
+\programacao For the coal posterior $G(127.5,42)$ of Question~15, write the posterior expected
+loss $\rho(d)=\int|\theta-d|\,\pi(\theta\mid y)\,d\theta$ with \texttt{scipy.integrate.quad}, minimize it
+with \texttt{minimize\_scalar} on $[2.5,3.5]$, and compare the minimizer with the posterior median
+(\texttt{gamma.median}). Print $\rho$ at the median, the mean and the mode, and check numerically
+that $\rho'(d)=2F(d)-1$ at $d=3$.
+\resolespaco
+\begin{sol}
+\solhead
+\begin{notacao}
+\item $\pi(\theta\mid y)$: posterior density, c.d.f.\ $F$, assumed continuous with finite mean.
+\item $L(\hat\theta,\theta)=|\hat\theta-\theta|$: absolute loss; $d\in\mathbb R$: a candidate estimate.
+\item $\rho(d)=\E[|\theta-d|\mid y]$: posterior expected loss; $m$: a posterior median, $F(m)=1/2$.
+\end{notacao}
+
+\passo{Split the loss}{On $\theta<d$ the loss is $d-\theta$, on $\theta>d$ it is $\theta-d$:}
+\begin{equation}\label{q16:rho}
+\rho(d)=\int_{-\infty}^{d}(d-\theta)\,\pi(\theta\mid y)\,d\theta+\int_{d}^{\infty}(\theta-d)\,\pi(\theta\mid y)\,d\theta .
+\end{equation}
+
+\passo{Differentiate}{By Leibniz's rule on each integral of \eqref{q16:rho} (the boundary terms are
+$(d-d)\pi(d\mid y)=0$):}
+\[
+\rho'(d)=\int_{-\infty}^{d}\pi(\theta\mid y)\,d\theta-\int_{d}^{\infty}\pi(\theta\mid y)\,d\theta .
+\]
+Writing both integrals with $F$:
+\begin{equation}\label{q16:d1}
+\rho'(d)=F(d)-\big(1-F(d)\big)=2F(d)-1 .
+\end{equation}
+
+\passo{Minimum}{By \eqref{q16:d1}, $\rho'(d)<0$ for $F(d)<1/2$ and $\rho'(d)>0$ for $F(d)>1/2$:
+$\rho$ decreases up to the median and increases after it. Hence $\rho$ is minimized at $d=m$ with
+$F(m)=1/2$. Equivalently, $\rho''(d)=2\pi(d\mid y)\ge0$: $\rho$ is convex and \eqref{q16:d1} is
+the first-order condition of a global minimum. $\blacksquare$ (If $F$ is flat at $1/2$ on an interval,
+every point of it is a median and minimizes $\rho$.)}
+
+\passo{Coal posterior}{$G(127.5,42)$ has median $3.027781$, mean $127.5/42=3.035714$ and mode
+$126.5/42=3.011905$: the right skew of the gamma orders them mode $<$ median $<$ mean.}
+
+\codehead
+{\small
+\begin{verbatim}
+post = gamma(127.5, scale=1/42)
+rho = lambda d: quad(lambda t: abs(t - d) * post.pdf(t), 0, 10, points=[d])[0]
+res = minimize_scalar(rho, bounds=(2.5, 3.5), method="bounded")
+res.x, post.median()                    # 3.027781  3.027781
+rho(post.median()), rho(post.mean()), rho(126.5 / 42)   # 0.214276 0.214369 0.214650
+(rho(3 + 1e-5) - rho(3 - 1e-5)) / 2e-5, 2 * post.cdf(3) - 1   # equal, as in (16.2)
+\end{verbatim}
+}
+The numerical minimizer is the median; using the mean or the mode instead costs little here
+because the posterior is nearly symmetric.
+
+\intuicao{Moving the estimate up by a small step lowers the loss for every draw above it and raises
+it for every draw below, each by the same amount. The estimate stops moving when half the posterior
+mass lies on each side. Squared loss weights far draws more and pulls towards the mean.}
+\refbib{Greenberg (2008), §3.2.1 (point estimates and loss functions, pp.~29--31).}
+\end{sol}
+
+% -----------------------------------------------------------------------------
+\questao{B 5.12 (with B 4.9) --- Bayes estimator of $P(X=0)$ and a Bayesian interval.}
+\fonte{Bolfarine, H. and Sandoval, M.~C. (2010), \textit{Introdução à Inferência Estatística},
+Chapter~5, §5.6 Exercícios, Exercício~5.12, p.~89 [PDF p.~95]; it refers to Exercício~4.9,
+Chapter~4, §4.5 Exercícios, p.~72 [PDF p.~78], reproduced first. The book gives no answer to
+either --- both reproduced verbatim.}
+
+\begin{otherlanguage}{brazil}
+\emph{Exercício referido:} \textbf{4.9.} Em uma área de reflorestamento, o número de árvores de
+determinada espécie, por hectare, com certa doença tem uma distribuição $\mathit{Poisson}(\theta)$. A
+distribuição a priori de $\theta$ é exponencial com média igual a 1. Encontre o estimador de Bayes
+de $P_\theta(X=0)$ com relação à perda quadrática..
+
+\textbf{5.12.} Considere o Exercício 4.9. Obtenha um intervalo de confiança Bayesiano para $\theta$
+com coeficiente de confiança $\gamma=0,95$. Como fica seu intervalo se $x=4$?
+\end{otherlanguage}
+\programacao For $x=4$: (1) compute the equal-tailed 95\% interval with \texttt{scipy.stats.gamma}
+and check it against the $\chi^2_{10}$ quantiles; (2) compute the HPD interval numerically (minimize
+the length of $[F^{-1}(p),F^{-1}(p+0.95)]$ over $p$) and verify that the density is equal at both
+ends; (3) compute the exact frequentist coverage of the equal-tailed rule $x\mapsto I(x)$ at
+$\theta\in\{0.5,1,4,8\}$ by summing Poisson probabilities.
+\resolespaco
+\begin{sol}
+\solhead
+\begin{notacao}
+\item $X\mid\theta\sim$ Poisson$(\theta)$: one observation $x$; prior $\pi(\theta)=e^{-\theta}$, $\theta>0$ (exponential, mean 1 $=G(1,1)$).
+\item $G(a,b)$: shape $a$, rate $b$; $q_p$: posterior $p$-quantile; $\chi^2_{\nu,p}$: chi-square quantile.
+\end{notacao}
+
+\passo{Posterior (4.9)}{By Bayes' theorem,}
+\begin{equation}\label{q17:post0}
+\pi(\theta\mid x)\propto\frac{\theta^xe^{-\theta}}{x!}\cdot e^{-\theta}\propto\theta^{x}e^{-2\theta},
+\end{equation}
+the kernel of $G(x+1,2)$ (the case $\alpha=\beta=1$, $n=1$ of \eqref{q14:post}):
+\begin{equation}\label{q17:post}
+\pi(\theta\mid x)=\frac{2^{x+1}}{x!}\theta^xe^{-2\theta}.
+\end{equation}
+
+\passo{Bayes estimator (4.9)}{Under quadratic loss the Bayes estimator of $g(\theta)=P_\theta(X=0)=e^{-\theta}$
+is its posterior mean. Using \eqref{q17:post}:}
+\[
+\E[e^{-\theta}\mid x]=\int_0^\infty e^{-\theta}\,\frac{2^{x+1}}{x!}\theta^xe^{-2\theta}d\theta=\frac{2^{x+1}}{x!}\int_0^\infty\theta^xe^{-3\theta}d\theta .
+\]
+Substituting \eqref{q10:gi} with $a=x+1$, $b=3$:
+\begin{equation}\label{q17:bayes}
+\E[e^{-\theta}\mid x]=\frac{2^{x+1}}{x!}\cdot\frac{x!}{3^{x+1}}=\Big(\frac23\Big)^{x+1}.
+\end{equation}
+At $x=4$: $(2/3)^5=0.131687$. (It is not $e^{-\E(\theta|x)}=e^{-5/2}$: the Bayes estimator of a
+function is the posterior mean of the function.)
+
+\passo{Pivot for the interval (5.12)}{If $\theta\mid x\sim G(x+1,2)$ then $4\theta\mid x\sim G(x+1,1/2)$,
+which is $\chi^2_{2(x+1)}$. The symmetric (equal-tailed) interval with $\gamma=0.95$ is}
+\begin{equation}\label{q17:int}
+\Big[\frac{\chi^2_{2x+2,\,0.025}}{4},\ \frac{\chi^2_{2x+2,\,0.975}}{4}\Big].
+\end{equation}
+For $x=4$, $\chi^2_{10,0.025}=3.246973$ and $\chi^2_{10,0.975}=20.483177$; substituting into
+\eqref{q17:int}:
+\[
+\Big[\frac{3.246973}{4},\ \frac{20.483177}{4}\Big]=[0.811743,\ 5.120794].
+\]
+
+\passo{HPD (programming)}{The posterior is right-skewed, so the shortest 95\% interval is shifted
+left: $[0.603480,\ 4.715108]$, length $4.111628$ against $4.309051$ for \eqref{q17:int}, with equal
+density at both ends.}
+
+\codehead
+{\small
+\begin{verbatim}
+pg = gamma(5, scale=0.5)
+pg.ppf([.025, .975])                      # 0.811743 5.120794 = chi2(10) quantiles / 4
+L = lambda p: pg.ppf(p + .95) - pg.ppf(p)
+p = minimize_scalar(L, bounds=(1e-9, .05 - 1e-9), method="bounded").x
+pg.ppf([p, p + .95])                      # HPD 0.603480 4.715108
+xs = np.arange(200); lo, hi = gamma.ppf([[.025], [.975]], xs + 1, scale=.5)
+cov = lambda th: np.sum(poisson.pmf(xs, th) * ((lo <= th) & (th <= hi)))
+# coverage at theta = 0.5, 1, 4, 8:  0.985612  0.996340  0.761820  0.407449
+\end{verbatim}
+}
+A 95\% \emph{Bayesian} interval need not have 95\% \emph{frequentist} coverage: with a single
+observation the prior (mean 1) dominates, so the rule over-covers near $\theta=1$ and badly
+under-covers large $\theta$ (40.7\% at $\theta=8$).
+
+\intuicao{With one count the posterior is a compromise between the observation and a prior that
+expects about one diseased tree per hectare; the interval is a statement about $\theta$ given this
+$x$, not a promise about repeated sampling.}
+\refbib{Bolfarine \& Sandoval (2010), §4.3 (estimador de Bayes, perda quadrática), §5.5 (intervalos
+Bayesianos, Exemplo 5.5.1).}
+\end{sol}
+
+% -----------------------------------------------------------------------------
+\questao{Original math question --- Bayes estimators and their frequentist risk.}
+\fonte{Original question (not from a book).}
+
+An insurer prices a policy on the number of claims per client and year, $X_1,\dots,X_n$ i.i.d.\
+Poisson$(\theta)$, with a prior $\theta\sim G(\alpha,\beta)$ (shape, rate) from past portfolios;
+$S=\sum_iX_i$.
+\begin{enumerate}[label=\textbf{(\alph*)},leftmargin=2.4em]
+\item Derive the Bayes estimator under squared loss, $d_1$, and under the weighted loss
+$L(\theta,d)=(\theta-d)^2/\theta$, $d_2$, stating when $d_2$ exists. Relate $d_2$ to a feature of the
+posterior.
+\item Derive the frequentist risk $R_1(\theta)=E_\theta[(d_1-\theta)^2]$ and prove that
+$R_1(\theta)<\theta/n$ (the risk of the MLE $\overline X$) exactly on an interval of $\theta$ that
+contains the prior mean $\alpha/\beta$; give the interval.
+\item Compute the Bayes risks $r=\int R(\theta)\pi(\theta)d\theta$ of $d_1$ and of $\overline X$ and prove
+$r(d_1)<r(\overline X)$.
+\item Parameter analysis: sign of the bias of $d_1$ as a function of $\theta$; the variance ratio
+$\Var(d_1)/\Var(\overline X)$; the limits of the interval of (b) as $n\to\infty$ and as $\beta\to0$
+with $\alpha$ fixed. Interpret for the insurer.
+\end{enumerate}
+\programacao With $\alpha=2$, $\beta=1$, $n=10$: print the interval of (b), its $n\to\infty$ limit and
+the two Bayes risks; with \texttt{np.random.default\_rng(18)} simulate $400{,}000$ values of $S$ at
+$\theta\in\{1,2,5,6\}$ and compare the simulated mean squared errors of $d_1$ and $\overline X$ with
+the formulas.
+\resolespaco
+\begin{sol}
+\solhead
+\begin{notacao}
+\item $S\sim$ Poisson$(n\theta)$; posterior $\theta\mid\mathbf x\sim G(a,b)$, $a=\alpha+S$, $b=\beta+n$ (by \eqref{q14:post}).
+\item $\rho_j(d)$: posterior expected loss; $R(\theta)$: frequentist risk (MSE); $r$: Bayes risk.
+\item $\alpha,\beta>0$, $n\ge1$.
+\end{notacao}
+
+\passo{(a) Squared loss}{$\rho_1(d)=\E[(\theta-d)^2\mid\mathbf x]=\Var(\theta\mid\mathbf x)+(\E(\theta\mid\mathbf x)-d)^2$
+is minimized at the posterior mean, so by \eqref{q14:pm}}
+\begin{equation}\label{q18:d1}
+d_1=\frac{\alpha+S}{\beta+n}.
+\end{equation}
+
+\passo{(a) Weighted loss}{Expanding the square,}
+\begin{equation}\label{q18:rho2}
+\rho_2(d)=\E\Big[\frac{(\theta-d)^2}{\theta}\Big|\,\mathbf x\Big]=\E(\theta\mid\mathbf x)-2d+d^2\,\E(\theta^{-1}\mid\mathbf x),
+\end{equation}
+a convex quadratic in $d$ with minimum where $-2+2d\,\E(\theta^{-1}\mid\mathbf x)=0$:
+\begin{equation}\label{q18:d2a}
+d_2=\frac{1}{\E(\theta^{-1}\mid\mathbf x)} .
+\end{equation}
+For $G(a,b)$, using \eqref{q10:gi} with exponent $a-1$:
+$\E(\theta^{-1})=\frac{b^a}{\Gamma(a)}\int_0^\infty\theta^{a-2}e^{-b\theta}d\theta=\frac{b^a}{\Gamma(a)}\cdot\frac{\Gamma(a-1)}{b^{a-1}}=\frac{b}{a-1}$,
+finite iff $a>1$. Substituting into \eqref{q18:d2a}:
+\begin{equation}\label{q18:d2}
+d_2=\frac{a-1}{b}=\frac{\alpha+S-1}{\beta+n},\qquad\text{if }\alpha+S>1,
+\end{equation}
+which is the posterior \emph{mode}: dividing the loss by $\theta$ makes errors at small $\theta$
+costly and pulls the estimate down by $1/(\beta+n)$.
+
+\passo{(b) Bias and variance of $d_1$}{From \eqref{q18:d1} with $E_\theta S=\Var_\theta S=n\theta$:}
+\begin{equation}\label{q18:bv}
+E_\theta d_1-\theta=\frac{\alpha+n\theta-(\beta+n)\theta}{\beta+n}=\frac{\alpha-\beta\theta}{\beta+n},\qquad
+\Var_\theta(d_1)=\frac{n\theta}{(\beta+n)^2}.
+\end{equation}
+Adding variance and squared bias:
+\begin{equation}\label{q18:R1}
+R_1(\theta)=\frac{n\theta+(\alpha-\beta\theta)^2}{(\beta+n)^2}.
+\end{equation}
+
+\passo{(b) Where $d_1$ beats the MLE}{$R_1(\theta)<\theta/n$; multiplying by $n(\beta+n)^2>0$ and
+substituting \eqref{q18:R1}:}
+\[
+n\big[n\theta+(\alpha-\beta\theta)^2\big]<\theta(\beta+n)^2 .
+\]
+Expanding both sides and collecting powers of $\theta$:
+\begin{equation}\label{q18:quad}
+Q(\theta)\equiv n\beta^2\theta^2-\big(\beta^2+2n\beta+2n\alpha\beta\big)\theta+n\alpha^2<0 .
+\end{equation}
+$Q$ is an upward parabola, so \eqref{q18:quad} holds exactly between its roots $\theta_-<\theta_+$.
+At the prior mean, substituting $\theta=\alpha/\beta$ into \eqref{q18:quad}:
+\[
+Q(\alpha/\beta)=n\alpha^2-(\beta^2+2n\beta+2n\alpha\beta)\frac\alpha\beta+n\alpha^2=-\alpha\beta-2n\alpha<0,
+\]
+so the roots are real and distinct and $\alpha/\beta\in(\theta_-,\theta_+)$. $\blacksquare$
+
+\passo{(c) Bayes risks}{Under the prior, $E\theta=\alpha/\beta$ and $E(\alpha-\beta\theta)^2=\beta^2\Var(\theta)=\beta^2(\alpha/\beta^2)=\alpha$.
+Averaging \eqref{q18:R1}:}
+\begin{equation}\label{q18:r1}
+r(d_1)=\frac{n\alpha/\beta+\alpha}{(\beta+n)^2}=\frac{\alpha(n+\beta)}{\beta(\beta+n)^2}=\frac{\alpha}{\beta(\beta+n)},
+\qquad r(\overline X)=E\Big[\frac\theta n\Big]=\frac{\alpha}{\beta n}.
+\end{equation}
+Since $\beta+n>n$, $r(d_1)<r(\overline X)$ (as it must: $d_1$ minimizes the Bayes risk).
+
+\passo{(d) Signs and limits}{By \eqref{q18:bv} the bias is positive for $\theta<\alpha/\beta$, zero at
+the prior mean and negative above it: $d_1$ shrinks towards $\alpha/\beta$. The variance ratio is
+$\Var(d_1)/\Var(\overline X)=(n/(\beta+n))^2<1$. Dividing \eqref{q18:quad} by $n$:
+$\beta^2\theta^2-(\beta^2/n+2\beta+2\alpha\beta)\theta+\alpha^2<0$; as $n\to\infty$ this tends to
+$\beta^2\theta^2-2\beta(1+\alpha)\theta+\alpha^2<0$, with roots}
+\begin{equation}\label{q18:lim}
+\theta_\pm^\infty=\frac{(1+\alpha)\pm\sqrt{(1+\alpha)^2-\alpha^2}}{\beta}=\frac{(1+\alpha)\pm\sqrt{1+2\alpha}}{\beta}:
+\end{equation}
+the region does not vanish with $n$ (both risks shrink like $1/n$ and their ratio stays informative).
+As $\beta\to0$ with $\alpha$ fixed, $\theta_-\approx n\alpha^2/(\beta^2+2n\beta(1+\alpha))\to\infty$
+and the region disappears: \eqref{q18:R1} tends to $\theta/n+\alpha^2/n^2>\theta/n$, a pure bias with
+no shrinkage.
+
+\passo{(d) Reading}{The prior helps the insurer when the true claim rate is near the portfolio
+history and hurts when the client is very different; the band \eqref{q18:lim} measures how far is
+``very different''. A flat-but-shifted prior ($\beta\to0$) is the worst of both worlds.}
+
+\passo{Numbers}{$\alpha=2$, $\beta=1$, $n=10$: \eqref{q18:quad} is
+$10\theta^2-(1+20+40)\theta+40=10\theta^2-61\theta+40<0$, discriminant $61^2-4(10)(40)=2121$, roots
+$(61\mp\sqrt{2121})/20=(0.747284,\ 5.352716)$; \eqref{q18:lim}: $3\mp\sqrt5=(0.763932,\ 5.236068)$;
+\eqref{q18:r1}: $r(d_1)=2/11=0.181818<r(\overline X)=2/10=0.2$.}
+
+\codehead
+{\small
+\begin{verbatim}
+al, be, n = 2., 1., 10
+rB = lambda t: (n * t + (al - be * t)**2) / (be + n)**2
+rng = np.random.default_rng(18)
+for th in (1, 2, 5, 6):
+    S = rng.poisson(n * th, 400_000)
+    print(th, rB(th), np.mean(((al + S)/(be + n) - th)**2), th/n, np.mean((S/n - th)**2))
+# theta  R1 formula  R1 sim    MLE formula  MLE sim
+# 1      0.090909    0.091203  0.1          0.100222
+# 2      0.165289    0.164913  0.2          0.199545
+# 5      0.487603    0.487363  0.5          0.499468
+# 6      0.628099    0.629657  0.6          0.602826
+\end{verbatim}
+}
+Inside $(0.747,5.353)$ (at $\theta=1,2,5$) the Bayes estimator wins; at $\theta=6$ it loses, as (b)
+predicts.
+
+\intuicao{Shrinkage trades a little bias for less variance. The trade pays off near the prior
+mean and on average over the prior, never uniformly: by (b), $d_1$ loses to the MLE outside a
+bounded interval of $\theta$, whatever $n$.}
+\refbib{Bolfarine \& Sandoval (2010), §4.2--4.3 (risco, risco de Bayes, estimador de Bayes);
+Greenberg (2008), §3.2.1 (loss functions).}
+\rubrica{
+\item (a) $d_1$: 2 pts; \eqref{q18:rho2}--\eqref{q18:d2} with the existence condition and the mode: 3 pts.
+\item (b) \eqref{q18:bv}--\eqref{q18:R1}: 3 pts; \eqref{q18:quad} and $Q(\alpha/\beta)<0$: 3 pts.
+\item (c) \eqref{q18:r1} and the inequality: 2 pts.
+\item (d) bias sign, variance ratio, \eqref{q18:lim}, $\beta\to0$, reading: 4 pts (limits without derivation: max.\ half).
+\item Programming: interval, Bayes risks and simulated risks: 3 pts.
+}
+\end{sol}
+
+% -----------------------------------------------------------------------------
+\questao{Original conceptual question --- gamma--Poisson Bayes (10 points).}
+\fonte{Original question (not from a book).}
+
+An analyst at ANS (the health-insurance regulator) models claims per beneficiary as Poisson$(\theta)$
+with prior $G(\alpha,\beta)$ and observes $n$ beneficiaries with total $s$.
+
+\textbf{a)} (3 points) In the posterior mean written as a weighted average of the prior mean
+$\alpha/\beta$ and the MLE $\bar y$, the weight on $\bar y$ is:
+\begin{alternativas}
+\item $n/(\beta+n)$, the share of real observations in the total ``sample size''.
+\item $\beta/(\beta+n)$, the share of the prior's pseudo-observations.
+\item $n/(\alpha+n)$, with the prior's events counted as observations.
+\item $\alpha/(\alpha+\beta)$, which does not depend on the sample.
+\end{alternativas}
+\gabarito{A}
+\begin{sol}
+\passo{Why}{A: \eqref{q14:wavg}. B is the weight on the \emph{prior} mean; C mixes up the prior's
+events $\alpha$ with its periods $\beta$; D ignores the data entirely.}
+\end{sol}
+
+\textbf{b)} (3 points) The predictive distribution of a new beneficiary's count $y_{n+1}$ is:
+\begin{alternativas}
+\item Poisson with mean $(\alpha+s)/(\beta+n)$, plugging in the posterior mean.
+\item gamma $G(\alpha+s,\beta+n)$, the posterior of $\theta$.
+\item negative binomial, with variance larger than its mean.
+\item negative binomial, with variance smaller than its mean.
+\end{alternativas}
+\gabarito{C}
+\begin{sol}
+\passo{Why}{C: \eqref{q15:nb}, with \eqref{q15:v} $=$ mean $\times(1+1/\beta_1)$. A ignores the
+uncertainty about $\theta$ (plug-in); B is a distribution for the parameter, not for a count;
+D has the inequality reversed.}
+\end{sol}
+
+\textbf{c)} (2 points, T or F) Under absolute-error loss the Bayes estimator of $\theta$ is the
+posterior median.
+\gabarito{T}
+\begin{sol}
+\passo{Why}{Question~16, \eqref{q16:d1}.}
+\end{sol}
+
+\textbf{d)} (2 points, T or F) Since the Bayes estimator under squared loss is the posterior mean, it
+is unbiased for $\theta$ in repeated sampling.
+\gabarito{F}
+\begin{sol}
+\passo{Why}{Its frequentist bias is $(\alpha-\beta\theta)/(\beta+n)$ by \eqref{q18:bv}, zero only at
+$\theta=\alpha/\beta$. ``Mean'' refers to the posterior, not to the sampling distribution.}
+\end{sol}
+
+\programacao Check (d) with $\alpha=2$, $\beta=1$, $n=10$, $\theta=1$: with
+\texttt{np.random.default\_rng(19)} simulate $400{,}000$ totals $S\sim$ Poisson$(10)$ and report the
+average of $(\alpha+S)/(\beta+n)-\theta$.
+\begin{sol}
+\codehead
+{\small
+\begin{verbatim}
+rng = np.random.default_rng(19); S = rng.poisson(10, 400_000)
+np.mean((2 + S) / 11) - 1                       # 0.090347 ; formula 1/11 = 0.090909
+\end{verbatim}
+}
+\end{sol}
+
+% =============================================================================
+\bloco{5}{Monte Carlo for inference: integration, importance sampling, accept--reject}{G 5.6, 5.7; MS B.15, B.18; original}
+
+\questao{G 5.6 --- the GHK importance-sampling estimator (5.3).}
+\fonte{Greenberg, E. (2008), \textit{Introduction to Bayesian Econometrics}, 1st ed., Cambridge
+University Press, Chapter~5, §5.8 Exercises, Exercise~5.6, p.~75 [PDF p.~90]; the book gives no
+answer --- reproduced verbatim. The text it refers to (§5.4, pp.~71--72 [PDF pp.~86--87], including
+Equation (5.3)) and Equation (5.1) (§5.1, p.~65 [PDF p.~80]) are reproduced first.}
+
+\emph{Referred to (Greenberg 2008, p.~65):} ``we generate $U\sim U(0,1)$ and set
+$U=\frac{F(X)-F(c_1)}{F(c_2)-F(c_1)}$, which implies that
+\[
+X=F^{-1}\big(F(c_1)+U[F(c_2)-F(c_1)]\big)\tag{5.1}
+\]
+is a drawing from the truncated distribution.''
+
+\emph{Referred to (Greenberg 2008, pp.~71--72):} ``As a second example, we approximate
+$P(a_1<X_1\le b_1,a_2<X_2\le b_2)$, where $(X_1,X_2)\sim N_2(\mu,\Sigma)$, $\mu=(\mu_1,\mu_2)'$, and
+$\Sigma=[\sigma_{ij}]$. The desired integral is
+\[
+P(a_1<X_1\le b_1,a_2<X_2\le b_2)=\int_{a_1}^{b_1}\int_{a_2}^{b_2}f(x_1,x_2)\,dx_1\,dx_2,
+\]
+where $f(x_1,x_2)$ is the density function of the bivariate normal distribution. The first step is
+to rewrite the joint density in marginal-conditional form, $f(x_1)f(x_2|x_1)$ using the results (see
+Section A.9) that $x_1\sim N(\mu_1,\sigma_{11})$ and that $x_2|x_1\sim N(\mu_2',\sigma_{22}')$, where
+\[
+\mu_2'=\mu_2+(\sigma_{12}/\sigma_{11})(x_1-\mu_1),\qquad \sigma_{22}'=\sigma_{22}-\sigma_{12}^2/\sigma_{11}.
+\]
+Now let
+\begin{align*}
+y_1&=(x_1-\mu_1)/\sqrt{\sigma_{11}}, & y_2&=(x_2-\mu_2')/\sqrt{\sigma_{22}'},\\
+a_1'&=(a_1-\mu_1)/\sqrt{\sigma_{11}}, & a_2'&=(a_2-\mu_2')/\sqrt{\sigma_{22}'},\\
+b_1'&=(b_1-\mu_1)/\sqrt{\sigma_{11}}, & b_2'&=(b_2-\mu_2')/\sqrt{\sigma_{22}'}.
+\end{align*}
+With this transformation, $y_1$ and $y_2|y_1$ have standard normal distributions, enabling us to write
+\begin{align*}
+P(a_1<x_1\le b_1,a_2<x_2\le b_2)&=\int_{a_1'}^{b_1'}\int_{a_2'}^{b_2'}\phi(y_1)\phi(y_2|y_1)\,dy_1\,dy_2\\
+&=\int_{a_1'}^{b_1'}\phi(y_1)\int_{a_2'}^{b_2'}\phi(y_2|y_1)\,dy_2\,dy_1\\
+&=\int_{a_1'}^{b_1'}\phi(y_1)[\Phi(b_2'|y_1)-\Phi(a_2'|y_1)]\,dy_1.
+\end{align*}
+The algorithm is now implemented by choosing the standard normal distribution truncated to
+$(a_1',b_1')$ as the importance distribution; that is, draw $Y_1^{(g)}$ from the truncated standard
+normal using (5.1). With this choice for the importance function, we have
+\[
+P(a_1<X_1\le b_1,a_2<X_2\le b_2)\approx\frac1G\sum\big[\Phi\big(b_2'|Y_1^{(g)}\big)-\Phi\big(a_2'|Y_1^{(g)}\big)\big]\big[\Phi(b_1')-\Phi(a_1')\big].\text{''}\tag{5.3}
+\]
+
+5.6 Verify Equation (5.3).
+\programacao Use the numbers of G~5.7 (next question). (1) Implement the truncated-normal draw
+(5.1) and compare the mean of $10{,}000$ draws (\texttt{np.random.default\_rng(21)}) with
+\texttt{scipy.stats.truncnorm}. (2) Compute by quadrature the exact variance of one term of (5.3)
+and of one crude indicator $\1\{a_1<X_1\le b_1,a_2<X_2\le b_2\}$, their ratio, and check the bound
+you prove in the solution.
+\resolespaco
+\begin{sol}
+\solhead
+\begin{notacao}
+\item $p=P(a_1<X_1\le b_1,a_2<X_2\le b_2)$: target; $\phi,\Phi$: standard normal density and c.d.f.
+\item $h(y_1)=\Phi(b_2'|y_1)-\Phi(a_2'|y_1)\in[0,1]$, where $\Phi(c'|y_1)=\Phi\big((c-\mu_2'(y_1))/\sqrt{\sigma_{22}'}\big)$
+  and $\mu_2'(y_1)=\mu_2+(\sigma_{12}/\sigma_{11})\sqrt{\sigma_{11}}\,y_1$.
+\item $m_1=\Phi(b_1')-\Phi(a_1')$; $q(y_1)=\phi(y_1)\1\{a_1'<y_1\le b_1'\}/m_1$: truncated normal (importance) density.
+\end{notacao}
+
+\passo{Inner integral}{Given $x_1$, $x_2\sim N(\mu_2',\sigma_{22}')$, so standardizing,}
+\begin{equation}\label{q20:inner}
+\int_{a_2}^{b_2}f(x_2|x_1)\,dx_2=\Phi\Big(\frac{b_2-\mu_2'}{\sqrt{\sigma_{22}'}}\Big)-\Phi\Big(\frac{a_2-\mu_2'}{\sqrt{\sigma_{22}'}}\Big)=h(y_1).
+\end{equation}
+
+\passo{Outer integral}{With $x_1=\mu_1+\sqrt{\sigma_{11}}y_1$, $dx_1=\sqrt{\sigma_{11}}\,dy_1$ and
+$f(x_1)dx_1=\phi(y_1)dy_1$; substituting \eqref{q20:inner} into the marginal--conditional form:}
+\begin{equation}\label{q20:p}
+p=\int_{a_1}^{b_1}f(x_1)\Big(\int_{a_2}^{b_2}f(x_2|x_1)dx_2\Big)dx_1=\int_{a_1'}^{b_1'}\phi(y_1)\,h(y_1)\,dy_1 .
+\end{equation}
+
+\passo{Importance-sampling form}{Multiplying and dividing the integrand of \eqref{q20:p} by $m_1$:}
+\begin{equation}\label{q20:is}
+p=\int\Big(\frac{\phi(y_1)\1\{a_1'<y_1\le b_1'\}}{m_1}\Big)\big(m_1\,h(y_1)\big)\,dy_1=E_q\big[m_1\,h(Y_1)\big].
+\end{equation}
+The importance weight $\phi/q=m_1$ is constant on the support. If $Y_1^{(g)}$ are i.i.d.\ from $q$ ---
+which is what (5.1) delivers with $F=\Phi$, $c_1=a_1'$, $c_2=b_1'$ --- then by \eqref{q20:is} each term
+$m_1h(Y_1^{(g)})$ has mean $p$, and by the strong law of large numbers
+\[
+\frac1G\sum_{g=1}^G\big[\Phi(b_2'|Y_1^{(g)})-\Phi(a_2'|Y_1^{(g)})\big]\big[\Phi(b_1')-\Phi(a_1')\big]\xrightarrow{a.s.}p,
+\]
+which is (5.3), unbiased for every $G$. $\blacksquare$
+
+\passo{It beats crude Monte Carlo}{Since $0\le h\le1$, $h^2\le h$, so}
+\begin{equation}\label{q20:var}
+\Var_q(m_1h)=m_1^2E_q[h^2]-p^2\le m_1^2E_q[h]-p^2=m_1p-p^2=p(m_1-p)\le p(1-p),
+\end{equation}
+the last term being the variance of one crude indicator. The gain is large when $m_1$ is small
+(the first coordinate's constraint is handled exactly) and when $h$ varies little.
+
+\passo{Numbers (G~5.7)}{$\sigma_{22}'=3-1^2/2=2.5$; $a_1'=(0.2-1)/\sqrt2=-0.565685$,
+$b_1'=(2-1)/\sqrt2=0.707107$, $m_1=0.474446$; $p=0.300105$ (quadrature of \eqref{q20:p}). One GHK
+term has variance $0.000797$, below the bound \eqref{q20:var} $p(m_1-p)=0.052321$; a crude
+indicator has $p(1-p)=0.210042$: a ratio of $263.6$, so one GHK draw is worth about 264 crude draws.}
+
+\codehead
+{\small
+\begin{verbatim}
+a1p, b1p = (0.2 - 1) / np.sqrt(2), (2 - 1) / np.sqrt(2)
+rng = np.random.default_rng(21); u = rng.uniform(size=10_000)
+y1 = norm.ppf(norm.cdf(a1p) + u * (norm.cdf(b1p) - norm.cdf(a1p)))   # (5.1)
+y1.mean(), truncnorm(a1p, b1p).mean()       # 0.0655  0.0617 (se ~0.004)
+h = lambda y: (norm.cdf((5 - mu2c(y)) / np.sqrt(2.5))
+               - norm.cdf((-1 - mu2c(y)) / np.sqrt(2.5)))   # mu2c(y) = -0.5 + y/sqrt(2)
+m1 = norm.cdf(b1p) - norm.cdf(a1p)                            # 0.474446
+p = quad(lambda y: norm.pdf(y) * h(y), a1p, b1p)[0]           # 0.300105
+v = quad(lambda y: norm.pdf(y) / m1 * (m1 * h(y))**2, a1p, b1p)[0] - p**2   # 0.000797
+p * (1 - p) / v                                               # 263.6
+\end{verbatim}
+}
+
+\intuicao{GHK integrates the second coordinate exactly, given the first, and samples the first only
+where it matters. Every simulation draw lands in the region and contributes a smooth probability,
+instead of a 0/1 indicator that wastes most draws.}
+\refbib{Greenberg (2008), §5.1 (eq.~5.1), §5.4 (importance sampling, pp.~70--72) and §5.7 (GHK).}
+\end{sol}
+
+% -----------------------------------------------------------------------------
+\questao{G 5.7 --- importance sampling for a bivariate normal rectangle.}
+\fonte{Greenberg, E. (2008), \textit{Introduction to Bayesian Econometrics}, 1st ed., Cambridge
+University Press, Chapter~5, §5.8 Exercises, Exercise~5.7, p.~75 [PDF p.~90]; the book gives no
+answer --- reproduced verbatim. The method is the one of (5.3), reproduced in Question~20.}
+
+5.7 Use importance sampling to compute $P(0.2<x_1\le2,\ -1<x_2\le5)$, where
+$(x_1,x_2)\sim N_2(\mu,\Sigma)$, $\mu=(1,-0.5)'$, and
+\[
+\Sigma=\begin{pmatrix}2&1\\1&3\end{pmatrix}.
+\]
+\programacao With $G=10{,}000$ and \texttt{np.random.default\_rng(21)} (the same truncated-normal
+draws as Question~20), report the estimate (5.3) and its numerical standard error; compare with
+the exact value (one-dimensional quadrature of the last integral of the text quoted in
+Question~20, cross-checked with
+\texttt{multivariate\_normal.cdf} and inclusion--exclusion) and with crude Monte Carlo using
+$10{,}000$ bivariate normal draws from the same generator.
+\resolespaco
+\begin{sol}
+\solhead
+\begin{notacao}
+\item As in Question~20, with $\mu_1=1$, $\mu_2=-0.5$, $\sigma_{11}=2$, $\sigma_{12}=1$, $\sigma_{22}=3$; $a_1=0.2$, $b_1=2$, $a_2=-1$, $b_2=5$.
+\item $\hat p_G$: estimate (5.3); n.s.e.\ $=s/\sqrt G$, $s$ the standard deviation of the $G$ terms.
+\end{notacao}
+
+\passo{Ingredients}{From Question~20: $\sigma_{22}'=2.5$, $a_1'=-0.565685$, $b_1'=0.707107$,
+$m_1=0.474446$, and}
+\[
+\mu_2'(y_1)=-0.5+\tfrac12\big((1+\sqrt2\,y_1)-1\big)=-0.5+\frac{y_1}{\sqrt2}.
+\]
+
+\passo{Algorithm}{For $g=1,\dots,G$: draw $U^{(g)}\sim U(0,1)$, set
+$Y_1^{(g)}=\Phi^{-1}\big(\Phi(a_1')+U^{(g)}m_1\big)$ by (5.1), compute
+$t_g=m_1\big[\Phi\big((5-\mu_2'(Y_1^{(g)}))/\sqrt{2.5}\big)-\Phi\big((-1-\mu_2'(Y_1^{(g)}))/\sqrt{2.5}\big)\big]$; return
+$\hat p_G=\bar t$ and n.s.e.\ $s_t/\sqrt G$.}
+
+\passo{Result}{$\hat p_G=0.300411$ with n.s.e.\ $0.000282$; the exact value is $0.300105$, about
+$1.1$ n.s.e.\ away. Crude Monte Carlo with the same $G$ gives $0.3019$ with standard error $0.0046$,
+sixteen times larger, consistent with the variance ratio $263.6$ of Question~20
+($\sqrt{263.6}\approx16.2$).}
+
+\codehead
+{\small
+\begin{verbatim}
+t = m1 * h(y1)                                   # y1 from (5.1), Question 20
+t.mean(), t.std(ddof=1) / np.sqrt(10_000)        # 0.300411  0.000282
+mvn = multivariate_normal([1, -.5], [[2, 1], [1, 3]])
+mvn.cdf([2, 5]) - mvn.cdf([.2, 5]) - mvn.cdf([2, -1]) + mvn.cdf([.2, -1])  # 0.300105
+x = mvn.rvs(size=10_000, random_state=rng)
+ind = (.2 < x[:, 0]) & (x[:, 0] <= 2) & (-1 < x[:, 1]) & (x[:, 1] <= 5)
+ind.mean(), ind.std(ddof=1) / 100                # 0.3019  0.0046
+\end{verbatim}
+}
+
+\intuicao{The rectangle is wide in $x_2$ (from $-1$ to $5$) and narrow in $x_1$, so once $x_1$ is
+drawn inside its interval the conditional probability for $x_2$ is high and stable; nearly all the
+uncertainty is removed analytically.}
+\refbib{Greenberg (2008), §5.4 (pp.~70--72).}
+\end{sol}
+
+% -----------------------------------------------------------------------------
+\questao{MS B.15 --- generating Poisson values by the inverse transform.}
+\fonte{Morettin, P.~A. and Singer, J.~M. (2021), \textit{Estatística e Ciência de Dados} (versão
+preliminar, abril 2021), Apêndice~B (Noções de simulação), §B.8 Exercícios, Exercício~15, p.~478
+[PDF p.~488]; the book gives no answer --- reproduced verbatim.}
+
+\begin{otherlanguage}{brazil}
+15) Gere 5 valores de uma variável aleatória com distribuição de Poisson de parâmetro $\lambda=2$.
+\end{otherlanguage}
+\programacao Write \texttt{rpois\_inv(u, lam)} returning the smallest $j$ with $F(j)>u$, built with
+the recursion $p_{j+1}=p_j\lambda/(j+1)$, and the number of comparisons it made. With
+\texttt{np.random.default\_rng(22)}: generate the 5 values; then $100{,}000$ more, and report their
+mean, variance, the average number of comparisons, and a chi-square goodness-of-fit test on the
+classes $0,1,\dots,6,\ge7$.
+\resolespaco
+\begin{sol}
+\solhead
+\begin{notacao}
+\item $p_j=P(X=j)=e^{-\lambda}\lambda^j/j!$, $F(j)=\sum_{i\le j}p_i$, $F(-1)=0$; $U\sim U(0,1)$.
+\item $N$: number of comparisons ``$U<F(j)$?'' made by the algorithm.
+\end{notacao}
+
+\passo{Algorithm}{Set $X=j$ when $F(j-1)\le U<F(j)$: start with $j=0$, $p=e^{-\lambda}$, $F=p$;
+while $U\ge F$, update $p\leftarrow p\lambda/(j+1)$, $j\leftarrow j+1$, $F\leftarrow F+p$. The
+recursion holds because}
+\begin{equation}\label{q22:rec}
+\frac{p_{j+1}}{p_j}=\frac{e^{-\lambda}\lambda^{j+1}/(j+1)!}{e^{-\lambda}\lambda^j/j!}=\frac{\lambda}{j+1}.
+\end{equation}
+
+\passo{Correctness}{The intervals $[F(j-1),F(j))$ partition $[0,1)$ and have lengths $p_j$, so}
+\begin{equation}\label{q22:ok}
+P(X=j)=P\big(F(j-1)\le U<F(j)\big)=F(j)-F(j-1)=p_j .
+\end{equation}
+
+\passo{Cost}{The algorithm stops after checking $j=0,1,\dots,X$, so $N=X+1$ and
+$E(N)=\lambda+1=3$: the inverse transform is cheap for small $\lambda$ and grows linearly in it.}
+
+\passo{Five values}{With $\lambda=2$: $F(0)=0.135335$, $F(1)=0.406006$, $F(2)=0.676676$,
+$F(3)=0.857123$. The seed-22 uniforms $0.366347$, $0.199295$, $0.088558$, $0.653192$, $0.459337$ fall
+in $[F(0),F(1))$, $[F(0),F(1))$, $[0,F(0))$, $[F(1),F(2))$, $[F(1),F(2))$, giving $1,1,0,2,2$.}
+
+\codehead
+{\small
+\begin{verbatim}
+def rpois_inv(u, lam):
+    j, p = 0, np.exp(-lam); F = p
+    while u >= F:
+        p *= lam / (j + 1); j += 1; F += p      # recursion (22.1)
+    return j, j + 1                             # value, comparisons
+rng = np.random.default_rng(22)
+[rpois_inv(u, 2.)[0] for u in rng.uniform(size=5)]          # [1, 1, 0, 2, 2]
+big = np.array([rpois_inv(u, 2.) for u in rng.uniform(size=100_000)])
+big[:, 0].mean(), big[:, 0].var(ddof=1), big[:, 1].mean()   # 1.99556 2.01146 2.99556
+# chi-square GOF, classes 0..6, >=7: X2 = 12.44 on 7 df, p = 0.0869
+\end{verbatim}
+}
+Mean and variance are both close to $\lambda=2$, the comparisons average $3=\lambda+1$, and the
+goodness-of-fit test does not reject at 5\%.
+
+\intuicao{Every discrete distribution can be simulated by walking up its c.d.f.\ until it passes a
+uniform draw; the Poisson recursion makes each step a single multiplication.}
+\refbib{Morettin \& Singer (2021), Apêndice B (geração de variáveis discretas, método da
+transformação inversa); Greenberg (2008), §5.1.}
+\end{sol}
+
+% -----------------------------------------------------------------------------
+\questao{MS B.18 --- half-normal by accept--reject, then a normal sample.}
+\fonte{Morettin, P.~A. and Singer, J.~M. (2021), \textit{Estatística e Ciência de Dados} (versão
+preliminar, abril 2021), Apêndice~B, §B.8 Exercícios, Exercício~18, p.~478 [PDF p.~488]; the book
+gives no answer --- reproduced verbatim.}
+
+\begin{otherlanguage}{brazil}
+18) Suponha que $Z\sim N(0,1)$ e considere $X=|Z|$. Obtenha a densidade $\pi(x)$ de $X$. Use o
+método da aceitação-rejeição para obter uma amostra de $\pi(x)$ com $g(x)=\exp(-x)$. A seguir gere
+uma amostra de $Z$, levando em conta que $Z=X$ ou $Z=-X$.
+\end{otherlanguage}
+\programacao With \texttt{np.random.default\_rng(23)}, draw proposals until $10{,}000$ are
+accepted; report the empirical acceptance rate against $1/c$, the mean of $X$ against
+$\sqrt{2/\pi}$, the mean and variance of the signed sample $Z$, and Kolmogorov--Smirnov p-values
+of $X$ against the half-normal and of $Z$ against $N(0,1)$.
+\resolespaco
+\begin{sol}
+\solhead
+\begin{notacao}
+\item $\phi,\Phi$: standard normal density and c.d.f.; $g(x)=e^{-x}$, $x\ge0$: proposal (exponential).
+\item $c=\sup_x\pi(x)/g(x)$: envelope constant; $U\sim U(0,1)$; $S=\pm1$ with probability $1/2$ each, independent of $X$.
+\end{notacao}
+
+\passo{Density of $X$}{For $x\ge0$, $P(X\le x)=P(-x\le Z\le x)=2\Phi(x)-1$; differentiating,}
+\begin{equation}\label{q23:pi}
+\pi(x)=2\phi(x)=\sqrt{\frac2\pi}\,e^{-x^2/2},\qquad x\ge0 .
+\end{equation}
+
+\passo{Envelope}{Dividing \eqref{q23:pi} by $g$:}
+\begin{equation}\label{q23:ratio}
+\frac{\pi(x)}{g(x)}=\sqrt{\frac2\pi}\,e^{x-x^2/2}.
+\end{equation}
+The exponent $x-x^2/2$ is maximized at $x=1$ (derivative $1-x$), where it equals $1/2$. Substituting
+$x=1$ into \eqref{q23:ratio}:
+\begin{equation}\label{q23:c}
+c=\sqrt{\frac2\pi}\,e^{1/2}=\sqrt{\frac{2e}{\pi}}=1.315489,\qquad \frac1c=0.760173 .
+\end{equation}
+Dividing \eqref{q23:ratio} by \eqref{q23:c}, the acceptance probability of a proposal $x$ is
+\begin{equation}\label{q23:acc}
+\frac{\pi(x)}{c\,g(x)}=e^{x-x^2/2-1/2}=e^{-(x-1)^2/2}.
+\end{equation}
+
+\passo{Why accepted draws follow $\pi$}{Draw $x\sim g$ and accept with probability \eqref{q23:acc}.
+Then}
+\[
+P(X\le x,\ \text{accept})=\int_0^xg(t)\frac{\pi(t)}{cg(t)}\,dt=\frac1c\int_0^x\pi(t)\,dt,
+\]
+and letting $x\to\infty$, $P(\text{accept})=1/c$. Dividing, $P(X\le x\mid\text{accept})=\int_0^x\pi$:
+accepted values have density $\pi$, and the number of proposals per accepted value is geometric
+with mean $c$.
+
+\passo{Back to $Z$}{Let $Z=SX$. For $z\ge0$, $P(Z\le z)=\frac12+\frac12P(X\le z)=\frac12+\frac12(2\Phi(z)-1)=\Phi(z)$;
+for $z<0$, $P(Z\le z)=\frac12P(X\ge-z)=\frac12\big(2-2\Phi(-z)\big)=\Phi(z)$. So $Z\sim N(0,1)$.}
+
+\codehead
+{\small
+\begin{verbatim}
+rng = np.random.default_rng(23); acc, tries = [], 0
+while len(acc) < 10_000:
+    x, u = rng.exponential(1.0), rng.uniform(); tries += 1
+    if u <= np.exp(-(x - 1)**2 / 2): acc.append(x)       # (23.4)
+X = np.array(acc); Z = np.where(rng.uniform(size=X.size) <= .5, X, -X)
+10_000 / tries, X.mean()             # 0.762195 (1/c = 0.760173)  0.793801 (0.797885)
+Z.mean(), Z.var(ddof=1)              # 0.019998  0.990055
+kstest(X, halfnorm.cdf).pvalue, kstest(Z, norm.cdf).pvalue    # 0.4935  0.3449
+\end{verbatim}
+}
+
+\intuicao{The exponential has heavier tails than the half-normal, so a scaled copy covers it
+everywhere; the price is that about one proposal in four is thrown away. Symmetry then turns a
+half-normal into a normal with one coin flip.}
+\refbib{Morettin \& Singer (2021), Apêndice B (método da aceitação-rejeição); Greenberg (2008),
+§5.3 (Algorithm 5.2 and the normal-from-Laplace example, pp.~66--69).}
+\end{sol}
+
+% -----------------------------------------------------------------------------
+\questao{Original math question --- importance sampling for a rare Poisson tail.}
+\fonte{Original question (not from a book).}
+
+A hospital's ICU receives $X\sim$ Poisson$(\lambda)$ emergency admissions per night; the
+manager needs $p=P(X\ge k)$ for a capacity $k$ well above $\lambda$. Monte Carlo is used with
+$G$ draws.
+\begin{enumerate}[label=\textbf{(\alph*)},leftmargin=2.4em]
+\item For the crude estimator $\hat p=\frac1G\sum_g\1\{X^{(g)}\ge k\}$, $X^{(g)}\sim$ Poisson$(\lambda)$,
+derive its mean, variance and relative standard error, and prove that for fixed $G$ the relative
+error tends to infinity as $p\to0$.
+\item Importance sampling with proposal Poisson$(\mu)$: derive the weight $w_\mu(x)$, prove
+unbiasedness, and derive the exact variance of one term in closed form,
+$\sigma^2(\mu)=e^{\mu-2\lambda+\lambda^2/\mu}\,P(Y_{\lambda^2/\mu}\ge k)-p^2$ with $Y_\nu\sim$ Poisson$(\nu)$.
+\item Prove that $\mu=\lambda$ gives back the crude variance, and that the proposal
+$f_\lambda(x)\1\{x\ge k\}/p$ has zero variance. Why can it not be used?
+\item Parameter analysis: for $\mu>\lambda$, prove that $w_\mu$ decreases in $x$, deduce
+$\sigma^2(\mu)\le p\,(w_\mu(k)-p)$, and show that this bound is minimized at $\mu=k$. Interpret.
+\end{enumerate}
+\programacao With $\lambda=2$, $k=10$, $G=10^5$ and \texttt{np.random.default\_rng(24)}: compute $p$
+exactly; run the crude estimator and the IS estimator with $\mu=10$ (in that order, same generator)
+and print estimates with standard errors; tabulate $\sigma^2(\mu)$ for $\mu\in\{2,5,10,15\}$ from
+(b), check it by summing $f_\lambda(x)^2/f_\mu(x)$ over $x\ge k$, and find the $\mu$ that minimizes
+$\sigma^2(\mu)$ on a grid.
+\resolespaco
+\begin{sol}
+\solhead
+\begin{notacao}
+\item $f_\nu(x)=e^{-\nu}\nu^x/x!$: Poisson p.m.f.; $Q_k(\nu)=P(Y_\nu\ge k)$; $p=Q_k(\lambda)$.
+\item $w_\mu(x)=f_\lambda(x)/f_\mu(x)$: importance weight; $\hat p_\mu=\frac1G\sum_g\1\{X^{(g)}\ge k\}w_\mu(X^{(g)})$, $X^{(g)}\sim f_\mu$.
+\item $\sigma^2(\mu)$: variance of one IS term; relative standard error $=\sqrt{\Var(\hat p)}/p$.
+\end{notacao}
+
+\passo{(a) Crude}{The indicators are i.i.d.\ Bernoulli$(p)$, so $E\hat p=p$ and $\Var\hat p=p(1-p)/G$.
+The relative standard error is}
+\begin{equation}\label{q24:rse}
+\frac{\sqrt{p(1-p)/G}}{p}=\sqrt{\frac{1-p}{p\,G}}\xrightarrow[p\to0]{}\infty .
+\end{equation}
+For a relative error of $10\%$ one needs $G=(1-p)/(0.01\,p)$ draws, i.e.\ $G\approx100/p$.
+
+\passo{(b) Weight and unbiasedness}{Dividing the two p.m.f.s,}
+\begin{equation}\label{q24:w}
+w_\mu(x)=\frac{e^{-\lambda}\lambda^x/x!}{e^{-\mu}\mu^x/x!}=e^{\mu-\lambda}\Big(\frac\lambda\mu\Big)^x .
+\end{equation}
+Then $E_\mu[\1\{X\ge k\}w_\mu(X)]=\sum_{x\ge k}f_\mu(x)\frac{f_\lambda(x)}{f_\mu(x)}=\sum_{x\ge k}f_\lambda(x)=p$.
+
+\passo{(b) Second moment}{$E_\mu[\1\{X\ge k\}w_\mu^2]=\sum_{x\ge k}f_\lambda(x)^2/f_\mu(x)$, and}
+\[
+\frac{f_\lambda(x)^2}{f_\mu(x)}=\frac{e^{-2\lambda}\lambda^{2x}/(x!)^2}{e^{-\mu}\mu^x/x!}
+=e^{\mu-2\lambda}\frac{(\lambda^2/\mu)^x}{x!}=e^{\mu-2\lambda+\lambda^2/\mu}\,f_{\lambda^2/\mu}(x).
+\]
+Summing over $x\ge k$ and subtracting $p^2$:
+\begin{equation}\label{q24:var}
+\sigma^2(\mu)=e^{\mu-2\lambda+\lambda^2/\mu}\,Q_k(\lambda^2/\mu)-p^2 .
+\end{equation}
+
+\passo{(c) Two special proposals}{Substituting $\mu=\lambda$ into \eqref{q24:var}:
+$e^{\lambda-2\lambda+\lambda}Q_k(\lambda)-p^2=p-p^2=p(1-p)$, the crude variance. For
+$q^*(x)=f_\lambda(x)\1\{x\ge k\}/p$, every term is $\1\{x\ge k\}f_\lambda(x)/q^*(x)=p$, a constant: zero
+variance. But $q^*$ requires $p$, the unknown being estimated; it only tells us to put the proposal
+mass where $\{x\ge k\}$ and in proportion to $f_\lambda$ there.}
+
+\passo{(d) A bound}{For $\mu>\lambda$, $\lambda/\mu<1$, so by \eqref{q24:w} $w_\mu(x)$ decreases in
+$x$; on $\{x\ge k\}$, $w_\mu(x)\le w_\mu(k)$. Hence}
+\begin{equation}\label{q24:bound}
+\sigma^2(\mu)=E_\mu[\1\{X\ge k\}w_\mu^2]-p^2\le w_\mu(k)\,E_\mu[\1\{X\ge k\}w_\mu]-p^2=p\big(w_\mu(k)-p\big).
+\end{equation}
+
+\passo{(d) Best tilt}{Taking logs of \eqref{q24:w} at $x=k$, $\log w_\mu(k)=\mu-\lambda+k\log\lambda-k\log\mu$;
+differentiating in $\mu$:}
+\[
+\frac{d\log w_\mu(k)}{d\mu}=1-\frac k\mu,
+\]
+negative for $\mu<k$, positive for $\mu>k$: the bound \eqref{q24:bound} is minimized at $\mu=k$.
+Reading: centre the proposal at the threshold, so that about half the draws land in the rare region,
+each weighted down by roughly $w_k(k)$. As $\mu\to\infty$ the weights explode
+($e^{\mu}$ in \eqref{q24:var}) and IS becomes worse than crude.
+
+\passo{Numbers}{$\lambda=2$, $k=10$: $p=4.649808\times10^{-5}$; crude relative error with $G=10^5$
+is $\sqrt{(1-p)/(pG)}=0.4637$ by \eqref{q24:rse}, and $10\%$ needs $G=2{,}150{,}527$ draws. With $\mu=10$:
+$w_{10}(10)=e^{8}(0.2)^{10}=3.0525\times10^{-4}$, bound \eqref{q24:bound} $1.2031\times10^{-8}$, exact
+\eqref{q24:var} $\sigma^2(10)=9.9339\times10^{-9}$, relative error $0.006778$. The grid minimizer of
+\eqref{q24:var} is $\mu=10.035$, practically $k$. The variance ratio crude/IS is $4680.5$.}
+
+\codehead
+{\small
+\begin{verbatim}
+lam, k, G = 2., 10, 10**5; p = poisson.sf(k - 1, lam)          # 4.649808e-05
+var_is = lambda mu: (np.exp(mu - 2*lam + lam**2/mu) * poisson.sf(k - 1, lam**2/mu)
+                     - p**2)                                    # (24.3)
+# mu = 2, 5, 10, 15: 4.6496e-05  8.4535e-08  9.9339e-09  2.8585e-08
+rng = np.random.default_rng(24)
+xn = rng.poisson(lam, G); (xn >= k).mean()        # 4.0e-05 (4 hits), se 2.0e-05
+xi = rng.poisson(10., G)
+w = (xi >= k) * np.exp(10. - lam) * (lam / 10.)**xi
+w.mean(), w.std(ddof=1) / np.sqrt(G)              # 4.6844e-05  3.165e-07
+\end{verbatim}
+}
+The crude run saw only 4 events in $10^5$ nights; IS is within about one standard error of the exact
+$p$ with a relative error below 1\%.
+
+\intuicao{Rare-event probabilities are hard for plain simulation because almost no draw hits the
+event. Importance sampling simulates a world where the event is common and then corrects each hit
+by how much likelier it was made; choosing that world well is the whole art.}
+\refbib{Greenberg (2008), §5.4 (importance sampling, variance of $\hat g$, choice of $h$);
+Morettin \& Singer (2021), Apêndice B.}
+\rubrica{
+\item (a) mean, variance and \eqref{q24:rse} with the limit: 3 pts.
+\item (b) \eqref{q24:w} and unbiasedness: 2 pts; \eqref{q24:var} derived: 3 pts.
+\item (c) both special cases and why $q^*$ is unusable: 3 pts.
+\item (d) monotone weight, \eqref{q24:bound}, minimization at $\mu=k$, reading: 4 pts.
+\item Programming: exact $p$, both estimators with standard errors, variance table: 3 pts.
+}
+\end{sol}
+
+% -----------------------------------------------------------------------------
+\questao{Original conceptual question --- simulation methods (10 points).}
+\fonte{Original question (not from a book).}
+
+\textbf{a)} (3 points) In the accept--reject algorithm with $f\le c\,g$, the number of proposals
+needed to obtain one accepted draw is:
+\begin{alternativas}
+\item geometric with mean $1/c$, the acceptance probability.
+\item Poisson with mean $c$, the envelope constant.
+\item geometric with mean $c$, since each proposal is accepted with probability $1/c$.
+\item binomial with parameters $c$ and $1/c$, one trial per unit of envelope.
+\end{alternativas}
+\gabarito{C}
+\begin{sol}
+\passo{Why}{C: each proposal is accepted independently with probability $1/c$ (Question~23), so the
+count until the first success is geometric with mean $c$. A swaps the probability and the mean;
+B and D are not distributions of a waiting time for a first success.}
+\end{sol}
+
+\textbf{b)} (3 points) The Monte Carlo estimator of $E[h(X)]$ from $G$ i.i.d.\ draws has standard error:
+\begin{alternativas}
+\item proportional to $1/G$, because averaging divides by $G$.
+\item $\mathrm{sd}(h(X))/\sqrt G$, whatever the dimension of $X$.
+\item $\mathrm{sd}(h(X))/\sqrt G$ only when $X$ is scalar and $h$ is bounded.
+\item growing exponentially with the dimension of $X$, like quadrature.
+\end{alternativas}
+\gabarito{B}
+\begin{sol}
+\passo{Why}{B: $\Var(\bar h)=\Var(h)/G$ for i.i.d.\ draws with finite variance, in any dimension:
+this is why Monte Carlo beats grids in high dimension. A forgets the square root; C adds
+conditions that are not needed (finite variance suffices); D describes product-rule quadrature.}
+\end{sol}
+
+\textbf{c)} (2 points, T or F) An importance-sampling estimator is unbiased, yet a proposal with
+lighter tails than the target can give it infinite variance.
+\gabarito{T}
+\begin{sol}
+\passo{Why}{Unbiasedness only needs $h>0$ where $f>0$; the second moment is
+$\int h^2f^2/g$, which diverges when $f/g$ grows too fast in the tails (Greenberg §5.4).}
+\end{sol}
+
+\textbf{d)} (2 points, T or F) Accept--reject cannot be used unless the normalizing constant of the
+target density is known.
+\gabarito{F}
+\begin{sol}
+\passo{Why}{If $f=\kappa r$ with $r$ known, choose $c$ with $r\le cg$ and accept with probability
+$r/(cg)$: accepted values still follow $f$ (Greenberg p.~67). The constant only affects the
+acceptance rate. MH shares this property.}
+\end{sol}
+
+\programacao Check (a) on the half-normal sampler of Question~23: with
+\texttt{np.random.default\_rng(25)} draw $2\times10^6$ exponential proposals and uniforms, mark the
+accepted ones, take the first $100{,}000$ acceptances, and compare the mean and variance of the
+number of proposals per acceptance with $c$ and $c(c-1)$.
+\begin{sol}
+\codehead
+{\small
+\begin{verbatim}
+rng = np.random.default_rng(25); x = rng.exponential(1, 2_000_000)
+acc = rng.uniform(size=x.size) <= np.exp(-(x - 1)**2 / 2)
+waits = np.diff(np.r_[-1, np.flatnonzero(acc)[:100_000]])
+waits.mean(), waits.var(ddof=1)     # 1.31879 (c = 1.315489)  0.42047 (c(c-1) = 0.41502)
+\end{verbatim}
+}
+\end{sol}
+
+% =============================================================================
+\bloco{6}{The bootstrap}{I 5.2, 5.4; original}
+
+\questao{I 5.2 --- probability that an observation is in a bootstrap sample.}
+\fonte{James, G., Witten, D., Hastie, T., Tibshirani, R. and Taylor, J. (2023), \textit{An
+Introduction to Statistical Learning with Applications in Python}, Springer, Chapter~5, §5.4
+Exercises (Conceptual), Exercise~2, pp.~224--225 [PDF pp.~232--233]; the book gives no answer ---
+reproduced verbatim (the margin index entry ``\texttt{np.empty()}'' is omitted).}
+
+2. We will now derive the probability that a given observation is part of a bootstrap sample.
+Suppose that we obtain a bootstrap sample from a set of $n$ observations.
+\begin{enumerate}[label=(\alph*),leftmargin=2.4em]
+\item What is the probability that the first bootstrap observation is \emph{not} the $j$th
+observation from the original sample? Justify your answer.
+\item What is the probability that the second bootstrap observation is \emph{not} the $j$th
+observation from the original sample?
+\item Argue that the probability that the $j$th observation is \emph{not} in the bootstrap sample
+is $(1-1/n)^n$.
+\item When $n=5$, what is the probability that the $j$th observation is in the bootstrap sample?
+\item When $n=100$, what is the probability that the $j$th observation is in the bootstrap sample?
+\item When $n=10{,}000$, what is the probability that the $j$th observation is in the bootstrap
+sample?
+\item Create a plot that displays, for each integer value of $n$ from 1 to 100,000, the probability
+that the $j$th observation is in the bootstrap sample. Comment on what you observe.
+\item We will now investigate numerically the probability that a bootstrap sample of size $n=100$
+contains the $j$th observation. Here $j=4$. We first create an array \texttt{store} with values that
+will subsequently be overwritten using the function \texttt{np.empty()}. We then repeatedly create
+bootstrap samples, and each time we record whether or not the fifth observation is contained in the
+bootstrap sample.
+{\small
+\begin{verbatim}
+rng = np.random.default_rng(10)
+store = np.empty(10000)
+for i in range(10000):
+    store[i] = np.sum(rng.choice(100, replace=True) == 4)
+          > 0
+np.mean(store)
+\end{verbatim}
+}
+Comment on the results obtained.
+\end{enumerate}
+\programacao Let $D$ be the number of \emph{distinct} original observations in a bootstrap sample of
+size $n=100$. Derive $E(D)$ and $\Var(D)$ from indicator variables, then check them with $10{,}000$
+bootstrap samples drawn with \texttt{np.random.default\_rng(26)}.
+\resolespaco
+\begin{sol}
+\solhead
+\begin{notacao}
+\item $n$: sample size; $j\in\{1,\dots,n\}$: a fixed original observation.
+\item $Z_1,\dots,Z_n$: indices of the bootstrap draws, i.i.d.\ uniform on $\{1,\dots,n\}$ (sampling
+  with replacement).
+\item $p_n=P(j\text{ is in the bootstrap sample})$; $A_j=\1\{j\text{ is absent}\}$; $D=n-\sum_jA_j$.
+\end{notacao}
+
+\passo{(a)}{Each draw picks one of the $n$ original observations with equal probability $1/n$, so}
+\begin{equation}\label{q26:a}
+P(Z_1\neq j)=1-\frac1n .
+\end{equation}
+
+\passo{(b)}{Sampling is with replacement, so $Z_2$ has the same distribution as $Z_1$ and is
+independent of it:}
+\begin{equation}\label{q26:b}
+P(Z_2\neq j)=1-\frac1n .
+\end{equation}
+
+\passo{(c)}{$j$ is absent only if every draw misses it; by independence and \eqref{q26:a}--\eqref{q26:b}
+applied to all $n$ draws:}
+\begin{equation}\label{q26:c}
+P(j\notin\text{sample})=\prod_{m=1}^nP(Z_m\neq j)=\Big(1-\frac1n\Big)^n .
+\end{equation}
+
+\passo{(d)--(f)}{Taking the complement of \eqref{q26:c}:}
+\begin{equation}\label{q26:p}
+p_n=1-\Big(1-\frac1n\Big)^n .
+\end{equation}
+Substituting into \eqref{q26:p}:
+\begin{align*}
+n=5:&\quad p_5=1-(4/5)^5=1-0.32768=0.67232,\\
+n=100:&\quad p_{100}=1-(0.99)^{100}=1-0.366032=0.633968,\\
+n=10{,}000:&\quad p_{10000}=1-(0.9999)^{10000}=1-0.367861=0.632139.
+\end{align*}
+
+\passo{(g) Plot and limit}{Since $n\log(1-1/n)=n\big(-\tfrac1n-\tfrac1{2n^2}-\dots\big)\to-1$,}
+\begin{equation}\label{q26:lim}
+\lim_{n\to\infty}p_n=1-e^{-1}=0.632121 .
+\end{equation}
+\begin{center}
+\begin{tikzpicture}
+\begin{semilogxaxis}[width=0.72\linewidth,height=5cm,xlabel={$n$ (log scale)},
+  ylabel={$p_n$},ymin=0.6,ymax=1.02,xmin=1,xmax=100000,grid=major,
+  every axis plot/.append style={thick}]
+\addplot[blue!60!black,mark=*,mark size=1.3pt] coordinates {(1,1.0000) (2,0.7500) (3,0.7037)
+  (5,0.6723) (10,0.6513) (20,0.6415) (50,0.6358) (100,0.6340) (1000,0.6323) (10000,0.6321)
+  (100000,0.6321)};
+\addplot[red!70!black,dashed,domain=1:100000] {0.632121};
+\end{semilogxaxis}
+\end{tikzpicture}
+\end{center}
+$p_n$ falls from 1 at $n=1$ and flattens almost immediately at $1-e^{-1}\approx0.632$ (dashed): for
+$n\ge100$ the curve is indistinguishable from the limit.
+
+\passo{(h) The printed code}{\texttt{rng.choice(100, replace=True)} without \texttt{size} returns a
+\emph{single} integer, so each iteration checks whether one draw equals 4, an event of probability
+$1/100$. Run as printed, \texttt{np.mean(store)} returns $0.0089$, not a bootstrap probability. The
+intended code draws a whole bootstrap sample, \texttt{rng.choice(100, size=100, replace=True)},
+and then returns $0.6362$, close to $p_{100}=0.633968$ from (e) (Monte Carlo standard error
+$\sqrt{0.634\cdot0.366/10000}\approx0.005$). Index 4 is the fifth observation because Python
+counts from 0, which is why the text says ``fifth''.}
+
+\passo{Added: distinct observations}{$E(A_j)=a=(1-1/n)^n$ by \eqref{q26:c}; for $i\ne j$ both are
+absent iff every draw avoids two indices, $E(A_iA_j)=b=(1-2/n)^n$. Hence}
+\begin{equation}\label{q26:D}
+E(D)=n(1-a),\qquad \Var(D)=\Var\Big(\sum_jA_j\Big)=na(1-a)+n(n-1)(b-a^2).
+\end{equation}
+For $n=100$: $E(D)=63.396766$ and $\mathrm{sd}(D)=3.120912$.
+
+\codehead
+{\small
+\begin{verbatim}
+rng = np.random.default_rng(10); store = np.empty(10000)
+for i in range(10000):
+    store[i] = np.sum(rng.choice(100, size=100, replace=True) == 4) > 0
+store.mean()                                   # 0.6362 (printed code: 0.0089)
+rng = np.random.default_rng(26)
+D = [np.unique(rng.choice(100, size=100, replace=True)).size for _ in range(10000)]
+np.mean(D), np.std(D, ddof=1)                  # 63.3994  3.1583  (exact 63.3968, 3.1209)
+\end{verbatim}
+}
+
+\intuicao{A bootstrap sample of size $n$ contains only about 63.2\% of the distinct original
+observations; the other 36.8\% are ``out of bag''. This is why bootstrap estimates of test error
+that reuse the training points are optimistic, and why out-of-bag points can serve as a free
+validation set.}
+\refbib{ISLP (2023), §5.2 (the bootstrap, pp.~212--215).}
+\end{sol}
+
+% -----------------------------------------------------------------------------
+\questao{I 5.4 --- bootstrap standard deviation of a prediction.}
+\fonte{James, G., Witten, D., Hastie, T., Tibshirani, R. and Taylor, J. (2023), \textit{An
+Introduction to Statistical Learning with Applications in Python}, Springer, Chapter~5, §5.4
+Exercises (Conceptual), Exercise~4, p.~225 [PDF p.~233]; the book gives no answer --- reproduced
+verbatim.}
+
+4. Suppose that we use some statistical learning method to make a prediction for the response $Y$
+for a particular value of the predictor $X$. Carefully describe how we might estimate the standard
+deviation of our prediction.
+\programacao Fit the Poisson regression $\log\mu_t=\beta_0+\beta_1x_t$, $x_t=(t-56.5)/10$, to the coal
+series ($t=1,\dots,112$ for 1851--1962) with \texttt{statsmodels} GLM. Predict $\mu$ for 1900
+($t=50$). Compute the delta-method standard error of $\hat\mu(1900)$ and the bootstrap standard
+deviation from $B=2{,}000$ pairs-bootstrap refits (\texttt{np.random.default\_rng(27)}), with the
+95\% percentile interval. Compare the two using the Pearson dispersion statistic.
+\resolespaco
+\begin{sol}
+\solhead
+\begin{notacao}
+\item $(x_i,y_i)$, $i=1,\dots,n$: training data; $\hat f$: fitted method; $x_0$: the predictor value; $\hat y_0=\hat f(x_0)$.
+\item $B$: number of bootstrap samples; $\hat y_0^{*b}$: prediction refitted on bootstrap sample $b$.
+\item Coal model: $\hat\beta=(\hat\beta_0,\hat\beta_1)$, $\hat V$: its estimated covariance; $\hat\mu_0=\exp(x_0'\hat\beta)$.
+\end{notacao}
+
+\passo{The procedure}{(1) Draw $n$ indices with replacement from $\{1,\dots,n\}$ and form the
+bootstrap sample $\{(x_{i^*},y_{i^*})\}$. (2) Refit the \emph{whole} method on it (including any
+tuning or variable selection) and compute $\hat y_0^{*b}=\hat f^{*b}(x_0)$. (3) Repeat for
+$b=1,\dots,B$. (4) Estimate the standard deviation of the prediction by}
+\begin{equation}\label{q27:sd}
+\widehat{\mathrm{SD}}(\hat y_0)=\sqrt{\frac1{B-1}\sum_{b=1}^B\big(\hat y_0^{*b}-\bar y_0^{*}\big)^2},\qquad
+\bar y_0^*=\frac1B\sum_b\hat y_0^{*b}.
+\end{equation}
+
+\passo{What it measures}{\eqref{q27:sd} is the sampling variability of the \emph{fitted value}
+$\hat f(x_0)$, the analogue of $\mathrm{SE}(\hat\alpha)$ in ISLP §5.2. For the error of predicting
+a new response $Y_0=f(x_0)+\varepsilon$ one must add the irreducible noise:
+$\mathrm{SD}(Y_0-\hat y_0)\approx\sqrt{\widehat{\mathrm{SD}}(\hat y_0)^2+\widehat{\Var}(\varepsilon\mid x_0)}$.
+Resampling pairs keeps the joint behaviour of $(X,Y)$ and does not assume the model is correct;
+resampling residuals instead assumes a correct mean and homoskedastic errors.}
+
+\passo{Delta method (benchmark)}{$\hat\mu_0=g(\hat\beta)$ with $g(\beta)=\exp(x_0'\beta)$ and
+gradient $\nabla g=\hat\mu_0x_0$, so}
+\begin{equation}\label{q27:delta}
+\mathrm{SE}(\hat\mu_0)\approx\hat\mu_0\sqrt{x_0'\hat Vx_0}.
+\end{equation}
+
+\passo{Coal numbers}{$\hat\beta_0=0.363109$ (s.e.\ $0.084922$), $\hat\beta_1=-0.183776$ (s.e.\
+$0.024728$) per decade; $\hat\mu(1900)=1.620223$; \eqref{q27:delta} gives $0.125930$; the bootstrap
+\eqref{q27:sd} gives $0.134530$ with percentile interval $[1.3633,\ 1.8748]$. The Pearson
+dispersion is $\hat\phi=1.133236$: the counts are slightly more variable than a Poisson with a
+linear trend allows, and $0.125930\sqrt{1.133236}=0.134057$, almost exactly the bootstrap value.
+For a new count in 1900 the predictive SD is about $\sqrt{1.620223+0.134530^2}=1.2800$, dominated by
+Poisson noise.}
+
+\codehead
+{\small
+\begin{verbatim}
+t = np.arange(1, 113); X = sm.add_constant((t - 56.5) / 10)
+fit = sm.GLM(y, X, family=sm.families.Poisson()).fit()
+x0 = np.array([1., (50 - 56.5) / 10])
+mu0 = np.exp(x0 @ fit.params)                               # 1.620223
+se = mu0 * np.sqrt(x0 @ fit.cov_params() @ x0)              # 0.125930
+rng = np.random.default_rng(27); pred = np.empty(2000)
+for b in range(2000):
+    i = rng.integers(0, 112, 112)
+    pred[b] = np.exp(x0 @ sm.GLM(y[i], X[i], family=sm.families.Poisson()).fit().params)
+pred.std(ddof=1), np.quantile(pred, [.025, .975])           # 0.134530 [1.3633 1.8748]
+\end{verbatim}
+}
+
+\intuicao{The bootstrap answers ``how much would my prediction move if I had drawn another sample
+of the same size?'' by drawing those samples from the data itself. It agrees with the model-based
+formula when the model is right, and corrects it (here for mild overdispersion) when it is not.}
+\refbib{ISLP (2023), §5.2 (pp.~212--215) and the §5.3.3 lab (\texttt{boot\_SE}); Wooldridge (2016),
+§17.3 (Poisson regression and overdispersion).}
+\end{sol}
+
+% -----------------------------------------------------------------------------
+\questao{Original math question --- nonparametric versus parametric bootstrap for a Poisson mean.}
+\fonte{Original question (not from a book).}
+
+Let $x_1,\dots,x_n$ be counts, $\bar x$ their mean and $\hat\sigma^2=\frac1n\sum_i(x_i-\bar x)^2$.
+\begin{enumerate}[label=\textbf{(\alph*)},leftmargin=2.4em]
+\item Nonparametric bootstrap ($X_i^*$ i.i.d.\ from the empirical distribution): find
+$E^*(\overline X^*)$ and $\Var^*(\overline X^*)$ exactly, without simulation.
+\item Parametric bootstrap ($X_i^*$ i.i.d.\ Poisson$(\bar x)$): find $\Var^*(\overline X^*)$. If the
+$X_i$ are i.i.d.\ with mean $\theta$ and variance $\sigma^2$, prove $E(\hat\sigma^2)=\frac{n-1}n\sigma^2$
+and compare the expectations of the two bootstrap variances with the true $\Var(\overline X)$, both
+when the Poisson model holds and when $\sigma^2=\phi\theta$ with $\phi\ne1$.
+\item For $\psi=e^{-\theta}$ and $\hat\psi=e^{-\bar x}$, find the parametric-bootstrap bias estimate
+$\hat b=E^*(e^{-\overline X^*})-e^{-\bar x}$ in closed form and the bias-corrected estimator.
+\item Parameter analysis: prove $\hat b>0$, give its leading term in $1/n$, and say how it moves with
+$\bar x$. Interpret.
+\end{enumerate}
+\programacao For the coal counts 1851--1891 ($n=41$): print $\bar x$, $\hat\sigma^2$, the two exact
+bootstrap variances, $\hat\sigma^2/\bar x$, $\hat\psi$, $\hat b$, its leading-term approximation and
+the corrected estimate. Check them with $B=20{,}000$ resamples of each kind
+(\texttt{np.random.default\_rng(28)}).
+\resolespaco
+\begin{sol}
+\solhead
+\begin{notacao}
+\item $E^*,\Var^*$: moments under the bootstrap distribution, data held fixed.
+\item $\theta=E(X)$, $\sigma^2=\Var(X)$, $\phi=\sigma^2/\theta$: dispersion ($\phi=1$ for Poisson).
+\item $\psi=e^{-\theta}$, $\hat\psi=e^{-\bar x}$, $\hat b$: bootstrap bias estimate, $\tilde\psi=\hat\psi-\hat b$.
+\end{notacao}
+
+\passo{(a) One draw}{$X^*$ takes each value $x_i$ with probability $1/n$, so}
+\begin{equation}\label{q28:one}
+E^*(X^*)=\frac1n\sum_ix_i=\bar x,\qquad \Var^*(X^*)=\frac1n\sum_i(x_i-\bar x)^2=\hat\sigma^2 .
+\end{equation}
+The $n$ draws are i.i.d., so by \eqref{q28:one}
+\begin{equation}\label{q28:np}
+E^*(\overline X^*)=\bar x,\qquad \Var^*(\overline X^*)=\frac{\hat\sigma^2}{n}.
+\end{equation}
+
+\passo{(b) Parametric}{$\Var^*(X^*)=\bar x$ for a Poisson$(\bar x)$, so}
+\begin{equation}\label{q28:par}
+\Var^*(\overline X^*)=\frac{\bar x}{n}.
+\end{equation}
+
+\passo{(b) Expectation of $\hat\sigma^2$}{Using $\sum_i(X_i-\overline X)^2=\sum_iX_i^2-n\overline X^2$
+and $E(X^2)=\sigma^2+\theta^2$, $E(\overline X^2)=\sigma^2/n+\theta^2$:}
+\[
+E\Big[\sum_i(X_i-\overline X)^2\Big]=n(\sigma^2+\theta^2)-n\Big(\frac{\sigma^2}n+\theta^2\Big)=(n-1)\sigma^2 .
+\]
+Dividing by $n$:
+\begin{equation}\label{q28:Es2}
+E(\hat\sigma^2)=\frac{n-1}{n}\sigma^2 .
+\end{equation}
+
+\passo{(b) Comparison}{The target is $\Var(\overline X)=\sigma^2/n=\phi\theta/n$. By \eqref{q28:np} and
+\eqref{q28:Es2}, $E[\hat\sigma^2/n]=\frac{n-1}n\cdot\frac{\sigma^2}n$: biased down by the factor
+$(n-1)/n$, whatever $\phi$. By \eqref{q28:par}, $E[\bar x/n]=\theta/n=\Var(\overline X)/\phi$: exact when
+the Poisson model holds ($\phi=1$), too small by $1/\phi$ under overdispersion ($\phi>1$) and too
+large under underdispersion ($\phi<1$). The nonparametric bootstrap is robust to the variance model;
+the parametric one is more precise when the model is right.}
+
+\passo{(c) Bias estimate}{Under the parametric bootstrap $n\overline X^*\sim$ Poisson$(n\bar x)$, and
+$e^{-\overline X^*}=(e^{-1/n})^{n\overline X^*}$. Substituting $s=e^{-1/n}$ into the generating
+function \eqref{q4:pgf} with $n\theta$ replaced by $n\bar x$:}
+\begin{equation}\label{q28:Estar}
+E^*(e^{-\overline X^*})=\exp\{n\bar x(e^{-1/n}-1)\},\qquad
+\hat b=\exp\{n\bar x(e^{-1/n}-1)\}-e^{-\bar x},
+\end{equation}
+and the corrected estimator is
+\begin{equation}\label{q28:bc}
+\tilde\psi=\hat\psi-\hat b=2e^{-\bar x}-\exp\{n\bar x(e^{-1/n}-1)\}.
+\end{equation}
+
+\passo{(d) Sign and order}{By \eqref{q4:tan}, $n\bar x(e^{-1/n}-1)>-\bar x$ (for $\bar x>0$), so
+$\hat b>0$: the bootstrap detects the upward Jensen bias of Question~4. Expanding,
+$n(e^{-1/n}-1)=-1+\frac1{2n}-\frac1{6n^2}+\dots$, so the exponent in \eqref{q28:Estar} is
+$-\bar x+\frac{\bar x}{2n}+O(n^{-2})$ and}
+\begin{equation}\label{q28:lead}
+\hat b=e^{-\bar x}\Big(e^{\bar x/(2n)+O(n^{-2})}-1\Big)=\frac{\bar x\,e^{-\bar x}}{2n}+O(n^{-2}).
+\end{equation}
+The leading term vanishes at rate $1/n$; as a function of $\bar x$ it is proportional to
+$\bar xe^{-\bar x}$, whose derivative $(1-\bar x)e^{-\bar x}$ is positive for $\bar x<1$ and negative
+for $\bar x>1$: the bias is largest, relative to $n$, when the mean is about one event.
+
+\passo{(d) Reading}{The bootstrap estimates the bias of a nonlinear plug-in estimator by repeating
+the plug-in inside the fitted model; here it reproduces the exact Jensen gap to first order. The
+correction is worth making only when $\hat b$ is large relative to the standard error.}
+
+\passo{Coal numbers}{$n=41$, $\bar x=3.097561$, $\hat\sigma^2=2.478287$ ($s^2=2.540244$):
+\eqref{q28:np} $=2.478287/41=0.060446$; \eqref{q28:par} $=3.097561/41=0.075550$; $\hat\sigma^2/\bar x=0.800077$:
+these years are \emph{under}dispersed, so the Poisson bootstrap is the larger one.
+$\hat\psi=e^{-3.097561}=0.045159$; \eqref{q28:Estar}: $\exp\{127(e^{-1/41}-1)\}=0.046883$, so
+$\hat b=0.046883-0.045159=0.001724$; \eqref{q28:lead}: $3.097561\cdot0.045159/82=0.001706$;
+\eqref{q28:bc}: $\tilde\psi=0.043435$.}
+
+\codehead
+{\small
+\begin{verbatim}
+x = y[:41]; n, xb, s2h = 41, x.mean(), x.var(ddof=0)
+s2h / n, xb / n, s2h / xb              # 0.060446  0.075550  0.800077
+Estar = np.exp(n * xb * (np.exp(-1 / n) - 1))
+Estar - np.exp(-xb), 2 * np.exp(-xb) - Estar        # 0.001724  0.043435
+rng = np.random.default_rng(28)
+xnp = rng.choice(x, size=(20_000, n), replace=True).mean(1)
+xpar = rng.poisson(xb, size=(20_000, n)).mean(1)
+xnp.var(ddof=1), xpar.var(ddof=1)                   # 0.060686  0.076385
+np.exp(-xpar).mean() - np.exp(-xb)                  # 0.001655
+\end{verbatim}
+}
+
+\intuicao{The nonparametric bootstrap uses the data's own spread, the parametric one the spread
+the model implies. When they disagree, the data are telling you the variance model is off.}
+\refbib{ISLP (2023), §5.2; Greenberg (2008), §5.6 (using simulated output); Question~4 for the
+exact bias of $\hat\psi$.}
+\rubrica{
+\item (a) \eqref{q28:one}--\eqref{q28:np}: 3 pts.
+\item (b) \eqref{q28:par}: 1 pt; \eqref{q28:Es2} proved: 2 pts; comparison with $\phi$: 3 pts.
+\item (c) \eqref{q28:Estar}--\eqref{q28:bc}: 3 pts.
+\item (d) sign, \eqref{q28:lead}, dependence on $\bar x$, reading: 3 pts.
+\item Programming: exact values and simulation check: 3 pts.
+}
+\end{sol}
+
+% -----------------------------------------------------------------------------
+\questao{Original conceptual question --- the bootstrap (10 points).}
+\fonte{Original question (not from a book).}
+
+\textbf{a)} (3 points) For large $n$, the fraction of the original observations that appear at least
+once in a bootstrap sample of size $n$ is about:
+\begin{alternativas}
+\item $0.5$, since each observation is drawn or not with equal chance.
+\item $e^{-1}\approx0.368$, the probability that an observation is never drawn.
+\item $1$, because the bootstrap sample has the same size as the data.
+\item $1-e^{-1}\approx0.632$, the complement of never being drawn.
+\end{alternativas}
+\gabarito{D}
+\begin{sol}
+\passo{Why}{D: \eqref{q26:lim}. B is the out-of-bag fraction; A has no derivation; C ignores
+repetitions (Question~26 shows $E(D)=63.4$ for $n=100$).}
+\end{sol}
+
+\textbf{b)} (3 points) As $B\to\infty$, the nonparametric bootstrap standard error of $\bar x$ equals:
+\begin{alternativas}
+\item $\hat\sigma/\sqrt n$, with $\hat\sigma^2$ computed with divisor $n$.
+\item $s/\sqrt n$, with $s^2$ computed with divisor $n-1$.
+\item $\sqrt{\bar x/n}$, the Poisson standard error.
+\item $0$, because every bootstrap sample has mean $\bar x$.
+\end{alternativas}
+\gabarito{A}
+\begin{sol}
+\passo{Why}{A: \eqref{q28:np}. B is the usual unbiased-variance formula, not what resampling gives;
+C is the parametric bootstrap \eqref{q28:par}; D confuses $E^*(\overline X^*)=\bar x$ with each
+resample's mean.}
+\end{sol}
+
+\textbf{c)} (2 points, T or F) For a fixed sample, the bootstrap standard error converges to the true
+standard error of the estimator as the number of bootstrap replications $B$ grows.
+\gabarito{F}
+\begin{sol}
+\passo{Why}{As $B\to\infty$ it converges to the \emph{ideal} bootstrap value computed from the
+empirical distribution (e.g.\ $\hat\sigma/\sqrt n$), which still differs from the true value; only
+$n\to\infty$ removes that gap.}
+\end{sol}
+
+\textbf{d)} (2 points, T or F) With overdispersed counts, a parametric Poisson bootstrap understates
+the standard error of $\bar x$.
+\gabarito{T}
+\begin{sol}
+\passo{Why}{By (b) of Question~28, $E[\bar x/n]=\Var(\overline X)/\phi<\Var(\overline X)$ when $\phi>1$.}
+\end{sol}
+
+\programacao Illustrate (b)--(c) on the coal counts 1851--1891: with \texttt{np.random.default\_rng(29)}
+compute the bootstrap standard error of $\bar x$ with $B=100$, $1{,}000$ and $10{,}000$ resamples and
+compare them with the $B\to\infty$ value $\hat\sigma/\sqrt n$.
+\begin{sol}
+\codehead
+{\small
+\begin{verbatim}
+rng = np.random.default_rng(29); x = y[:41]
+for B in (100, 1000, 10000):
+    print(B, rng.choice(x, size=(B, 41), replace=True).mean(1).std(ddof=1))
+# 100 0.259285   1000 0.242725   10000 0.244059   ; sigma_hat/sqrt(n) = 0.245858
+\end{verbatim}
+}
+Increasing $B$ only removes the resampling noise around $0.245858$; no $B$ can tell how far that
+value is from the true standard error.
+\end{sol}
+
+% =============================================================================
+\bloco{7}{MCMC: invariance, Metropolis--Hastings, accept--reject versus MH}{G 6.8, 7.4, 7.6; original}
+
+\questao{G 6.8 --- an invariant density for a continuous-state kernel.}
+\fonte{Greenberg, E. (2008), \textit{Introduction to Bayesian Econometrics}, 1st ed., Cambridge
+University Press, Chapter~6, §6.5 Exercises, Exercise~6.8, p.~89 [PDF p.~104]; the book gives no
+answer --- reproduced verbatim.}
+
+6.8 (Bhattacharya and Waymire, 1990, p.~216) Show that
+\[
+\pi(y)=2(1-y),\qquad 0\le y\le1
+\]
+is an invariant density for the transition kernel
+\[
+p(x,y)=\begin{cases}e^{1-x}, & \text{if } y<x,\\ e^{1-x}-e^{y-x}, & \text{if } y>x.\end{cases}
+\]
+\programacao (1) Check by quadrature that $\int_0^1p(x,y)\,dy=1$ at $x=0.3,0.7$ and that
+$\int_0^1\pi(x)p(x,y)\,dx=\pi(y)$ at $y=0.1,0.5,0.9$. (2) Derive the c.d.f.\ of $p(x,\cdot)$, simulate the
+chain by inversion (\texttt{brentq} on the branch $y>x$) from $x_0=0.5$ with
+\texttt{np.random.default\_rng(30)}, discard 1{,}000 draws, keep 20{,}000, and compare the sample mean
+and $P(Y<0.5)$ with their values under $\pi$; report the batch-means n.s.e.\ and the lag-1
+autocorrelation.
+\resolespaco
+\begin{sol}
+\solhead
+\begin{notacao}
+\item State space $[0,1]$; $p(x,\cdot)$: density of the next state given the current state $x$.
+\item $\pi$ is invariant if $\int_0^1\pi(x)p(x,y)\,dx=\pi(y)$ for all $y$ (Greenberg §6.3).
+\item $F_x(y)=\int_0^yp(x,t)\,dt$: c.d.f.\ of the next state.
+\end{notacao}
+
+\passo{$p(x,\cdot)$ is a density}{For $y>x$, $e^{1-x}-e^{y-x}=e^{-x}(e-e^y)>0$ since $y<1$. Integrating
+over the two branches:}
+\begin{equation}\label{q30:norm}
+\int_0^1p(x,y)\,dy=\int_0^xe^{1-x}dy+\int_x^1\big(e^{1-x}-e^{y-x}\big)dy=xe^{1-x}+(1-x)e^{1-x}-e^{-x}(e-e^{x})=1 .
+\end{equation}
+
+\passo{Split the invariance integral}{For fixed $y$, the points $x<y$ use the branch ``$y>x$'' and
+the points $x>y$ use ``$y<x$'':}
+\begin{equation}\label{q30:split}
+\int_0^1\pi(x)p(x,y)\,dx=\int_0^y2(1-x)\big(e^{1-x}-e^{y-x}\big)dx+\int_y^12(1-x)e^{1-x}dx .
+\end{equation}
+Collecting the two $e^{1-x}$ terms into one integral over $[0,1]$:
+\begin{equation}\label{q30:two}
+\int_0^1\pi(x)p(x,y)\,dx=\int_0^12(1-x)e^{1-x}dx-e^{y}\int_0^y2(1-x)e^{-x}dx .
+\end{equation}
+
+\passo{First integral}{With $u=1-x$ and $\frac{d}{du}[(u-1)e^u]=ue^u$:}
+\[
+\int_0^12(1-x)e^{1-x}dx=\int_0^12ue^u\,du=2\big[(u-1)e^u\big]_0^1=2\,(0-(-1))=2 .
+\]
+
+\passo{Second integral}{Since $\frac{d}{dx}[xe^{-x}]=(1-x)e^{-x}$,}
+\[
+\int_0^y2(1-x)e^{-x}dx=2\big[xe^{-x}\big]_0^y=2ye^{-y}.
+\]
+
+\passo{Conclusion}{Substituting both results into \eqref{q30:two}:}
+\[
+\int_0^1\pi(x)p(x,y)\,dx=(2)-e^y\big(2ye^{-y}\big)=2-2y=\pi(y). \qquad\blacksquare
+\]
+
+\passo{Simulating the kernel}{From \eqref{q30:norm}'s pieces, the c.d.f.\ of the next state is}
+\begin{equation}\label{q30:cdf}
+F_x(y)=\begin{cases}ye^{1-x}, & y\le x,\\ ye^{1-x}-e^{y-x}+1, & y>x,\end{cases}
+\end{equation}
+continuous at $y=x$ and equal to 1 at $y=1$. Given $u\sim U(0,1)$: if $u\le xe^{1-x}$, $y=ue^{x-1}$;
+otherwise solve $F_x(y)=u$ on $(x,1)$. Under $\pi$: $E(Y)=\int_0^12y(1-y)dy=1/3$ and
+$P(Y<0.5)=2(0.5)-0.5^2=0.75$.
+
+\codehead
+{\small
+\begin{verbatim}
+def draw(x, u):
+    if u <= x * np.exp(1 - x): return u * np.exp(x - 1)
+    return brentq(lambda y: y*np.exp(1 - x) - np.exp(y - x) + 1 - u, x, 1.)  # (30.4)
+rng = np.random.default_rng(30); x = 0.5; ch = []
+for g in range(21_000):
+    x = draw(x, rng.uniform())
+    if g >= 1000: ch.append(x)
+ch = np.array(ch); ch.mean(), np.mean(ch < .5)      # 0.334981 (1/3)  0.74745 (0.75)
+ch.reshape(50, 400).mean(1).std(ddof=1) / np.sqrt(50)   # n.s.e. 0.001868
+np.corrcoef(ch[:-1], ch[1:])[0, 1]                  # lag-1 autocorrelation 0.0768
+\end{verbatim}
+}
+Quadrature confirms \eqref{q30:norm} and the invariance identity to $10^{-9}$; the simulated mean is
+within one n.s.e.\ of $1/3$.
+
+\intuicao{Invariance means that if today's state is drawn from $\pi$, tomorrow's is too: the kernel
+moves mass around but leaves its profile unchanged. MCMC is the art of building kernels with a
+prescribed invariant law; this exercise checks one by direct integration.}
+\refbib{Greenberg (2008), §6.3 (continuous state spaces, invariant distributions, pp.~84--87).}
+\end{sol}
+
+% -----------------------------------------------------------------------------
+\questao{G 7.4 --- the acceptance probability of Algorithm 7.5.}
+\fonte{Greenberg, E. (2008), \textit{Introduction to Bayesian Econometrics}, 1st ed., Cambridge
+University Press, Chapter~7, §7.5 Exercises, Exercise~7.4, p.~106 [PDF p.~121]; the book gives no
+answer --- reproduced verbatim. Algorithm 7.5 and Equation (7.6), to which it refers, are reproduced
+from §7.2, pp.~98--99 [PDF pp.~113--114].}
+
+\emph{Referred to (Greenberg 2008, p.~98):}
+\[
+\alpha(x,y)=\begin{cases}\min\Big\{\dfrac{f(y)q(y,x)}{f(x)q(x,y)},1\Big\}, & \text{if } f(x)q(x,y)\neq0,\\[8pt] 0, & \text{otherwise.}\end{cases}\tag{7.6}
+\]
+\emph{Referred to (Greenberg 2008, p.~99):} ``\textbf{Algorithm 7.5: MH for Beta(3, 4) with U(0, 1) proposal}
+\begin{itemize}[leftmargin=2.6em]
+\item[7.1] Set $x^{(0)}$ equal to a number between zero and one.
+\item[7.2] At the $g$th iteration, generate $U_1$ and $U_2$ from $U(0,1)$.
+\item[7.3] If
+\[
+U_1\le\alpha(x^{(g-1)},U_2)=\frac{U_2^2(1-U_2)^3}{(x^{(g-1)})^2(1-x^{(g-1)})^3},
+\]
+set $x^{(g)}=U_2$. Otherwise set $x^{(g)}=x^{(g-1)}$.
+\item[7.4] Go to 2 and continue until the desired number of iterations is obtained.''
+\end{itemize}
+
+7.4 Derive $\alpha(x,y)$ for Algorithm 7.5.
+\programacao Run Algorithm 7.5 from $x^{(0)}=0.5$ with \texttt{np.random.default\_rng(31)}, discard
+500 iterations and keep 5{,}000 (Greenberg reports an acceptance rate of 0.57 and a mean of 0.4296).
+Report your acceptance rate and mean against the true mean $3/7$, and compute the exact long-run
+acceptance probability $\iint f(x)\min\{f(y)/f(x),1\}\,dx\,dy$ by two-dimensional quadrature.
+\resolespaco
+\begin{sol}
+\solhead
+\begin{notacao}
+\item Target $f(x)=x^2(1-x)^3/B(3,4)$ on $(0,1)$ (Beta$(3,4)$); proposal $q(x,y)=1$ for $y\in(0,1)$ (independence, uniform).
+\item $\alpha(x,y)$: probability of moving from $x$ to the proposal $y$.
+\end{notacao}
+
+\passo{Apply (7.6)}{Both $x,y\in(0,1)$, so $f(x)q(x,y)\neq0$. Substituting $f$ and $q\equiv1$ into (7.6):}
+\[
+\alpha(x,y)=\min\Big\{\frac{\big(y^2(1-y)^3/B(3,4)\big)\cdot(1)}{\big(x^2(1-x)^3/B(3,4)\big)\cdot(1)},1\Big\}.
+\]
+The constant $B(3,4)$ cancels:
+\begin{equation}\label{q31:alpha}
+\alpha(x,y)=\min\Big\{\frac{y^2(1-y)^3}{x^2(1-x)^3},\,1\Big\}.
+\end{equation}
+
+\passo{Why the algorithm can omit the min}{For $U_1\sim U(0,1)$ and any $r\ge0$,
+$P(U_1\le\min(r,1))=\min(r,1)=P(U_1\le r)$. So step 7.3, which compares $U_1$ with the raw ratio,
+accepts with exactly the probability \eqref{q31:alpha}.}
+
+\passo{Detailed balance}{For $x\ne y$, by \eqref{q31:alpha},
+$f(x)q(x,y)\alpha(x,y)=\min\{f(y),f(x)\}=f(y)q(y,x)\alpha(y,x)$; this symmetry is the reversibility
+condition from which (7.6) was derived, so Beta$(3,4)$ is invariant (Question~33(b) proves the
+general step).}
+
+\codehead
+{\small
+\begin{verbatim}
+fb = lambda v: v**2 * (1 - v)**3
+rng = np.random.default_rng(31); x, acc, out = 0.5, 0, []
+for g in range(5500):
+    U1, U2 = rng.uniform(), rng.uniform()
+    if U1 <= fb(U2) / fb(x):                  # (31.1), min not needed
+        x = U2; acc += g >= 500
+    if g >= 500: out.append(x)
+acc / 5000, np.mean(out)                     # 0.5682  0.432394  (true 3/7 = 0.428571)
+dblquad(lambda y, x: beta(3, 4).pdf(x) * min(1, fb(y) / fb(x)),
+        0, 1, 0, 1)[0]                       # 0.572589
+\end{verbatim}
+}
+The exact long-run acceptance probability $0.5726$ matches Greenberg's reported $0.57$ and our
+$0.5682$.
+
+\intuicao{With an independence proposal the chain compares how much more likely the target makes
+the new point than the current one; it always moves uphill and sometimes downhill, and the
+normalizing constant never matters.}
+\refbib{Greenberg (2008), §7.2 (pp.~97--100).}
+\end{sol}
+
+% -----------------------------------------------------------------------------
+\questao{G 7.6 --- accept--reject versus Metropolis--Hastings for a beta mean.}
+\fonte{Greenberg, E. (2008), \textit{Introduction to Bayesian Econometrics}, 1st ed., Cambridge
+University Press, Chapter~7, §7.5 Exercises, Exercise~7.6, p.~106 [PDF p.~121]; the book gives no
+answer --- reproduced verbatim. Algorithm 5.2 and the condition on $c$, to which it refers, are
+reproduced from §5.3, p.~66 [PDF p.~81].}
+
+\emph{Referred to (Greenberg 2008, p.~66):} ``The accept--reject (AR) algorithm can be used to
+simulate values from a density function $f(\cdot)$ if it is possible to simulate values from a
+density $g(\cdot)$ and if a number $c$ can be found such that $f(Y)\le cg(Y)$, $c\ge1$, for all $Y$ in
+the support of $f(\cdot)$. [\dots] \textbf{Algorithm 5.2: Accept--reject method}
+\begin{itemize}[leftmargin=2.6em]
+\item[5.1] Generate a value $y$ from $g(\cdot)$.
+\item[5.2] Draw a value $u$ from $U(0,1)$.
+\item[5.3] Return $y$ as a draw from $f(\cdot)$ if $u\le f(y)/cg(y)$. If not, reject it and return to step 1.
+(The effect of this step is to accept $y$ with probability $f(y)/cg(y)$.)''
+\end{itemize}
+
+7.6 Estimate the mean of a Beta(3.7, 4.8) distribution with (1) an AR algorithm and a Beta(4, 5)
+proposal density (you will need to determine the value of $c$ needed in Algorithm 5.2); (2) an MH
+algorithm with a Beta(4, 5) proposal density. After the break-in sample, graph the values of the
+mean against the iteration number to monitor convergence. Compare your answers to the true value.
+\programacao With \texttt{np.random.default\_rng(32)}: (1) evaluate $f/g$ near $0$ and at $0.5$ for
+the Beta$(4,5)$ proposal; (2) run AR with a proposal for which a finite $c$ exists (justify it) until
+$10{,}000$ draws are accepted; (3) run the independence MH with Beta$(4,5)$ (1{,}000 burn-in,
+10{,}000 kept), report the acceptance rate, the running mean at 1{,}000, 2{,}500, 5{,}000 and 10{,}000
+kept iterations, and the batch-means n.s.e.; plot the running mean.
+\resolespaco
+\begin{sol}
+\solhead
+\begin{notacao}
+\item $f$: Beta$(3.7,4.8)$ density, mean $3.7/(3.7+4.8)=0.435294$; $g_{a,b}$: Beta$(a,b)$ density;
+  $B(\cdot,\cdot)$: beta function.
+\item $c$: AR envelope constant; $w(x)=f(x)/g_{4,5}(x)$: MH importance ratio.
+\end{notacao}
+
+\passo{(1) No finite $c$ for Beta(4,5)}{Dividing the densities,}
+\begin{equation}\label{q32:ratio45}
+\frac{f(x)}{g_{4,5}(x)}=\frac{x^{2.7}(1-x)^{3.8}/B(3.7,4.8)}{x^{3}(1-x)^{4}/B(4,5)}=\frac{B(4,5)}{B(3.7,4.8)}\,x^{-0.3}(1-x)^{-0.2},
+\end{equation}
+which tends to $\infty$ as $x\to0$ or $x\to1$. No $c$ satisfies $f\le cg_{4,5}$ on $(0,1)$: \emph{the AR
+algorithm the exercise asks for does not exist.} The proposal has thinner tails at both ends than
+the target ($x^3$ versus $x^{2.7}$ near 0). Numerically the ratio is $0.9528$ at $x=0.5$ but $169.2$
+at $x=10^{-8}$.
+
+\passo{(1) A valid AR proposal (added)}{A Beta$(a,b)$ proposal works iff $a\le3.7$ and $b\le4.8$. With
+Beta$(3,4)$, $f/g_{3,4}\propto x^{0.7}(1-x)^{0.8}$; its log-derivative $0.7/x-0.8/(1-x)$ vanishes at}
+\begin{equation}\label{q32:xstar}
+x^*=\frac{0.7}{0.7+0.8}=0.466667,\qquad c=\frac{f(x^*)}{g_{3,4}(x^*)}=1.115321,\qquad \frac1c=0.896603 .
+\end{equation}
+
+\passo{(2) MH with Beta(4,5)}{An independence kernel only needs $g_{4,5}>0$ wherever $f>0$, which
+holds. By (7.6) (Question~31) with $q(x,y)=g_{4,5}(y)$,}
+\begin{equation}\label{q32:mh}
+\alpha(x,y)=\min\Big\{\frac{f(y)\,g_{4,5}(x)}{f(x)\,g_{4,5}(y)},1\Big\}=\min\Big\{\frac{w(y)}{w(x)},1\Big\}.
+\end{equation}
+Because $w$ is unbounded the chain is not uniformly ergodic: after landing near $0$ or $1$ (large
+$w$) it can stay put for a while. It still converges to $f$, but convergence should be monitored,
+which is the point of the running-mean graph.
+
+\passo{Results (programming)}{AR with Beta$(3,4)$: acceptance $0.894775$ (theory $0.896603$), mean
+$0.434564$ (s.e.\ $0.001621$). MH with Beta$(4,5)$: acceptance $0.9645$; running mean after
+1{,}000, 2{,}500, 5{,}000 and 10{,}000 kept iterations: $0.4284$, $0.4333$, $0.4375$, $0.437056$;
+n.s.e.\ $0.001744$. Both are within about one standard error of $0.435294$.}
+
+\codehead
+{\small
+\begin{verbatim}
+f, g34, g45 = beta(3.7, 4.8), beta(3, 4), beta(4, 5)
+f.pdf(1e-8) / g45.pdf(1e-8), f.pdf(.5) / g45.pdf(.5)     # 169.2  0.9528
+c = f.pdf(0.7 / 1.5) / g34.pdf(0.7 / 1.5)                # 1.115321
+rng = np.random.default_rng(32); dr, tries = [], 0
+while len(dr) < 10_000:
+    y, u = rng.beta(3, 4), rng.uniform(); tries += 1
+    if u <= f.pdf(y) / (c * g34.pdf(y)): dr.append(y)
+np.mean(dr), 10_000 / tries                              # 0.434564  0.894775
+w = lambda v: f.pdf(v) / g45.pdf(v); x, acc, out = .5, 0, []
+for g in range(11_000):
+    y = rng.beta(4, 5)
+    if rng.uniform() <= min(1, w(y) / w(x)): x = y; acc += g >= 1000
+    if g >= 1000: out.append(x)
+run = np.cumsum(out) / np.arange(1, 10_001)              # plot run against iteration
+acc / 10_000, run[[999, 2499, 4999, 9999]]   # 0.9645 [0.4284 0.4333 0.4375 0.4371]
+\end{verbatim}
+}
+
+\intuicao{Accept--reject needs the proposal to dominate the target everywhere, so it must have
+heavier tails; MH only needs the proposal to reach everywhere, and pays for poor tails with sticky
+stretches instead of impossibility. Beta$(4,5)$ is a near-perfect body match (MH acceptance 96\%)
+with tails that are slightly too thin.}
+\refbib{Greenberg (2008), §5.3 (AR, Algorithm 5.2), §7.2 (independence kernels), §7.3 (convergence
+monitoring).}
+\end{sol}
+
+% -----------------------------------------------------------------------------
+\questao{Original math question --- random-walk MH on the log scale for a Poisson rate.}
+\fonte{Original question (not from a book).}
+
+The coal posterior of Question~14 is $\pi(\theta\mid y)\propto\theta^{a-1}e^{-b\theta}$ with $a=127.5$,
+$b=42$. Pretend it is not recognized as a gamma and sample it by Metropolis--Hastings with the
+multiplicative random walk $\theta'=\theta e^{u}$, $u\sim N(0,s^2)$.
+\begin{enumerate}[label=\textbf{(\alph*)},leftmargin=2.4em]
+\item Derive the proposal density $q(\theta,\theta')$ and the acceptance probability. Show that the
+same probability arises from a symmetric random walk on $\varphi=\log\theta$ with the target written
+in $\varphi$.
+\item Prove that the MH kernel (with its rejection mass) leaves $\pi$ invariant, via detailed balance.
+\item Suppose the factor $\theta'/\theta$ is forgotten. Find the distribution the chain then samples and
+the bias in the posterior mean.
+\item Parameter analysis: prove the limits of the acceptance probability as $s\to0$ and $s\to\infty$
+and explain why the numerical standard error is large at both extremes.
+\end{enumerate}
+\programacao Implement the sampler (start $\theta=1$, 2{,}000 burn-in, 50{,}000 kept,
+\texttt{np.random.default\_rng(33)} for each run) for $s\in\{0.02,0.2,1\}$, reporting acceptance
+rate, posterior mean and batch-means n.s.e.\ (50 batches) against the exact mean $a/b$; repeat
+$s=0.2$ without the Jacobian factor.
+\resolespaco
+\begin{sol}
+\solhead
+\begin{notacao}
+\item $\pi(\theta)\equiv\pi(\theta\mid y)\propto\theta^{a-1}e^{-b\theta}$, $\theta>0$; $q(\theta,\theta')$: proposal density.
+\item $K(\theta,A)$: MH transition probability into a set $A$; $r(\theta)$: probability of staying put.
+\item $\varphi=\log\theta$; $\tilde\pi(\varphi)$: density of $\varphi$; $s>0$: step size.
+\end{notacao}
+
+\passo{(a) Proposal density}{$\log\theta'=\log\theta+u\sim N(\log\theta,s^2)$, so $\theta'$ is log-normal:}
+\begin{equation}\label{q33:q}
+q(\theta,\theta')=\frac{1}{s\,\theta'}\,\phi\Big(\frac{\log(\theta'/\theta)}{s}\Big),\qquad \theta'>0 .
+\end{equation}
+Since $\phi$ is even, $\phi(\log(\theta/\theta')/s)=\phi(\log(\theta'/\theta)/s)$, and dividing
+\eqref{q33:q} with the arguments swapped by \eqref{q33:q}:
+\begin{equation}\label{q33:qr}
+\frac{q(\theta',\theta)}{q(\theta,\theta')}=\frac{1/(s\theta)}{1/(s\theta')}=\frac{\theta'}{\theta}.
+\end{equation}
+
+\passo{(a) Acceptance}{Substituting \eqref{q33:qr} into (7.6) of Question~31:}
+\begin{equation}\label{q33:alpha}
+\alpha(\theta,\theta')=\min\Big\{\frac{\pi(\theta')}{\pi(\theta)}\cdot\frac{\theta'}{\theta},1\Big\}
+=\min\Big\{\Big(\frac{\theta'}{\theta}\Big)^{a}e^{-b(\theta'-\theta)},1\Big\}.
+\end{equation}
+
+\passo{(a) Log scale}{With $\theta=e^\varphi$, $d\theta=e^\varphi d\varphi$, the density of $\varphi$ is
+$\tilde\pi(\varphi)=\pi(e^\varphi)e^{\varphi}$. A symmetric walk $\varphi'=\varphi+u$ accepts with
+$\min\{\tilde\pi(\varphi')/\tilde\pi(\varphi),1\}=\min\{\pi(\theta')\theta'/(\pi(\theta)\theta),1\}$, the
+same as \eqref{q33:alpha}: the factor $\theta'/\theta$ is the Jacobian.}
+
+\passo{(b) Detailed balance}{For $\theta\ne\theta'$, by \eqref{q33:alpha} in general form,}
+\begin{equation}\label{q33:db}
+\pi(\theta)q(\theta,\theta')\alpha(\theta,\theta')=\min\{\pi(\theta)q(\theta,\theta'),\ \pi(\theta')q(\theta',\theta)\}
+=\pi(\theta')q(\theta',\theta)\alpha(\theta',\theta).
+\end{equation}
+The kernel is $K(\theta,A)=\int_Aq(\theta,\theta')\alpha(\theta,\theta')d\theta'+r(\theta)\1\{\theta\in A\}$,
+with $r(\theta)=1-\int q(\theta,\theta')\alpha(\theta,\theta')d\theta'$. Integrating against $\pi$ and
+using \eqref{q33:db} to swap the roles of $\theta$ and $\theta'$ in the first term:
+\[
+\int\pi(\theta)K(\theta,A)d\theta=\int_A\pi(\theta')\Big[\int q(\theta',\theta)\alpha(\theta',\theta)d\theta\Big]d\theta'+\int_A\pi(\theta)r(\theta)d\theta .
+\]
+The bracket is $1-r(\theta')$, so
+\[
+\int\pi(\theta)K(\theta,A)d\theta=\int_A\pi(\theta')\big(1-r(\theta')\big)d\theta'+\int_A\pi(\theta)r(\theta)d\theta=\int_A\pi=\pi(A). \qquad\blacksquare
+\]
+
+\passo{(c) Forgetting the Jacobian}{Without $\theta'/\theta$ the acceptance is
+$\min\{\pi(\theta')/\pi(\theta),1\}$ while $q$ is not symmetric. Writing it as a correct MH acceptance
+for some target $\pi^\dagger$ requires $\pi^\dagger(\theta')\theta'/(\pi^\dagger(\theta)\theta)=\pi(\theta')/\pi(\theta)$,
+i.e.\ $\pi^\dagger(\theta)\propto\pi(\theta)/\theta$. By (b) the chain is then invariant for}
+\begin{equation}\label{q33:bug}
+\pi^\dagger(\theta)\propto\theta^{a-2}e^{-b\theta}=G(a-1,b),\qquad \E^\dagger(\theta)-\E(\theta)=\frac{a-1}{b}-\frac ab=-\frac1b .
+\end{equation}
+For the coal posterior: $126.5/42=3.011905$ instead of $127.5/42=3.035714$.
+
+\passo{(d) Limits}{Write $R=(\theta'/\theta)^ae^{-b(\theta'-\theta)}=e^{au-b\theta(e^u-1)}$ with $u=s Z$,
+$Z\sim N(0,1)$. As $s\to0$, $u\to0$ and $R\to1$ for every $Z$; since $\min\{R,1\}\le1$, dominated
+convergence gives $E[\alpha]\to1$. As $s\to\infty$, for $Z>0$, $u\to\infty$ and
+$au-b\theta(e^u-1)\to-\infty$; for $Z<0$, $u\to-\infty$ and $au\to-\infty$ while $b\theta(1-e^{u})\le b\theta$;
+so $R\to0$ for every $Z\ne0$ and $E[\alpha]\to0$.}
+
+\passo{(d) Reading}{Tiny steps are almost always accepted but barely move, so successive draws are
+highly correlated; huge steps are almost always rejected and the chain sits still. Both inflate the
+n.s.e.; the best $s$ is of the order of the posterior standard deviation of $\log\theta$, here
+$1/\sqrt{a}\approx0.089$.}
+
+\codehead
+{\small
+\begin{verbatim}
+a, b = 127.5, 42.; lp = lambda t: (a - 1) * np.log(t) - b * t
+def rw_log(s, jac, seed, G=50_000, burn=2_000):
+    rng = np.random.default_rng(seed); th, acc, out = 1., 0, np.empty(G)
+    for g in range(G + burn):
+        pr = th * np.exp(s * rng.standard_normal())
+        la = lp(pr) - lp(th) + (np.log(pr / th) if jac else 0.)   # (33.3)
+        if np.log(rng.uniform()) <= la: th = pr; acc += g >= burn
+        if g >= burn: out[g - burn] = th
+    return acc / G, out.mean(), out.reshape(50, -1).mean(1).std(ddof=1) / np.sqrt(50)
+# s     accept   mean      n.s.e.        (exact mean 3.035714)
+# 0.02  0.9284   3.037804  0.011093
+# 0.2   0.4636   3.037605  0.001913
+# 1     0.1127   3.032593  0.005092
+# 0.2, no Jacobian: 0.4664  3.015205  0.002112   (target of (33.5): 3.011905)
+\end{verbatim}
+}
+The middle step size has the smallest n.s.e., about six times smaller than $s=0.02$; the
+Jacobian-free chain settles at $3.0152$, $1.6$ n.s.e.\ from its target $3.0119$ in \eqref{q33:bug}
+and $9.7$ n.s.e.\ below the true mean.
+
+\intuicao{A proposal that moves multiplicatively is not symmetric in $\theta$, and MH must be told:
+the Jacobian is the price of proposing on one scale and targeting on another. Forgetting it does not
+make the sampler crash; it silently samples the wrong distribution.}
+\refbib{Greenberg (2008), §7.2 (MH algorithm, random-walk kernels, pp.~97--100); Tsay (2010),
+§12.3 (Metropolis--Hastings).}
+\rubrica{
+\item (a) \eqref{q33:q}--\eqref{q33:alpha}: 4 pts; log-scale equivalence: 1 pt.
+\item (b) \eqref{q33:db} and the integration with the rejection mass: 4 pts (detailed balance stated without the rejection term: max.\ 2).
+\item (c) \eqref{q33:bug}: 3 pts.
+\item (d) both limits proved and the reading: 3 pts.
+\item Programming: three runs and the Jacobian-free run with correct comparisons: 3 pts.
+}
+\end{sol}
+
+% -----------------------------------------------------------------------------
+\questao{Original conceptual question --- MCMC (10 points).}
+\fonte{Original question (not from a book).}
+
+\textbf{a)} (3 points) In MH with a symmetric random-walk proposal, $q(x,y)=q(y,x)$, the probability
+of accepting a move from $x$ to $y$ is:
+\begin{alternativas}
+\item $\min\{f(y)/f(x),1\}$, the ratio of target densities capped at one.
+\item $\min\{f(x)/f(y),1\}$, the ratio of current to proposed density.
+\item $f(y)/\{f(x)+f(y)\}$, the share of the proposed point in the pair.
+\item $1$, because a symmetric proposal needs no correction.
+\end{alternativas}
+\gabarito{A}
+\begin{sol}
+\passo{Why}{A: (7.6) with the $q$'s cancelling (Greenberg p.~99). B inverts the ratio, so it would
+favour moves downhill; C is Barker's rule, a different (valid but less efficient) acceptance; D
+ignores the target altogether.}
+\end{sol}
+
+\textbf{b)} (3 points) The Gibbs sampler is a special case of MH in which:
+\begin{alternativas}
+\item the proposal is a symmetric random walk on each block in turn.
+\item every proposal is accepted with probability $1/2$.
+\item the draws are independent, as in accept--reject.
+\item each block is proposed from its full conditional, and the acceptance probability is $1$.
+\end{alternativas}
+\gabarito{D}
+\begin{sol}
+\passo{Why}{D: with $q$ equal to the full conditional, the ratio in (7.6) is exactly 1 (Greenberg
+§7.2). A and B describe other kernels; C is false: Gibbs draws are dependent (Question~11 found an
+inefficiency factor of 1.17).}
+\end{sol}
+
+\textbf{c)} (2 points, T or F) If a kernel satisfies detailed balance with respect to $\pi$, then
+$\pi$ is an invariant distribution of the kernel.
+\gabarito{T}
+\begin{sol}
+\passo{Why}{Question~33(b): integrate detailed balance over the starting point.}
+\end{sol}
+
+\textbf{d)} (2 points, T or F) Detailed balance is necessary for $\pi$ to be invariant: every
+MCMC kernel with invariant distribution $\pi$ is reversible.
+\gabarito{F}
+\begin{sol}
+\passo{Why}{The converse of (c) fails. The systematic-scan Gibbs sampler of Question~11 (update
+$\theta_1$, then $\theta_2$, then $k$) leaves the posterior invariant, since each step does, but the
+composed kernel is not reversible in general. G~6.8's kernel was checked for invariance directly,
+not through detailed balance.}
+\end{sol}
+
+\programacao Check (d) exactly on a toy target: for $p(x,y)$ on $\{0,1\}^2$ with
+$p(0,0)=0.3$, $p(0,1)=0.2$, $p(1,0)=0.1$, $p(1,1)=0.4$, build the $4\times4$ transition matrices
+$P_x$ (update $x$ from $p(x\mid y)$) and $P_y$ (update $y$ from $p(y\mid x)$), the systematic scan
+$P=P_xP_y$, and report $\max|\pi P-\pi|$ and $\max_{i,j}|\pi_iP_{ij}-\pi_jP_{ji}|$.
+\begin{sol}
+\codehead
+{\small
+\begin{verbatim}
+p = np.array([[.3, .2], [.1, .4]]); st = [(0, 0), (0, 1), (1, 0), (1, 1)]
+pi = np.array([p[s] for s in st])
+Px = np.array([[p[a, d] / p[:, d].sum() if b == d else 0 for (a, b) in st]
+               for (c, d) in st])                 # row: current (c, d)
+Py = np.array([[p[c, b] / p[c, :].sum() if a == c else 0 for (a, b) in st]
+               for (c, d) in st])
+P = Px @ Py; F = pi[:, None] * P
+np.abs(pi @ P - pi).max(), np.abs(F - F.T).max()      # 5.6e-17   0.053333
+\end{verbatim}
+}
+$\pi$ is invariant to machine precision, yet the flow $\pi_iP_{ij}$ is not symmetric (largest gap
+$0.053333$): invariance without reversibility. Each single update $P_x$, $P_y$ is reversible; their
+product is not.
+\end{sol}
+
+\end{document}

@@ -1,0 +1,290 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>The Bayes-Factor Dial</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,500;8..60,650&family=Public+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: controls rail on the left; the answer, the B12-vs-Lila panel and the posterior panel on the right; one column under 860px.
+   Colour roles: blue = M1 (one common probability), orange/purple = M2 (Michaela's and Lila's own probabilities), gold = landmarks. */
+:root{
+  --bg:#f4f5f7; --panel:#ffffff; --ink:#1b2029; --muted:#5b6474; --line:#d8dce4; --soft:#eef0f4;
+  --m1:#1f5f8b; --mi:#b4521a; --li:#7b52ab; --mark:#9c7200; --good:#2f6b4f; --warn:#b3362c;
+  --focus:#2b63c4;
+  --display:"Source Serif 4", Georgia, "Times New Roman", serif;
+  --body:"Public Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono:"JetBrains Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#10131a; --panel:#171c26; --ink:#e6e9ef; --muted:#9ba4b6; --line:#2b3240; --soft:#1f2531;
+  --m1:#6fb0e0; --mi:#f0954a; --li:#b496ee; --mark:#e6be4a; --good:#5cc98f; --warn:#ff7a6e; --focus:#74a3ff; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#10131a; --panel:#171c26; --ink:#e6e9ef; --muted:#9ba4b6; --line:#2b3240; --soft:#1f2531;
+  --m1:#6fb0e0; --mi:#f0954a; --li:#b496ee; --mark:#e6be4a; --good:#5cc98f; --warn:#ff7a6e; --focus:#74a3ff; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font:15px/1.5 var(--body);margin:0}
+.wrap{max-width:1180px;margin:0 auto;padding-left:max(16px, env(safe-area-inset-left, 0px));padding-right:max(16px, env(safe-area-inset-right, 0px));padding-block:24px 40px}
+header{display:grid;gap:4px;margin-bottom:18px}
+.eyebrow{font:600 12px/1.3 var(--body);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+h1{font:650 clamp(26px,4vw,36px)/1.1 var(--display);margin:0;text-wrap:balance}
+.lede{color:var(--muted);max-width:68ch;margin:0}
+.grid{display:grid;grid-template-columns:320px minmax(0,1fr);gap:20px;align-items:start}
+@media (max-width:860px){.grid{grid-template-columns:minmax(0,1fr)}}
+.rail{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px;display:grid;gap:18px}
+.group{display:grid;gap:12px}
+.group h2{font:600 12px/1.2 var(--body);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:0}
+.ctl{display:grid;gap:4px}
+.ctl .top{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.ctl label{font-weight:600}
+.ctl label i{font-family:var(--display);font-weight:500}
+.ctl output{font:600 14px var(--mono);font-variant-numeric:tabular-nums}
+.ctl p{margin:0;font-size:13px;color:var(--muted)}
+input[type=range]{width:100%;accent-color:var(--ink)}
+input:focus-visible,button:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+.btns{display:flex;flex-wrap:wrap;gap:6px}
+button{font:600 13px var(--body);background:var(--soft);color:var(--ink);border:1px solid var(--line);border-radius:6px;padding:6px 10px;cursor:pointer}
+button:hover{border-color:var(--muted)}
+.btns button{font:500 12px var(--mono);padding:5px 8px}
+main{display:grid;gap:16px;min-width:0}
+.answer{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px 18px;display:grid;gap:6px}
+.answer .lab{font-size:13px;color:var(--muted)}
+.answer .big{font:600 clamp(26px,5vw,44px)/1.15 var(--body);font-variant-numeric:tabular-nums}
+.answer .verdict{font:500 16px/1.45 var(--body);max-width:66ch}
+.answer .side{font:13px/1.6 var(--mono);color:var(--muted);font-variant-numeric:tabular-nums}
+.note{font-size:13px;color:var(--muted);max-width:72ch;margin:0}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px 16px;min-width:0}
+.panel h3{font:600 15px/1.3 var(--body);margin:0 0 2px}
+.panel .sub{font-size:13px;color:var(--muted);margin:0 0 8px}
+svg{display:block;width:100%;height:auto;max-width:100%}
+svg text{fill:var(--muted);font:12px var(--body)}
+svg .val{font:600 12px var(--mono);fill:var(--ink)}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{font-size:13px;border:1px solid var(--line);border-radius:999px;padding:4px 10px;color:var(--muted)}
+.chip.on{border-color:var(--mark);color:var(--mark);font-weight:600}
+.two{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px}
+@media (max-width:1000px){.two{grid-template-columns:minmax(0,1fr)}}
+.scroll{overflow-x:auto}
+table.ro{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums;min-width:440px}
+table.ro th,table.ro td{padding:5px 6px;border-bottom:1px solid var(--line);font-size:14px;text-align:right;white-space:nowrap}
+table.ro th:first-child,table.ro td:first-child{text-align:left}
+table.ro td{font-family:var(--mono);font-size:13px}
+table.ro td:first-child{font-family:var(--body);font-size:14px}
+footer{margin-top:22px;font-size:13px;color:var(--muted);display:grid;gap:10px}
+footer table{border-collapse:collapse;font-size:12.5px;min-width:760px}
+footer th,footer td{border-bottom:1px solid var(--line);padding:4px 8px;text-align:left;vertical-align:top}
+.k{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:5px;vertical-align:-1px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<div class="wrap">
+<header>
+  <div class="eyebrow">Econometria Avançada · Classes 3+4 · Greenberg (2007) §3.2.4, pp. 33–38, Table 3.2</div>
+  <h1>The Bayes-Factor Dial</h1>
+  <p class="lede">Michaela and Lila each toss the same coin m times. Model M1 says the way they toss makes no difference (one probability θ); model M2 gives each girl her own probability. Move the head counts, the sample size and the prior, and read the evidence for M1 as a Bayes factor.</p>
+</header>
+
+<div class="grid">
+<aside class="rail" aria-label="Controls">
+  <div class="group">
+    <h2>The data</h2>
+    <div class="ctl"><div class="top"><label for="m">Tosses each <i>m</i></label><output id="o-m"></output></div>
+      <input id="m" type="range" min="1" max="200" step="1">
+      <p>Each girl tosses m times. Table 3.2 uses m = 10 and m = 100.</p></div>
+    <div class="ctl"><div class="top"><label for="s1">Michaela's heads <i>s₁</i></label><output id="o-s1"></output></div>
+      <input id="s1" type="range" min="0" max="10" step="1">
+      <p>Heads in Michaela's m tosses.</p></div>
+    <div class="ctl"><div class="top"><label for="s2">Lila's heads <i>s₂</i></label><output id="o-s2"></output></div>
+      <input id="s2" type="range" min="0" max="10" step="1">
+      <p>Heads in Lila's m tosses. The left panel sweeps this count.</p></div>
+  </div>
+  <div class="group">
+    <h2>The priors</h2>
+    <div class="ctl"><div class="top"><label for="la">Prior Beta(<i>α</i>, <i>α</i>)</label><output id="o-la"></output></div>
+      <input id="la" type="range" min="-1" max="1.301" step="0.001">
+      <p>Prior on each probability, log scale from 0.1 to 20. α = 1 is Greenberg's uniform prior; large α says every coin is close to fair.</p></div>
+    <div class="ctl"><div class="top"><label for="lo">Prior odds <i>P(M1)/P(M2)</i></label><output id="o-lo"></output></div>
+      <input id="lo" type="range" min="-2" max="2" step="0.01">
+      <p>How much you favour M1 before the tosses, log scale from 1/100 to 100. Moves only P(M1 | y).</p></div>
+  </div>
+  <div class="group">
+    <h2>Table 3.2 rows (α = 1)</h2>
+    <div class="btns" id="rows"></div>
+  </div>
+  <button id="reset" type="button">Reset to defaults</button>
+</aside>
+
+<main>
+  <section class="answer" aria-live="polite">
+    <div class="lab">Evidence for M1 (one common probability): log₁₀ B₁₂</div>
+    <div class="big" id="ans"></div>
+    <div class="verdict" id="verdict"></div>
+    <div class="side" id="side1"></div>
+    <div class="side" id="side2"></div>
+    <div class="chips" id="chips"></div>
+  </section>
+
+  <div class="two">
+    <section class="panel">
+      <h3>log₁₀ B₁₂ against Lila's heads</h3>
+      <p class="sub">Michaela's count and m held at their current values. Dotted: Jeffreys thresholds ±0.5, ±1, ±1.5, ±2 (Table 3.1). Gold: current s₂ and s₂ = s₁.</p>
+      <svg id="pb" viewBox="0 0 420 300" role="img" aria-label="Log Bayes factor against Lila's number of heads"></svg>
+    </section>
+    <section class="panel">
+      <h3>What each model believes after the tosses</h3>
+      <p class="sub"><span class="k" style="background:var(--m1)"></span>M1: θ | y &nbsp;<span class="k" style="background:var(--mi)"></span>M2: θ₁ (Michaela) &nbsp;<span class="k" style="background:var(--li)"></span>M2: θ₂ (Lila). Beta posteriors; the further apart the two M2 curves, the worse M1 fits.</p>
+      <svg id="pp" viewBox="0 0 420 300" role="img" aria-label="Posterior densities of the head probabilities under both models"></svg>
+    </section>
+  </div>
+
+  <section class="panel">
+    <h3>Read-outs</h3>
+    <p class="sub">Marginal likelihoods of the observed sequence (no binomial coefficients; they cancel in B₁₂).</p>
+    <div class="scroll"><table class="ro">
+      <thead><tr><th>Quantity</th><th>Value</th><th>Formula</th></tr></thead>
+      <tbody id="tbl"></tbody></table></div>
+    <p class="note" id="tnote"></p>
+  </section>
+</main>
+</div>
+
+<footer>
+  <div><strong>Belongs to:</strong> Classes 3+4 notes, <code>Notas/L03/</code> (L03-05, model comparison and Bayes factors).</div>
+  <div><strong>Model:</strong> M1: θ₁ = θ₂ = θ ~ Beta(α, α); M2: θ₁, θ₂ independent Beta(α, α). Marginal likelihoods m₁ = B(α + s₁ + s₂, α + 2m − s₁ − s₂)/B(α, α) and
+    m₂ = B(α + s₁, α + m − s₁)B(α + s₂, α + m − s₂)/B(α, α)²; B₁₂ = m₁/m₂ (Greenberg (3.4)); P(M1 | y) = 1/(1 + (p₂/p₁)/B₁₂) from (3.3).
+    With α = 1 these are Greenberg's Γ-function expressions on p. 38, including (3.5). The large-sample approximation shown for comparison is log B₁₂ ≈ log LR + ½ log(2m) (p. 37, d₁ − d₂ = −1, n = 2m tosses); it drops the prior and |V| terms, which stay bounded as m grows.</div>
+  <div><strong>Provenance:</strong> Greenberg (2007), <em>Introduction to Bayesian Econometrics</em>, §3.2.4 (pp. 33–38): (3.3), (3.4), Table 3.1 (Jeffreys guidelines, p. 35), the Michaela–Lila example and Table 3.2 (p. 38). §4.2 (pp. 43–44) for why the priors must be proper.</div>
+  <div class="scroll"><table>
+    <thead><tr><th>Control</th><th>Symbol</th><th>What it is</th><th>Range</th><th>Step</th><th>Default</th><th>Unit</th><th>Source</th><th>What visibly moves</th></tr></thead>
+    <tbody>
+      <tr><td>Tosses each</td><td>m</td><td>tosses by each girl</td><td>1–200</td><td>1</td><td>10</td><td>—</td><td>Table 3.2</td><td>everything</td></tr>
+      <tr><td>Michaela's heads</td><td>s₁</td><td>heads by Michaela</td><td>0–m</td><td>1</td><td>2</td><td>—</td><td>Table 3.2</td><td>B₁₂, both panels</td></tr>
+      <tr><td>Lila's heads</td><td>s₂</td><td>heads by Lila</td><td>0–m</td><td>1</td><td>8</td><td>—</td><td>Table 3.2</td><td>B₁₂, marker, θ₂ curve</td></tr>
+      <tr><td>Prior Beta(α, α)</td><td>α</td><td>prior concentration on each θ</td><td>0.1–20 (log)</td><td>0.001 in log₁₀ α</td><td>1</td><td>—</td><td>p. 37 (α = 1)</td><td>B₁₂ level, posteriors</td></tr>
+      <tr><td>Prior odds</td><td>p₁/p₂</td><td>P(M1)/P(M2)</td><td>0.01–100 (log)</td><td>0.01 in log₁₀</td><td>1</td><td>—</td><td>(3.3)</td><td>P(M1 | y)</td></tr>
+    </tbody></table></div>
+  <div>Buttons load the ten Table 3.2 rows (Michaela's proportion 0.1–0.5, Lila's = 1 − Michaela's, m = 10 and 100) with α = 1.</div>
+</footer>
+
+<script id="model">
+// Pure model: no DOM access. check_companions.py runs this block under node.
+const LN2PI = Math.log(2*Math.PI), LN10 = Math.log(10);
+const LG = [0.99999999999980993, 676.5203681218851, -1259.1392167224028, 771.32342877765313, -176.61502916214059,
+            12.507343278686905, -0.13857109526572012, 9.9843695780195716e-6, 1.5056327351493116e-7];
+function lgamma(z){
+  if(z < 0.5) return Math.log(Math.PI/Math.sin(Math.PI*z)) - lgamma(1-z);
+  z -= 1; let a = LG[0]; const t = z + 7.5;
+  for(let i=1;i<9;i++) a += LG[i]/(z+i);
+  return 0.5*LN2PI + (z+0.5)*Math.log(t) - t + Math.log(a);
+}
+const lbeta = (a, b) => lgamma(a) + lgamma(b) - lgamma(a+b);
+const xlogy = (x, y) => x === 0 ? 0 : x*Math.log(y);
+function log10bf(m, s1, s2, al){
+  const lm1 = lbeta(al+s1+s2, al+2*m-s1-s2) - lbeta(al, al);
+  const lm2 = lbeta(al+s1, al+m-s1) + lbeta(al+s2, al+m-s2) - 2*lbeta(al, al);
+  return {L: (lm1-lm2)/LN10, lm1: lm1/LN10, lm2: lm2/LN10};
+}
+function jeffreys(L){
+  const a = Math.abs(L), side = L > 0 ? "M1" : "M2";
+  if(L === 0) return "neither model favoured";
+  const g = a > 2 ? "decisive support" : a > 1.5 ? "very strong evidence" : a > 1 ? "strong evidence" : a > 0.5 ? "substantial evidence" : "weak evidence";
+  return `${g} for ${side}`;
+}
+// p = {m, s1, s2, la (log10 alpha), lo (log10 prior odds)}
+function compute(p){
+  const al = Math.pow(10, p.la), r = log10bf(p.m, p.s1, p.s2, al), n = 2*p.m, s = p.s1 + p.s2;
+  const ll1 = xlogy(s, s/n) + xlogy(n-s, 1-s/n);
+  const ll2 = xlogy(p.s1, p.s1/p.m) + xlogy(p.m-p.s1, 1-p.s1/p.m) + xlogy(p.s2, p.s2/p.m) + xlogy(p.m-p.s2, 1-p.s2/p.m);
+  const bic = (ll1 - ll2 + 0.5*Math.log(n))/LN10;
+  const post = 1/(1 + Math.pow(10, -(r.L + p.lo)));
+  return {...r, al, bic, post, label: jeffreys(r.L)};
+}
+const fs = (x, d) => { const s = x.toFixed(d); return /^-0\.?0*$/.test(s) ? s.slice(1) : s; };
+const fg = x => (x !== 0 && (Math.abs(x) < 0.001 || Math.abs(x) >= 1e4)) ? x.toExponential(2) : x.toFixed(3);
+// Every number the page prints, as the exact string it prints. check_companions.py compares these.
+function readouts(p){
+  const c = compute(p);
+  return {L: fs(c.L,3), B: fg(Math.pow(10, c.L)), post: fg(c.post), label: c.label, bic: fs(c.bic,3), lm1: fs(c.lm1,3), lm2: fs(c.lm2,3),
+    al: fg(c.al), odds: fg(Math.pow(10, p.lo)), th1: (p.s1/p.m).toFixed(3), th2: (p.s2/p.m).toFixed(3), th: ((p.s1+p.s2)/(2*p.m)).toFixed(3)};
+}
+</script>
+
+<script>
+const D = {m:10, s1:2, s2:8, la:0, lo:0};
+const el = id => document.getElementById(id);
+const ROWS = [[10,1,9],[10,2,8],[10,3,7],[10,4,6],[10,5,5],[100,10,90],[100,20,80],[100,30,70],[100,40,60],[100,50,50]];
+function read(){ return {m: parseInt(el("m").value), s1: parseInt(el("s1").value), s2: parseInt(el("s2").value),
+  la: parseFloat(el("la").value), lo: parseFloat(el("lo").value)}; }
+function niceTicks(lo, hi, n){
+  const span = hi-lo, step0 = span/n, mag = Math.pow(10, Math.floor(Math.log10(step0)));
+  const step = [1,2,2.5,5,10].map(k=>k*mag).find(s=>s>=step0);
+  const t=[]; for(let v=Math.ceil(lo/step)*step; v<=hi+1e-9; v+=step) t.push(+v.toFixed(10));
+  return t;
+}
+function drawB(p, c){
+  const W=420, H=300, L=46, R=12, T=14, B=40;
+  const xs = Array.from({length:p.m+1}, (_,i)=>i), ys = xs.map(s=>log10bf(p.m, p.s1, s, c.al).L);
+  let lo = Math.min(...ys, -2.2), hi = Math.max(...ys, 2.2); const pad = 0.06*(hi-lo); lo -= pad; hi += pad;
+  const X = v => L + v/Math.max(p.m,1)*(W-L-R), Y = v => T + (hi-v)/(hi-lo)*(H-T-B);
+  let s = "";
+  niceTicks(lo, hi, 5).forEach(t=>{ s += `<line x1="${L}" x2="${W-R}" y1="${Y(t)}" y2="${Y(t)}" stroke="var(--line)"/><text x="${L-5}" y="${Y(t)+4}" text-anchor="end">${t}</text>`; });
+  niceTicks(0, p.m, Math.min(5, p.m)).filter(t=>Number.isInteger(t)).forEach(t=>{ s += `<text x="${X(t)}" y="${H-B+16}" text-anchor="middle">${t}</text>`; });
+  [0.5,1,1.5,2].forEach(v=>[v,-v].forEach(u=>{ s += `<line x1="${L}" x2="${W-R}" y1="${Y(u)}" y2="${Y(u)}" stroke="var(--muted)" stroke-dasharray="2 4" stroke-width="0.8"/>`; }));
+  s += `<line x1="${L}" x2="${W-R}" y1="${Y(0)}" y2="${Y(0)}" stroke="var(--ink)" stroke-width="1"/>`;
+  s += `<text x="${(L+W-R)/2}" y="${H-6}" text-anchor="middle">Lila's heads s₂ (of m = ${p.m})</text><text transform="translate(11 ${(T+H-B)/2}) rotate(-90)" text-anchor="middle">log₁₀ B₁₂</text>`;
+  s += `<line x1="${X(p.s1)}" x2="${X(p.s1)}" y1="${T}" y2="${H-B}" stroke="var(--mark)" stroke-dasharray="4 4"/>`;
+  s += `<path d="${xs.map((v,i)=>(i?"L":"M")+X(v).toFixed(1)+" "+Y(ys[i]).toFixed(1)).join("")}" fill="none" stroke="var(--m1)" stroke-width="2"/>`;
+  if(p.m <= 60) xs.forEach((v,i)=>{ s += `<circle cx="${X(v)}" cy="${Y(ys[i])}" r="2.4" fill="var(--m1)"/>`; });
+  s += `<circle cx="${X(p.s2)}" cy="${Y(c.L)}" r="5.5" fill="var(--mark)" stroke="var(--panel)" stroke-width="1.5"/>`;
+  s += `<text class="val" x="${L+6}" y="${T+12}">gold dashed: s₂ = s₁ = ${p.s1}</text>`;
+  el("pb").innerHTML = s;
+}
+function drawP(p, c){
+  const W=420, H=300, L=40, R=12, T=14, B=40, N=399;
+  const xs = Array.from({length:N}, (_,i)=>(i+0.5)/N);
+  const lpdf = (t,a,b) => (a-1)*Math.log(t) + (b-1)*Math.log(1-t) - lbeta(a,b);
+  const al = c.al, sets = [[al+p.s1+p.s2, al+2*p.m-p.s1-p.s2, "var(--m1)", 2.6], [al+p.s1, al+p.m-p.s1, "var(--mi)", 1.8], [al+p.s2, al+p.m-p.s2, "var(--li)", 1.8]];
+  const ys = sets.map(([a,b]) => xs.map(t=>Math.exp(lpdf(t,a,b))));
+  const top = Math.max(...ys.flat())*1.08;
+  const X = v => L + v*(W-L-R), Y = v => T + (1 - Math.min(v,top)/top)*(H-T-B);
+  let s = "";
+  [0,0.2,0.4,0.6,0.8,1].forEach(t=>{ s += `<line x1="${X(t)}" x2="${X(t)}" y1="${T}" y2="${H-B}" stroke="var(--line)"/><text x="${X(t)}" y="${H-B+16}" text-anchor="middle">${t}</text>`; });
+  s += `<line x1="${L}" x2="${W-R}" y1="${H-B}" y2="${H-B}" stroke="var(--muted)"/>`;
+  s += `<text x="${(L+W-R)/2}" y="${H-6}" text-anchor="middle">probability of heads</text><text transform="translate(12 ${(T+H-B)/2}) rotate(-90)" text-anchor="middle">posterior density</text>`;
+  sets.forEach(([a,b,col,w],j)=>{ s += `<path d="${xs.map((v,i)=>(i?"L":"M")+X(v).toFixed(1)+" "+Y(ys[j][i]).toFixed(1)).join("")}" fill="none" stroke="${col}" stroke-width="${w}"/>`; });
+  el("pp").innerHTML = s;
+}
+function update(){
+  const m = parseInt(el("m").value);
+  ["s1","s2"].forEach(k=>{ el(k).max = m; if(parseInt(el(k).value) > m) el(k).value = m; });
+  const p = read(), c = compute(p), o = readouts(p);
+  el("o-m").textContent = String(p.m); el("o-s1").textContent = String(p.s1); el("o-s2").textContent = String(p.s2);
+  el("o-la").textContent = `α = ${o.al}`; el("o-lo").textContent = o.odds;
+  el("ans").textContent = o.L;
+  el("verdict").textContent = `B₁₂ = ${o.B}: ${o.label} (Jeffreys, Table 3.1). With prior odds ${o.odds}, P(M1 | y) = ${o.post}.`;
+  el("side1").textContent = `Proportions: Michaela ${o.th1}, Lila ${o.th2}, pooled ${o.th}.`;
+  el("side2").textContent = `Large-sample approximation log LR + ½ log(2m): ${o.bic} (exact ${o.L}).`;
+  const row = ROWS.find(r=>r[0]===p.m && r[1]===p.s1 && r[2]===p.s2);
+  const chips = [[p.s1 === p.s2, "s₁ = s₂: equal proportions"], [!!row && p.la === 0, "a Table 3.2 row"], [p.la === 0, "α = 1 (uniform priors)"],
+    [Math.abs(c.L) > 2, "|log₁₀ B₁₂| > 2: decisive"]];
+  el("chips").innerHTML = chips.map(([on,t])=>`<span class="chip${on?" on":""}">${on?"● ":"○ "}${t}</span>`).join("");
+  el("tbl").innerHTML = [
+    ["log₁₀ m₁ (M1)", o.lm1, "log₁₀[B(α+s₁+s₂, α+2m−s₁−s₂)/B(α,α)]"],
+    ["log₁₀ m₂ (M2)", o.lm2, "log₁₀[B(α+s₁, α+m−s₁)B(α+s₂, α+m−s₂)/B(α,α)²]"],
+    ["log₁₀ B₁₂", o.L, "log₁₀ m₁ − log₁₀ m₂"],
+    ["B₁₂", o.B, "m₁/m₂"],
+    ["P(M1 | y)", o.post, "1/(1 + (p₂/p₁)/B₁₂)"],
+    ["approximation", o.bic, "[log LR + ½ log(2m)]/log 10"]].map(r=>`<tr><td>${r[0]}</td><td>${r[1]}</td><td style="text-align:left;font-family:var(--body)">${r[2]}</td></tr>`).join("");
+  el("tnote").textContent = `m = ${p.m}, s₁ = ${p.s1}, s₂ = ${p.s2}, α = ${o.al}. Defaults reproduce Table 3.2's row (0.2, 0.8), m = 10: −1.200.`;
+  drawB(p, c); drawP(p, c);
+}
+function setAll(v){ el("m").value = v.m; ["s1","s2"].forEach(k=>el(k).max = v.m); el("s1").value = v.s1; el("s2").value = v.s2; el("la").value = v.la; el("lo").value = v.lo; update(); }
+function reset(){ setAll(D); }
+el("rows").innerHTML = ROWS.map((r,i)=>`<button id="row${i}" type="button">m=${r[0]}: ${r[1]}/${r[2]}</button>`).join("");
+ROWS.forEach((r,i)=>el("row"+i).addEventListener("click", ()=>setAll({m:r[0], s1:r[1], s2:r[2], la:0, lo:parseFloat(el("lo").value)})));
+["m","s1","s2","la","lo"].forEach(k=>el(k).addEventListener("input", update));
+el("reset").addEventListener("click", reset);
+reset();
+</script>
+</html>

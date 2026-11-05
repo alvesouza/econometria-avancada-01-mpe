@@ -1,0 +1,649 @@
+Advanced Econometrics, Class 1. Review of basic ingredients. Narrated study notes, part 2 of 3.
+
+How to listen. This file continues the Class 1 narration. It covers part three, judging estimators by mean squared error, Monte Carlo and the bootstrap; part four, Gaussian linear regression and the review of autoregressive and vector autoregressive models; and part five, p-hacking and evidence. Every formula is spoken in words. Each section opens by naming its sources and page ranges and closes with a spoken checklist. Part 1 covered the map, the sampling rules, the Poisson estimator, the coal-mining change point and the first Bayesian example. Part 3 holds the support material.
+
+
+Part three, section 5. Mean squared error, Monte Carlo and the bootstrap: four estimators of a uniform bound, and where resampling breaks.
+
+This section covers the comparing estimators deck, slides 1 to 20; the handwritten comparing estimators note, pages 1 and 2; the site pages comparing estimators, bootstrap example, and correlation bivariate Gaussian; Bolfarine and Sandoval section 1.1.5, printed page 3, Definition 1.3.7 and equation 1.3.2, printed page 6, Example 1.3.8, printed page 11, Table 1.1, printed page 12, Example 2.2.5, printed page 23, and Example 3.1.3, printed pages 37 to 38; and ISLP section 5.2, printed pages 212 to 214, equation 5.8.
+
+The claim, before the work. Mean squared error is variance plus squared bias, so unbiasedness is one ingredient of a good estimator, not the criterion. For draws from a uniform distribution on zero to theta, the exact mean squared errors rank four candidates as estimator four, then estimator two, then estimator three, then estimator one, for every n of at least 3. The two estimators built on the sample maximum, which is the sufficient statistic and the maximum likelihood estimator, converge at rate one over n squared in mean squared error, against one over n for the two built on the sample mean. And the nonparametric bootstrap reproduces the observed maximum with probability one minus the quantity one minus one over n, to the n, which tends to 0.632. That is a point mass the true continuous law does not have. So the nonparametric bootstrap is inconsistent for the maximum, and resampling from the fitted model, the parametric bootstrap, repairs it.
+
+The notation. x one to x n are iid draws from the uniform on zero to theta. Theta, the parameter, is the upper bound of the support. n is the sample size. x bar is the sample mean. The order statistics run from x sub one, the smallest, to x sub n in parentheses, the largest, which is the sample maximum; the narration calls it simply the sample maximum. The four estimators are: estimator one, the sample mean; estimator two, the sample maximum; estimator three, twice the sample mean; estimator four, n plus one over n times the sample maximum. E and V are the mean and variance over repeated samples with theta fixed. The bias B is the expected value of the estimator minus theta. The mean squared error is the expected value of the squared distance between the estimator and theta; Bolfarine calls it EQM, erro quadrático médio. N is the number of Monte Carlo replications, 1000 in the deck. B is also used for the number of bootstrap resamples, 1000 in the deck. A starred sample is a bootstrap sample, and its maximum is the starred maximum. And c is a scale on the sample maximum, used in section 5.8 only.
+
+Five point one. Intuition: why a criterion is needed at all.
+
+Four reasonable-looking numbers can be computed from one uniform sample, and they disagree. To choose, we need a loss that does not reward a property for its own sake. The deck's opening question, slide 7, asks whether the sample mean is a natural choice. The answer is blunt. Not quite. Every observation is at most theta, so the sample mean estimates the expected value of x, which is theta over two, not theta. Doubling it removes the bias but doubles the standard deviation. A better route is to look at the likelihood, which points to the maximum.
+
+The rest of the section makes "better" precise with the mean squared error, proves the ranking, checks it by simulation, and then asks what happens when only one sample is available, which is the bootstrap.
+
+Five point two. Mean squared error equals variance plus squared bias. Bolfarine Definition 1.3.7 and equation 1.3.2, printed page 6.
+
+Equation 1: the mean squared error of theta hat is the expected value of theta hat minus theta, squared.
+
+Restating the goal: we want to split this into a spread part and a centring part. Three steps.
+
+Step one. Add and subtract the expected value of theta hat inside the square. The mean squared error becomes the expected value of the square of two braces: theta hat minus its expected value, plus the expected value of theta hat minus theta.
+
+Step two. Expand the square. You get the expected value of theta hat minus its mean, squared; plus two times the expected value of theta hat minus theta, times the expected value of theta hat minus its mean; plus the expected value of theta hat minus theta, squared.
+
+Step three. The middle expectation is the mean of theta hat minus the mean of theta hat, which is zero. So equation 2, boxed: the mean squared error equals the variance of theta hat plus the squared bias of theta hat. And for an unbiased estimator, with zero bias, equation 3: the mean squared error equals the variance.
+
+The sentence to keep: an unbiased estimator can lose to a biased one if the bias buys enough variance. Section 5.8 shows a biased multiple of the sample maximum beating the unbiased one.
+
+A note on the source. The handwritten note writes the definition on page 2 with the expected value of theta in place of theta. That is a slip; equation 1 is the definition, and its second line, variance plus bias squared, is correct.
+
+Five point three. The four estimators and their first two moments. Slides 2 and 3.
+
+Five point three point one: one uniform draw, Bolfarine section 1.1.5, printed page 3. The density is one over theta times the indicator that x lies between zero and theta. Its support depends on theta, which is what makes this model unusual. Bolfarine says it on page 3: "o suporte da variável X … depende do parâmetro theta", the support of X depends on the parameter.
+
+Equation 4: the expected value of x is the integral from zero to theta of x times one over theta, which is one over theta times theta squared over two, which is theta over two. Equation 5: the expected value of x squared is the integral of x squared over theta, which is one over theta times theta cubed over three, which is theta squared over three. Equation 6: the variance of x is theta squared over three minus theta squared over four, which is theta squared over twelve.
+
+Five point three point two: the sample mean. By linearity and equation 4, equation 7: the expected value of x bar is one over n times n times theta over two, which is theta over two. By independence and equation 6, equation 8: the variance of x bar is one over n squared times n times theta squared over twelve, which is theta squared over 12 n.
+
+Five point three point three: the maximum, whose scaled version is beta with parameters n and one. This is slide 3's useful fact, and Bolfarine equation 1.3.14, printed page 11.
+
+The maximum is below t exactly when every draw is. Equation 9: the probability that the maximum is at most t is the product of the probabilities that each draw is at most t, which is t over theta, raised to the n, for t between zero and theta.
+
+Differentiate equation 9 in t to get the density. Equation 10: the density of the maximum given theta is n times the maximum to the n minus one, over theta to the n, between zero and theta.
+
+So u, the maximum divided by theta, has density n u to the n minus one on the unit interval: the beta law with parameters n and one. Its moments come from one integral. Equation 11: the expected value of u to the k is the integral from zero to one of u to the k times n u to the n minus one, which is n over n plus k.
+
+With k equal to one and two in equation 11, equation 12: the expected value of u is n over n plus one, and the expected value of u squared is n over n plus two.
+
+Equation 13: the variance of u is n over n plus two, minus n over n plus one, squared. Over a common denominator: n times n plus one squared, minus n squared times n plus two, all over n plus one squared times n plus two. Factor n out of the numerator: n times the bracket n squared plus 2n plus one minus n squared minus 2n, which is n times one. So the variance of u is n over n plus one squared times n plus two.
+
+Scale back by theta, Bolfarine 1.3.15, printed page 11. Equation 14: the expected value of the maximum is n over n plus one times theta, and its variance is n theta squared over n plus one squared times n plus two.
+
+Five point three point four: the unbiased versions. Estimator three, twice the sample mean: from equations 7 and 8, its expected value is two times theta over two, which is theta, and its variance is four times theta squared over 12 n, which is theta squared over 3 n. Estimator four, n plus one over n times the maximum: from equation 14, its expected value is n plus one over n times n over n plus one times theta, which is theta. Equation 15: its variance is n plus one over n, squared, times n theta squared over n plus one squared times n plus two, which is theta squared over n times n plus two.
+
+Slide 3's table, now derived, walked estimator by estimator. Estimator one, the sample mean: expected value theta over two, variance theta squared over 12 n. Estimator two, the maximum: expected value n over n plus one times theta, variance n theta squared over n plus one squared times n plus two. Estimator three, twice the mean: expected value theta, variance theta squared over 3 n. Estimator four, the scaled maximum: expected value theta, variance theta squared over n times n plus two.
+
+Five point four. The four mean squared errors. Slide 4 and Bolfarine Example 1.3.8, printed page 11.
+
+Estimator one. Substitute equations 7 and 8 into equation 2. Equation 16: the mean squared error is theta squared over 12 n plus theta over two minus theta, squared; which is theta squared over 12 n plus theta squared over four; which is theta squared plus 3 n theta squared over 12 n; which is one plus 3 n over 12 n, times theta squared.
+
+Estimator two. Substitute equation 14 into equation 2. The bias is n over n plus one times theta minus theta, which is minus theta over n plus one. Equation 17: the mean squared error is n theta squared over n plus one squared times n plus two, plus theta squared over n plus one squared. Over the common denominator, the numerator is n theta squared plus n plus two times theta squared, which is two times n plus one times theta squared. Cancel one factor of n plus one: the mean squared error is two theta squared over n plus one times n plus two.
+
+Estimators three and four are unbiased, so by equation 3, equation 18: the mean squared error of estimator three is theta squared over 3 n, and of estimator four is theta squared over n times n plus two.
+
+Two rates, visible in the formulas. Equation 17 and the second half of equation 18 fall like one over n squared. The first half of equation 18 falls like one over n. And equation 16 does not go to zero at all: it tends to theta squared over four, the squared bias, theta over two squared, that no amount of data removes. Bolfarine says it on page 12: as n goes to infinity, the EQM of estimator one tends to theta squared over four.
+
+Five point five. The ranking, proved. Slide 5.
+
+All four mean squared errors are theta squared times a function of n, so the ranking does not depend on theta. Compare them in pairs, dividing out theta squared.
+
+Pair a: estimator four against estimator two. From equations 18 and 17, equation 19: one over n times n plus two is less than two over n plus one times n plus two, if and only if n plus one is less than 2 n, if and only if n is greater than one. To get there, multiply both sides by n times n plus one times n plus two, which is positive.
+
+Pair b: estimator two against estimator three. From equations 17 and 18, equation 20: two over n plus one times n plus two is less than one over 3 n, if and only if 6 n is less than n plus one times n plus two, which is n squared plus 3 n plus 2; if and only if n squared minus 3 n plus 2 is positive; if and only if n minus one times n minus two is positive. For integer n of at least one, this holds exactly when n is greater than 2. At n equal to 1 and n equal to 2 the product is zero, so the two mean squared errors tie.
+
+Pair c: estimator three against estimator one. From equations 18 and 16, equation 21: one over 3 n is less than one plus 3 n over 12 n, if and only if 4 is less than one plus 3 n, if and only if n is greater than one.
+
+Chain equations 19, 20 and 21. Equation 22, boxed: for n of at least 3, the mean squared error of estimator four is less than that of estimator two, which is less than that of estimator three, which is less than that of estimator one.
+
+The small-n cases, in units of theta squared, each entry being equations 16 to 18 evaluated.
+
+At n equal to 1: the four values are 4 over 12, 2 over 6, 1 over 3 and 1 over 3, all 0.3333. All equal. With one draw, estimators one and two are both just x, estimators three and four are both 2 x, and both pairs have the same mean squared error.
+
+At n equal to 2: 7 over 24, which is 0.2917; 2 over 12, which is 0.1667; 1 over 6, which is 0.1667; and 1 over 8, which is 0.1250. So estimator four is best, estimators two and three tie, and estimator one is worst. Slide 5 says it: at n equal to 2, the mean squared errors of estimators two and three are both theta squared over 6.
+
+At n equal to 3: 10 over 36, which is 0.2778; 2 over 20, which is 0.1000; 1 over 9, which is 0.1111; and 1 over 15, which is 0.0667. Strict, as in equation 22.
+
+At n equal to 10: 31 over 120, which is 0.2583; 2 over 132, which is 0.0152; 1 over 30, which is 0.0333; and 1 over 120, which is 0.0083. Strict.
+
+Watch the boundary. The handwritten note, page 2, writes "for n at least 2" with strict inequalities; the typeset deck's "n at least 3" is the right statement, because of the tie at n equal to 2 in equation 20.
+
+An erratum in Bolfarine's Table 1.1, printed page 12. The table compares the sample mean and the sample maximum only. Its column for estimator one, 5 theta squared over 18, 4 theta squared over 15, 31 theta squared over 120 and 61 theta squared over 240, agrees with equation 16. The entries for the maximum at n equal to 3 and 5, theta squared over 10 and theta squared over 21, agree with equation 17. But equation 17 gives two over 11 times 12, which is theta squared over 66, at n equal to 10, and two over 21 times 22, which is theta squared over 231, at n equal to 20, where the book prints theta squared over 662 and theta squared over 2312. And the ratio column should read 0.36, 0.18, 0.059 and 0.017, not 0.27, 0.12, 0.04 and 0.01. The book's conclusion, in its words "X n é melhor que X barra para todo theta e n maior que 1", the maximum is better than the mean for every theta and n greater than one, is unaffected. All entries were recomputed in Python for the notes.
+
+Five point six. The likelihood points to the maximum. Slide 8, Bolfarine Examples 2.2.5 and 3.1.3.
+
+The joint density is a product of indicator-weighted constants. Equation 23: the joint density of the sample given theta is the product over i of one over theta times the indicator that x sub i is at most theta, which equals one over theta to the n times the indicator that the maximum is at most theta. That is because all n indicators equal one exactly when the largest observation is below theta.
+
+Read as a function of theta, equation 24: the likelihood is one over theta to the n times the indicator that theta is at least the maximum. It is zero for theta below the maximum and strictly decreasing for theta above it. So the maximum sits on the boundary. Equation 25: the maximum likelihood estimator is the sample maximum, which is estimator two.
+
+The score equation does not find it. The derivative of the log-likelihood in theta is minus n over theta, which never equals zero. Bolfarine, printed page 36, flags exactly this case: when the maximum is on the boundary, "o máximo é obtido a partir da inspeção da função de verossimilhança", the maximum is found by inspecting the likelihood function. He works it as Example 3.1.3, with Figure 3.1 on printed page 38.
+
+Sufficiency. Equation 23 factorises as a function g of the maximum and theta, times a function h of the data that equals one on the sample space. So by the factorisation criterion the sample maximum is sufficient for theta, Bolfarine Example 2.2.5, printed page 23. That is why the two winners in equation 22 are functions of the maximum. The sample mean uses the whole sample but throws away exactly the information that matters: how close the data come to the edge.
+
+Five point seven. Worked: Monte Carlo at theta equal to 3, n equal to 10, with 1000 replications. Slides 9 to 12.
+
+The algorithm, slide 9. For each of N replications: draw n values from the uniform on zero to theta, and compute the four estimators. The N values approximate each sampling distribution. Equation 26: the Monte Carlo estimate of each mean squared error is the average over replications of the squared distance between the replicated estimate and theta.
+
+Theory at theta equal to 3 and n equal to 10, estimator by estimator, giving mean, standard deviation, and mean squared error.
+
+Estimator one: mean 3 over 2, which is 1.500; standard deviation 3 over the square root of 120, which is 0.274; mean squared error 31 over 120 times 9, which is 2.325.
+
+Estimator two: mean 10 over 11 times 3, which is 2.727; standard deviation the square root of 10 times 9 over 121 times 12, which is 0.249; mean squared error 2 times 9 over 11 times 12, which is 0.136.
+
+Estimator three: mean 3.000; standard deviation 3 over the square root of 30, which is 0.548; mean squared error 9 over 30, which is 0.300.
+
+Estimator four: mean 3.000; standard deviation 3 over the square root of 120, which is 0.274; mean squared error 9 over 120, which is 0.075.
+
+The deck's Monte Carlo column, slide 12: means 1.497, 2.717, 2.994 and 2.989; standard deviations 0.278, 0.264, 0.555 and 0.290; mean squared errors 2.336, 0.149, 0.308 and 0.084.
+
+How close should they be? The standard deviation of a sample standard deviation from N draws is roughly the standard deviation over the square root of two times N minus one, which is over the square root of 1998, about 2.2 per cent of the standard deviation. That is the deck's "accurate to roughly plus or minus 2 per cent". The largest gap, 0.290 against 0.274 for estimator four, is 5.8 per cent, about 2.6 such units; the skewed beta shape makes the max-based standard deviations noisier than the normal approximation suggests.
+
+Three readings from slide 12.
+
+First. The standard deviation of estimator three is twice that of estimator one, and the standard deviation of estimator four is n plus one over n, that is 1.1, times that of estimator two. Rescaling an estimator rescales its spread.
+
+Second, a curiosity. At n equal to 10, 12 n equals 120, which equals n times n plus two. So equations 8 and 15 coincide, and the standard deviations of estimators one and four are exactly equal. Same spread, but estimator one is centred at 1.5: its mean squared error is 31 times larger, and all of the difference is bias.
+
+Third. The ranking of equation 22 is reproduced.
+
+The figure plots the four exact mean squared error curves against n from 1 to 50, at theta equal to 3, on a log scale, with the deck's values at n equal to 10 marked: 2.325, 0.136, 0.300 and 0.075. The top curve flattens at theta squared over four, which is 2.25: the sample mean converges, but to the wrong number. The other three fall, the two max-based curves visibly steeper, slope minus two on a log-log reading, against minus one for twice the mean. All four start together at n equal to 1, and the curves of estimators two and three touch at n equal to 2: the two ties of section 5.5.
+
+The interactive companion, The Four Estimators, lets you move theta, n, and a scale c on the maximum, and watch the four mean squared errors, the ranking with its ties at n equal to 1 and 2, and the minimum-error scale n plus two over n plus one. Its defaults reproduce 2.325, 0.136, 0.300 and 0.075.
+
+Five point eight. Graduate layer: the best multiple of the maximum is biased. Not examinable.
+
+Slide 20 says estimator four wins for n of at least 3 among the four. Among all multiples c times the maximum, it does not. Expand equation 1 with theta hat equal to c times the maximum and use equation 12. Equation 27: the mean squared error as a function of c equals c squared times the expected squared maximum, minus 2 c theta times the expected maximum, plus theta squared; which is theta squared times the bracket c squared times n over n plus two, minus 2 c times n over n plus one, plus one.
+
+Set the derivative in c to zero. Equation 28: 2 c times n over n plus two minus 2 times n over n plus one equals zero, if and only if c star equals n plus two over n plus one.
+
+Substitute equation 28 into equation 27. Equation 29: the bracket becomes n plus two squared over n plus one squared times n over n plus two, minus two times n plus two over n plus one times n over n plus one, plus one; which simplifies to one minus n times n plus two over n plus one squared; so the minimum mean squared error is theta squared over n plus one squared.
+
+At theta equal to 3 and n equal to 10: 9 over 121, which is 0.0744, below 0.075. The gain is small, but the lesson of equation 2 is exact. The optimal c shrinks less than the unbiased n plus one over n would require, 12 over 11, which is 1.0909, against 11 over 10, accepting a bias of minus theta over n plus one squared in return for lower variance. Related practice is Bolfarine Exercise 1.12, printed page 14.
+
+Five point nine. The nonparametric bootstrap. Slides 13 and 14, and ISLP section 5.2, printed pages 212 to 214.
+
+Monte Carlo needs theta; in practice we hold one sample. The bootstrap replaces the unknown uniform distribution by the empirical distribution, which puts mass one over n on each observation. For each of B resamples: draw n values with replacement from the observed sample, and compute the four estimators. The bootstrap standard error is the standard deviation of the B replicates. ISLP equation 5.8, printed page 214, our equation 30: the bootstrap standard error is the square root of one over B minus one, times the sum over resamples of the squared distance between each replicate and the average replicate.
+
+Slide 14 uses one sample of 100 draws from the uniform on zero to 3, taking the first 10, the first 50, and all 100. The figures, walked by sample size, giving the four estimators in order, bootstrap standard deviation first and theoretical second.
+
+At n equal to 10: bootstrap 0.117, 0.062, 0.234 and 0.068; theoretical 0.274, 0.249, 0.548 and 0.274.
+
+At n equal to 50: bootstrap 0.113, 0.041, 0.226 and 0.042; theoretical 0.122, 0.058, 0.245 and 0.059.
+
+At n equal to 100: bootstrap 0.089, 0.036, 0.177 and 0.036; theoretical 0.087, 0.029, 0.173 and 0.030.
+
+The theoretical row at n equal to 50 is equations 8 and 14 at theta equal to 3: 3 over the square root of 600, which is 0.122; the square root of 50 times 9 over 51 squared times 52, which is 0.058; 3 over the square root of 150, which is 0.245; and 3 over the square root of 2600, which is 0.059.
+
+Two separate failures.
+
+The first failure: at n equal to 10, all four are too small. The ten draws "happen to lie in" the range 1.35 to 2.33, slide 15. Their spread is small, so resampling them gives small spreads. "The bootstrap cannot recover what the sample does not contain." This is a small-sample problem, and it fades with n for the sample mean: 0.113 against 0.122 at n equal to 50, and 0.089 against 0.087 at n equal to 100.
+
+The second failure: the max-based estimators are wrong at every n, in no fixed direction. Too small at n equal to 50, 0.041 against 0.058; too large at n equal to 100, 0.036 against 0.029. At n equal to 100 the boxplots "collapse onto" the sample maximum, "a warning sign", slide 17. The failure is in the shape of the bootstrap law, a point mass at the maximum, not in a consistent bias of its standard deviation, and it does not fade. That is section 5.10.
+
+Five point ten. Why the bootstrap fails for the maximum. Slide 18.
+
+A bootstrap sample reproduces the observed maximum whenever that observation is drawn at least once. Each of the n draws misses it with probability one minus one over n, independently. Equation 31: the probability that the bootstrap maximum differs from the sample maximum is one minus one over n, raised to the n.
+
+Equation 32, boxed: the probability that the bootstrap maximum equals the sample maximum is one minus the quantity one minus one over n to the n, which tends, as n grows, to one minus e to the minus one, about 0.632. This uses the limit of one minus one over n to the n, which is e to the minus one. The same calculation for any fixed observation is ISLP Exercise 5.2, printed pages 224 to 225.
+
+Checked against the deck's observed shares with 1000 resamples, where one Monte Carlo standard error is about 0.015. At n equal to 10: exact, one minus 0.9 to the 10th, is 0.651; observed 0.666; a gap of plus 1.0 standard errors. At n equal to 50: exact, one minus 0.98 to the 50th, is 0.636; observed 0.622; a gap of minus 0.9. At n equal to 100: exact, one minus 0.99 to the 100th, is 0.634; observed 0.632; a gap of minus 0.1.
+
+So the bootstrap maximum has a point mass of about 63 per cent at the sample maximum, while the true sampling law, equation 10, a scaled beta with parameters n and one, is continuous. The nonparametric bootstrap is inconsistent for the maximum. No sample size fixes it: the mass converges to 0.632, not to zero.
+
+The root cause. The empirical distribution never puts mass above the sample maximum, while the true sampling law puts positive probability on every interval below theta, including the stretch from the sample maximum up to theta that the data never reached. The statistic depends on the edge of the support, and the empirical distribution has no information beyond its own edge. For smooth statistics like the sample mean this does not matter, and the bootstrap works.
+
+The figure has two panels. On the left, the point mass against n, falling from one to its limit 0.632, with the deck's observed shares 0.666, 0.622 and 0.632 at n equal to 10, 50 and 100. On the right, for one seeded simulated sample of size 100, with sample maximum 2.969 and estimator four equal to 2.999, the exact cumulative distribution functions of the resampled maximum: the nonparametric one, the empirical distribution function raised to the n, is a step function with a jump of 0.634 at 2.969; the parametric one, t over estimator four raised to the n, and the true one, t over 3 raised to the n, are smooth. This is a simulation, not the deck's sample.
+
+The left panel shows the mass settling at 0.632 almost immediately; the deck's three shares scatter around the curve by about one Monte Carlo standard error. On the right, the nonparametric distribution function climbs in a handful of steps, one per top order statistic, with heights n minus j over n to the n, minus n minus j minus one over n to the n, and leaps by 0.634 at the maximum, whereas the parametric curve hugs the true one. Resampling from the fitted model gives the right shape.
+
+Five point eleven. The fix: the parametric bootstrap. Slide 19.
+
+Use the model: draw n values iid from the uniform on zero to estimator four, instead of resampling the data. With enough resamples this reproduces the plug-in standard deviation: the theoretical formula evaluated at estimator four instead of theta.
+
+A worked check at n equal to 10, with estimator four equal to 2.568, slide 14's estimate. The plug-in standard deviation of estimator four is estimator four over the square root of n times n plus two, which is 2.568 over the square root of 120, which is 2.568 over 10.954, which is 0.234. The plug-in standard deviation of estimator two is estimator four times the square root of n over n plus one squared times n plus two, which is 2.568 times the square root of 10 over 121 times 12, which is 2.568 times 0.0830, which is 0.213.
+
+The comparison, by sample size, for the four estimators in order: the deck's parametric bootstrap standard deviations, then the exact plug-in values.
+
+At n equal to 10: parametric 0.237, 0.213, 0.475 and 0.234; exact plug-in at 2.568: 0.234, 0.213, 0.469 and 0.234.
+
+At n equal to 50: parametric 0.119, 0.054, 0.238 and 0.055; exact plug-in at 2.926: 0.119, 0.056, 0.239 and 0.057.
+
+At n equal to 100: parametric 0.084, 0.031, 0.167 and 0.032; exact plug-in at 3.029: 0.087, 0.030, 0.175 and 0.030.
+
+The deck's parametric column is a simulation of the plug-in row with 1000 resamples, and matches it to Monte Carlo error. At n equal to 10 the parametric standard deviations, 0.213 to 0.234, are still below theory, 0.249 to 0.274, because estimator four, 2.568, is well below theta equal to 3. The deck puts it this way: "it tracks the theory as long as" estimator four "is close to theta". At n equal to 50 and 100 the max-based standard deviations, 0.054 to 0.057 and 0.030 to 0.032, now sit on the theoretical 0.058 and 0.059, and 0.029 and 0.030, which the nonparametric 0.041 and 0.036 missed in opposite directions.
+
+The two bootstraps compared in four dimensions. What they resample from: the nonparametric bootstrap resamples the data, the empirical distribution; the parametric bootstrap draws from the uniform on zero to theta hat. Whether they work for the sample mean: the nonparametric does, as n grows; the parametric does. Whether they work for the maximum: the nonparametric does not, because of the 63 per cent point mass; the parametric does. And what they need: the nonparametric needs nothing about the model; the parametric needs the model to be right.
+
+Five point twelve. The site's companion pages, course and intuition layers.
+
+Five point twelve point one: mean, weighted mean, median and trimmed mean, from the page comparing estimators. Same question, location instead of scale. Estimate a population mean from 21 draws of a standard normal, a Student t with 4 degrees of freedom, which has mean zero, and a beta with parameters 3 and 9, which has mean 3 over 12, or 0.25. The candidates are the sample mean; a weighted mean with triangular weights, w sub i equal to i for i up to 11 and 22 minus i for i from 12 onward, normalised to sum to one; the trimmed mean with k equal to 2; and the median, the 11th order statistic. The page shows boxplots of 10,000 replications; two of its results can be computed exactly.
+
+The weighted mean. The data are iid, so the weights attach to arbitrary positions: the weighted mean is unbiased with variance sigma squared times the sum of the squared normalised weights. Here the weights sum to 2 times 1 plus 2 up to 10, plus 11, which is 121, and the squared weights sum to 2 times 385 plus 121, which is 891. So the sum of squared normalised weights is 891 over 121 squared, which is 891 over 14641, which is 0.0609, more than one over 21, which is 0.0476. That is a relative efficiency of 0.0476 over 0.0609, which is 0.78. Equal weights minimise the sum of squared weights subject to the weights summing to one; unequal weights on exchangeable data only add variance.
+
+The median under heavy tails. For the t with 4 degrees of freedom, the variance of the sample mean is nu over nu minus two, over n, which is 2 over n. The median's large-sample variance is one over 4 n times the density at zero squared, with the density at zero equal to 0.375, which gives 1.78 over n. So the median beats the mean under the t with 4 degrees of freedom: the reverse of the normal case, where the median's efficiency is two over pi, which is 0.64. Under the beta with parameters 3 and 9 the median estimates the median, 0.236, not the mean, so its mean squared error carries a squared bias of 0.236 minus 0.25 squared, about 0.0002: formula 2 again.
+
+A seeded simulation run for the notes, with 20,000 replications and not the page's own run, gives these mean squared errors for the mean, the weighted mean, the median and the trimmed mean, in that order. Under the normal: 0.047, 0.060, 0.073 and 0.050. Under the t with 4 degrees of freedom: 0.093, 0.120, 0.085 and 0.070. Under the beta: 0.00069, 0.00088, 0.00131 and 0.00079. The trimmed mean is the robust compromise: near-best under normality, best under the t with 4 degrees of freedom.
+
+Five point twelve point two: bootstrap against exact intervals, from the page bootstrap example. Fifty listed values, assumed normal with mean mu and variance sigma squared. The sample mean is 0.10006; the maximum likelihood variance is 0.8334424; the maximum likelihood standard deviation is 0.9129307; and the median absolute deviation is 0.7508248, all reproduced in Python. The exact t interval uses the t quantile at 0.975 with 49 degrees of freedom, 2.00958: 0.10006 plus or minus 2.00958 times 0.91293 over the square root of 50, which is 0.10006 plus or minus 0.25945, from minus 0.15939 to 0.35951.
+
+The chi-squared interval for sigma squared runs from 50 times 0.83344 over the 0.975 chi-squared quantile with 49 degrees of freedom, to 50 times 0.83344 over the 0.025 quantile, which is from 0.593 to 1.321. The page prints it as "1.3206221 0.5934305", upper limit first, because its code divides by the 0.025 quantile first. It also plugs the maximum likelihood standard deviation, with divisor n, into the t interval where the textbook statistic uses s, with divisor n minus one: a 1 per cent difference at n equal to 50. Its conclusion matches section 5.9. For mu, the 10,000-resample bootstrap interval is almost identical to the exact one. For sigma squared, the bootstrap distribution looks Gaussian while the exact one is a skewed chi-squared, and the gap closes as n grows.
+
+Five point twelve point three: the correlation maximum likelihood estimator, from the page correlation bivariate Gaussian. Named only. For a standard bivariate normal pair with correlation rho, the page maximises the likelihood of rho numerically through the transformation rho equal to e to the gamma minus one, over e to the gamma plus one, with gamma unconstrained. It simulates 30 pairs with rho equal to 0.95 and bootstraps both the maximum likelihood estimator and the sample correlation 10,000 times. No numbers are printed. The point is that the two estimators differ, since the maximum likelihood estimator uses the known unit variances, and that a bounded parameter near its edge gives a skewed bootstrap distribution: a milder cousin of section 5.10.
+
+Spoken checklist for section 5. You should be able to derive mean squared error equals variance plus squared bias in three steps. You should be able to derive the moments of the uniform, of the sample mean, and of the sample maximum through the beta with parameters n and one. You should be able to write the four mean squared errors and prove the ranking for n of at least 3, with the ties at n equal to 1 and 2. You should be able to show from the likelihood that the maximum is both the maximum likelihood estimator and sufficient, and why the score equation fails. You should be able to compute the theoretical values at theta equal to 3 and n equal to 10: 2.325, 0.136, 0.300 and 0.075. You should be able to derive the bootstrap point mass and its limit 0.632, and explain why the parametric bootstrap repairs it. And you should be able to state the Bolfarine erratum: theta squared over 66 and over 231, not over 662 and 2312.
+
+
+Part four, section 6. Gaussian linear regression: least squares as a projection and as a maximum likelihood estimator, and why the R squared cannot choose the model.
+
+This section covers the multiple linear regression deck, pages 1 to 22; the script normal linear regression on the Koop-Tobias returns to schooling data; the page overfitting a linear model; the abstention regression deck, 20 slides; Wooldridge section 2.2, printed pages 24 to 32, sections 3.1 to 3.3, printed pages 61 to 81, equation 4.41 on printed page 133, sections 5.1 and 5.2, printed pages 150 to 161, equations 6.21 and 6.22 on printed page 181, equation 8.4 on printed pages 245 to 246, and Appendix E, printed pages 720 to 733; and AME section 1.5.1.1, printed page 21, chapter 2, printed pages 27 to 31, and sections 3.1 and 3.2, printed pages 33 to 37.
+
+The claim. Least squares is a projection: beta hat equal to X transposed X inverse, times X transposed y, solves the normal equations, and y hat equal to P times y is the orthogonal projection of y on the columns of X. Add Gaussian errors and the same beta hat is the maximum likelihood estimator; the maximum likelihood estimator of sigma squared divides the residual sum of squares by n, the unbiased one by n minus q. The R squared can only rise as regressors are added, so it cannot select a model. The adjusted R squared, Mallows' C p, AIC and BIC subtract a price per parameter, and out-of-sample error is the honest referee. In the site's Boston example, the model with an in-sample R squared of 1.0000 predicts eleven times worse than the plain one. And the municipal abstention regressions show the whole toolkit read on real output: coefficients, robust standard errors of the HC1 type, joint F tests, and a small R squared gain.
+
+The notation. n is the number of observations. p is the number of slopes, or predictors; slide 13 sets q equal to p plus one columns with the intercept. q is the number of columns of X, the number of parameters in beta, at most n. y is the n by one response. X is the n by q design matrix, of full column rank. beta is the q by one coefficient vector. epsilon is the error vector, with mean zero and variance sigma squared times the identity, Gaussian in section 6.4. beta hat, y hat equal to X beta hat, and e equal to y minus y hat are the least squares estimate, the fitted values, and the residuals. P, equal to X times X transposed X inverse times X transposed, is the hat, or projection, matrix. RSS, e transposed e, is the residual sum of squares, and TSS the total sum of squares. d is the number of predictors in a candidate model, in section 6.6. sigma hat squared is the error variance estimate. And k is Wooldridge's slope count, equal to p.
+
+Six point one. Intuition: one covariate is rarely enough. Slides 4 to 12.
+
+The deck starts from what the class already studied: y sub i equals beta zero plus beta one x sub i plus epsilon sub i, with the errors of mean zero and variance sigma squared and uncorrelated with x. Equation 1, the least squares estimates: beta one hat equals the sum of y sub i minus y bar times x sub i minus x bar, over the sum of x sub i minus x bar squared; and beta zero hat equals y bar minus beta one hat times x bar. That is Wooldridge section 2.2, printed pages 24 to 32.
+
+The houseprice data, 128 sales with price, size, offers, bedrooms, bathrooms, brick and neighbourhood, show why one covariate is not the end, slide 11. Price on size alone gives an R squared of 31 per cent with residual standard deviation 71.4. Letting the line shift by brick or non-brick gives 47 per cent and 62.1. Letting it shift by neighbourhood gives 69 per cent and 48.1. The same size-price slope explains far more once the groups it was averaging over are separated. That is the multiple regression idea, "holding other factors fixed", Wooldridge section 3.1, printed pages 61 to 64.
+
+Centring and standardising, slide 5. Replace y and x by their standardised versions: y tilde equals y minus y bar over s y, and x tilde equals x minus x bar over s x, with s squared defined with divisor n. The intercept in equation 1 becomes zero minus beta one hat times zero, which is zero. And since the sum of x tilde squared is n, equation 2: beta one hat equals the sum of y tilde times x tilde over the sum of x tilde squared, which is x tilde transposed y tilde over x tilde transposed x tilde, which is one over n times the sum of x tilde times y tilde, which is the sample correlation between x and y. On standardised data the slope is the sample correlation, and its form, x tilde transposed x tilde inverse times x tilde transposed y tilde, already previews the matrix formula.
+
+Six point two. Matrix form and the normal equations. Slides 12 to 14, Wooldridge Appendix E.
+
+Stack the n equations. Equation 3: y equals X beta plus epsilon, with epsilon of mean zero and variance sigma squared times the n by n identity.
+
+Least squares minimises the residual sum of squares. Equation 4: RSS of beta equals y minus X beta, transposed, times y minus X beta, which expands to y transposed y, minus 2 beta transposed X transposed y, plus beta transposed X transposed X beta. The two cross terms, beta transposed X transposed y and y transposed X beta, are the same scalar. Slide 14 writes only the part that depends on beta.
+
+Differentiate equation 4, using two rules: the derivative of beta transposed a with respect to beta is a, and the derivative of beta transposed A beta is 2 A beta for symmetric A. Equation 5: the gradient of RSS is minus 2 X transposed y plus 2 X transposed X beta.
+
+Set equation 5 to zero to get the normal equations. Equation 6: X transposed X times beta hat equals X transposed y. When X has full column rank, so that X transposed X is invertible, equation 7, boxed: the least squares estimator equals X transposed X inverse times X transposed y.
+
+It is the global minimum, without second derivatives. For any beta, write y minus X beta as y minus X beta hat, plus X times beta hat minus beta, and expand. RSS of beta equals RSS of beta hat, plus 2 times beta hat minus beta transposed times X transposed times y minus X beta hat, plus beta hat minus beta transposed times X transposed X times beta hat minus beta. The middle term is zero by equation 6, because X transposed times y minus X beta hat is X transposed y minus X transposed X beta hat, which is zero. So equation 8: RSS of beta equals RSS of beta hat plus the squared length of X times beta hat minus beta, which is at least RSS of beta hat, with equality only at beta equal to beta hat, given full rank.
+
+Six point two point one. The projection, slide 14. Substitute equation 7 into y hat equal to X beta hat. Equation 9: y hat equals X times X transposed X inverse times X transposed y, which is P y, with P equal to X times X transposed X inverse times X transposed.
+
+Four properties of P, each with a one-line proof and a meaning. First, P transposed equals P: transposing the product gives the same product back. Meaning: an orthogonal, not oblique, projection. Second, P times P equals P: in the middle, X transposed X times its inverse is the identity, leaving P. Meaning: projecting twice changes nothing. Third, P times X equals X: X times X transposed X inverse times X transposed X is X. Meaning: the column space is left fixed. Fourth, the trace of P equals q: the trace of X times X transposed X inverse times X transposed equals the trace of X transposed X inverse times X transposed X, which is the trace of the q by q identity. Meaning: q fitted dimensions.
+
+Residuals and their sum of squares, slide 14. Equation 10: e equals y minus P y, which is I minus P times y; and X transposed e equals X transposed times I minus P times y, which is X transposed minus X transposed, times y, which is zero. Equation 11: RSS equals e transposed e, which is y transposed times I minus P transposed times I minus P times y, which is y transposed times I minus P times y, because I minus P is also symmetric and idempotent.
+
+Equation 10 says the residuals are orthogonal to every column of X; with an intercept column, they sum to zero, Wooldridge section 2.3, printed pages 32 to 36. Two consequences are used later. Since I minus P times X is zero, equation 12: e equals I minus P times X beta plus epsilon, which is I minus P times epsilon. And the fitted plane passes through the sample means.
+
+The geometry to hold: y splits into P y, in the plane spanned by the regressors, plus I minus P times y, perpendicular to it, and least squares is nothing more than dropping the perpendicular.
+
+Six point three. Sampling properties without normality. Wooldridge sections 3.3, 5.1 and 5.2.
+
+Substitute equation 3 into equation 7. Equation 13: beta hat equals X transposed X inverse times X transposed times X beta plus epsilon, which is beta plus X transposed X inverse times X transposed epsilon. So the expected value of beta hat given X is beta whenever the expected value of epsilon given X is zero, Wooldridge Theorem 3.1, section 3.3. And equation 14: the variance of beta hat given X is X transposed X inverse, times X transposed, times sigma squared I, times X, times X transposed X inverse, which is sigma squared times X transposed X inverse.
+
+Consistency and asymptotic normality need only a zero mean error, zero covariance between x and the error, and finite moments, Wooldridge section 5.1, printed pages 150 to 154, and section 5.2, printed pages 154 to 161. Gaussianity is not what makes least squares work; it is what makes it the maximum likelihood estimator and makes the small-sample t and F exact. If the variance of epsilon given X is not sigma squared times the identity, equation 14 is wrong but equation 13 still centres on beta. That is the robust standard error fix of section 6.8.
+
+Six point four. Gaussian errors: least squares equals maximum likelihood. Slide 6.
+
+Assume epsilon is normal with mean zero and variance sigma squared times the identity, so y given X is normal with mean X beta and variance sigma squared times the identity. Equation 15: the log-likelihood of beta and sigma squared equals minus n over two log two pi, minus n over two log sigma squared, minus y minus X beta transposed times y minus X beta over two sigma squared; which is minus n over two log of two pi sigma squared, minus RSS of beta over two sigma squared.
+
+Step one, beta. For every fixed positive sigma squared, beta enters equation 15 only through minus RSS of beta over two sigma squared, which is largest where RSS is smallest. By equation 8, equation 16: the maximum likelihood estimator of beta equals the least squares estimator.
+
+Step two, sigma squared. Substitute equation 16 into equation 15 and differentiate in sigma squared. Equation 17: minus n over two sigma squared plus RSS over two sigma to the fourth equals zero, if and only if the maximum likelihood estimator of sigma squared equals RSS over n.
+
+Step three, its bias. By equation 12, RSS equals epsilon transposed times I minus P times epsilon. A scalar equals its trace, and the trace is invariant to cycling. Equation 18: the expected value of RSS is the expected trace of I minus P times epsilon epsilon transposed, which is the trace of I minus P times sigma squared I, which is sigma squared times n minus the trace of P, which is sigma squared times n minus q, using the trace of P equal to q from section 6.2.1. Hence the expected value of the maximum likelihood estimator is sigma squared times n minus q over n, less than sigma squared, and the unbiased estimator is equation 19: sigma hat squared equals RSS over n minus q.
+
+A note on the slide. Slide 14 writes sigma hat squared as epsilon transposed epsilon over n minus p. With slide 13's convention, y centred, intercept dropped, and p columns, the divisor is the column count, which is equation 19.
+
+Slide 6 in its own words: "OLS estimates and maximum likelihood estimates are the same. ML is usually more suitable for formal inference. The paid price is more modeling assumptions." Under equation 15, beta hat is exactly normal with mean beta and variance sigma squared times X transposed X inverse, and RSS over sigma squared is chi-squared with n minus q degrees of freedom, independent of beta hat, Wooldridge section 4.1. That is where the exact t and F come from.
+
+The site's companion script, normal linear regression, runs this on the Koop-Tobias NLSY data, with 2,178 observations: log hourly wage on education, potential experience, ability and mother's education. It runs four simple regressions with their adjusted R squared in the titles, the correlation matrix, then a regression of log wage on education, experience and ability. The file reads the data from the web and prints no output, so no numbers are reproduced here; the Python port is in the Python note.
+
+Six point five. The R squared and the adjusted R squared. Slide 15 and Wooldridge section 6.3a, printed page 181.
+
+Equation 20: the R squared equals one minus RSS over TSS, which is one minus y transposed times I minus P times y, over y transposed y, on slide 15, with y centred so that the total sum of squares is y transposed y. It is the share of the variance of y explained by the predictors.
+
+Why it can never fall. Nest model one inside model two, so that the columns of X one are among those of X two. Any coefficient vector for model one is a coefficient vector for model two with the extra coefficients set to zero, so the minimum over the larger set is no larger. Equation 21: RSS two, the minimum over beta two of the squared length of y minus X two beta two, is at most RSS one, the minimum over beta one of the squared length of y minus X one beta one. Therefore the R squared of model two is at least that of model one.
+
+Adding pure noise cannot lower the R squared, and with q at least n and the rank of X equal to n, y hat equals y and the R squared is one.
+
+The adjusted R squared. Wooldridge replaces both variances in equation 20 by unbiased versions, his equation 6.21, our equation 22: the adjusted R squared equals one minus RSS over n minus k minus one, divided by TSS over n minus one; which is one minus sigma hat squared over TSS over n minus one. Equivalently, his equation 6.22, our equation 23: the adjusted R squared equals one minus the quantity one minus R squared, times n minus one over n minus k minus one.
+
+Slide 15 uses the centred-data version: one minus y transposed times I minus P times y over y transposed y, times n over n minus p. For houseprice, "with n equal to 128 and p equal to 6, n over n minus 6 is 1.049", that is, 128 over 122, which is 1.0492.
+
+Wooldridge's numbers, printed page 181, in equation 23. With an R squared of 0.30, n equal to 51 and k equal to 10: the adjusted R squared is one minus 0.70 times 50 over 40, which is one minus 0.70 times 1.25, which is one minus 0.875, which is 0.125. And an R squared of 0.10 gives one minus 0.90 times 1.25, which is minus 0.125. The adjusted R squared can be negative.
+
+An exact fact about the penalty, Wooldridge page 181: adding one regressor raises the adjusted R squared if and only if the absolute value of its t statistic exceeds one; adding a group raises it if and only if the group's F exceeds one. Since an absolute t of one is nowhere near significance, the adjusted R squared is a lenient selector: it tends to keep too much, as section 6.6's figure shows.
+
+Six point six. Mallows' C p, AIC, BIC and best subset selection. Slides 16 to 22, and AME section 1.5.1.1, printed page 21.
+
+For a model with d predictors, and sigma hat squared estimated from the largest model, slide 16 defines three criteria. Equation 24. C p equals one over n times the quantity RSS plus 2 d sigma hat squared. AIC equals one over n sigma hat squared times the quantity RSS plus 2 d sigma hat squared. BIC equals one over n times the quantity RSS plus log n times d sigma hat squared.
+
+Read equation 24 as training error plus a price per parameter. AME, page 21, writes the same idea as the risk of g being approximately the EQM of g plus a penalty P of g, with the penalty equal to 2 p sigma hat squared over n for AIC, or log n times p sigma hat squared over n for BIC. In the deck's Gaussian form, AIC is C p divided by sigma hat squared, so the two rank models identically. BIC charges log n times sigma hat squared per parameter instead of 2 sigma hat squared, which is heavier whenever log n exceeds 2, that is, whenever n exceeds e squared, 7.39. For houseprice, log 128 is 4.85, so BIC penalises each extra predictor about 2.4 times as hard as C p.
+
+Why 2 d sigma hat squared is the right price for C p. By equation 18, the expected RSS, sigma squared times n minus q, understates the error a new sample would show, sigma squared times n plus q, derived in section 6.7, by 2 q sigma squared. C p adds that optimism back, so it is an approximately unbiased estimate of test error per observation.
+
+Best subset, slides 17 to 20. With p candidates there are 2 to the p models. Slide 17 counts 2 to the 6th, which is 64, for houseprice's six raw variables, while the R routine regsubsets sees seven columns, because neighbourhood becomes the two dummies N1 and N2, so 2 to the 7th, which is 128. The exhaustive search keeps the best model of each size, slide 20. Size 1 is square feet. Size 2 adds offers. Size 3 adds brick. Size 4 swaps offers for the two neighbourhood dummies. Size 5 restores offers. Size 6 adds bathrooms. Size 7 adds bedrooms. The best models are not nested, since size 4 drops a variable size 3 had, which is why stepwise search can miss them, AME section 3.1, printed pages 33 to 35. Slides 21 and 22 then plot the R squared, the adjusted R squared, C p and BIC against size: the R squared curve rises with size, by equation 21.
+
+The figure shows best-subset curves on a reproducible simulation: seed 128, n equal to 128 as in houseprice, 7 candidates as in slide 20, 3 of them with nonzero slopes 1, 0.7 and 0.5, and unit noise. Each criterion is computed exactly as in equations 22 and 24. The R squared climbs from 0.337 to 0.644 and never turns down; by equation 21 it cannot. The adjusted R squared peaks at d equal to 5, at 0.627, keeping two noise predictors, as the rule of an absolute t above one predicts. C p chooses d equal to 4, by a hair over d equal to 3, 1.1356 against 1.1361. BIC's heavier price picks the true d equal to 3, at 1.211. One simulated data set proves nothing general, but the ordering of the three penalties is exactly what equations 23 and 24 imply.
+
+Six point seven. Overfitting, measured. From the page overfitting a linear model.
+
+The experiment. Boston housing, 506 tracts, response median value, 13 standardised predictors, split in halves: 253 for training and 253 for testing. Model M k contains all interactions of up to k distinct predictors. Equation 25: the number of coefficients p sub k equals one plus the sum over j from one to k of 13 choose j. So p one is 1 plus 13, which is 14; p two is 14 plus 78, which is 92; p three is 92 plus 286, which is 378; p four is 378 plus 715, which is 1093; and p five is 1093 plus 1287, which is 2380. From k equal to 3 on, p exceeds n, 253: X transposed X is singular, and the page uses a ridge solve with lambda equal to 0.001 purely so that the linear system has a solution, "not to regularize in any meaningful way". The ridge estimator itself is Classes 3 and 4.
+
+The results, model by model, giving the number of coefficients, then the in-sample R squared, root mean squared error and mean absolute deviation, then the out-of-sample ones.
+
+Model 1, 14 coefficients: in sample, R squared 0.7303, root mean squared error 4.97, mean absolute deviation 3.51; out of sample, R squared 0.7469, root mean squared error 4.48, mean absolute deviation 3.41.
+
+Model 2, 92 coefficients: in sample 0.9307, 2.52 and 1.82; out of sample 0.5854, 6.83 and 4.06.
+
+Model 3, 378 coefficients: in sample 0.9946, 0.70 and 0.36; out of sample 0.1407, 25.41 and 13.66.
+
+Model 4, 1093 coefficients: in sample 0.9998, 0.13 and 0.05; out of sample 0.1381, 36.82 and 16.02.
+
+Model 5, 2380 coefficients: in sample 1.0000, 0.03 and 0.01; out of sample 0.0519, 47.13 and 16.71.
+
+Why the gap opens: the page's formulas, derived. Fix X, and assume the linear model is correct with p less than n columns.
+
+In sample. By equation 18, the expected RSS is sigma squared times n minus p. So equation 26: the expected in-sample mean squared error, the expected RSS over n, is sigma squared times one minus p over n.
+
+Out of sample, with new errors epsilon star at the same design. The prediction error is y star minus X beta hat, which is X beta plus epsilon star minus X beta minus P epsilon, which is epsilon star minus P epsilon, using equation 13. Since epsilon star and epsilon are independent, the expected squared length of epsilon star minus P epsilon is the expected squared length of epsilon star, plus the expected value of epsilon transposed P transposed P epsilon, which is n sigma squared plus sigma squared times the trace of P, which is sigma squared times n plus p. So equation 27: the expected out-of-sample mean squared error is sigma squared times one plus p over n.
+
+Subtract equation 26 from equation 27: the training error is optimistic by two sigma squared p over n, linear in the number of parameters. For random designs the page notes that the out-of-sample error blows up like sigma squared times n minus one over n minus p minus one as p approaches n.
+
+Reading the results. Model 1 is honest: root mean squared error 4.97 in sample against 4.48 out. The test half happens to be easier; equations 26 and 27 are expectations, and one split is one draw. Model 2 already loses out of sample, 6.83, while the in-sample R squared jumps to 0.931. From model 3 on, the training data are interpolated and the test root mean squared error explodes to 47.13. That is 47.13 over 4.48, which is 10.5, "roughly 11 times worse than the simplest model", with an out-of-sample R squared of 0.052.
+
+The figure has two panels across interaction orders 1 to 5. Training root mean squared error falls from 4.97 to 0.03 while test root mean squared error rises from 4.48 to 47.13, on a log scale; the in-sample R squared climbs to 1.0000 while the out-of-sample R squared falls from 0.747 to 0.052, with the region where p exceeds n shaded. The two lines cross between orders 1 and 2 and then diverge for good: every coefficient beyond the first fourteen fits noise that is not in the test half. The page's headline: "The holy grail R squared equal to one is reached exactly where prediction collapses." Class 2 turns this into a procedure, with a validation set, k-fold cross-validation and leave-one-out cross-validation, in its section 3.
+
+Six point eight. Worked: municipal abstention in the 2026 presidential first round. From the abstention regression deck.
+
+Data and model, slides 1, 7 and 8. The unit is the municipality: 5,565 of 5,570, because five created in 2013 lack the 2010 municipal human development index, IDHM. The response is, in the deck's words, "per cent de abstenção no primeiro turno de 2026", the abstention rate in the first round of 2026, from preliminary ballot-box totals of October 5th.
+
+The specification, slide 8, equation 28. Abstention in municipality i equals alpha, plus beta one times abstention in 2022, plus beta two times the share of blank and null votes in 2026, plus beta three times the IDHM, plus a sum of region dummies excluding the Southeast, or alternatively a sum of state dummies excluding São Paulo, plus a sum of size dummies excluding municipalities with up to 10 thousand eligible voters, plus an error.
+
+In the deck's words, "IDHM em décimos, beta três igual a efeito de mais 0,1. MQO com erros-padrão HC1": the IDHM is measured in tenths, so beta three is the effect of a 0.1 increase, and the estimates are least squares with HC1 standard errors. The references are the Southeast, São Paulo, and municipalities with up to 10 thousand eligible voters, aptos. Five models: model 0, no dummies; model 1, region; model 2, state, UF; model 3, region plus size, porte; model 4, state plus size.
+
+The results table, slide 11, read model by model, coefficient first and HC1 standard error in parentheses. The slide's decimal commas are read as points.
+
+The intercept: model 0, minus 2.200, standard error 0.354; model 1, 9.025, standard error 0.555; model 2, 5.578, standard error 0.641; model 3, 9.817, standard error 0.638; model 4, 7.378, standard error 0.756.
+
+Abstention in 2022: 0.717 with 0.007; 0.649 with 0.008; 0.686 with 0.009; 0.651 with 0.008; 0.684 with 0.009.
+
+Blank plus null votes in 2026: 0.225 with 0.024; 0.286 with 0.026; 0.228 with 0.030; 0.276 with 0.026; 0.196 with 0.031.
+
+IDHM 2010, per 0.1: 1.013 with 0.042; minus 0.356 with 0.064; minus 0.010 with 0.069; minus 0.473 with 0.076; minus 0.246 with 0.085.
+
+The size dummies appear only in models 3 and 4. 10 to 45 thousand voters: minus 0.130 with 0.067 in model 3, and 0.069 with 0.067 in model 4. 45 to 100 thousand: 0.225 with 0.107, and 0.439 with 0.112. 100 to 500 thousand: 0.635 with 0.140, and 0.960 with 0.152. Above 500 thousand: 1.005 with 0.304, and 1.140 with 0.317.
+
+The R squared: 0.682, 0.727, 0.755, 0.728 and 0.757. The adjusted R squared: 0.682, 0.727, 0.754, 0.728 and 0.756.
+
+The region coefficients in models 1 and 3: North, minus 1.872 and minus 1.959; Northeast, minus 2.750 and minus 2.821; South, minus 0.271 and minus 0.236; Centre-West, 0.693 and 0.687.
+
+Six point eight point one. Persistence: a coefficient, its t, and its interval. Slide 13 says "1 ponto percentual de abstenção em 2022 se traduz em 0,65 a 0,72 pontos percentuais em 2026": one percentage point of abstention in 2022 translates into 0.65 to 0.72 points in 2026. In model 4: t equals 0.684 over 0.009, which is 76.0; and the interval is 0.684 plus or minus 1.96 times 0.009, which is 0.684 plus or minus 0.018, from 0.666 to 0.702.
+
+The interval excludes one by a wide margin: abstention persists but regresses toward the mean. A municipality 10 percentage points above average in 2022 is expected about 6.8 points above in 2026, other regressors fixed.
+
+A check on the arithmetic of least squares. With an intercept, equation 10 makes the fitted plane pass through the sample means. Slide 7 gives them: 20.72 for the response, 21.27 for 2022 abstention, 4.45 for blank and null votes, and an IDHM of 0.659, which is 6.59 in tenths. Model 0 at the means: minus 2.200, plus 0.717 times 21.27, plus 0.225 times 4.45, plus 1.013 times 6.59; which is minus 2.200 plus 15.251 plus 1.001 plus 6.676, which is 20.728, about 20.72. It checks.
+
+Six point eight point two. The IDHM changes sign: omitted-variable bias in action. Across the five models, the IDHM coefficient per 0.1 is 1.01, minus 0.36, minus 0.01, minus 0.47 and minus 0.25.
+
+In model 0, the IDHM proxies for where a municipality is. The Northeast combines low IDHM with low abstention, minus 2.75 percentage points in model 1, so across Brazil higher IDHM goes with higher abstention. Once region dummies absorb that, the within-region association is negative. The omitted-variable bias formula, Wooldridge section 3.3, printed pages 73 to 81, gives the sign: the bias equals the effect of the omitted variable times the slope of the omitted variable on the included one.
+
+Size works the same way. In the deck's words, "Cidades grandes têm IDHM alto; separando o porte, o IDHM volta a ter efeito negativo": large cities have high IDHM; separating out size, the IDHM effect turns negative again, slide 13. Size raises abstention, the size coefficients are positive, and size correlates positively with the IDHM, so omitting it biases beta three upward: minus 0.010 in model 2 becomes minus 0.246 in model 4.
+
+Six point eight point three. Size: individual t statistics and the joint test. Model 4, relative to municipalities with up to 10 thousand voters, slide 12. Four rows.
+
+10 to 45 thousand: coefficient 0.069, standard error 0.067, t equal to 1.03, 95 per cent interval from minus 0.062 to 0.200.
+45 to 100 thousand: 0.439, 0.112, t equal to 3.92, interval from 0.219 to 0.659.
+100 to 500 thousand: 0.960, 0.152, t equal to 6.32, interval from 0.662 to 1.258.
+Above 500 thousand: 1.140, 0.317, t equal to 3.60, interval from 0.519 to 1.761.
+
+The deck's "mais 0,07 pontos percentuais, não significativo", plus 0.07 points, not significant, is the first row: an absolute t of 1.03, below 1.96. Conditional on 2022 abstention, the gradient in size appears, although the raw means by size are flat, 20.0 to 21.1 per cent, slide 5. The joint robust Wald test that all four are zero gives F equal to 13.22 with states and 10.84 with regions, both with p below 0.0001; the 5 per cent critical value of an F with 4 and 5531 degrees of freedom is 2.37.
+
+Is F equal to 13.22 consistent with the R squared gain? Under homoskedasticity, use the R squared form, Wooldridge equation 4.41, printed page 133, with q equal to 4 restrictions, 34 parameters, and n minus 34 equal to 5531 residual degrees of freedom. F equals the R squared of the unrestricted model minus that of the restricted, over q, divided by one minus the unrestricted R squared over n minus 34; which is 0.757 minus 0.755 over 4, divided by one minus 0.757 over 5531; which is 0.000500 over 0.0000439, which is 11.4.
+
+Since each R squared is rounded to three decimals, the difference lies anywhere between 0.001 and 0.003, and the formula anywhere between 5.7 and 17.1. The robust 13.22 sits inside what the printed R squared values allow. The robust statistic need not equal the R squared form; the two coincide only under homoskedasticity.
+
+And with the adjusted R squared. Use equation 23 with k equal to 29 slopes for model 2 and k equal to 33 for model 4. Model 2: one minus 0.245 times 5564 over 5535, which is one minus 0.24628, which is 0.754. Model 4: one minus 0.243 times 5564 over 5531, which is one minus 0.24445, which is 0.756. That reproduces slide 11. The rise matches Wooldridge's rule: the size group's F exceeds one, so the adjusted R squared must go up.
+
+In the deck's words, "O ganho de ajuste é pequeno, R quadrado ajustado de 0,754 para 0,756: a abstenção passada já captura quase tudo": the gain in fit is small, adjusted R squared from 0.754 to 0.756; past abstention already captures almost everything. A variable can be highly significant and add almost nothing to fit; significance and explanatory share are different questions.
+
+Six point eight point four. State or region? A test of 22 restrictions, slide 15. The region model is the state model with all states of a region forced to share one coefficient: 26 state dummies collapse to 4 region dummies, which is 26 minus 4, or 22 linear restrictions. The robust Wald test gives F equal to 31.08 without size, model 1 against model 2, and F equal to 32.09 with size, model 3 against model 4, both with p below 0.0001. Rejected. For example, in the Centre-West, Mato Grosso do Sul and Goiás are positive and Mato Grosso negative.
+
+Six point eight point five. HC1 standard errors and the caveats. HC1 is White's heteroskedasticity-robust variance, Wooldridge equation 8.4, printed pages 245 to 246, times the degrees-of-freedom factor n over n minus k minus one mentioned on page 246. Equation 29: the HC1 variance of beta hat equals n over n minus q, times X transposed X inverse, times the sum over i of the squared residual e sub i times x sub i x sub i transposed, times X transposed X inverse. It is equation 14 with sigma squared times the identity replaced by the diagonal matrix of squared residuals, and it is what the slides' R code computes with the HC1 option.
+
+The deck's own caveats, Ressalvas, slide 17, each a lesson in reading a regression. The 2026 data are preliminary. The IDHM is from 2010. In the deck's words, "Brancos mais nulos de 2026 é determinado junto com a abstenção, então o coeficiente descreve associação": blank and null votes in 2026 are determined jointly with abstention, so the coefficient describes association, not a causal effect. All municipalities weigh the same; an electorate-weighted version would favour large cities. And errors may be correlated within states: with 27 clusters, state-clustered standard errors "seriam uma verificação natural", would be a natural check, since HC1 handles heteroskedasticity, not within-cluster correlation.
+
+Six point nine. Graduate layer: named, not developed, not examinable.
+
+Gauss-Markov, Wooldridge section 3.5, printed pages 89 to 90: under a variance of sigma squared times the identity, least squares has the smallest variance among linear unbiased estimators. Section 5.12.1, where equal weights beat triangular ones, is its one-parameter case.
+
+Shrinkage: ridge, lasso, elastic net, and the normal-gamma and horseshoe priors, on the later pages of the same deck after the best-subset and Credit examples, trade bias for variance exactly as section 5.8 did for c times the maximum. Classes 3 and 4.
+
+Least squares as the best linear predictor even when the conditional mean of y given x is not linear, AME chapter 2, printed pages 27 to 31, Teorema 2: beta hat converges to beta star, the minimiser of the expected squared distance between Y and beta transposed X.
+
+Spoken checklist for section 6. You should be able to derive the normal equations and the least squares estimator in matrix form, and prove it is the global minimum without second derivatives. You should be able to state and prove the four properties of the hat matrix, and show the residuals are orthogonal to X. You should be able to derive the mean and variance of beta hat, and say what normality adds and what it does not. You should be able to show least squares equals maximum likelihood under Gaussian errors, and derive the expected RSS, sigma squared times n minus q, by the trace argument. You should be able to prove the R squared cannot fall, compute the adjusted R squared, 0.125 and minus 0.125 in Wooldridge's example, and state the absolute-t-above-one rule. You should be able to write C p, AIC and BIC and explain the price per parameter. You should be able to derive the optimism, two sigma squared p over n. And you should be able to read the abstention table: persistence 0.684 with interval 0.666 to 0.702, the IDHM sign flip as omitted-variable bias, the joint F of 13.22 against the R squared form of 11.4, and the tiny adjusted R squared gain.
+
+
+Part four, section 7. The first-order autoregression, the unit root and the first-order vector autoregression: the regression with a lagged response, and the distribution it settles into.
+
+This section covers the deck ar-ma, pages 1 to 17; the script ar-var; Tsay sections 2.1 to 2.4, printed pages 30 to 57, with equations 2.8 to 2.11 on printed pages 37 to 39, the autocorrelation function of the first-order autoregression on printed page 40, conditional least squares on printed pages 49 to 50, and the half-life on printed page 56; Tsay section 8.2, printed pages 399 to 403, with equation 8.8, Example 8.3 on printed page 400, and section 8.2.2 on printed pages 401 to 403; and Wooldridge section 11.1, equations 11.2 to 11.4 on printed page 347, and section 11.3, equations 11.20 to 11.22 on printed pages 354 to 355.
+
+The claim. A first-order autoregression, AR one for short, is a linear regression of y at time t on y at time t minus one, and with Gaussian shocks least squares on it is the conditional maximum likelihood estimator. Its behaviour hangs on one number. For phi less than one in absolute value, the process forgets its start at rate phi to the t and settles into the equilibrium, or stationary, distribution: normal with mean mu and variance sigma squared over one minus phi squared. At phi equal to one, a unit root, the variance grows like t sigma squared and there is no equilibrium at all. The autoregression of order p, AR p, is the same regression with p lags. The first-order vector autoregression, VAR one, is its matrix version: stationary when all eigenvalues of the coefficient matrix Phi lie inside the unit circle, with mean I minus Phi inverse times phi zero, and covariance solving Gamma zero equals Phi Gamma zero Phi transposed plus Sigma, that is, vec of Gamma zero equals the inverse of I minus Phi Kronecker Phi, times vec of Sigma.
+
+The notation. r sub t or y sub t is the series at time t; Tsay writes r for returns, Wooldridge writes y. a sub t is the shock, or innovation, white noise with variance sigma a squared, written sigma squared where there is no confusion. Mu is the mean under stationarity. Gamma sub l, the covariance between r at t and r at t minus l, is the lag-l autocovariance, and gamma zero is the variance. Rho sub l, gamma l over gamma zero, is the lag-l autocorrelation. phi zero and phi one are the autoregression's intercept and slope, or persistence. psi sub i are the weights of the linear, moving average of infinite order, representation, with psi zero equal to one. T is the sample length. m is the number of lags in the portmanteau test. k is the dimension of the vector series. phi zero, Phi and Sigma are the vector autoregression's intercept vector, coefficient matrix, and shock covariance. Gamma sub l, capital, is the lag-l cross-covariance matrix. vec of A stacks the columns of A, and the Kronecker product is written with the word Kronecker.
+
+Seven point one. Stationarity. Deck pages 5 to 7, Tsay section 2.1, printed page 30.
+
+Strict stationarity: the joint distribution of the series at any set of times equals the joint distribution at those times shifted by any amount, for every number of time points and every choice of times. In Tsay's words, "a very strong condition that is hard to verify empirically."
+
+Weak stationarity has two conditions: first, the mean is a constant mu; second, the covariance between r at t and r at t minus l is gamma sub l, depending only on the lag l. In a time plot, the values fluctuate with constant variation around a fixed level. It is what makes past data informative about the future.
+
+Two properties of gamma sub l, deck page 7. Gamma zero is the variance. And gamma at minus l equals gamma at l. Equation 1: gamma at minus l is the covariance of r at t and r at t plus l, which is the covariance of r at t plus l and r at t, which, writing t one equal to t plus l, is the covariance of r at t one and r at t one minus l, which is gamma at l.
+
+Seven point two. The autocorrelation function and the Ljung-Box test. Deck pages 8 to 11, Tsay section 2.2, printed pages 30 to 36.
+
+Under weak stationarity the variances at t and at t minus l are both gamma zero. Equation 2: rho sub l equals the covariance over the square root of the product of the two variances, which is gamma l over gamma zero. Its sample version, rho hat sub l, is the sum from t equal to l plus one to T of r at t minus r bar, times r at t minus l minus r bar, divided by the sum from one to T of r at t minus r bar squared.
+
+Portmanteau tests of the null that the first m autocorrelations are all zero, against the alternative that some are not. The Box-Pierce statistic, Q star of m, is T times the sum of the squared sample autocorrelations up to lag m. Its finite-sample improvement, Ljung-Box, equation 3: Q of m equals T times T plus two, times the sum over l from one to m of rho hat l squared over T minus l, which is approximately chi-squared with m degrees of freedom under the null. Reject when Q of m exceeds the one minus alpha quantile of that chi-squared.
+
+Worked: IBM monthly simple returns, deck page 11. The Ljung-Box test with 30 lags gives Q of 30 equal to 38.241; with 30 degrees of freedom, the tail probability is 0.1437, reproduced in Python. No evidence of linear autocorrelation in returns. The same test on squared returns gives Q of 30 equal to 182.12, with p below 2.2 times 10 to the minus 16, about 10 to the minus 23. Returns are serially uncorrelated but not independent: their size is predictable. That is volatility clustering, the subject of ARCH, GARCH and stochastic volatility in Class 8.
+
+Seven point three. White noise and linear time series. Deck pages 12 to 14, Tsay section 2.3, printed pages 36 to 37.
+
+White noise: iid with finite mean and variance; all autocorrelations zero. Gaussian white noise is normal with mean zero and variance sigma squared.
+
+A linear time series: r at t equals mu plus the sum over i from zero to infinity of psi sub i times a at t minus i, with psi zero equal to one and the a's white noise. By independence of the a's, the mean is mu and the variance is sigma a squared times the sum of the squared psi's. The autocovariance, deck page 14: gamma sub l is the expected value of the product of the two sums, the sum over i of psi i a at t minus i, and the sum over j of psi j a at t minus l minus j, which is the double sum of psi i psi j times the expected value of a at t minus i times a at t minus l minus j.
+
+Only terms with t minus i equal to t minus l minus j, that is i equal to j plus l, survive, each contributing sigma a squared. Equation 4: gamma sub l equals sigma a squared times the sum over j of psi j times psi j plus l; and rho sub l equals the sum over i of psi i times psi i plus l, divided by one plus the sum over i from one of psi i squared.
+
+Every model in this section is a recipe for the psi weights.
+
+Seven point four. The first-order autoregression: mean, variance and autocorrelation function. Deck pages 15 to 17, Tsay equations 2.8 to 2.11, printed pages 37 to 40.
+
+Equation 5: r at t equals phi zero plus phi one times r at t minus one plus a at t. In Tsay's words, "in the same form as the well-known simple linear regression model", page 37, with conditional mean phi zero plus phi one r at t minus one and conditional variance sigma a squared.
+
+The mean. Take expectations of equation 5, with the shock of mean zero: the mean at t equals phi zero plus phi one times the mean at t minus one. Under stationarity both means are mu. Equation 6: mu equals phi zero plus phi one mu, if and only if mu equals phi zero over one minus phi one, for phi one different from one.
+
+Substitute phi zero equal to one minus phi one times mu, from equation 6, into equation 5. Equation 7: r at t minus mu equals phi one times r at t minus one minus mu, plus a at t.
+
+The moving average of infinite order form. Substitute equation 7 into itself repeatedly. Equation 8: r at t minus mu equals a at t plus phi one times the quantity phi one times r at t minus two minus mu plus a at t minus one; which is a at t plus phi one a at t minus one plus phi one squared times r at t minus two minus mu; and so on, until it equals the sum over i from zero to infinity of phi one to the i times a at t minus i. This is the linear form with psi sub i equal to phi one to the i, Tsay equation 2.11. So r at t minus one depends only on a at t minus one, a at t minus two, and earlier shocks, and the covariance between r at t minus one and a at t is zero.
+
+The variance. Square equation 7 and take expectations; the cross term vanishes because the covariance between r at t minus one and a at t is zero. The variance at t equals phi one squared times the variance at t minus one, plus sigma a squared. Under stationarity both variances are gamma zero. Equation 9: gamma zero equals phi one squared gamma zero plus sigma a squared, if and only if gamma zero equals sigma a squared over one minus phi one squared.
+
+That is a positive finite number only if phi one squared is less than one. So weak stationarity implies the absolute value of phi one is less than one; conversely, an absolute value below one makes equation 8 converge with finite, time-invariant moments. Necessary and sufficient: the absolute value of phi one is less than one, Tsay page 39, Wooldridge equation 11.3, printed page 347.
+
+The autocorrelation function. Multiply equation 7 by r at t minus l minus mu, for l at least one, and take expectations; a at t is uncorrelated with the past. Equation 10: gamma sub l equals phi one times the expected value of r at t minus one minus mu times r at t minus l minus mu, plus the expected value of a at t times r at t minus l minus mu, which is phi one times gamma at l minus one, plus zero.
+
+Iterate equation 10 down to gamma zero: gamma sub l equals phi one to the l times gamma zero. So equation 11, boxed: rho sub l equals phi one to the l, for l equal to zero, one, two and onward.
+
+Exponential decay at rate phi one, alternating in sign when phi one is negative, Tsay Figure 2.3, printed page 40. The deck's page 16 writes the lag-zero case as gamma zero equals phi one gamma one plus sigma a squared; with gamma one equal to phi one gamma zero, that is equation 9 again. Wooldridge's number, equation 11.4, printed page 347: with phi one equal to 0.9, the correlation between y at t and y at t plus five is 0.9 to the fifth, which is 0.59049, about 0.591. High persistence, yet the correlation fades.
+
+Seven point five. Estimation: least squares is the conditional maximum likelihood estimator. Tsay pages 49 to 50.
+
+Assume Gaussian shocks. By equation 5, r at t given r at t minus one is normal with mean phi zero plus phi one r at t minus one and variance sigma a squared, and by the Markov property the joint density factors. Equation 12: the joint density of r one to r T equals the density of r one times the product from t equal to two to T of the density of r at t given r at t minus one.
+
+Conditioning on r one drops the first factor. Equation 13: the conditional log-likelihood of phi zero, phi one and sigma a squared equals minus T minus one over two times log of two pi sigma a squared, minus one over two sigma a squared times the sum from t equal to two to T of r at t minus phi zero minus phi one r at t minus one, squared.
+
+That is equation 15 of section 6, with y the vector of r two to r T, and X having rows one and r at t minus one. By the argument there, phi zero hat and phi one hat are the least squares regression of r at t on r at t minus one: Tsay's "conditional least-squares method". And "if the conditional-likelihood method is used, the estimates of phi i remain unchanged", Tsay page 50; only the divisor of sigma a hat squared changes.
+
+The exact likelihood keeps the density of r one, which under stationarity is the equilibrium law of section 7.6, normal with mean mu and variance sigma a squared over one minus phi one squared. That factor depends on phi one, so the exact maximum likelihood estimator differs slightly from least squares, negligibly for large T, and it imposes an absolute value of phi one below one, while least squares can return any value.
+
+Seven point six. The equilibrium, or stationary, distribution.
+
+Start the Gaussian first-order autoregression at a fixed y zero and iterate equation 7 t times, stopping instead of going to infinity as in equation 8. Equation 14: y at t minus mu equals phi to the t times y zero minus mu, plus the sum over j from zero to t minus one of phi to the j times a at t minus j.
+
+A fixed number plus a sum of independent normals is normal. Equation 15: the mean of y at t given y zero is mu plus phi to the t times y zero minus mu; and the variance is sigma squared times the sum over j from zero to t minus one of phi to the 2 j, which, as a geometric sum with phi squared different from one, is sigma squared times one minus phi to the 2 t, over one minus phi squared.
+
+Let t go to infinity with the absolute value of phi below one: phi to the t and phi to the 2 t both go to zero. Equation 16, boxed: y at t given y zero converges in distribution to a normal with mean mu and variance sigma squared over one minus phi squared, whatever y zero.
+
+The start is forgotten geometrically. Equation 16 is also the only invariant normal law. If y at t minus one is normal with mean mu and variance v, then by equation 7, y at t is normal with mean mu and variance phi squared v plus sigma squared, which equals v exactly when v equals phi squared v plus sigma squared, that is, v equals sigma squared over one minus phi squared: equation 9 again.
+
+The half-life, Tsay page 56: the horizon h at which the expected deviation from mu has halved, phi to the h equal to one half. Equation 17: h equals the natural log of 0.5 over the natural log of the absolute value of phi.
+
+Worked, with phi equal to 0.9, sigma equal to one, mu equal to zero, and y zero equal to 8. The equilibrium variance is one over one minus 0.81, which is one over 0.19, which is 5.263, with standard deviation 2.294. The half-life is the log of 0.5 over the log of 0.9, which is minus 0.6931 over minus 0.1054, which is 6.58 periods. At t equal to 10, from equation 15: the mean is 0.9 to the 10th times 8, which is 0.3487 times 8, which is 2.79; and the variance is one minus 0.9 to the 20th, over 0.19, which is one minus 0.1216 over 0.19, which is 4.62. For phi equal to 0.5 the half-life is exactly one and the equilibrium variance is one over 0.75, which is 1.333.
+
+The figure has two panels. On the left, the densities of y at t given y zero equal to 8, for phi equal to 0.9, at t equal to 1, 3, 10 and 30, moving left and widening toward the equilibrium normal with variance 5.26. On the right, the conditional variance against the horizon for phi equal to 0.5 and 0.9, levelling off at 1.33 and 5.26, while for phi equal to one it grows linearly as t, Wooldridge equation 11.21. On the left the density slides from near 8 toward zero and spreads; by t equal to 30 it is indistinguishable from the equilibrium curve, since 0.9 to the 30th times 8 is 0.34. On the right the stationary variances level off, fast for phi equal to 0.5, after a few half-lives for phi equal to 0.9, while the unit-root line never does.
+
+Seven point seven. The unit root, phi equal to one. Wooldridge section 11.3, printed pages 354 to 355.
+
+With phi one equal to one and phi zero equal to zero, equation 5 is the random walk: y at t equals y at t minus one plus e at t, Wooldridge equation 11.20. Repeated substitution with y zero fixed gives equation 18: y at t equals y zero plus e one plus e two up to e t; its mean is y zero; and its variance is t times sigma e squared, Wooldridge equation 11.21, printed page 354.
+
+The variance grows linearly in t, so the process cannot be stationary, and equation 16 has no limit: one minus phi squared is zero in the denominator. Forecasts never revert. Equation 19: the expected value of y at t plus h given y at t is y at t for every horizon h, Wooldridge equation 11.22, printed page 355; against phi to the h times y at t, which goes to zero, when the absolute value of phi is below one.
+
+Persistence does not fade either. The correlation between y at t and y at t plus h is the square root of t over t plus h, Wooldridge page 355. It depends on t, so the process is not stationary, and for h equal to 100 it exceeds 0.95 once t passes 1000: the square root of 1000 over 1100 is 0.9535.
+
+The figure shows three stacked panels driven by the same seeded 200 standard normal shocks, with y zero equal to zero. At phi equal to 0.5 the path stays inside a band of plus or minus 2.31, two equilibrium standard deviations, and crosses zero constantly. At phi equal to 0.9 it wanders more widely inside plus or minus 4.59, making long excursions but always returning; the half-life of 6.6 periods is visible as runs of that length. At phi equal to one every shock is permanent; the band of plus or minus two times the square root of t widens to about 28, and the path drifts to about minus 15 with nothing pulling it back.
+
+Why it matters for estimation, named only; this is Class 8. At phi equal to one, the least squares phi hat of section 7.5 is still consistent, even faster, at rate T, but its t statistic for the null that phi equals one no longer has a standard normal limit: it follows the Dickey-Fuller distribution. And regressing one random walk on another produces spurious significance. Wooldridge section 11.3 covers the persistence, and sections 18.2 and 18.3 the tests and spurious regressions.
+
+Seven point eight. The autoregression of order p as a regression. Tsay equation 2.9, printed pages 49 to 50.
+
+Equation 20: r at t equals phi zero plus phi one r at t minus one, up to phi p r at t minus p, plus a at t, for t from p plus one to T. In Tsay's words, it "is in the form of a multiple linear regression and can be estimated by the least-squares method", page 49. The response vector is r at p plus one up to r at T; the rows of X are one, r at t minus one, up to r at t minus p; and beta hat is X transposed X inverse times X transposed y, from equation 7 of section 6. There are T minus p observations and p plus one parameters, hence Tsay's error variance estimate: the sum of squared residuals over T minus 2 p minus one, which is the divisor n minus q of equation 19 of section 6.
+
+The stationary mean. Taking expectations as in equation 6, equation 21: mu equals phi zero over one minus phi one minus up to minus phi p.
+
+Worked: Tsay's third-order autoregression for monthly value-weighted index returns, page 50. r at t equals 0.0091 plus 0.116 r at t minus one, minus 0.019 r at t minus two, minus 0.104 r at t minus three, plus the residual, with residual standard deviation 0.054. By equation 21: mu equals 0.0091 over one minus 0.116, minus minus 0.019, minus minus 0.104, which is 0.0091 over 1.007, which is 0.00904, about 0.9 per cent a month. With these small coefficients the implied mean barely differs from the intercept. Second-order autoregression moments and forecasts are Tsay Exercise 2.2, printed page 104.
+
+Seven point nine. The first-order vector autoregression in matrix form. Tsay section 8.2, printed pages 399 to 403.
+
+Equation 22, Tsay equation 8.8: r at t equals phi zero plus Phi times r at t minus one plus a at t, with the shocks serially uncorrelated, of mean zero, and with covariance matrix Sigma.
+
+For two series, write it out. Series one at t equals phi one zero, plus Phi one one times series one at t minus one, plus Phi one two times series two at t minus one, plus shock one. Series two at t equals phi two zero, plus Phi two one times series one at t minus one, plus Phi two two times series two at t minus one, plus shock two.
+
+Phi one two is the effect of series two lagged on series one, given series one lagged. If Phi one two is zero and Phi two one is not, there is one-way dependence from series one to series two. If both are zero, the series are uncoupled. If both are nonzero, there is feedback. Contemporaneous links live only in the off-diagonal of Sigma: this is the reduced form. A Cholesky factor of Sigma turns it into a recursive structural form, Tsay section 8.2.1; structural vector autoregressions and impulse responses are Class 9. Each equation is a least squares regression on the same lagged regressors, so equation-by-equation least squares estimates Phi.
+
+Stationarity, Tsay page 402. Repeated substitution as in equation 8 gives the deviation from the mean as a at t plus Phi a at t minus one plus Phi squared a at t minus two, and onward. The weights, powers of Phi, must vanish, which happens if and only if all eigenvalues of Phi are less than one in modulus: the matrix version of the absolute value of phi one below one.
+
+The mean. Take expectations of equation 22 under stationarity. Equation 23: mu equals phi zero plus Phi mu, if and only if I minus Phi times mu equals phi zero, if and only if mu equals I minus Phi inverse times phi zero.
+
+The covariance. With the deviation at t equal to Phi times the deviation at t minus one plus a at t, and zero covariance between the lagged deviation and the shock, equation 24: Gamma zero, the expected outer product of the deviation, equals Phi times the expected outer product at t minus one times Phi transposed, plus the expected outer product of the shock, which is Phi Gamma zero Phi transposed plus Sigma.
+
+Apply vec, and the identity vec of A B C equals C transposed Kronecker A, times vec of B, with A equal to Phi, B equal to Gamma zero and C equal to Phi transposed. Then vec of Gamma zero equals Phi Kronecker Phi times vec of Gamma zero, plus vec of Sigma. Solve. Equation 25, boxed: vec of Gamma zero equals the inverse of the identity of size k squared minus Phi Kronecker Phi, times vec of Sigma.
+
+The matrix I minus Phi Kronecker Phi is invertible because the eigenvalues of Phi Kronecker Phi are the products lambda i times lambda j, all of modulus below one. Post-multiplying the deviation equation by the transposed deviation at t minus l and taking expectations gives Tsay equation 8.12, our equation 26: Gamma sub l equals Phi times Gamma at l minus one, so Gamma sub l equals Phi to the l times Gamma zero, for l positive. For a single series, equations 23, 25 and 26 collapse to equations 6, 9 and 10.
+
+Seven point nine point one. Worked: Tsay Example 8.3, printed page 400. The intercept vector is 0.2 and 0.4. The coefficient matrix Phi has first row 0.2 and 0.3, and second row minus 0.6 and 1.1. The shock covariance Sigma has first row 2 and 1, and second row 1 and 1.
+
+Is it stationary? The trace of Phi is 1.3. The determinant is 0.2 times 1.1, minus 0.3 times minus 0.6, which is 0.22 plus 0.18, which is 0.40. The eigenvalues solve lambda squared minus 1.3 lambda plus 0.40 equals zero: lambda equals 1.3 plus or minus the square root of 1.69 minus 1.60, all over two, which is 1.3 plus or minus 0.3 over two, giving 0.8 and 0.5. Both inside the unit circle: stationary, although the coefficient Phi two two is 1.1, above one. A single coefficient above one does not make a vector autoregression explosive.
+
+The mean, by equation 23. I minus Phi has first row 0.8 and minus 0.3, and second row 0.6 and minus 0.1. Its determinant is 0.8 times minus 0.1, minus minus 0.3 times 0.6, which is minus 0.08 plus 0.18, which is 0.10. So its inverse is one over 0.10 times the matrix with first row minus 0.1 and 0.3, and second row minus 0.6 and 0.8, which is the matrix with first row minus 1 and 3, and second row minus 6 and 8. Then mu has first entry minus 1 times 0.2 plus 3 times 0.4, which is 1.0, and second entry minus 6 times 0.2 plus 8 times 0.4, which is 2.0.
+
+The covariance, by equation 25. Phi Kronecker Phi has blocks equal to each entry of Phi times Phi; for instance the top-left block is 0.2 times Phi, with first row 0.04 and 0.06, and second row minus 0.12 and 0.22. Then the 4 by 4 matrix I minus Phi Kronecker Phi has rows: 0.96, minus 0.06, minus 0.06, minus 0.09; then 0.12, 0.78, 0.18, minus 0.33; then 0.12, 0.18, 0.78, minus 0.33; then minus 0.36, 0.66, 0.66, minus 0.21. And vec of Sigma is 2, 1, 1, 1. Solving gives vec of Gamma zero equal to 25 ninths, 20 ninths, 20 ninths and 40 ninths. So Gamma zero has first row 25 ninths and 20 ninths, and second row 20 ninths and 40 ninths; in decimals, 2.778 and 2.222, then 2.222 and 4.444.
+
+A check of one entry of equation 24. First, Gamma zero times the vector 0.2 and 0.3 is, in its first entry, 0.2 times 25 ninths plus 0.3 times 20 ninths, which is 11 ninths, and in its second entry, 0.2 times 20 ninths plus 0.3 times 40 ninths, which is 16 ninths. Then the top-left entry of Phi Gamma zero Phi transposed is 0.2 times 11 ninths plus 0.3 times 16 ninths, which is 2.2 plus 4.8 over 9, which is 7 ninths. And 7 ninths plus Sigma one one, which is 18 ninths, gives 25 ninths. It checks.
+
+Lag one, by equation 26: Gamma one equals Phi Gamma zero, with first row 11 ninths and 16 ninths, and second row 7 ninths and 32 ninths. The contemporaneous correlation is 20 ninths over the square root of 25 ninths times 40 ninths, which is 20 over the square root of 1000, which is 0.632. All entries were computed exactly and by a linear solver for the notes.
+
+Seven point ten. Intuition: the site's R script, ar-var. Taken from Penn State's STAT 510 course: first- and second-order autoregression fits to three Los Angeles pollution and mortality series, cardiovascular mortality, temperature and particulates, from the astsa package; a first-order vector autoregression with constant and trend on the three jointly; and a first-order vector autoregression on the vars package's Canada data, productivity, employment, real wage and unemployment, with 52-step impulse responses and their bands. The file prints no output, so no numbers are taken from it. The Python equivalents are the statsmodels autoregression routine, which is the least squares of section 7.5, and the statsmodels vector autoregression routine with its impulse response method; see the Python note. The impulse responses and their identification belong to Class 9.
+
+Spoken checklist for section 7. You should be able to state strict and weak stationarity and prove gamma at minus l equals gamma at l. You should be able to write the Ljung-Box statistic and read the IBM result: no linear autocorrelation in returns, strong dependence in squared returns. You should be able to derive the autocovariance of a linear time series. You should be able to derive the first-order autoregression's mean, its moving average form, its variance sigma squared over one minus phi squared, and its autocorrelation phi to the l, and state the stationarity condition. You should be able to show least squares is the conditional maximum likelihood estimator, and what the exact likelihood adds. You should be able to derive the conditional law of y at t given y zero, its equilibrium limit, and the half-life, with 5.263 and 6.58 at phi equal to 0.9. You should be able to show the random walk's variance is t sigma squared and its forecasts never revert. And you should be able to work Tsay's Example 8.3: eigenvalues 0.8 and 0.5, mean 1 and 2, Gamma zero equal to one ninth times 25, 20, 20, 40, and the correlation 0.632.
+
+
+Part five, section 8. p-hacking and evidence: why 32 tries make significance likely, and why a p-value of 0.036 can favour the null.
+
+This section covers the deck part one p-hacking, 13 slides, and the deck p-hacking slides economics, 12 slides.
+
+The claim. A p-value is calibrated for one pre-specified test. Search over 32 specifications of a null effect and, if they were independent, the chance that at least one gives p below 0.05 is one minus 0.95 to the 32nd, about 0.81. Bonferroni restores the 5 per cent family-wise rate by demanding p below 0.05 over 32, about 0.0016. Even a single honest p below 0.05 is not evidence for the alternative. With X normal with mean theta and variance one, the null theta equal to zero against the alternative theta equal to 4, and an observed X of 1.8, the p-value is 0.036, yet the data are e to the 0.8, which is 2.23, times likelier under the null, and with equal priors the posterior probability of the alternative is 0.31. To reach a posterior of 0.9 for the alternative from these data, one must start from prior odds of about 20 to 1 for the alternative. That is the hidden prior that reading p below 0.05 as strong evidence assumes.
+
+The notation. Alpha is the nominal size of each test, 0.05 in the deck. m is the number of specifications, or tests, tried, 32 in the deck. p is the p-value of one test. X is the single observation, normal with mean theta and variance one. H zero and H one are theta equal to zero and theta equal to 4. Capital Phi and small phi are the standard normal distribution function and density. f of x given H j is the density of X under hypothesis j. The Bayes factor B F one zero is f of x given H one over f of x given H zero, and B F zero one is its reciprocal: the likelihood ratio for two point hypotheses. And P of H j and P of H j given x are the prior and posterior probabilities.
+
+Eight point one. Intuition: what p-hacking is. Part one, slide 3; economics deck, slides 3 and 4.
+
+Slide 3, quoting Wikipedia: "P-hacking (or data dredging) is the misuse of data analysis to produce statistically significant results (P less than 0.05) where none may exist, often by trying multiple methods until a desired result appears."
+
+The practices, economics deck slide 4. Specification searching: run many regressions, report the cleanest. Selective controls. Sample slicing: outliers, windows, subsamples. Outcome switching. Optional stopping: collect until significant. And HARKing: hypothesising after the results are known. None requires bad faith; each is a fork in what Gelman and Loken, 2014, call "the garden of forking paths". The formal symptom, slide 3: under the null, p-values are uniform on zero to one, and selective search produces a discontinuity at p equal to 0.05, Brodeur and others, 2016.
+
+Eight point two. Why a single p-value has size alpha.
+
+Let T be a test statistic with continuous distribution function F zero under the null, rejecting for large T, so the p-value is one minus F zero of T. For alpha between zero and one, equation 1: the null probability that p is at most alpha equals the null probability that F zero of T is at least one minus alpha, which is one minus the probability that F zero of T is less than one minus alpha, which is one minus one minus alpha, which is alpha. This holds because F zero of T is uniform on zero to one under the null, by the probability integral transform.
+
+Equation 1 is a statement about one test, chosen before seeing the data. It says nothing about the smallest of several p-values, which is what a reader is shown after a search.
+
+Eight point three. The combinatorial explosion. Part one, slides 4 to 6.
+
+The setup, slide 4. Does a new teaching method raise test scores? 30 students, treatment against control, true effect zero. The researcher explores: an outlier rule, keeping all, excluding beyond 2 standard deviations, or beyond 1.5; covariates, none, grade point average, or grade point average plus gender; the sample, all, excluding late enrollees, or excluding absentees; a one- or two-tailed test; and the outcome at week 4, 6 or 8.
+
+The count, slide 5: "With 5 binary decisions, there are up to 2 to the 5th, equal to 32, specifications." Let A sub j be the event that specification j rejects. If the m tests were independent, each with size alpha by equation 1, then equation 2: the probability of no rejection is the product of the probabilities of not rejecting, which is one minus alpha to the m. And equation 3: the probability of at least one rejection is one minus the quantity one minus alpha to the m.
+
+Substitute alpha equal to 0.05 and m equal to 32 into equation 3: one minus 0.95 to the 32nd is one minus 0.1937, which is 0.806, about 0.81.
+
+Slide 5 says: "There is roughly an 81 per cent chance of finding at least one significant result purely by chance, if the researcher reports only the best-looking specification." A seeded check run for the notes, 200,000 replications of 32 independent tests of size 0.05, gives 0.808.
+
+The rate for several values of m: with 1 test, 0.050; with 5, 0.226; with 10, 0.401; with 32, 0.806; with 162, 0.9998.
+
+Two qualifications the slide's arithmetic hides.
+
+The count. The table's options are not binary: three times three times three times two times three gives 162 combinations, for which equation 3 gives 0.9998. "Up to 32" is the binary simplification.
+
+The independence. All specifications use the same 30 students, so their test statistics are strongly positively correlated, and equation 2 does not hold. For two-sided tests on jointly normal statistics, Šidák's inequality gives a probability of no rejection of at least one minus alpha to the m, so 0.81 is an upper bound. At the other extreme, 32 perfectly correlated tests are one test, with rate 0.05. The true family-wise rate lies between, usually far above 0.05, which is the point.
+
+Bonferroni, slide 6. Test each specification at alpha over m. By the union bound, with no independence assumption at all, equation 4: the probability of the union of the rejection events is at most the sum of their probabilities, which is m times alpha over m, which is alpha. So the family-wise rate is at most alpha. Here that means p below 0.05 over 32, which is 0.0015625, about 0.0016. Without the correction the same bound reads 32 times 0.05, which is 1.6: useless, which is why equation 3 was needed.
+
+What the frequentist correction cannot fix, slide 6: "From the likelihood principle: inference should depend only on the data observed, not on the hypothetical tests that could have been run." Yet a p-value's meaning depends on exactly those unrun tests, and "the unreported search path is invisible to the reader." The same tension drives the stopping-rule example of section 1: identical likelihoods, different p-values. The remedy, slide 6: Bayesian model averaging, or a multiverse analysis that reports the estimate across all specifications, so fragility is visible. The abstention regressions of section 6.8 are a small honest instance: five specifications side by side, with persistence stable at 0.65 to 0.72 in all.
+
+Eight point four. A p-value below 0.05 that favours the null. Part one, slides 7 to 9.
+
+X is normal with mean theta and variance one; the null is theta equal to zero, the alternative theta equal to 4; and the observed X is 1.8.
+
+The p-value, slide 7. Equation 5: the probability that X is at least 1.8 when theta is zero equals one minus Phi of 1.8, which is one minus 0.96407, which is 0.0359, below 0.05.
+
+The slide continues: "The result is statistically significant, so reject H zero. Surprisingly, nothing is said about H one!" Swap the roles, with the null theta equal to 4 and the alternative theta equal to zero, rejecting for small X. Equation 6: the p-value is the probability that X is at most 1.8 when theta is 4, which is Phi of 1.8 minus 4, which is Phi of minus 2.2, which is 0.0139.
+
+So 1.8 is significant against either hypothesis: it sits in the tail of both, "an even more extreme tail of H one", slide 8.
+
+The likelihood ratio, slide 8. With phi of z equal to e to the minus z squared over two, over the square root of two pi, the constants cancel. Equation 7: B F zero one equals f of x given the null over f of x given the alternative, which is phi of 1.8 minus zero over phi of 1.8 minus 4; which is the exponential of minus 1.8 squared over two, over the exponential of minus minus 2.2 squared over two; which is e to the minus 1.62 over e to the minus 2.42; which is e to the 0.80, which is 2.2255.
+
+In the deck's words: "The data are more than twice as likely under H zero than under H one. The observation X equal to 1.8 is closer to the null than to the alternative": 1.8 from zero, 2.2 from 4.
+
+For every x. Expand the squares. Equation 8: the log of B F one zero at x equals minus x minus 4 squared over two, plus x squared over two, which is x squared minus the quantity x squared minus 8 x plus 16, over two, which is 4 x minus 8.
+
+So the Bayes factor equals one at x equal to 2, the midpoint. Any x between 1.645 and 2 is significant at 5 per cent one-sided, since one minus Phi of 1.645 is 0.05, and yet favours the null. At x equal to 1.8, equation 8 gives 4 times 1.8 minus 8, which is minus 0.8, so B F one zero is e to the minus 0.8, which is 0.449, the reciprocal of equation 7.
+
+The posterior, slide 9. Bayes' theorem over the two hypotheses, equation 9: the posterior probability of H one given x equals f of x given H one times P of H one, divided by the sum of f of x given H one times P of H one and f of x given H zero times P of H zero.
+
+With equal priors of 0.5 each, the priors cancel; divide through by f of x given H one and substitute equation 7. Equation 10: the posterior probability of H one equals one over one plus f of x given H zero over f of x given H one, which is one over one plus B F zero one, which is one over one plus 2.2255, which is one over 3.2255, which is 0.310.
+
+Slide 9: "Despite a p-value of 0.036, the posterior probability of H one is only 31 per cent." The Bayes factor B F one zero of about 0.45 "constitutes evidence in favour of H zero". It is a clean instance "of the Jeffreys-Lindley paradox in spirit": a p-value measures distance from the null and is completely blind to where the alternative is.
+
+The figure has two panels. On the left, the normal densities centred at zero and at 4, with X equal to 1.8 marked. The right tail of the null beyond 1.8 has area 0.036; the left tail of the alternative below 1.8 has area 0.014; and the density height under the null is e to the 0.8, 2.23 times that under the alternative. On the right, as functions of the observation x from zero to 4, the one-sided p-value falls while the posterior probability of the alternative with equal priors, one over one plus e to the minus 4 x minus 8, rises, crossing 0.5 at x equal to 2. A band from 1.645 to 2 marks where p is below 0.05 but the Bayes factor favours the null; at x equal to 1.8 the p-value is 0.036 and the posterior 0.31.
+
+The left panel separates the two questions: the p-value is a tail area, the Bayes factor a ratio of heights at the observed point. On the right the two curves move in opposite directions, and the shaded band is where they disagree about which hypothesis the data support; x equal to 1.8 sits inside it.
+
+Eight point five. The prior that would make a p-value of 0.036 convincing. Part one, slides 10 to 13.
+
+Keep equation 9 but leave the priors free. Divide numerator and denominator by f of x given H one times P of H one. Equation 11: the posterior probability of H one equals one over one plus B F zero one times the prior odds P of H zero over P of H one.
+
+Set equation 11 equal to 0.9, slide 10. Equation 12: one plus B F zero one times P of H zero over P of H one equals one over 0.9, if and only if B F zero one times P of H zero over P of H one equals one over 0.9 minus one, which is one ninth.
+
+Substitute B F zero one equal to 2.2255 from equation 7 and solve, slide 11. Equation 13: P of H zero over P of H one equals one over 9 times 2.2255, which is one over 20.03; so, boxed, the prior odds P of H one over P of H zero equal 20.03, about 20. The deck, rounding the Bayes factor to 2.23, prints one over 20.07.
+
+Odds of 20 to 1 mean P of H one equals 20 over 21, which is 0.952, and P of H zero equals one over 21, which is 0.048. Equivalently, in odds form, posterior odds equal the Bayes factor times the prior odds: 9 equals 0.449 times 20.03.
+
+Two scenarios, slide 13. With equal priors, X equal to 1.8, and the alternative at theta equal to 4: p-value 0.036, posterior probability of the alternative 0.31. With prior odds of 20 to 1 in favour of the alternative: the same p-value 0.036, and posterior 0.90.
+
+Slide 12: "To obtain P of H one given X equal to 0.9 from data that actually favour H zero by a factor of 2.23, one must enter the analysis believing H one is 20 times more probable than H zero a priori." That is the implicit prior behind treating p below 0.05 as strong evidence here. And: "Making the prior explicit is not a weakness of Bayesian analysis, it is in fact its central virtue."
+
+The three lessons, slide 13. First, p-hacking inflates false positives multiplicatively across specifications. Second, a significant p-value can coexist with a Bayes factor favouring the null. Third, a high posterior for the alternative despite unfavourable data needs a heavily loaded prior.
+
+Eight point six. Intuition: the replication crisis and economics. From the economics deck. All figures and studies below are the deck's, cited as the deck cites them.
+
+Replication, slide 5. The Open Science Collaboration, 2015: only 36 per cent of 100 psychology studies replicated. Camerer and others, 2016 and 2018: 61 per cent in experimental economics, and 62 per cent for social-science papers in Nature and Science. Effect sizes in successful replications are typically about 50 per cent of the originals. The drivers: p-hacking, publication bias, low power, and weak pre-registration.
+
+Why it compounds, slide 6, as a chain. Journals reward significant findings; that creates incentives to reach p below 0.05; forking paths push the real Type I error far above 5 per cent; published effects are biased upward and standard errors downward; and meta-analyses and policy inherit the bias.
+
+Evidence in economics, slide 7. Brodeur, Lé, Sangnier and Zylberberg, 2016, in AEJ Applied, "Star Wars: The Empirics Strike Back", examined more than 50,000 test statistics from top journals and found a two-humped distribution of z statistics around 1.96, with roughly 10 to 20 per cent of marginally significant results attributable to p-hacking and selective reporting. Brodeur, Cook and Heyes, 2020, in the American Economic Review: instrumental variables and difference in differences show the most inflation near p equal to 0.05; randomised controlled trials and regression discontinuity less. The deck's text lists the 2016 authors as Brodeur, Lé, Sánchez and Cook, and its reference list repeats that.
+
+Why economics is vulnerable, slide 8: observational data with many defensible specifications, a weak replication culture, significance stars as gatekeepers, long lags weakening pre-specification, and policy stakes. Examples, slide 9: minimum-wage employment effects, Neumark and Wascher against Card and Krueger; Sala-i-Martin's 1997 two million growth regressions; Reinhart and Rogoff's 90 per cent debt threshold, reversed after coding errors, Herndon and others, 2014; and behavioural headline effects weakened by the Many Labs project.
+
+Responses, slide 10: pre-registration and pre-analysis plans, with the AEA RCT Registry since 2013; mandatory data and code archives; replication journals; multiple-testing corrections, Bonferroni, which is equation 4, Romano-Wolf, and the sharpened false discovery rate of Anderson, 2008; specification curves and multiverse analyses; and Benjamin and others, 2018, who propose redefining "significant" as p below 0.005.
+
+Slide 11: "The fundamental fix is cultural: rewarding credible research, not just significant research."
+
+Eight point seven. Graduate layer: where this goes. Not examinable here.
+
+Bayes factors for composite hypotheses, with priors over theta under the alternative and marginal likelihoods, posterior model probabilities and Bayesian model averaging are Classes 3 and 4, Greenberg section 3.2.4. There the Jeffreys-Lindley paradox appears in full: with a diffuse prior under the alternative, a fixed p of 0.05 supports the null ever more strongly as n grows.
+
+Spoken checklist for section 8. You should be able to prove that a single p-value has size alpha by the probability integral transform. You should be able to derive one minus one minus alpha to the m and compute 0.806 for 32 tests, and state why 0.81 is an upper bound and why the deck's count should be 162. You should be able to prove Bonferroni by the union bound and give 0.0016. You should be able to compute the p-value 0.036, the swapped p-value 0.0139, the Bayes factor 2.23, the log Bayes factor 4 x minus 8, and the posterior 0.31. And you should be able to derive the prior odds of about 20 to 1 needed to reach a posterior of 0.9.
+
+
+Recap of part 2. Mean squared error is variance plus squared bias; for the uniform bound the scaled maximum wins for n of at least 3, with values 2.325, 0.136, 0.300 and 0.075 at n equal to 10; the nonparametric bootstrap puts a 63 per cent point mass on the maximum and fails, while the parametric bootstrap works. Least squares is a projection and, with Gaussian errors, the maximum likelihood estimator; the R squared cannot fall and so cannot select; the training error is optimistic by two sigma squared p over n, and Boston's perfect in-sample fit predicts 10.5 times worse. The first-order autoregression is a regression on the lag; for phi below one in absolute value it settles into a normal with variance sigma squared over one minus phi squared, and at phi equal to one the variance grows like t. The vector autoregression is stationary when the eigenvalues of Phi are inside the unit circle. And a p-value is not evidence: 32 tries give 0.81, and a p-value of 0.036 can sit beside a posterior of 0.31. Part 3 holds the pitfalls, the formula sheet, and the self-test.
