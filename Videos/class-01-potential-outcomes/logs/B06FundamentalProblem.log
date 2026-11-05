@@ -1,0 +1,307 @@
+<frozen runpy>:128: RuntimeWarning: 'manim.__main__' found in sys.modules after import of package 'manim', but prior to execution of 'manim.__main__'; this may result in unpredictable behaviour
+Manim Community v0.21.0
+
+Animation 0: FadeIn(Text('What could we actually see?')):   0%|          | 0/11 [00:00<?, ?it/s]Animation 0: FadeIn(Text('What could we actually see?')):  55%|#####4    | 6/11 [00:00<00:00, 59.65it/s]                                                                                                        [10/09/26 17:39:47] INFO     Animation 0 : Partial     scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B06FundamentalP                         
+                             roblem\2118183852_2654566                         
+                             287_223132457.mp4'                                
+[10/09/26 17:39:48] INFO     Animation 1 : Partial     scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B06FundamentalP                         
+                             roblem\366519484_15812708                         
+                             34_476207830.mp4'                                 
+Animation 2: FadeIn(VGroup of 48 submobjects):   0%|          | 0/12 [00:00<?, ?it/s]Animation 2: FadeIn(VGroup of 48 submobjects):  25%|##5       | 3/12 [00:00<00:00, 24.23it/s]Animation 2: FadeIn(VGroup of 48 submobjects):  50%|#####     | 6/12 [00:00<00:00, 26.36it/s]Animation 2: FadeIn(VGroup of 48 submobjects):  75%|#######5  | 9/12 [00:00<00:00, 25.81it/s]Animation 2: FadeIn(VGroup of 48 submobjects): 100%|##########| 12/12 [00:00<00:00, 26.02it/s]                                                                                              [10/09/26 17:39:50] INFO     Animation 2 : Partial     scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B06FundamentalP                         
+                             roblem\366519484_42167461                         
+                             37_3861449985.mp4'                                
+[10/09/26 17:39:53] INFO     Animation 3 : Partial     scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B06FundamentalP                         
+                             roblem\366519484_40201959                         
+                             41_3642250673.mp4'                                
+Animation 4: _MethodAnimation(Text('3')):   0%|          | 0/9 [00:00<?, ?it/s]Animation 4: _MethodAnimation(Text('3')):  56%|#####5    | 5/9 [00:00<00:00, 45.40it/s]                                                                                       [10/09/26 17:39:54] INFO     Animation 4 : Partial     scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B06FundamentalP                         
+                             roblem\366519484_35503106                         
+                             01_2655487440.mp4'                                
+[10/09/26 17:39:57] INFO     Animation 5 : Partial     scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B06FundamentalP                         
+                             roblem\366519484_90101003                         
+                             8_994987041.mp4'                                  
+Animation 6: _MethodAnimation(Text('2')):   0%|          | 0/9 [00:00<?, ?it/s]Animation 6: _MethodAnimation(Text('2')):  44%|####4     | 4/9 [00:00<00:00, 38.73it/s]Animation 6: _MethodAnimation(Text('2')): 100%|##########| 9/9 [00:00<00:00, 45.08it/s]                                                                                       [10/09/26 17:39:58] INFO     Animation 6 : Partial     scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B06FundamentalP                         
+                             roblem\366519484_57636295                         
+                             8_1835843900.mp4'                                 
+[10/09/26 17:40:01] INFO     Animation 7 : Partial     scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B06FundamentalP                         
+                             roblem\366519484_32172765                         
+                             15_627586582.mp4'                                 
+Animation 8: _MethodAnimation(Text('4')):   0%|          | 0/9 [00:00<?, ?it/s]Animation 8: _MethodAnimation(Text('4')):  67%|######6   | 6/9 [00:00<00:00, 55.99it/s]                                                                                                           INFO     Animation 8 : Partial     scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B06FundamentalP                         
+                             roblem\366519484_36411925                         
+                             70_2431521523.mp4'                                
+[10/09/26 17:40:04] INFO     Animation 9 : Partial     scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B06FundamentalP                         
+                             roblem\366519484_10671593                         
+                             41_4018881876.mp4'                                
+Animation 10: _MethodAnimation(Text('3')):   0%|          | 0/9 [00:00<?, ?it/s]Animation 10: _MethodAnimation(Text('3')):  67%|######6   | 6/9 [00:00<00:00, 57.06it/s]                                                                                        [10/09/26 17:40:05] INFO     Animation 10 : Partial    scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B06FundamentalP                         
+                             roblem\366519484_18870687                         
+                             68_142226724.mp4'                                 
+[10/09/26 17:40:07] INFO     Animation 11 : Partial    scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B06FundamentalP                         
+                             roblem\366519484_15912750                         
+                             42_658592421.mp4'                                 
+Animation 12: _MethodAnimation(Text('8')):   0%|          | 0/9 [00:00<?, ?it/s]Animation 12: _MethodAnimation(Text('8')): 100%|##########| 9/9 [00:00<00:00, 89.84it/s]                                                                                        [10/09/26 17:40:08] INFO     Animation 12 : Partial    scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B06FundamentalP                         
+                             roblem\366519484_31866683                         
+                             31_694022022.mp4'                                 
+[10/09/26 17:40:11] INFO     Animation 13 : Partial    scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B06FundamentalP                         
+                             roblem\366519484_40587836                         
+                             01_279018852.mp4'                                 
+Animation 14: _MethodAnimation(Text('8')):   0%|          | 0/9 [00:00<?, ?it/s]                                                                                                    INFO     Animation 14 : Partial    scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B06FundamentalP                         
+                             roblem\366519484_41534234                         
+                             10_4175081183.mp4'                                
+[10/09/26 17:40:14] INFO     Animation 15 : Partial    scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B06FundamentalP                         
+                             roblem\366519484_26899233                         
+                             50_1209678694.mp4'                                
+Animation 16: _MethodAnimation(Text('8')):   0%|          | 0/9 [00:00<?, ?it/s]                                                                                [10/09/26 17:40:15] INFO     Animation 16 : Partial    scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B06FundamentalP                         
+                             roblem\366519484_31995673                         
+                             33_3367923145.mp4'                                
+[10/09/26 17:40:17] INFO     Animation 17 : Partial    scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B06FundamentalP                         
+                             roblem\366519484_32464951                         
+                             54_4004715396.mp4'                                
+Animation 18: _MethodAnimation(Text('9')):   0%|          | 0/9 [00:00<?, ?it/s]                                                                                [10/09/26 17:40:18] INFO     Animation 18 : Partial    scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B06FundamentalP                         
+                             roblem\366519484_69042615                         
+                             6_3657318900.mp4'                                 
+[10/09/26 17:40:20] INFO     Animation 19 : Partial    scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B06FundamentalP                         
+                             roblem\366519484_41163601                         
+                             80_3957510028.mp4'                                
+Animation 20: FadeIn(Text('exactly half the table is missing')):   0%|          | 0/11 [00:00<?, ?it/s]Animation 20: FadeIn(Text('exactly half the table is missing')):  45%|####5     | 5/11 [00:00<00:00, 40.56it/s]Animation 20: FadeIn(Text('exactly half the table is missing')):  91%|######### | 10/11 [00:00<00:00, 39.99it/s]                                                                                                                [10/09/26 17:40:22] INFO     Animation 20 : Partial    scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B06FundamentalP                         
+                             roblem\366519484_28536478                         
+                             1_2642393389.mp4'                                 
+[10/09/26 17:40:25] INFO     Animation 21 : Partial    scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B06FundamentalP                         
+                             roblem\366519484_41810599                         
+                             57_3960887929.mp4'                                
+Animation 22: FadeOut(Text('exactly half the table is missing')), etc.:   0%|          | 0/11 [00:00<?, ?it/s]Animation 22: FadeOut(Text('exactly half the table is missing')), etc.:  36%|###6      | 4/11 [00:00<00:00, 35.06it/s]Animation 22: FadeOut(Text('exactly half the table is missing')), etc.:  73%|#######2  | 8/11 [00:00<00:00, 32.90it/s]                                                                                                                      [10/09/26 17:40:28] INFO     Animation 22 : Partial    scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B06FundamentalP                         
+                             roblem\366519484_39296217                         
+                             26_3094309108.mp4'                                
+[10/09/26 17:40:32] INFO     Animation 23 : Partial    scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B06FundamentalP                         
+                             roblem\366519484_36090036                         
+                             79_418287158.mp4'                                 
+Animation 24: FadeOut(Text('Holland (1986): the fundamental problem of causal inference')), etc.:   0%|          | 0/11 [00:00<?, ?it/s]Animation 24: FadeOut(Text('Holland (1986): the fundamental problem of causal inference')), etc.:  18%|#8        | 2/11 [00:00<00:00, 16.86it/s]Animation 24: FadeOut(Text('Holland (1986): the fundamental problem of causal inference')), etc.:  36%|###6      | 4/11 [00:00<00:00, 18.43it/s]Animation 24: FadeOut(Text('Holland (1986): the fundamental problem of causal inference')), etc.:  64%|######3   | 7/11 [00:00<00:00, 20.91it/s]Animation 24: FadeOut(Text('Holland (1986): the fundamental problem of causal inference')), etc.:  91%|######### | 10/11 [00:00<00:00, 16.82it/s]                                                                                                                                                 [10/09/26 17:40:36] INFO     Animation 24 : Partial    scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B06FundamentalP                         
+                             roblem\366519484_97083772                         
+                             6_3377781928.mp4'                                 
+[10/09/26 17:40:41] INFO     Animation 25 : Partial    scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B06FundamentalP                         
+                             roblem\366519484_38785607                         
+                             5_4199652280.mp4'                                 
+Animation 26: FadeOut(Text('not a data problem, not a sample-size problem: built into the definition')), etc.:   0%|          | 0/11 [00:00<?, ?it/s]Animation 26: FadeOut(Text('not a data problem, not a sample-size problem: built into the definition')), etc.:  27%|##7       | 3/11 [00:00<00:00, 27.52it/s]Animation 26: FadeOut(Text('not a data problem, not a sample-size problem: built into the definition')), etc.:  64%|######3   | 7/11 [00:00<00:00, 29.82it/s]Animation 26: FadeOut(Text('not a data problem, not a sample-size problem: built into the definition')), etc.:  91%|######### | 10/11 [00:00<00:00, 26.66it/s]                                                                                                                                                              [10/09/26 17:40:44] INFO     Animation 26 : Partial    scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B06FundamentalP                         
+                             roblem\366519484_33108086                         
+                             94_2093084511.mp4'                                
+[10/09/26 17:40:47] INFO     Animation 27 : Partial    scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B06FundamentalP                         
+                             roblem\366519484_11435371                         
+                             61_2768437800.mp4'                                
+[10/09/26 17:40:48] INFO     Animation 28 : Partial    scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B06FundamentalP                         
+                             roblem\366519484_26571029                         
+                             32_1631154762.mp4'                                
+                    INFO     Combining to Movie file.  scene_file_writer.py:952
+[10/09/26 17:40:49] INFO                              scene_file_writer.py:1103
+                             File ready at                                     
+                             'D:\Documents\Git\Github                          
+                             \econometria-avancada-01                          
+                             -mpe\Videos\class-01-pot                          
+                             ential-outcomes\media\vi                          
+                             deos\scenes\480p15\B06Fu                          
+                             ndamentalProblem.mp4'                             
+                                                                               
+                    INFO     Rendered B06FundamentalProblem        scene.py:290
+                             Played 29 animations                              
+You are using manim version v0.21.0, but version v0.22.0 is available.
+You should consider upgrading via pip install -U manim

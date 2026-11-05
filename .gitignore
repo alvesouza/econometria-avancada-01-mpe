@@ -2,7 +2,13 @@
 .env.*
 !.env.example
 Livros/
-Videos/
+NotebookLM/sources/
+Videos/*/media*/
+Videos/*/audio/
+Videos/*/build/
+Videos/**/*.mp4
+Videos/*/*.log
 graphify-out/
 __pycache__/
 .venv/
+.ipynb_checkpoints/

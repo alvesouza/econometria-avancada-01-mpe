@@ -1,0 +1,327 @@
+<frozen runpy>:128: RuntimeWarning: 'manim.__main__' found in sys.modules after import of package 'manim', but prior to execution of 'manim.__main__'; this may result in unpredictable behaviour
+Manim Community v0.21.0
+
+Animation 0: FadeIn(Text('STAR: effect on kindergarten scores · MHE Table 2.2.2')):   0%|          | 0/11 [00:00<?, ?it/s]Animation 0: FadeIn(Text('STAR: effect on kindergarten scores · MHE Table 2.2.2')):  45%|####5     | 5/11 [00:00<00:00, 39.76it/s]Animation 0: FadeIn(Text('STAR: effect on kindergarten scores · MHE Table 2.2.2')):  91%|######### | 10/11 [00:00<00:00, 44.35it/s]                                                                                                                                   [10/09/26 17:44:20] INFO     Animation 0 : Partial     scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B20STAREffect\2                         
+                             118183852_554735626_22313                         
+                             2457.mp4'                                         
+[10/09/26 17:44:21] INFO     Animation 1 : Partial     scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B20STAREffect\3                         
+                             66519484_3225977451_38871                         
+                             8318.mp4'                                         
+Animation 2: FadeIn(VGroup of 24 submobjects):   0%|          | 0/12 [00:00<?, ?it/s]Animation 2: FadeIn(VGroup of 24 submobjects):  17%|#6        | 2/12 [00:00<00:00, 18.36it/s]Animation 2: FadeIn(VGroup of 24 submobjects):  33%|###3      | 4/12 [00:00<00:00, 18.52it/s]Animation 2: FadeIn(VGroup of 24 submobjects):  58%|#####8    | 7/12 [00:00<00:00, 19.54it/s]Animation 2: FadeIn(VGroup of 24 submobjects):  75%|#######5  | 9/12 [00:00<00:00, 19.21it/s]Animation 2: FadeIn(VGroup of 24 submobjects):  92%|#########1| 11/12 [00:00<00:00, 18.74it/s]                                                                                              [10/09/26 17:44:24] INFO     Animation 2 : Partial     scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B20STAREffect\3                         
+                             66519484_2354472003_30015                         
+                             80021.mp4'                                        
+[10/09/26 17:44:26] INFO     Animation 3 : Partial     scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B20STAREffect\3                         
+                             66519484_2613363383_39904                         
+                             2986.mp4'                                         
+Animation 4: FadeIn(VGroup of 7 submobjects):   0%|          | 0/11 [00:00<?, ?it/s]Animation 4: FadeIn(VGroup of 7 submobjects):  73%|#######2  | 8/11 [00:00<00:00, 71.03it/s]                                                                                            [10/09/26 17:44:28] INFO     Animation 4 : Partial     scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B20STAREffect\3                         
+                             66519484_3450259856_31825                         
+                             34221.mp4'                                        
+[10/09/26 17:44:31] INFO     Animation 5 : Partial     scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B20STAREffect\3                         
+                             66519484_4225292355_15753                         
+                             1362.mp4'                                         
+Animation 6: FadeIn(VGroup of 7 submobjects):   0%|          | 0/11 [00:00<?, ?it/s]Animation 6: FadeIn(VGroup of 7 submobjects):  82%|########1 | 9/11 [00:00<00:00, 80.56it/s]                                                                                            [10/09/26 17:44:32] INFO     Animation 6 : Partial     scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B20STAREffect\3                         
+                             66519484_1201669530_89494                         
+                             2027.mp4'                                         
+[10/09/26 17:44:35] INFO     Animation 7 : Partial     scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B20STAREffect\3                         
+                             66519484_877445688_280907                         
+                             9243.mp4'                                         
+Animation 8: Indicate(Text('yes')):   0%|          | 0/11 [00:00<?, ?it/s]                                                                          [10/09/26 17:44:37] INFO     Animation 8 : Partial     scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B20STAREffect\3                         
+                             66519484_567133019_288641                         
+                             142.mp4'                                          
+[10/09/26 17:44:40] INFO     Animation 9 : Partial     scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B20STAREffect\3                         
+                             66519484_73268247_8298420                         
+                             55.mp4'                                           
+Animation 10: FadeIn(VGroup of 7 submobjects):   0%|          | 0/11 [00:00<?, ?it/s]Animation 10: FadeIn(VGroup of 7 submobjects):  55%|#####4    | 6/11 [00:00<00:00, 51.06it/s]                                                                                             [10/09/26 17:44:42] INFO     Animation 10 : Partial    scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B20STAREffect\3                         
+                             66519484_1666995571_51128                         
+                             1344.mp4'                                         
+[10/09/26 17:44:46] INFO     Animation 11 : Partial    scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B20STAREffect\3                         
+                             66519484_3134753184_18238                         
+                             62149.mp4'                                        
+Animation 12: Indicate(VGroup of 2 submobjects):   0%|          | 0/11 [00:00<?, ?it/s]                                                                                       [10/09/26 17:44:47] INFO     Animation 12 : Partial    scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B20STAREffect\3                         
+                             66519484_1640995976_38256                         
+                             52317.mp4'                                        
+[10/09/26 17:44:50] INFO     Animation 13 : Partial    scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B20STAREffect\3                         
+                             66519484_1709097142_57385                         
+                             6683.mp4'                                         
+Animation 14: FadeIn(VGroup of 7 submobjects):   0%|          | 0/11 [00:00<?, ?it/s]Animation 14: FadeIn(VGroup of 7 submobjects):  64%|######3   | 7/11 [00:00<00:00, 67.10it/s]                                                                                             [10/09/26 17:44:52] INFO     Animation 14 : Partial    scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B20STAREffect\3                         
+                             66519484_3857280156_34635                         
+                             88969.mp4'                                        
+[10/09/26 17:44:56] INFO     Animation 15 : Partial    scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B20STAREffect\3                         
+                             66519484_3838517696_15020                         
+                             72672.mp4'                                        
+Animation 16: Circumscribe(Group):   0%|          | 0/14 [00:00<?, ?it/s]                                                                         [10/09/26 17:44:57] INFO     Animation 16 : Partial    scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B20STAREffect\3                         
+                             66519484_4228786745_52891                         
+                             6193.mp4'                                         
+[10/09/26 17:45:02] INFO     Animation 17 : Partial    scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B20STAREffect\3                         
+                             66519484_3591826656_29387                         
+                             27374.mp4'                                        
+Animation 18: FadeIn(Text('the estimate barely moves: controls unrelated to treatment')):   0%|          | 0/11 [00:00<?, ?it/s]Animation 18: FadeIn(Text('the estimate barely moves: controls unrelated to treatment')):  45%|####5     | 5/11 [00:00<00:00, 41.58it/s]Animation 18: FadeIn(Text('the estimate barely moves: controls unrelated to treatment')):  91%|######### | 10/11 [00:00<00:00, 37.12it/s]                                                                                                                                         [10/09/26 17:45:04] INFO     Animation 18 : Partial    scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B20STAREffect\3                         
+                             66519484_1098192228_39505                         
+                             49244.mp4'                                        
+[10/09/26 17:45:11] INFO     Animation 19 : Partial    scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B20STAREffect\3                         
+                             66519484_3758789476_64633                         
+                             6340.mp4'                                         
+Animation 20: Circumscribe(Group):   0%|          | 0/14 [00:00<?, ?it/s]                                                                         [10/09/26 17:45:12] INFO     Animation 20 : Partial    scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B20STAREffect\3                         
+                             66519484_1127661019_28405                         
+                             37808.mp4'                                        
+[10/09/26 17:45:17] INFO     Animation 21 : Partial    scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B20STAREffect\3                         
+                             66519484_791924745_107553                         
+                             0154.mp4'                                         
+Animation 22: FadeOut(Text('the estimate barely moves: controls unrelated to treatment')), etc.:   0%|          | 0/11 [00:00<?, ?it/s]Animation 22: FadeOut(Text('the estimate barely moves: controls unrelated to treatment')), etc.:  27%|##7       | 3/11 [00:00<00:00, 28.60it/s]Animation 22: FadeOut(Text('the estimate barely moves: controls unrelated to treatment')), etc.:  55%|#####4    | 6/11 [00:00<00:00, 24.45it/s]Animation 22: FadeOut(Text('the estimate barely moves: controls unrelated to treatment')), etc.:  82%|########1 | 9/11 [00:00<00:00, 21.59it/s]                                                                                                                                               [10/09/26 17:45:21] INFO     Animation 22 : Partial    scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B20STAREffect\3                         
+                             66519484_3907753274_28849                         
+                             66525.mp4'                                        
+[10/09/26 17:45:27] INFO     Animation 23 : Partial    scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B20STAREffect\3                         
+                             66519484_1402877692_13802                         
+                             10728.mp4'                                        
+Animation 24: FadeOut(Text('s.e. 2.19 \u2192 1.19: controls explain variance, not bias')), etc.:   0%|          | 0/11 [00:00<?, ?it/s]Animation 24: FadeOut(Text('s.e. 2.19 \u2192 1.19: controls explain variance, not bias')), etc.:  36%|###6      | 4/11 [00:00<00:00, 28.84it/s]Animation 24: FadeOut(Text('s.e. 2.19 \u2192 1.19: controls explain variance, not bias')), etc.:  64%|######3   | 7/11 [00:00<00:00, 24.99it/s]Animation 24: FadeOut(Text('s.e. 2.19 \u2192 1.19: controls explain variance, not bias')), etc.:  91%|######### | 10/11 [00:00<00:00, 24.00it/s]                                                                                                                                           [10/09/26 17:45:30] INFO     Animation 24 : Partial    scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B20STAREffect\3                         
+                             66519484_3544106347_85401                         
+                             8320.mp4'                                         
+[10/09/26 17:45:35] INFO     Animation 25 : Partial    scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B20STAREffect\3                         
+                             66519484_3910878339_19184                         
+                             15695.mp4'                                        
+Animation 26: Indicate(VGroup of 4 submobjects):   0%|          | 0/12 [00:00<?, ?it/s]Animation 26: Indicate(VGroup of 4 submobjects):  83%|########3 | 10/12 [00:00<00:00, 95.41it/s]                                                                                                [10/09/26 17:45:37] INFO     Animation 26 : Partial    scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B20STAREffect\3                         
+                             66519484_4066304048_28105                         
+                             92281.mp4'                                        
+[10/09/26 17:45:42] INFO     Animation 27 : Partial    scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B20STAREffect\3                         
+                             66519484_1141681504_20709                         
+                             76287.mp4'                                        
+Animation 28: FadeOut(Text('\u2248 5 percentile points \u2248 0.2 standard deviations')), etc.:   0%|          | 0/11 [00:00<?, ?it/s]Animation 28: FadeOut(Text('\u2248 5 percentile points \u2248 0.2 standard deviations')), etc.:  27%|##7       | 3/11 [00:00<00:00, 27.38it/s]Animation 28: FadeOut(Text('\u2248 5 percentile points \u2248 0.2 standard deviations')), etc.:  64%|######3   | 7/11 [00:00<00:00, 31.29it/s]Animation 28: FadeOut(Text('\u2248 5 percentile points \u2248 0.2 standard deviations')), etc.: 100%|##########| 11/11 [00:00<00:00, 34.87it/s]                                                                                                                                     [10/09/26 17:45:45] INFO     Animation 28 : Partial    scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B20STAREffect\3                         
+                             66519484_503700398_289790                         
+                             5622.mp4'                                         
+[10/09/26 17:45:49] INFO     Animation 29 : Partial    scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B20STAREffect\3                         
+                             66519484_1948534158_35009                         
+                             30794.mp4'                                        
+[10/09/26 17:45:50] INFO     Animation 30 : Partial    scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B20STAREffect\3                         
+                             66519484_2657102932_85653                         
+                             8192.mp4'                                         
+                    INFO     Combining to Movie file.  scene_file_writer.py:952
+[10/09/26 17:45:51] INFO                              scene_file_writer.py:1103
+                             File ready at                                     
+                             'D:\Documents\Git\Github                          
+                             \econometria-avancada-01                          
+                             -mpe\Videos\class-01-pot                          
+                             ential-outcomes\media\vi                          
+                             deos\scenes\480p15\B20ST                          
+                             AREffect.mp4'                                     
+                                                                               
+                    INFO     Rendered B20STAREffect                scene.py:290
+                             Played 31 animations                              
+You are using manim version v0.21.0, but version v0.22.0 is available.
+You should consider upgrading via pip install -U manim

@@ -1,0 +1,267 @@
+<frozen runpy>:128: RuntimeWarning: 'manim.__main__' found in sys.modules after import of package 'manim', but prior to execution of 'manim.__main__'; this may result in unpredictable behaviour
+Manim Community v0.21.0
+
+Animation 0: FadeIn(Text('The picture to keep')):   0%|          | 0/11 [00:00<?, ?it/s]                                                                                        [10/09/26 17:45:46] INFO     Animation 0 : Partial     scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B22Closing\2118                         
+                             183852_59142172_223132457                         
+                             .mp4'                                             
+[10/09/26 17:45:47] INFO     Animation 1 : Partial     scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B22Closing\3665                         
+                             19484_990248718_262179872                         
+                             7.mp4'                                            
+Animation 2: FadeIn(VGroup of 48 submobjects):   0%|          | 0/12 [00:00<?, ?it/s]Animation 2: FadeIn(VGroup of 48 submobjects):  33%|###3      | 4/12 [00:00<00:00, 33.74it/s]Animation 2: FadeIn(VGroup of 48 submobjects):  67%|######6   | 8/12 [00:00<00:00, 34.49it/s]Animation 2: FadeIn(VGroup of 48 submobjects): 100%|##########| 12/12 [00:00<00:00, 25.12it/s]                                                                                              [10/09/26 17:45:48] INFO     Animation 2 : Partial     scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B22Closing\3665                         
+                             19484_3046845709_85335927                         
+                             6.mp4'                                            
+[10/09/26 17:45:50] INFO     Animation 3 : Partial     scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B22Closing\3665                         
+                             19484_241533041_119015239                         
+                             4.mp4'                                            
+Animation 4: Indicate(VGroup of 8 submobjects):   0%|          | 0/12 [00:00<?, ?it/s]                                                                                      [10/09/26 17:45:51] INFO     Animation 4 : Partial     scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B22Closing\3665                         
+                             19484_626933736_277830555                         
+                             2.mp4'                                            
+[10/09/26 17:45:52] INFO     Animation 5 : Partial     scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B22Closing\3665                         
+                             19484_2566172226_12080439                         
+                             37.mp4'                                           
+Animation 6: FadeIn(Text('every causal effect compares two worlds; each person lives in one')):   0%|          | 0/11 [00:00<?, ?it/s]Animation 6: FadeIn(Text('every causal effect compares two worlds; each person lives in one')):  55%|#####4    | 6/11 [00:00<00:00, 58.38it/s]                                                                                                                                              [10/09/26 17:45:53] INFO     Animation 6 : Partial     scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B22Closing\3665                         
+                             19484_2417002603_32391278                         
+                             54.mp4'                                           
+[10/09/26 17:45:55] INFO     Animation 7 : Partial     scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B22Closing\3665                         
+                             19484_2845946069_26634431                         
+                             43.mp4'                                           
+Animation 8: Write(MathTex('\\text{observed gap} = \\text{ATT} + \\text{selection bias}')):   0%|          | 0/15 [00:00<?, ?it/s]Animation 8: Write(MathTex('\\text{observed gap} = \\text{ATT} + \\text{selection bias}')):  47%|####6     | 7/15 [00:00<00:00, 61.36it/s]                                                                                                                                          [10/09/26 17:45:56] INFO     Animation 8 : Partial     scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B22Closing\3665                         
+                             19484_2373982488_21010905                         
+                             72.mp4'                                           
+[10/09/26 17:45:58] INFO     Animation 9 : Partial     scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B22Closing\3665                         
+                             19484_1961480904_17206313                         
+                             96.mp4'                                           
+Animation 10: Indicate(MathTexPart('\\text{ATT}')):   0%|          | 0/11 [00:00<?, ?it/s]                                                                                          [10/09/26 17:45:59] INFO     Animation 10 : Partial    scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B22Closing\3665                         
+                             19484_3280647516_11426965                         
+                             23.mp4'                                           
+[10/09/26 17:46:01] INFO     Animation 11 : Partial    scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B22Closing\3665                         
+                             19484_2182271696_23822507                         
+                             58.mp4'                                           
+Animation 12: Indicate(MathTexPart('\\text{selection bias}')):   0%|          | 0/11 [00:00<?, ?it/s]                                                                                                                         INFO     Animation 12 : Partial    scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B22Closing\3665                         
+                             19484_1116528819_39277838                         
+                             13.mp4'                                           
+[10/09/26 17:46:03] INFO     Animation 13 : Partial    scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B22Closing\3665                         
+                             19484_3812767351_15043912                         
+                             91.mp4'                                           
+Animation 14: FadeIn(Circle):   0%|          | 0/12 [00:00<?, ?it/s]                                                                    [10/09/26 17:46:04] INFO     Animation 14 : Partial    scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B22Closing\3665                         
+                             19484_4266131274_24010730                         
+                             46.mp4'                                           
+[10/09/26 17:46:06] INFO     Animation 15 : Partial    scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B22Closing\3665                         
+                             19484_3790838573_39091221                         
+                             07.mp4'                                           
+Animation 16: Create(Line):   0%|          | 0/12 [00:00<?, ?it/s]                                                                                      INFO     Animation 16 : Partial    scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B22Closing\3665                         
+                             19484_763700227_265426289                         
+                             5.mp4'                                            
+[10/09/26 17:46:08] INFO     Animation 17 : Partial    scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B22Closing\3665                         
+                             19484_2173811887_13516001                         
+                             64.mp4'                                           
+Animation 18: FadeOut(Text('every causal effect compares two worlds; each person lives in one')), etc.:   0%|          | 0/11 [00:00<?, ?it/s]Animation 18: FadeOut(Text('every causal effect compares two worlds; each person lives in one')), etc.:  27%|##7       | 3/11 [00:00<00:00, 25.88it/s]Animation 18: FadeOut(Text('every causal effect compares two worlds; each person lives in one')), etc.:  64%|######3   | 7/11 [00:00<00:00, 28.81it/s]Animation 18: FadeOut(Text('every causal effect compares two worlds; each person lives in one')), etc.:  91%|######### | 10/11 [00:00<00:00, 27.69it/s]                                                                                                                                                       [10/09/26 17:46:10] INFO     Animation 18 : Partial    scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B22Closing\3665                         
+                             19484_696492178_349900274                         
+                             4.mp4'                                            
+[10/09/26 17:46:12] INFO     Animation 19 : Partial    scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B22Closing\3665                         
+                             19484_2555505554_37836418                         
+                             67.mp4'                                           
+Animation 20: FadeOut(Text('assigned by chance, not by choice: the gap tells the truth')), etc.:   0%|          | 0/11 [00:00<?, ?it/s]Animation 20: FadeOut(Text('assigned by chance, not by choice: the gap tells the truth')), etc.:  36%|###6      | 4/11 [00:00<00:00, 39.92it/s]Animation 20: FadeOut(Text('assigned by chance, not by choice: the gap tells the truth')), etc.:  73%|#######2  | 8/11 [00:00<00:00, 35.77it/s]                                                                                                                                               [10/09/26 17:46:14] INFO     Animation 20 : Partial    scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B22Closing\3665                         
+                             19484_4148926438_36416251                         
+                             19.mp4'                                           
+[10/09/26 17:46:16] INFO     Animation 21 : Partial    scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B22Closing\3665                         
+                             19484_1937202812_28563536                         
+                             51.mp4'                                           
+Animation 22: Circumscribe(Group):   0%|          | 0/14 [00:00<?, ?it/s]                                                                         [10/09/26 17:46:17] INFO     Animation 22 : Partial    scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B22Closing\3665                         
+                             19484_3966996027_31190041                         
+                             85.mp4'                                           
+[10/09/26 17:46:19] INFO     Animation 23 : Partial    scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B22Closing\3665                         
+                             19484_1251787938_41911046                         
+                             34.mp4'                                           
+                    INFO     Animation 24 : Partial    scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B22Closing\3665                         
+                             19484_2657102932_39081151                         
+                             62.mp4'                                           
+                    INFO     Combining to Movie file.  scene_file_writer.py:952
+[10/09/26 17:46:20] INFO                              scene_file_writer.py:1103
+                             File ready at                                     
+                             'D:\Documents\Git\Github                          
+                             \econometria-avancada-01                          
+                             -mpe\Videos\class-01-pot                          
+                             ential-outcomes\media\vi                          
+                             deos\scenes\480p15\B22Cl                          
+                             osing.mp4'                                        
+                                                                               
+                    INFO     Rendered B22Closing                   scene.py:290
+                             Played 25 animations                              
+You are using manim version v0.21.0, but version v0.22.0 is available.
+You should consider upgrading via pip install -U manim

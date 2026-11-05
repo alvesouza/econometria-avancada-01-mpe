@@ -1,0 +1,327 @@
+<frozen runpy>:128: RuntimeWarning: 'manim.__main__' found in sys.modules after import of package 'manim', but prior to execution of 'manim.__main__'; this may result in unpredictable behaviour
+Manim Community v0.21.0
+
+Animation 0: FadeIn(Text('The sign of the bias (MHE pp. 12–16)')):   0%|          | 0/11 [00:00<?, ?it/s]Animation 0: FadeIn(Text('The sign of the bias (MHE pp. 12–16)')):  55%|#####4    | 6/11 [00:00<00:00, 56.27it/s]                                                                                                                 [10/09/26 17:41:42] INFO     Animation 0 : Partial     scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B12SignOfBias\2                         
+                             118183852_3438725358_2231                         
+                             32457.mp4'                                        
+[10/09/26 17:41:43] INFO     Animation 1 : Partial     scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B12SignOfBias\3                         
+                             66519484_1431206760_29646                         
+                             14800.mp4'                                        
+Animation 2: FadeIn(VGroup of 2 submobjects):   0%|          | 0/11 [00:00<?, ?it/s]                                                                                                        INFO     Animation 2 : Partial     scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B12SignOfBias\3                         
+                             66519484_2370955067_34162                         
+                             18894.mp4'                                        
+[10/09/26 17:41:44] INFO     Animation 3 : Partial     scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B12SignOfBias\3                         
+                             66519484_2200886864_18361                         
+                             60996.mp4'                                        
+Animation 4: FadeIn(Text('trainees: low earnings\npotential to begin with')):   0%|          | 0/9 [00:00<?, ?it/s]Animation 4: FadeIn(Text('trainees: low earnings\npotential to begin with')):  56%|#####5    | 5/9 [00:00<00:00, 49.26it/s]                                                                                                                           [10/09/26 17:41:45] INFO     Animation 4 : Partial     scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B12SignOfBias\3                         
+                             66519484_848621487_101989                         
+                             3249.mp4'                                         
+[10/09/26 17:41:46] INFO     Animation 5 : Partial     scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B12SignOfBias\3                         
+                             66519484_3601638145_31496                         
+                             10133.mp4'                                        
+Animation 6: FadeIn(MathTex('\\text{bias} < 0')):   0%|          | 0/9 [00:00<?, ?it/s]                                                                                       [10/09/26 17:41:47] INFO     Animation 6 : Partial     scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B12SignOfBias\3                         
+                             66519484_2173671123_41530                         
+                             06639.mp4'                                        
+[10/09/26 17:41:48] INFO     Animation 7 : Partial     scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B12SignOfBias\3                         
+                             66519484_3924109284_86943                         
+                             365.mp4'                                          
+Animation 8: Indicate(MathTex('\\text{bias} < 0')):   0%|          | 0/9 [00:00<?, ?it/s]                                                                                         [10/09/26 17:41:49] INFO     Animation 8 : Partial     scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B12SignOfBias\3                         
+                             66519484_3401733659_28554                         
+                             43058.mp4'                                        
+                    INFO     Animation 9 : Partial     scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B12SignOfBias\3                         
+                             66519484_3845454293_16673                         
+                             88484.mp4'                                        
+Animation 10: FadeIn(Text('randomised evaluations: mostly positive effects')):   0%|          | 0/11 [00:00<?, ?it/s]Animation 10: FadeIn(Text('randomised evaluations: mostly positive effects')):  55%|#####4    | 6/11 [00:00<00:00, 52.23it/s]                                                                                                                             [10/09/26 17:41:51] INFO     Animation 10 : Partial    scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B12SignOfBias\3                         
+                             66519484_1520878951_31640                         
+                             68065.mp4'                                        
+[10/09/26 17:41:53] INFO     Animation 11 : Partial    scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B12SignOfBias\3                         
+                             66519484_3724722998_14229                         
+                             65428.mp4'                                        
+Animation 12: FadeIn(VGroup of 2 submobjects):   0%|          | 0/11 [00:00<?, ?it/s]Animation 12: FadeIn(VGroup of 2 submobjects):  82%|########1 | 9/11 [00:00<00:00, 86.17it/s]                                                                                             [10/09/26 17:41:54] INFO     Animation 12 : Partial    scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B12SignOfBias\3                         
+                             66519484_1450845689_36934                         
+                             16684.mp4'                                        
+[10/09/26 17:41:55] INFO     Animation 13 : Partial    scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B12SignOfBias\3                         
+                             66519484_541501364_360653                         
+                             8001.mp4'                                         
+Animation 14: FadeIn(Text('users differed in ways\nthat flattered it')):   0%|          | 0/9 [00:00<?, ?it/s]Animation 14: FadeIn(Text('users differed in ways\nthat flattered it')):  44%|####4     | 4/9 [00:00<00:00, 34.32it/s]Animation 14: FadeIn(Text('users differed in ways\nthat flattered it')): 100%|##########| 9/9 [00:00<00:00, 40.81it/s]                                                                                                                      [10/09/26 17:41:57] INFO     Animation 14 : Partial    scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B12SignOfBias\3                         
+                             66519484_1538865442_74321                         
+                             1431.mp4'                                         
+[10/09/26 17:41:59] INFO     Animation 15 : Partial    scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B12SignOfBias\3                         
+                             66519484_1448652780_81439                         
+                             5357.mp4'                                         
+Animation 16: FadeIn(MathTex('\\text{bias} > 0')):   0%|          | 0/9 [00:00<?, ?it/s]                                                                                        [10/09/26 17:42:00] INFO     Animation 16 : Partial    scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B12SignOfBias\3                         
+                             66519484_1847909778_41736                         
+                             65554.mp4'                                        
+[10/09/26 17:42:01] INFO     Animation 17 : Partial    scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B12SignOfBias\3                         
+                             66519484_1085014031_31504                         
+                             17557.mp4'                                        
+Animation 18: FadeOut(Text('randomised evaluations: mostly positive effects')), etc.:   0%|          | 0/11 [00:00<?, ?it/s]Animation 18: FadeOut(Text('randomised evaluations: mostly positive effects')), etc.:  18%|#8        | 2/11 [00:00<00:00, 13.79it/s]Animation 18: FadeOut(Text('randomised evaluations: mostly positive effects')), etc.:  36%|###6      | 4/11 [00:00<00:00, 12.79it/s]Animation 18: FadeOut(Text('randomised evaluations: mostly positive effects')), etc.:  55%|#####4    | 6/11 [00:00<00:00, 12.50it/s]Animation 18: FadeOut(Text('randomised evaluations: mostly positive effects')), etc.:  73%|#######2  | 8/11 [00:00<00:00, 13.00it/s]Animation 18: FadeOut(Text('randomised evaluations: mostly positive effects')), etc.:  91%|######### | 10/11 [00:00<00:00, 12.53it/s]                                                                                                                                     [10/09/26 17:42:04] INFO     Animation 18 : Partial    scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B12SignOfBias\3                         
+                             66519484_2807094581_97326                         
+                             872.mp4'                                          
+[10/09/26 17:42:06] INFO     Animation 19 : Partial    scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B12SignOfBias\3                         
+                             66519484_1058577372_31553                         
+                             24488.mp4'                                        
+Animation 20: FadeIn(VGroup of 2 submobjects):   0%|          | 0/11 [00:00<?, ?it/s]Animation 20: FadeIn(VGroup of 2 submobjects):  82%|########1 | 9/11 [00:00<00:00, 85.22it/s]                                                                                             [10/09/26 17:42:07] INFO     Animation 20 : Partial    scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B12SignOfBias\3                         
+                             66519484_306859814_199025                         
+                             4564.mp4'                                         
+[10/09/26 17:42:09] INFO     Animation 21 : Partial    scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B12SignOfBias\3                         
+                             66519484_1299971023_31476                         
+                             61629.mp4'                                        
+Animation 22: FadeIn(Text('weaker students placed\nin smaller classes')):   0%|          | 0/9 [00:00<?, ?it/s]Animation 22: FadeIn(Text('weaker students placed\nin smaller classes')):  44%|####4     | 4/9 [00:00<00:00, 39.75it/s]                                                                                                                       [10/09/26 17:42:11] INFO     Animation 22 : Partial    scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B12SignOfBias\3                         
+                             66519484_2713689515_25197                         
+                             19208.mp4'                                        
+[10/09/26 17:42:15] INFO     Animation 23 : Partial    scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B12SignOfBias\3                         
+                             66519484_3342708101_19775                         
+                             29082.mp4'                                        
+Animation 24: FadeIn(MathTex('\\text{bias} < 0')):   0%|          | 0/9 [00:00<?, ?it/s]                                                                                        [10/09/26 17:42:16] INFO     Animation 24 : Partial    scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B12SignOfBias\3                         
+                             66519484_3782566598_70281                         
+                             2040.mp4'                                         
+[10/09/26 17:42:18] INFO     Animation 25 : Partial    scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B12SignOfBias\3                         
+                             66519484_1352673641_21648                         
+                             92480.mp4'                                        
+Animation 26: Indicate(VGroup of 3 submobjects):   0%|          | 0/12 [00:00<?, ?it/s]Animation 26: Indicate(VGroup of 3 submobjects):  75%|#######5  | 9/12 [00:00<00:00, 88.01it/s]                                                                                               [10/09/26 17:42:20] INFO     Animation 26 : Partial    scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B12SignOfBias\3                         
+                             66519484_1688040675_15509                         
+                             87615.mp4'                                        
+[10/09/26 17:42:22] INFO     Animation 27 : Partial    scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B12SignOfBias\3                         
+                             66519484_473497447_341173                         
+                             0367.mp4'                                         
+Animation 28: FadeOut(Text('the trial: few benefits, serious side effects')), etc.:   0%|          | 0/11 [00:00<?, ?it/s]Animation 28: FadeOut(Text('the trial: few benefits, serious side effects')), etc.:  27%|##7       | 3/11 [00:00<00:00, 19.48it/s]Animation 28: FadeOut(Text('the trial: few benefits, serious side effects')), etc.:  45%|####5     | 5/11 [00:00<00:00, 19.63it/s]Animation 28: FadeOut(Text('the trial: few benefits, serious side effects')), etc.:  64%|######3   | 7/11 [00:00<00:00, 18.54it/s]Animation 28: FadeOut(Text('the trial: few benefits, serious side effects')), etc.:  82%|########1 | 9/11 [00:00<00:00, 18.87it/s]Animation 28: FadeOut(Text('the trial: few benefits, serious side effects')), etc.: 100%|##########| 11/11 [00:00<00:00, 18.46it/s]                                                                                                                                   [10/09/26 17:42:25] INFO     Animation 28 : Partial    scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B12SignOfBias\3                         
+                             66519484_3048643272_57801                         
+                             6731.mp4'                                         
+[10/09/26 17:42:29] INFO     Animation 29 : Partial    scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B12SignOfBias\3                         
+                             66519484_4171338505_18205                         
+                             59476.mp4'                                        
+[10/09/26 17:42:30] INFO     Animation 30 : Partial    scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B12SignOfBias\3                         
+                             66519484_2657102932_11225                         
+                             83910.mp4'                                        
+                    INFO     Combining to Movie file.  scene_file_writer.py:952
+[10/09/26 17:42:31] INFO                              scene_file_writer.py:1103
+                             File ready at                                     
+                             'D:\Documents\Git\Github                          
+                             \econometria-avancada-01                          
+                             -mpe\Videos\class-01-pot                          
+                             ential-outcomes\media\vi                          
+                             deos\scenes\480p15\B12Si                          
+                             gnOfBias.mp4'                                     
+                                                                               
+                    INFO     Rendered B12SignOfBias                scene.py:290
+                             Played 31 animations                              
+You are using manim version v0.21.0, but version v0.22.0 is available.
+You should consider upgrading via pip install -U manim

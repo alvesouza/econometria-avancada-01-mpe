@@ -1,0 +1,327 @@
+<frozen runpy>:128: RuntimeWarning: 'manim.__main__' found in sys.modules after import of package 'manim', but prior to execution of 'manim.__main__'; this may result in unpredictable behaviour
+Manim Community v0.21.0
+
+Animation 0: FadeIn(Text('Regression and potential outcomes (MHE eq. 2.3.1)')):   0%|          | 0/11 [00:00<?, ?it/s]Animation 0: FadeIn(Text('Regression and potential outcomes (MHE eq. 2.3.1)')):  45%|####5     | 5/11 [00:00<00:00, 40.83it/s]Animation 0: FadeIn(Text('Regression and potential outcomes (MHE eq. 2.3.1)')):  91%|######### | 10/11 [00:00<00:00, 39.94it/s]                                                                                                                               [10/09/26 17:44:53] INFO     Animation 0 : Partial     scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B21RegressionFo                         
+                             rm\2118183852_1166877980_                         
+                             223132457.mp4'                                    
+[10/09/26 17:44:54] INFO     Animation 1 : Partial     scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B21RegressionFo                         
+                             rm\366519484_4063395946_4                         
+                             131631488.mp4'                                    
+Animation 2: FadeIn(VGroup of 2 submobjects):   0%|          | 0/12 [00:00<?, ?it/s]Animation 2: FadeIn(VGroup of 2 submobjects):  83%|########3 | 10/12 [00:00<00:00, 90.89it/s]                                                                                             [10/09/26 17:44:55] INFO     Animation 2 : Partial     scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B21RegressionFo                         
+                             rm\366519484_4162862538_4                         
+                             134233940.mp4'                                    
+[10/09/26 17:44:56] INFO     Animation 3 : Partial     scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B21RegressionFo                         
+                             rm\366519484_916278550_18                         
+                             7953493.mp4'                                      
+Animation 4: FadeIn(Text('start from the switching equation')):   0%|          | 0/9 [00:00<?, ?it/s]Animation 4: FadeIn(Text('start from the switching equation')):  78%|#######7  | 7/9 [00:00<00:00, 64.73it/s]                                                                                                                                 INFO     Animation 4 : Partial     scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B21RegressionFo                         
+                             rm\366519484_3345131588_2                         
+                             569290139.mp4'                                    
+[10/09/26 17:44:57] INFO     Animation 5 : Partial     scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B21RegressionFo                         
+                             rm\366519484_1377134348_3                         
+                             641988688.mp4'                                    
+Animation 6: TransformFromCopy(MathTex('y_i = y_{0i} + \\rho\\, d_i \\qquad (y_{1i} - y_{0i} = \\rho)')), etc.:   0%|          | 0/18 [00:00<?, ?it/s]Animation 6: TransformFromCopy(MathTex('y_i = y_{0i} + \\rho\\, d_i \\qquad (y_{1i} - y_{0i} = \\rho)')), etc.:  22%|##2       | 4/18 [00:00<00:00, 30.32it/s]Animation 6: TransformFromCopy(MathTex('y_i = y_{0i} + \\rho\\, d_i \\qquad (y_{1i} - y_{0i} = \\rho)')), etc.:  44%|####4     | 8/18 [00:00<00:00, 29.39it/s]Animation 6: TransformFromCopy(MathTex('y_i = y_{0i} + \\rho\\, d_i \\qquad (y_{1i} - y_{0i} = \\rho)')), etc.:  61%|######1   | 11/18 [00:00<00:00, 29.41it/s]Animation 6: TransformFromCopy(MathTex('y_i = y_{0i} + \\rho\\, d_i \\qquad (y_{1i} - y_{0i} = \\rho)')), etc.:  83%|########3 | 15/18 [00:00<00:00, 29.55it/s]                                                                                                                                                               [10/09/26 17:44:59] INFO     Animation 6 : Partial     scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B21RegressionFo                         
+                             rm\366519484_3088963978_2                         
+                             218315255.mp4'                                    
+[10/09/26 17:45:01] INFO     Animation 7 : Partial     scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B21RegressionFo                         
+                             rm\366519484_1691617456_6                         
+                             77740086.mp4'                                     
+Animation 8: FadeOut(Text('start from the switching equation')), etc.:   0%|          | 0/9 [00:00<?, ?it/s]Animation 8: FadeOut(Text('start from the switching equation')), etc.:  33%|###3      | 3/9 [00:00<00:00, 22.32it/s]Animation 8: FadeOut(Text('start from the switching equation')), etc.:  67%|######6   | 6/9 [00:00<00:00, 23.04it/s]Animation 8: FadeOut(Text('start from the switching equation')), etc.: 100%|##########| 9/9 [00:00<00:00, 21.92it/s]                                                                                                                    [10/09/26 17:45:02] INFO     Animation 8 : Partial     scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B21RegressionFo                         
+                             rm\366519484_1559073175_8                         
+                             22039362.mp4'                                     
+[10/09/26 17:45:03] INFO     Animation 9 : Partial     scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B21RegressionFo                         
+                             rm\366519484_1994696563_3                         
+                             393080188.mp4'                                    
+Animation 10: FadeIn(VGroup of 2 submobjects), etc.:   0%|          | 0/12 [00:00<?, ?it/s]Animation 10: FadeIn(VGroup of 2 submobjects), etc.:  33%|###3      | 4/12 [00:00<00:00, 32.03it/s]Animation 10: FadeIn(VGroup of 2 submobjects), etc.:  75%|#######5  | 9/12 [00:00<00:00, 37.52it/s]                                                                                                   [10/09/26 17:45:05] INFO     Animation 10 : Partial    scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B21RegressionFo                         
+                             rm\366519484_4213068219_3                         
+                             571232369.mp4'                                    
+[10/09/26 17:45:07] INFO     Animation 11 : Partial    scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B21RegressionFo                         
+                             rm\366519484_997567448_38                         
+                             29022338.mp4'                                     
+Animation 12: TransformFromCopy(MathTex('y_i = \\alpha + \\rho\\, d_i + \\eta_i')), etc.:   0%|          | 0/18 [00:00<?, ?it/s]Animation 12: TransformFromCopy(MathTex('y_i = \\alpha + \\rho\\, d_i + \\eta_i')), etc.:  17%|#6        | 3/18 [00:00<00:00, 25.27it/s]Animation 12: TransformFromCopy(MathTex('y_i = \\alpha + \\rho\\, d_i + \\eta_i')), etc.:  33%|###3      | 6/18 [00:00<00:00, 27.01it/s]Animation 12: TransformFromCopy(MathTex('y_i = \\alpha + \\rho\\, d_i + \\eta_i')), etc.:  56%|#####5    | 10/18 [00:00<00:00, 30.43it/s]Animation 12: TransformFromCopy(MathTex('y_i = \\alpha + \\rho\\, d_i + \\eta_i')), etc.:  78%|#######7  | 14/18 [00:00<00:00, 32.49it/s]Animation 12: TransformFromCopy(MathTex('y_i = \\alpha + \\rho\\, d_i + \\eta_i')), etc.: 100%|##########| 18/18 [00:00<00:00, 33.76it/s]                                                                                                                                         [10/09/26 17:45:08] INFO     Animation 12 : Partial    scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B21RegressionFo                         
+                             rm\366519484_1877282624_2                         
+                             654165674.mp4'                                    
+[10/09/26 17:45:10] INFO     Animation 13 : Partial    scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B21RegressionFo                         
+                             rm\366519484_3098916611_1                         
+                             187312335.mp4'                                    
+Animation 14: FadeOut(Text('mean plus a random part')), etc.:   0%|          | 0/9 [00:00<?, ?it/s]Animation 14: FadeOut(Text('mean plus a random part')), etc.:  44%|####4     | 4/9 [00:00<00:00, 36.29it/s]Animation 14: FadeOut(Text('mean plus a random part')), etc.:  89%|########8 | 8/9 [00:00<00:00, 35.67it/s]                                                                                                           [10/09/26 17:45:12] INFO     Animation 14 : Partial    scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B21RegressionFo                         
+                             rm\366519484_3353555063_4                         
+                             148284258.mp4'                                    
+[10/09/26 17:45:13] INFO     Animation 15 : Partial    scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B21RegressionFo                         
+                             rm\366519484_3993282115_2                         
+                             412577770.mp4'                                    
+Animation 16: Circumscribe(Group):   0%|          | 0/14 [00:00<?, ?it/s]                                                                         [10/09/26 17:45:14] INFO     Animation 16 : Partial    scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B21RegressionFo                         
+                             rm\366519484_708950008_17                         
+                             93262861.mp4'                                     
+[10/09/26 17:45:16] INFO     Animation 17 : Partial    scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B21RegressionFo                         
+                             rm\366519484_1361669194_2                         
+                             621079282.mp4'                                    
+Animation 18: FadeIn(VGroup of 2 submobjects):   0%|          | 0/12 [00:00<?, ?it/s]Animation 18: FadeIn(VGroup of 2 submobjects):  33%|###3      | 4/12 [00:00<00:00, 39.54it/s]Animation 18: FadeIn(VGroup of 2 submobjects):  75%|#######5  | 9/12 [00:00<00:00, 43.71it/s]                                                                                             [10/09/26 17:45:17] INFO     Animation 18 : Partial    scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B21RegressionFo                         
+                             rm\366519484_1771446140_2                         
+                             054615060.mp4'                                    
+[10/09/26 17:45:19] INFO     Animation 19 : Partial    scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B21RegressionFo                         
+                             rm\366519484_2430374474_2                         
+                             096726770.mp4'                                    
+Animation 20: FadeIn(VGroup of 2 submobjects), etc.:   0%|          | 0/12 [00:00<?, ?it/s]Animation 20: FadeIn(VGroup of 2 submobjects), etc.:  17%|#6        | 2/12 [00:00<00:00, 19.00it/s]Animation 20: FadeIn(VGroup of 2 submobjects), etc.:  42%|####1     | 5/12 [00:00<00:00, 19.31it/s]Animation 20: FadeIn(VGroup of 2 submobjects), etc.:  67%|######6   | 8/12 [00:00<00:00, 20.05it/s]Animation 20: FadeIn(VGroup of 2 submobjects), etc.:  92%|#########1| 11/12 [00:00<00:00, 20.43it/s]                                                                                                    [10/09/26 17:45:22] INFO     Animation 20 : Partial    scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B21RegressionFo                         
+                             rm\366519484_146809249_11                         
+                             23579526.mp4'                                     
+[10/09/26 17:45:25] INFO     Animation 21 : Partial    scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B21RegressionFo                         
+                             rm\366519484_988584708_27                         
+                             79548042.mp4'                                     
+Animation 22: FadeOut(VGroup of 2 submobjects), etc.:   0%|          | 0/14 [00:00<?, ?it/s]Animation 22: FadeOut(VGroup of 2 submobjects), etc.:  14%|#4        | 2/14 [00:00<00:01, 11.44it/s]Animation 22: FadeOut(VGroup of 2 submobjects), etc.:  29%|##8       | 4/14 [00:00<00:00, 11.32it/s]Animation 22: FadeOut(VGroup of 2 submobjects), etc.:  43%|####2     | 6/14 [00:00<00:00, 10.55it/s]Animation 22: FadeOut(VGroup of 2 submobjects), etc.:  57%|#####7    | 8/14 [00:00<00:00,  8.62it/s]Animation 22: FadeOut(VGroup of 2 submobjects), etc.:  64%|######4   | 9/14 [00:01<00:00,  7.70it/s]Animation 22: FadeOut(VGroup of 2 submobjects), etc.:  79%|#######8  | 11/14 [00:01<00:00,  8.88it/s]Animation 22: FadeOut(VGroup of 2 submobjects), etc.:  86%|########5 | 12/14 [00:01<00:00,  9.06it/s]Animation 22: FadeOut(VGroup of 2 submobjects), etc.: 100%|##########| 14/14 [00:01<00:00,  9.94it/s]                                                                                                     [10/09/26 17:45:29] INFO     Animation 22 : Partial    scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B21RegressionFo                         
+                             rm\366519484_1818561225_2                         
+                             565206909.mp4'                                    
+[10/09/26 17:45:30] INFO     Animation 23 : Partial    scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B21RegressionFo                         
+                             rm\366519484_1142201815_3                         
+                             969128556.mp4'                                    
+Animation 24: FadeOut(Text('\u03b7 is y\u2080 minus a constant')), etc.:   0%|          | 0/11 [00:00<?, ?it/s]Animation 24: FadeOut(Text('\u03b7 is y\u2080 minus a constant')), etc.:  27%|##7       | 3/11 [00:00<00:00, 28.29it/s]Animation 24: FadeOut(Text('\u03b7 is y\u2080 minus a constant')), etc.:  55%|#####4    | 6/11 [00:00<00:00, 28.49it/s]Animation 24: FadeOut(Text('\u03b7 is y\u2080 minus a constant')), etc.:  91%|######### | 10/11 [00:00<00:00, 32.93it/s]                                                                                                              [10/09/26 17:45:32] INFO     Animation 24 : Partial    scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B21RegressionFo                         
+                             rm\366519484_652780274_51                         
+                             6251846.mp4'                                      
+[10/09/26 17:45:33] INFO     Animation 25 : Partial    scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B21RegressionFo                         
+                             rm\366519484_823930705_22                         
+                             0310555.mp4'                                      
+Animation 26: FadeOut(Text('the sick have low \u03b7, and the sick have d = 1')), etc.:   0%|          | 0/11 [00:00<?, ?it/s]Animation 26: FadeOut(Text('the sick have low \u03b7, and the sick have d = 1')), etc.:  18%|#8        | 2/11 [00:00<00:00, 13.58it/s]Animation 26: FadeOut(Text('the sick have low \u03b7, and the sick have d = 1')), etc.:  36%|###6      | 4/11 [00:00<00:00, 13.92it/s]Animation 26: FadeOut(Text('the sick have low \u03b7, and the sick have d = 1')), etc.:  64%|######3   | 7/11 [00:00<00:00, 16.82it/s]Animation 26: FadeOut(Text('the sick have low \u03b7, and the sick have d = 1')), etc.:  91%|######### | 10/11 [00:00<00:00, 18.93it/s]                                                                                                                                  [10/09/26 17:45:36] INFO     Animation 26 : Partial    scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B21RegressionFo                         
+                             rm\366519484_233840263_10                         
+                             33088055.mp4'                                     
+[10/09/26 17:45:38] INFO     Animation 27 : Partial    scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B21RegressionFo                         
+                             rm\366519484_469696866_75                         
+                             0479454.mp4'                                      
+Animation 28: Circumscribe(Group):   0%|          | 0/14 [00:00<?, ?it/s]                                                                                             INFO     Animation 28 : Partial    scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B21RegressionFo                         
+                             rm\366519484_23316000_133                         
+                             540781.mp4'                                       
+[10/09/26 17:45:40] INFO     Animation 29 : Partial    scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B21RegressionFo                         
+                             rm\366519484_80667541_822                         
+                             044141.mp4'                                       
+                    INFO     Animation 30 : Partial    scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B21RegressionFo                         
+                             rm\366519484_2657102932_2                         
+                             053263854.mp4'                                    
+                    INFO     Combining to Movie file.  scene_file_writer.py:952
+[10/09/26 17:45:41] INFO                              scene_file_writer.py:1103
+                             File ready at                                     
+                             'D:\Documents\Git\Github                          
+                             \econometria-avancada-01                          
+                             -mpe\Videos\class-01-pot                          
+                             ential-outcomes\media\vi                          
+                             deos\scenes\480p15\B21Re                          
+                             gressionForm.mp4'                                 
+                                                                               
+                    INFO     Rendered B21RegressionForm            scene.py:290
+                             Played 31 animations                              
+You are using manim version v0.21.0, but version v0.22.0 is available.
+You should consider upgrading via pip install -U manim

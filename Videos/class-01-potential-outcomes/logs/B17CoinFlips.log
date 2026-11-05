@@ -1,0 +1,265 @@
+<frozen runpy>:128: RuntimeWarning: 'manim.__main__' found in sys.modules after import of package 'manim', but prior to execution of 'manim.__main__'; this may result in unpredictable behaviour
+Manim Community v0.21.0
+
+[10/09/26 17:50:33] INFO     Animation 0 : Using cached    cairo_renderer.py:92
+                             data (hash :                                      
+                             2118183852_932754845_22313245                     
+                             7)                                                
+Animation 0: FadeIn(Text('One experiment, then all seventy')):   0%|          | 0/1 [00:00<?, ?it/s]                                                                                                    [10/09/26 17:50:34] INFO     Animation 1 : Partial     scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B17CoinFlips\36                         
+                             6519484_2132286748_164433                         
+                             3670.mp4'                                         
+                    INFO     Animation 2 : Using cached    cairo_renderer.py:92
+                             data (hash :                                      
+                             366519484_4176451748_20082771                     
+                             42)                                               
+Animation 2: FadeIn(VGroup of 48 submobjects):   0%|          | 0/1 [00:00<?, ?it/s]                                                                                    [10/09/26 17:50:36] INFO     Animation 3 : Partial     scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B17CoinFlips\36                         
+                             6519484_3524060503_168768                         
+                             2631.mp4'                                         
+[10/09/26 17:50:37] INFO     Animation 4 : Using cached    cairo_renderer.py:92
+                             data (hash :                                      
+                             366519484_882657031_207188901                     
+                             6)                                                
+Animation 4: FadeIn(MathTex('\\bar y_{\\,d=1} = \\tfrac{5+8+8+9}{4} = 7.5')):   0%|          | 0/1 [00:00<?, ?it/s]                                                                                                                   [10/09/26 17:50:38] INFO     Animation 5 : Partial     scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B17CoinFlips\36                         
+                             6519484_3750670795_302278                         
+                             1747.mp4'                                         
+                    INFO     Animation 6 : Using cached    cairo_renderer.py:92
+                             data (hash :                                      
+                             366519484_1756732335_12731066                     
+                             14)                                               
+Animation 6: FadeIn(MathTex('\\bar y_{\\,d=0} = \\tfrac{2+4+3+7}{4} = 4')):   0%|          | 0/1 [00:00<?, ?it/s]                                                                                                                 [10/09/26 17:50:40] INFO     Animation 7 : Partial     scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B17CoinFlips\36                         
+                             6519484_201750895_3677514                         
+                             991.mp4'                                          
+                    INFO     Animation 8 : Using cached    cairo_renderer.py:92
+                             data (hash :                                      
+                             366519484_1145870429_21945156                     
+                             21)                                               
+Animation 8: FadeIn(MathTex('7.5 - 4 = 3.5')):   0%|          | 0/1 [00:00<?, ?it/s]                                                                                    [10/09/26 17:50:42] INFO     Animation 9 : Partial     scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B17CoinFlips\36                         
+                             6519484_4002060901_168985                         
+                             6660.mp4'                                         
+                    INFO     Animation 10 : Using cached   cairo_renderer.py:92
+                             data (hash :                                      
+                             366519484_1694532128_35317844                     
+                             20)                                               
+Animation 10: FadeIn(MathTex('\\text{ATE} = 1.125')):   0%|          | 0/1 [00:00<?, ?it/s]                                                                                           [10/09/26 17:50:44] INFO     Animation 11 : Partial    scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B17CoinFlips\36                         
+                             6519484_2582615720_352932                         
+                             2482.mp4'                                         
+                    INFO     Animation 12 : Using cached   cairo_renderer.py:92
+                             data (hash :                                      
+                             366519484_4085998386_36190993                     
+                             00)                                               
+Animation 12: FadeIn(Text('one experiment: off by more than two points')):   0%|          | 0/1 [00:00<?, ?it/s]                                                                                                                [10/09/26 17:50:46] INFO     Animation 13 : Partial    scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B17CoinFlips\36                         
+                             6519484_2030001918_330983                         
+                             0074.mp4'                                         
+Animation 14: FadeOut(VGroup of 48 submobjects), etc.:   0%|          | 0/12 [00:00<?, ?it/s]Animation 14: FadeOut(VGroup of 48 submobjects), etc.:  17%|#6        | 2/12 [00:00<00:00, 17.71it/s]Animation 14: FadeOut(VGroup of 48 submobjects), etc.:  33%|###3      | 4/12 [00:00<00:00, 15.78it/s]Animation 14: FadeOut(VGroup of 48 submobjects), etc.:  50%|#####     | 6/12 [00:00<00:00, 14.64it/s]Animation 14: FadeOut(VGroup of 48 submobjects), etc.:  67%|######6   | 8/12 [00:00<00:00, 14.55it/s]Animation 14: FadeOut(VGroup of 48 submobjects), etc.:  92%|#########1| 11/12 [00:00<00:00, 16.66it/s]                                                                                                      [10/09/26 17:50:49] INFO     Animation 14 : Partial    scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B17CoinFlips\36                         
+                             6519484_1710071900_429072                         
+                             0437.mp4'                                         
+[10/09/26 17:50:50] INFO     Animation 15 : Partial    scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B17CoinFlips\36                         
+                             6519484_58996431_10092499                         
+                             7.mp4'                                            
+Animation 16: LaggedStart(Group):   0%|          | 0/24 [00:00<?, ?it/s]Animation 16: LaggedStart(Group):  79%|#######9  | 19/24 [00:00<00:00, 187.13it/s]                                                                                                      INFO     Animation 16 : Partial    scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B17CoinFlips\36                         
+                             6519484_2498104129_177667                         
+                             7628.mp4'                                         
+[10/09/26 17:50:51] INFO     Animation 17 : Partial    scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B17CoinFlips\36                         
+                             6519484_1046169355_360275                         
+                             9953.mp4'                                         
+Animation 18: FadeIn(Dot), etc.:   0%|          | 0/11 [00:00<?, ?it/s]                                                                       [10/09/26 17:50:52] INFO     Animation 18 : Partial    scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B17CoinFlips\36                         
+                             6519484_1641932475_393499                         
+                             3197.mp4'                                         
+                    INFO     Animation 19 : Partial    scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B17CoinFlips\36                         
+                             6519484_2213247322_309894                         
+                             503.mp4'                                          
+Animation 20: FadeOut(MathTex('\\binom{8}{4} = 70 \\text{ possible experiments}')), etc.:   0%|          | 0/11 [00:00<?, ?it/s]Animation 20: FadeOut(MathTex('\\binom{8}{4} = 70 \\text{ possible experiments}')), etc.:  45%|####5     | 5/11 [00:00<00:00, 46.47it/s]Animation 20: FadeOut(MathTex('\\binom{8}{4} = 70 \\text{ possible experiments}')), etc.:  91%|######### | 10/11 [00:00<00:00, 46.45it/s]                                                                                                                                         [10/09/26 17:50:53] INFO     Animation 20 : Partial    scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B17CoinFlips\36                         
+                             6519484_4010717461_209713                         
+                             9462.mp4'                                         
+[10/09/26 17:50:54] INFO     Animation 21 : Partial    scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B17CoinFlips\36                         
+                             6519484_2066606816_712597                         
+                             113.mp4'                                          
+Animation 22: Create(DashedLine), etc.:   0%|          | 0/12 [00:00<?, ?it/s]                                                                              [10/09/26 17:50:55] INFO     Animation 22 : Partial    scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B17CoinFlips\36                         
+                             6519484_3435457744_122985                         
+                             9666.mp4'                                         
+[10/09/26 17:50:56] INFO     Animation 23 : Partial    scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B17CoinFlips\36                         
+                             6519484_1692810595_180785                         
+                             9934.mp4'                                         
+Animation 24: FadeOut(Text('from \u22123 at one end to +5.25 at the other')), etc.:   0%|          | 0/11 [00:00<?, ?it/s]Animation 24: FadeOut(Text('from \u22123 at one end to +5.25 at the other')), etc.:  55%|#####4    | 6/11 [00:00<00:00, 48.99it/s]Animation 24: FadeOut(Text('from \u22123 at one end to +5.25 at the other')), etc.: 100%|##########| 11/11 [00:00<00:00, 47.81it/s]                                                                                                                              [10/09/26 17:50:57] INFO     Animation 24 : Partial    scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B17CoinFlips\36                         
+                             6519484_1127437904_411737                         
+                             0953.mp4'                                         
+[10/09/26 17:50:59] INFO     Animation 25 : Partial    scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B17CoinFlips\36                         
+                             6519484_2973627346_425298                         
+                             2584.mp4'                                         
+Animation 26: FadeOut(Text('unbiased: right on average, not every time')), etc.:   0%|          | 0/11 [00:00<?, ?it/s]Animation 26: FadeOut(Text('unbiased: right on average, not every time')), etc.:  27%|##7       | 3/11 [00:00<00:00, 29.36it/s]Animation 26: FadeOut(Text('unbiased: right on average, not every time')), etc.:  64%|######3   | 7/11 [00:00<00:00, 34.02it/s]                                                                                                                               [10/09/26 17:51:00] INFO     Animation 26 : Partial    scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B17CoinFlips\36                         
+                             6519484_1223458266_203344                         
+                             0172.mp4'                                         
+[10/09/26 17:51:02] INFO     Animation 27 : Partial    scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B17CoinFlips\36                         
+                             6519484_3453402094_257786                         
+                             6953.mp4'                                         
+                    INFO     Animation 28 : Partial    scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B17CoinFlips\36                         
+                             6519484_2657102932_425535                         
+                             3935.mp4'                                         
+                    INFO     Combining to Movie file.  scene_file_writer.py:952
+[10/09/26 17:51:03] INFO                              scene_file_writer.py:1103
+                             File ready at                                     
+                             'D:\Documents\Git\Github                          
+                             \econometria-avancada-01                          
+                             -mpe\Videos\class-01-pot                          
+                             ential-outcomes\media\vi                          
+                             deos\scenes\480p15\B17Co                          
+                             inFlips.mp4'                                      
+                                                                               
+                    INFO     Rendered B17CoinFlips                 scene.py:290
+                             Played 29 animations                              
+You are using manim version v0.21.0, but version v0.22.0 is available.
+You should consider upgrading via pip install -U manim

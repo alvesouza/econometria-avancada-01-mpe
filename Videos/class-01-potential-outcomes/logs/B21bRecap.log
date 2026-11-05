@@ -1,0 +1,267 @@
+<frozen runpy>:128: RuntimeWarning: 'manim.__main__' found in sys.modules after import of package 'manim', but prior to execution of 'manim.__main__'; this may result in unpredictable behaviour
+Manim Community v0.21.0
+
+Animation 0: FadeIn(Text('What you should be able to do')):   0%|          | 0/11 [00:00<?, ?it/s]Animation 0: FadeIn(Text('What you should be able to do')):  64%|######3   | 7/11 [00:00<00:00, 66.69it/s]                                                                                                          [10/09/26 17:44:59] INFO     Animation 0 : Partial     scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B21bRecap\21181                         
+                             83852_742625711_223132457                         
+                             .mp4'                                             
+                    INFO     Animation 1 : Partial     scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B21bRecap\36651                         
+                             9484_1191479485_132390961                         
+                             5.mp4'                                            
+Animation 2: FadeIn(Text('1 · write y\u2080, y\u2081, d and the switching equation for any causal question')):   0%|          | 0/11 [00:00<?, ?it/s]Animation 2: FadeIn(Text('1 · write y\u2080, y\u2081, d and the switching equation for any causal question')):  27%|##7       | 3/11 [00:00<00:00, 23.52it/s]Animation 2: FadeIn(Text('1 · write y\u2080, y\u2081, d and the switching equation for any causal question')):  55%|#####4    | 6/11 [00:00<00:00, 26.56it/s]Animation 2: FadeIn(Text('1 · write y\u2080, y\u2081, d and the switching equation for any causal question')):  91%|######### | 10/11 [00:00<00:00, 29.33it/s]                                                                                                                                                    [10/09/26 17:45:01] INFO     Animation 2 : Partial     scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B21bRecap\36651                         
+                             9484_3085713839_201964169                         
+                             4.mp4'                                            
+[10/09/26 17:45:03] INFO     Animation 3 : Partial     scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B21bRecap\36651                         
+                             9484_4010969920_393114573                         
+                             8.mp4'                                            
+Animation 4: Indicate(Text('1 · write y\u2080, y\u2081, d and the switching equation for any causal question')):   0%|          | 0/11 [00:00<?, ?it/s]Animation 4: Indicate(Text('1 · write y\u2080, y\u2081, d and the switching equation for any causal question')):  45%|####5     | 5/11 [00:00<00:00, 41.76it/s]Animation 4: Indicate(Text('1 · write y\u2080, y\u2081, d and the switching equation for any causal question')):  91%|######### | 10/11 [00:00<00:00, 44.65it/s]                                                                                                                                                      [10/09/26 17:45:04] INFO     Animation 4 : Partial     scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B21bRecap\36651                         
+                             9484_338855744_4251518874                         
+                             .mp4'                                             
+[10/09/26 17:45:05] INFO     Animation 5 : Partial     scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B21bRecap\36651                         
+                             9484_2653438972_106880522                         
+                             1.mp4'                                            
+Animation 6: FadeIn(Text('2 · define and compute ATE, ATT, ATU; match each to a policy question')):   0%|          | 0/11 [00:00<?, ?it/s]Animation 6: FadeIn(Text('2 · define and compute ATE, ATT, ATU; match each to a policy question')):  45%|####5     | 5/11 [00:00<00:00, 44.07it/s]Animation 6: FadeIn(Text('2 · define and compute ATE, ATT, ATU; match each to a policy question')):  91%|######### | 10/11 [00:00<00:00, 38.97it/s]                                                                                                                                                   [10/09/26 17:45:06] INFO     Animation 6 : Partial     scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B21bRecap\36651                         
+                             9484_118716892_57240142.m                         
+                             p4'                                               
+[10/09/26 17:45:08] INFO     Animation 7 : Partial     scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B21bRecap\36651                         
+                             9484_3477634296_246229779                         
+                             .mp4'                                             
+Animation 8: Indicate(Text('2 · define and compute ATE, ATT, ATU; match each to a policy question')):   0%|          | 0/11 [00:00<?, ?it/s]Animation 8: Indicate(Text('2 · define and compute ATE, ATT, ATU; match each to a policy question')):  27%|##7       | 3/11 [00:00<00:00, 27.51it/s]Animation 8: Indicate(Text('2 · define and compute ATE, ATT, ATU; match each to a policy question')):  64%|######3   | 7/11 [00:00<00:00, 29.07it/s]Animation 8: Indicate(Text('2 · define and compute ATE, ATT, ATU; match each to a policy question')):  91%|######### | 10/11 [00:00<00:00, 27.74it/s]                                                                                                                                                     [10/09/26 17:45:10] INFO     Animation 8 : Partial     scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B21bRecap\36651                         
+                             9484_2535852670_925363689                         
+                             .mp4'                                             
+[10/09/26 17:45:11] INFO     Animation 9 : Partial     scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B21bRecap\36651                         
+                             9484_1627110101_307108158                         
+                             3.mp4'                                            
+Animation 10: FadeIn(Text('3 · derive naive = ATT + SB = ATE + SB + (1 \u2212 \u03c0)(ATT \u2212 ATU); sign SB')):   0%|          | 0/11 [00:00<?, ?it/s]Animation 10: FadeIn(Text('3 · derive naive = ATT + SB = ATE + SB + (1 \u2212 \u03c0)(ATT \u2212 ATU); sign SB')):  45%|####5     | 5/11 [00:00<00:00, 47.15it/s]Animation 10: FadeIn(Text('3 · derive naive = ATT + SB = ATE + SB + (1 \u2212 \u03c0)(ATT \u2212 ATU); sign SB')):  91%|######### | 10/11 [00:00<00:00, 41.76it/s]                                                                                                                                                   [10/09/26 17:45:13] INFO     Animation 10 : Partial    scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B21bRecap\36651                         
+                             9484_2914711423_162245328                         
+                             0.mp4'                                            
+[10/09/26 17:45:16] INFO     Animation 11 : Partial    scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B21bRecap\36651                         
+                             9484_2913703501_157499285                         
+                             8.mp4'                                            
+Animation 12: Indicate(Text('3 · derive naive = ATT + SB = ATE + SB + (1 \u2212 \u03c0)(ATT \u2212 ATU); sign SB')):   0%|          | 0/11 [00:00<?, ?it/s]Animation 12: Indicate(Text('3 · derive naive = ATT + SB = ATE + SB + (1 \u2212 \u03c0)(ATT \u2212 ATU); sign SB')):  36%|###6      | 4/11 [00:00<00:00, 34.13it/s]Animation 12: Indicate(Text('3 · derive naive = ATT + SB = ATE + SB + (1 \u2212 \u03c0)(ATT \u2212 ATU); sign SB')):  73%|#######2  | 8/11 [00:00<00:00, 32.48it/s]                                                                                                                                                    [10/09/26 17:45:18] INFO     Animation 12 : Partial    scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B21bRecap\36651                         
+                             9484_3166321061_257634344                         
+                             0.mp4'                                            
+[10/09/26 17:45:19] INFO     Animation 13 : Partial    scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B21bRecap\36651                         
+                             9484_2326920482_419567491                         
+                             6.mp4'                                            
+Animation 14: FadeIn(Text('4 · show randomisation kills both terms; know what it does not solve')):   0%|          | 0/11 [00:00<?, ?it/s]Animation 14: FadeIn(Text('4 · show randomisation kills both terms; know what it does not solve')):  45%|####5     | 5/11 [00:00<00:00, 39.21it/s]Animation 14: FadeIn(Text('4 · show randomisation kills both terms; know what it does not solve')):  82%|########1 | 9/11 [00:00<00:00, 34.13it/s]                                                                                                                                                  [10/09/26 17:45:21] INFO     Animation 14 : Partial    scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B21bRecap\36651                         
+                             9484_3900632479_415645968                         
+                             6.mp4'                                            
+[10/09/26 17:45:24] INFO     Animation 15 : Partial    scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B21bRecap\36651                         
+                             9484_269880479_1126095130                         
+                             .mp4'                                             
+Animation 16: Indicate(Text('4 · show randomisation kills both terms; know what it does not solve')):   0%|          | 0/11 [00:00<?, ?it/s]Animation 16: Indicate(Text('4 · show randomisation kills both terms; know what it does not solve')):  36%|###6      | 4/11 [00:00<00:00, 33.95it/s]Animation 16: Indicate(Text('4 · show randomisation kills both terms; know what it does not solve')):  73%|#######2  | 8/11 [00:00<00:00, 34.84it/s]                                                                                                                                                    [10/09/26 17:45:26] INFO     Animation 16 : Partial    scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B21bRecap\36651                         
+                             9484_3682886353_221773542                         
+                             3.mp4'                                            
+[10/09/26 17:45:29] INFO     Animation 17 : Partial    scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B21bRecap\36651                         
+                             9484_391568618_3945813220                         
+                             .mp4'                                             
+Animation 18: FadeIn(Text('SUTVA · attrition · precision: not solved by the coin')):   0%|          | 0/11 [00:00<?, ?it/s]Animation 18: FadeIn(Text('SUTVA · attrition · precision: not solved by the coin')):  36%|###6      | 4/11 [00:00<00:00, 36.76it/s]Animation 18: FadeIn(Text('SUTVA · attrition · precision: not solved by the coin')):  91%|######### | 10/11 [00:00<00:00, 44.19it/s]                                                                                                                                    [10/09/26 17:45:31] INFO     Animation 18 : Partial    scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B21bRecap\36651                         
+                             9484_2819170582_398732603                         
+                             6.mp4'                                            
+[10/09/26 17:45:33] INFO     Animation 19 : Partial    scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B21bRecap\36651                         
+                             9484_3464590400_68990399.                         
+                             mp4'                                              
+Animation 20: FadeOut(Text('SUTVA · attrition · precision: not solved by the coin')), etc.:   0%|          | 0/11 [00:00<?, ?it/s]Animation 20: FadeOut(Text('SUTVA · attrition · precision: not solved by the coin')), etc.:  36%|###6      | 4/11 [00:00<00:00, 32.51it/s]Animation 20: FadeOut(Text('SUTVA · attrition · precision: not solved by the coin')), etc.:  73%|#######2  | 8/11 [00:00<00:00, 29.17it/s]Animation 20: FadeOut(Text('SUTVA · attrition · precision: not solved by the coin')), etc.: 100%|##########| 11/11 [00:00<00:00, 24.08it/s]                                                                                                                                           [10/09/26 17:45:37] INFO     Animation 20 : Partial    scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B21bRecap\36651                         
+                             9484_1405636250_223801722                         
+                             9.mp4'                                            
+[10/09/26 17:45:40] INFO     Animation 21 : Partial    scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B21bRecap\36651                         
+                             9484_4009687274_152655070                         
+                             5.mp4'                                            
+Animation 22: Circumscribe(Group):   0%|          | 0/14 [00:00<?, ?it/s]                                                                         [10/09/26 17:45:41] INFO     Animation 22 : Partial    scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B21bRecap\36651                         
+                             9484_994192057_472200565.                         
+                             mp4'                                              
+[10/09/26 17:45:43] INFO     Animation 23 : Partial    scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B21bRecap\36651                         
+                             9484_387789173_1188301087                         
+                             .mp4'                                             
+[10/09/26 17:45:45] INFO     Animation 24 : Partial    scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B21bRecap\36651                         
+                             9484_2657102932_367724646                         
+                             2.mp4'                                            
+                    INFO     Combining to Movie file.  scene_file_writer.py:952
+                    INFO                              scene_file_writer.py:1103
+                             File ready at                                     
+                             'D:\Documents\Git\Github                          
+                             \econometria-avancada-01                          
+                             -mpe\Videos\class-01-pot                          
+                             ential-outcomes\media\vi                          
+                             deos\scenes\480p15\B21bR                          
+                             ecap.mp4'                                         
+                                                                               
+                    INFO     Rendered B21bRecap                    scene.py:290
+                             Played 25 animations                              
+You are using manim version v0.21.0, but version v0.22.0 is available.
+You should consider upgrading via pip install -U manim

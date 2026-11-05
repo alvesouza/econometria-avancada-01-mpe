@@ -1,0 +1,447 @@
+<frozen runpy>:128: RuntimeWarning: 'manim.__main__' found in sys.modules after import of package 'manim', but prior to execution of 'manim.__main__'; this may result in unpredictable behaviour
+Manim Community v0.21.0
+
+Animation 0: FadeIn(Text('From the ATT to the ATE')):   0%|          | 0/11 [00:00<?, ?it/s]Animation 0: FadeIn(Text('From the ATT to the ATE')): 100%|##########| 11/11 [00:00<00:00, 100.58it/s]                                                                                                      [10/09/26 17:42:03] INFO     Animation 0 : Partial     scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B13DerivationAT                         
+                             E\2118183852_2040721252_2                         
+                             23132457.mp4'                                     
+                    INFO     Animation 1 : Partial     scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B13DerivationAT                         
+                             E\366519484_4184886708_27                         
+                             20101091.mp4'                                     
+Animation 2: FadeIn(MathTex('\\pi = P(d_i = 1) = \\tfrac{1}{2}')):   0%|          | 0/11 [00:00<?, ?it/s]Animation 2: FadeIn(MathTex('\\pi = P(d_i = 1) = \\tfrac{1}{2}')):  91%|######### | 10/11 [00:00<00:00, 97.02it/s]                                                                                                                  [10/09/26 17:42:04] INFO     Animation 2 : Partial     scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B13DerivationAT                         
+                             E\366519484_3716981185_91                         
+                             576465.mp4'                                       
+[10/09/26 17:42:05] INFO     Animation 3 : Partial     scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B13DerivationAT                         
+                             E\366519484_2428295851_10                         
+                             67171448.mp4'                                     
+Animation 4: FadeIn(VGroup of 2 submobjects):   0%|          | 0/12 [00:00<?, ?it/s]Animation 4: FadeIn(VGroup of 2 submobjects):  83%|########3 | 10/12 [00:00<00:00, 99.28it/s]                                                                                                                 INFO     Animation 4 : Partial     scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B13DerivationAT                         
+                             E\366519484_1993232984_36                         
+                             05967855.mp4'                                     
+[10/09/26 17:42:06] INFO     Animation 5 : Partial     scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B13DerivationAT                         
+                             E\366519484_934648232_145                         
+                             1986454.mp4'                                      
+Animation 6: FadeOut(MathTex('\\pi = P(d_i = 1) = \\tfrac{1}{2}')), etc.:   0%|          | 0/9 [00:00<?, ?it/s]Animation 6: FadeOut(MathTex('\\pi = P(d_i = 1) = \\tfrac{1}{2}')), etc.:  56%|#####5    | 5/9 [00:00<00:00, 46.43it/s]                                                                                                                       [10/09/26 17:42:07] INFO     Animation 6 : Partial     scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B13DerivationAT                         
+                             E\366519484_945791574_273                         
+                             9837540.mp4'                                      
+[10/09/26 17:42:08] INFO     Animation 7 : Partial     scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B13DerivationAT                         
+                             E\366519484_257392731_213                         
+                             0860583.mp4'                                      
+Animation 8: Indicate(MathTex('\\text{ATE} = \\pi\\,\\text{ATT} + (1-\\pi)\\,\\text{ATU}')):   0%|          | 0/11 [00:00<?, ?it/s]Animation 8: Indicate(MathTex('\\text{ATE} = \\pi\\,\\text{ATT} + (1-\\pi)\\,\\text{ATU}')):  45%|####5     | 5/11 [00:00<00:00, 49.65it/s]Animation 8: Indicate(MathTex('\\text{ATE} = \\pi\\,\\text{ATT} + (1-\\pi)\\,\\text{ATU}')): 100%|##########| 11/11 [00:00<00:00, 54.08it/s]                                                                                                                                            [10/09/26 17:42:09] INFO     Animation 8 : Partial     scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B13DerivationAT                         
+                             E\366519484_3018028618_23                         
+                             07037547.mp4'                                     
+[10/09/26 17:42:10] INFO     Animation 9 : Partial     scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B13DerivationAT                         
+                             E\366519484_49390005_2235                         
+                             428877.mp4'                                       
+Animation 10: TransformFromCopy(MathTex('\\text{ATE} = \\text{ATT} - (1-\\pi)\\,\\text{ATT} + (1-\\pi)\\,\\text{ATU}')), etc.:   0%|          | 0/18 [00:00<?, ?it/s]Animation 10: TransformFromCopy(MathTex('\\text{ATE} = \\text{ATT} - (1-\\pi)\\,\\text{ATT} + (1-\\pi)\\,\\text{ATU}')), etc.:  11%|#1        | 2/18 [00:00<00:00, 19.97it/s]Animation 10: TransformFromCopy(MathTex('\\text{ATE} = \\text{ATT} - (1-\\pi)\\,\\text{ATT} + (1-\\pi)\\,\\text{ATU}')), etc.:  28%|##7       | 5/18 [00:00<00:00, 21.81it/s]Animation 10: TransformFromCopy(MathTex('\\text{ATE} = \\text{ATT} - (1-\\pi)\\,\\text{ATT} + (1-\\pi)\\,\\text{ATU}')), etc.:  44%|####4     | 8/18 [00:00<00:00, 23.10it/s]Animation 10: TransformFromCopy(MathTex('\\text{ATE} = \\text{ATT} - (1-\\pi)\\,\\text{ATT} + (1-\\pi)\\,\\text{ATU}')), etc.:  61%|######1   | 11/18 [00:00<00:00, 25.36it/s]Animation 10: TransformFromCopy(MathTex('\\text{ATE} = \\text{ATT} - (1-\\pi)\\,\\text{ATT} + (1-\\pi)\\,\\text{ATU}')), etc.:  83%|########3 | 15/18 [00:00<00:00, 29.01it/s]                                                                                                                                                                              [10/09/26 17:42:12] INFO     Animation 10 : Partial    scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B13DerivationAT                         
+                             E\366519484_3172792938_23                         
+                             16866579.mp4'                                     
+[10/09/26 17:42:13] INFO     Animation 11 : Partial    scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B13DerivationAT                         
+                             E\366519484_2852357181_30                         
+                             32291183.mp4'                                     
+Animation 12: FadeOut(Text('law of iterated expectations')), etc.:   0%|          | 0/9 [00:00<?, ?it/s]Animation 12: FadeOut(Text('law of iterated expectations')), etc.:  44%|####4     | 4/9 [00:00<00:00, 32.21it/s]Animation 12: FadeOut(Text('law of iterated expectations')), etc.:  89%|########8 | 8/9 [00:00<00:00, 33.02it/s]                                                                                                                [10/09/26 17:42:14] INFO     Animation 12 : Partial    scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B13DerivationAT                         
+                             E\366519484_1919375735_41                         
+                             65365086.mp4'                                     
+[10/09/26 17:42:15] INFO     Animation 13 : Partial    scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B13DerivationAT                         
+                             E\366519484_3202725824_17                         
+                             0323991.mp4'                                      
+Animation 14: TransformFromCopy(MathTex('\\text{ATE} = \\text{ATT} - (1-\\pi)(\\text{ATT}-\\text{ATU})')), etc.:   0%|          | 0/18 [00:00<?, ?it/s]Animation 14: TransformFromCopy(MathTex('\\text{ATE} = \\text{ATT} - (1-\\pi)(\\text{ATT}-\\text{ATU})')), etc.:  28%|##7       | 5/18 [00:00<00:00, 42.90it/s]Animation 14: TransformFromCopy(MathTex('\\text{ATE} = \\text{ATT} - (1-\\pi)(\\text{ATT}-\\text{ATU})')), etc.:  56%|#####5    | 10/18 [00:00<00:00, 45.14it/s]Animation 14: TransformFromCopy(MathTex('\\text{ATE} = \\text{ATT} - (1-\\pi)(\\text{ATT}-\\text{ATU})')), etc.:  83%|########3 | 15/18 [00:00<00:00, 43.62it/s]                                                                                                                                                                [10/09/26 17:42:17] INFO     Animation 14 : Partial    scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B13DerivationAT                         
+                             E\366519484_930226351_396                         
+                             8775289.mp4'                                      
+[10/09/26 17:42:18] INFO     Animation 15 : Partial    scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B13DerivationAT                         
+                             E\366519484_2328687650_40                         
+                             62325990.mp4'                                     
+Animation 16: FadeOut(MathTex('\\pi\\,\\text{ATT} = \\text{ATT} - (1-\\pi)\\,\\text{ATT}')), etc.:   0%|          | 0/9 [00:00<?, ?it/s]Animation 16: FadeOut(MathTex('\\pi\\,\\text{ATT} = \\text{ATT} - (1-\\pi)\\,\\text{ATT}')), etc.:  33%|###3      | 3/9 [00:00<00:00, 27.91it/s]Animation 16: FadeOut(MathTex('\\pi\\,\\text{ATT} = \\text{ATT} - (1-\\pi)\\,\\text{ATT}')), etc.:  67%|######6   | 6/9 [00:00<00:00, 22.55it/s]Animation 16: FadeOut(MathTex('\\pi\\,\\text{ATT} = \\text{ATT} - (1-\\pi)\\,\\text{ATT}')), etc.: 100%|##########| 9/9 [00:00<00:00, 23.23it/s]                                                                                                                                                [10/09/26 17:42:19] INFO     Animation 16 : Partial    scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B13DerivationAT                         
+                             E\366519484_31491866_2847                         
+                             329464.mp4'                                       
+[10/09/26 17:42:20] INFO     Animation 17 : Partial    scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B13DerivationAT                         
+                             E\366519484_572459905_133                         
+                             0982447.mp4'                                      
+Animation 18: TransformFromCopy(MathTex('\\text{ATT} = \\text{ATE} + (1-\\pi)(\\text{ATT}-\\text{ATU})')), etc.:   0%|          | 0/18 [00:00<?, ?it/s]Animation 18: TransformFromCopy(MathTex('\\text{ATT} = \\text{ATE} + (1-\\pi)(\\text{ATT}-\\text{ATU})')), etc.:  28%|##7       | 5/18 [00:00<00:00, 41.98it/s]Animation 18: TransformFromCopy(MathTex('\\text{ATT} = \\text{ATE} + (1-\\pi)(\\text{ATT}-\\text{ATU})')), etc.:  56%|#####5    | 10/18 [00:00<00:00, 40.59it/s]Animation 18: TransformFromCopy(MathTex('\\text{ATT} = \\text{ATE} + (1-\\pi)(\\text{ATT}-\\text{ATU})')), etc.:  83%|########3 | 15/18 [00:00<00:00, 35.94it/s]                                                                                                                                                                [10/09/26 17:42:22] INFO     Animation 18 : Partial    scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B13DerivationAT                         
+                             E\366519484_4204994483_32                         
+                             085382.mp4'                                       
+[10/09/26 17:42:24] INFO     Animation 19 : Partial    scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B13DerivationAT                         
+                             E\366519484_967087974_368                         
+                             0213274.mp4'                                      
+Animation 20: Indicate(MathTex('\\text{ATT} = \\text{ATE} + (1-\\pi)(\\text{ATT}-\\text{ATU})')):   0%|          | 0/11 [00:00<?, ?it/s]Animation 20: Indicate(MathTex('\\text{ATT} = \\text{ATE} + (1-\\pi)(\\text{ATT}-\\text{ATU})')):  45%|####5     | 5/11 [00:00<00:00, 44.80it/s]Animation 20: Indicate(MathTex('\\text{ATT} = \\text{ATE} + (1-\\pi)(\\text{ATT}-\\text{ATU})')):  91%|######### | 10/11 [00:00<00:00, 44.71it/s]                                                                                                                                                 [10/09/26 17:42:25] INFO     Animation 20 : Partial    scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B13DerivationAT                         
+                             E\366519484_2989892248_21                         
+                             98647564.mp4'                                     
+[10/09/26 17:42:26] INFO     Animation 21 : Partial    scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B13DerivationAT                         
+                             E\366519484_262804381_942                         
+                             544408.mp4'                                       
+Animation 22: FadeIn(VGroup of 2 submobjects), etc.:   0%|          | 0/12 [00:00<?, ?it/s]Animation 22: FadeIn(VGroup of 2 submobjects), etc.:  25%|##5       | 3/12 [00:00<00:00, 22.01it/s]Animation 22: FadeIn(VGroup of 2 submobjects), etc.:  50%|#####     | 6/12 [00:00<00:00, 21.61it/s]Animation 22: FadeIn(VGroup of 2 submobjects), etc.:  75%|#######5  | 9/12 [00:00<00:00, 19.42it/s]Animation 22: FadeIn(VGroup of 2 submobjects), etc.:  92%|#########1| 11/12 [00:00<00:00, 16.51it/s]                                                                                                    [10/09/26 17:42:28] INFO     Animation 22 : Partial    scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B13DerivationAT                         
+                             E\366519484_761139136_274                         
+                             8929189.mp4'                                      
+[10/09/26 17:42:30] INFO     Animation 23 : Partial    scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B13DerivationAT                         
+                             E\366519484_3573547481_26                         
+                             71942075.mp4'                                     
+Animation 24: TransformFromCopy(MathTex('\\text{Naive} = \\text{ATE} + \\text{SB} + (1-\\pi)(\\text{ATT}-\\text{ATU})')), etc.:   0%|          | 0/21 [00:00<?, ?it/s]Animation 24: TransformFromCopy(MathTex('\\text{Naive} = \\text{ATE} + \\text{SB} + (1-\\pi)(\\text{ATT}-\\text{ATU})')), etc.:  19%|#9        | 4/21 [00:00<00:00, 33.49it/s]Animation 24: TransformFromCopy(MathTex('\\text{Naive} = \\text{ATE} + \\text{SB} + (1-\\pi)(\\text{ATT}-\\text{ATU})')), etc.:  38%|###8      | 8/21 [00:00<00:00, 32.33it/s]Animation 24: TransformFromCopy(MathTex('\\text{Naive} = \\text{ATE} + \\text{SB} + (1-\\pi)(\\text{ATT}-\\text{ATU})')), etc.:  57%|#####7    | 12/21 [00:00<00:00, 30.86it/s]Animation 24: TransformFromCopy(MathTex('\\text{Naive} = \\text{ATE} + \\text{SB} + (1-\\pi)(\\text{ATT}-\\text{ATU})')), etc.:  76%|#######6  | 16/21 [00:00<00:00, 30.05it/s]Animation 24: TransformFromCopy(MathTex('\\text{Naive} = \\text{ATE} + \\text{SB} + (1-\\pi)(\\text{ATT}-\\text{ATU})')), etc.:  95%|#########5| 20/21 [00:00<00:00, 29.31it/s]                                                                                                                                                                               [10/09/26 17:42:32] INFO     Animation 24 : Partial    scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B13DerivationAT                         
+                             E\366519484_2607600638_27                         
+                             35185688.mp4'                                     
+[10/09/26 17:42:34] INFO     Animation 25 : Partial    scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B13DerivationAT                         
+                             E\366519484_4269433160_21                         
+                             1762469.mp4'                                      
+Animation 26: Circumscribe(Group):   0%|          | 0/14 [00:00<?, ?it/s]                                                                         [10/09/26 17:42:35] INFO     Animation 26 : Partial    scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B13DerivationAT                         
+                             E\366519484_3350088900_30                         
+                             17719539.mp4'                                     
+[10/09/26 17:42:36] INFO     Animation 27 : Partial    scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B13DerivationAT                         
+                             E\366519484_1838003948_23                         
+                             88661268.mp4'                                     
+Animation 28: FadeOut(VGroup of 2 submobjects), etc.:   0%|          | 0/14 [00:00<?, ?it/s]Animation 28: FadeOut(VGroup of 2 submobjects), etc.:  14%|#4        | 2/14 [00:00<00:00, 14.27it/s]Animation 28: FadeOut(VGroup of 2 submobjects), etc.:  29%|##8       | 4/14 [00:00<00:00, 15.59it/s]Animation 28: FadeOut(VGroup of 2 submobjects), etc.:  43%|####2     | 6/14 [00:00<00:00, 15.30it/s]Animation 28: FadeOut(VGroup of 2 submobjects), etc.:  57%|#####7    | 8/14 [00:00<00:00, 14.34it/s]Animation 28: FadeOut(VGroup of 2 submobjects), etc.:  71%|#######1  | 10/14 [00:00<00:00, 13.24it/s]Animation 28: FadeOut(VGroup of 2 submobjects), etc.:  86%|########5 | 12/14 [00:00<00:00, 12.19it/s]Animation 28: FadeOut(VGroup of 2 submobjects), etc.: 100%|##########| 14/14 [00:01<00:00, 13.13it/s]                                                                                                     [10/09/26 17:42:40] INFO     Animation 28 : Partial    scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B13DerivationAT                         
+                             E\366519484_3744248785_30                         
+                             90837119.mp4'                                     
+[10/09/26 17:42:41] INFO     Animation 29 : Partial    scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B13DerivationAT                         
+                             E\366519484_3865340929_38                         
+                             80507257.mp4'                                     
+Animation 30: GrowFromCenter(Brace), etc.:   0%|          | 0/12 [00:00<?, ?it/s]Animation 30: GrowFromCenter(Brace), etc.:  25%|##5       | 3/12 [00:00<00:00, 29.89it/s]Animation 30: GrowFromCenter(Brace), etc.:  50%|#####     | 6/12 [00:00<00:00, 28.04it/s]Animation 30: GrowFromCenter(Brace), etc.:  75%|#######5  | 9/12 [00:00<00:00, 26.24it/s]Animation 30: GrowFromCenter(Brace), etc.: 100%|##########| 12/12 [00:00<00:00, 25.27it/s]                                                                                          [10/09/26 17:42:42] INFO     Animation 30 : Partial    scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B13DerivationAT                         
+                             E\366519484_3157018081_17                         
+                             55588081.mp4'                                     
+[10/09/26 17:42:44] INFO     Animation 31 : Partial    scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B13DerivationAT                         
+                             E\366519484_3981079023_11                         
+                             15303259.mp4'                                     
+Animation 32: GrowFromCenter(Brace), etc.:   0%|          | 0/12 [00:00<?, ?it/s]Animation 32: GrowFromCenter(Brace), etc.:  25%|##5       | 3/12 [00:00<00:00, 20.84it/s]Animation 32: GrowFromCenter(Brace), etc.:  50%|#####     | 6/12 [00:00<00:00, 21.15it/s]Animation 32: GrowFromCenter(Brace), etc.:  75%|#######5  | 9/12 [00:00<00:00, 20.61it/s]Animation 32: GrowFromCenter(Brace), etc.: 100%|##########| 12/12 [00:00<00:00, 18.05it/s]                                                                                          [10/09/26 17:42:47] INFO     Animation 32 : Partial    scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B13DerivationAT                         
+                             E\366519484_1266158488_29                         
+                             57339771.mp4'                                     
+[10/09/26 17:42:48] INFO     Animation 33 : Partial    scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B13DerivationAT                         
+                             E\366519484_2423733829_40                         
+                             38423464.mp4'                                     
+Animation 34: FadeOut(Text('difference in gains: groups would gain different amounts')), etc.:   0%|          | 0/11 [00:00<?, ?it/s]Animation 34: FadeOut(Text('difference in gains: groups would gain different amounts')), etc.:  18%|#8        | 2/11 [00:00<00:00, 15.20it/s]Animation 34: FadeOut(Text('difference in gains: groups would gain different amounts')), etc.:  45%|####5     | 5/11 [00:00<00:00, 20.34it/s]Animation 34: FadeOut(Text('difference in gains: groups would gain different amounts')), etc.:  73%|#######2  | 8/11 [00:00<00:00, 23.35it/s]Animation 34: FadeOut(Text('difference in gains: groups would gain different amounts')), etc.: 100%|##########| 11/11 [00:00<00:00, 24.64it/s]                                                                                                                                              [10/09/26 17:42:51] INFO     Animation 34 : Partial    scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B13DerivationAT                         
+                             E\366519484_2070854714_15                         
+                             46637823.mp4'                                     
+[10/09/26 17:42:53] INFO     Animation 35 : Partial    scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B13DerivationAT                         
+                             E\366519484_3681119928_22                         
+                             37300955.mp4'                                     
+Animation 36: Indicate(MathTexPart('\\text{ATE}')):   0%|          | 0/11 [00:00<?, ?it/s]Animation 36: Indicate(MathTexPart('\\text{ATE}')):  27%|##7       | 3/11 [00:00<00:00, 27.31it/s]Animation 36: Indicate(MathTexPart('\\text{ATE}')):  64%|######3   | 7/11 [00:00<00:00, 30.88it/s]Animation 36: Indicate(MathTexPart('\\text{ATE}')): 100%|##########| 11/11 [00:00<00:00, 33.53it/s]                                                                                                   [10/09/26 17:42:54] INFO     Animation 36 : Partial    scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B13DerivationAT                         
+                             E\366519484_4225764857_18                         
+                             35239002.mp4'                                     
+[10/09/26 17:42:55] INFO     Animation 37 : Partial    scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B13DerivationAT                         
+                             E\366519484_525315354_333                         
+                             7547249.mp4'                                      
+Animation 38: FadeOut(Text('same effect for all \u2192 ATT = ATU \u2192 term vanishes')), etc.:   0%|          | 0/11 [00:00<?, ?it/s]Animation 38: FadeOut(Text('same effect for all \u2192 ATT = ATU \u2192 term vanishes')), etc.:  36%|###6      | 4/11 [00:00<00:00, 37.05it/s]Animation 38: FadeOut(Text('same effect for all \u2192 ATT = ATU \u2192 term vanishes')), etc.:  73%|#######2  | 8/11 [00:00<00:00, 35.15it/s]                                                                                                                                    [10/09/26 17:42:57] INFO     Animation 38 : Partial    scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B13DerivationAT                         
+                             E\366519484_2837013242_35                         
+                             16051438.mp4'                                     
+[10/09/26 17:42:59] INFO     Animation 39 : Partial    scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B13DerivationAT                         
+                             E\366519484_1976597513_16                         
+                             16681448.mp4'                                     
+Animation 40: Circumscribe(Group):   0%|          | 0/14 [00:00<?, ?it/s]                                                                                             INFO     Animation 40 : Partial    scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B13DerivationAT                         
+                             E\366519484_2727948883_29                         
+                             49558274.mp4'                                     
+[10/09/26 17:43:01] INFO     Animation 41 : Partial    scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B13DerivationAT                         
+                             E\366519484_3970704545_91                         
+                             7542303.mp4'                                      
+                    INFO     Animation 42 : Partial    scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B13DerivationAT                         
+                             E\366519484_2657102932_40                         
+                             33314967.mp4'                                     
+                    INFO     Combining to Movie file.  scene_file_writer.py:952
+[10/09/26 17:43:02] INFO                              scene_file_writer.py:1103
+                             File ready at                                     
+                             'D:\Documents\Git\Github                          
+                             \econometria-avancada-01                          
+                             -mpe\Videos\class-01-pot                          
+                             ential-outcomes\media\vi                          
+                             deos\scenes\480p15\B13De                          
+                             rivationATE.mp4'                                  
+                                                                               
+                    INFO     Rendered B13DerivationATE             scene.py:290
+                             Played 43 animations                              
+You are using manim version v0.21.0, but version v0.22.0 is available.
+You should consider upgrading via pip install -U manim

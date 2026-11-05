@@ -1,0 +1,367 @@
+<frozen runpy>:128: RuntimeWarning: 'manim.__main__' found in sys.modules after import of package 'manim', but prior to execution of 'manim.__main__'; this may result in unpredictable behaviour
+Manim Community v0.21.0
+
+Animation 0: FadeIn(Text('The switching equation (MHE eq. 2.1.1)')):   0%|          | 0/11 [00:00<?, ?it/s]Animation 0: FadeIn(Text('The switching equation (MHE eq. 2.1.1)')):  45%|####5     | 5/11 [00:00<00:00, 49.18it/s]                                                                                                                   [10/09/26 17:39:51] INFO     Animation 0 : Partial     scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B07SwitchingEqu                         
+                             ation\2118183852_12570228                         
+                             47_223132457.mp4'                                 
+[10/09/26 17:39:52] INFO     Animation 1 : Partial     scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B07SwitchingEqu                         
+                             ation\366519484_31381197_                         
+                             260699147.mp4'                                    
+Animation 2: FadeIn(VGroup of 2 submobjects):   0%|          | 0/12 [00:00<?, ?it/s]Animation 2: FadeIn(VGroup of 2 submobjects):  67%|######6   | 8/12 [00:00<00:00, 71.61it/s]                                                                                                                INFO     Animation 2 : Partial     scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B07SwitchingEqu                         
+                             ation\366519484_249577337                         
+                             0_282825758.mp4'                                  
+[10/09/26 17:39:53] INFO     Animation 3 : Partial     scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B07SwitchingEqu                         
+                             ation\366519484_150993854                         
+                             1_917493546.mp4'                                  
+Animation 4: FadeIn(Text('treatment picks the column')):   0%|          | 0/9 [00:00<?, ?it/s]Animation 4: FadeIn(Text('treatment picks the column')):  78%|#######7  | 7/9 [00:00<00:00, 67.99it/s]                                                                                                      [10/09/26 17:39:54] INFO     Animation 4 : Partial     scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B07SwitchingEqu                         
+                             ation\366519484_172030802                         
+                             5_2552842351.mp4'                                 
+[10/09/26 17:39:55] INFO     Animation 5 : Partial     scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B07SwitchingEqu                         
+                             ation\366519484_201476788                         
+                             3_2314118008.mp4'                                 
+Animation 6: TransformFromCopy(MathTex('y_i = d_i\\, y_{1i} + (1 - d_i)\\, y_{0i}')), etc.:   0%|          | 0/18 [00:00<?, ?it/s]Animation 6: TransformFromCopy(MathTex('y_i = d_i\\, y_{1i} + (1 - d_i)\\, y_{0i}')), etc.:  17%|#6        | 3/18 [00:00<00:00, 29.24it/s]Animation 6: TransformFromCopy(MathTex('y_i = d_i\\, y_{1i} + (1 - d_i)\\, y_{0i}')), etc.:  33%|###3      | 6/18 [00:00<00:00, 28.08it/s]Animation 6: TransformFromCopy(MathTex('y_i = d_i\\, y_{1i} + (1 - d_i)\\, y_{0i}')), etc.:  50%|#####     | 9/18 [00:00<00:00, 21.94it/s]Animation 6: TransformFromCopy(MathTex('y_i = d_i\\, y_{1i} + (1 - d_i)\\, y_{0i}')), etc.:  67%|######6   | 12/18 [00:00<00:00, 23.08it/s]Animation 6: TransformFromCopy(MathTex('y_i = d_i\\, y_{1i} + (1 - d_i)\\, y_{0i}')), etc.:  83%|########3 | 15/18 [00:00<00:00, 23.12it/s]Animation 6: TransformFromCopy(MathTex('y_i = d_i\\, y_{1i} + (1 - d_i)\\, y_{0i}')), etc.: 100%|##########| 18/18 [00:00<00:00, 24.77it/s]                                                                                                                                           [10/09/26 17:39:57] INFO     Animation 6 : Partial     scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B07SwitchingEqu                         
+                             ation\366519484_175183139                         
+                             9_2185856980.mp4'                                 
+[10/09/26 17:39:59] INFO     Animation 7 : Partial     scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B07SwitchingEqu                         
+                             ation\366519484_280144632                         
+                             8_702195881.mp4'                                  
+Animation 8: FadeOut(Text('treatment picks the column')), etc.:   0%|          | 0/9 [00:00<?, ?it/s]Animation 8: FadeOut(Text('treatment picks the column')), etc.:  33%|###3      | 3/9 [00:00<00:00, 20.14it/s]Animation 8: FadeOut(Text('treatment picks the column')), etc.:  67%|######6   | 6/9 [00:00<00:00, 19.18it/s]Animation 8: FadeOut(Text('treatment picks the column')), etc.: 100%|##########| 9/9 [00:00<00:00, 14.91it/s]                                                                                                             [10/09/26 17:40:00] INFO     Animation 8 : Partial     scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B07SwitchingEqu                         
+                             ation\366519484_123093332                         
+                             3_2285291131.mp4'                                 
+[10/09/26 17:40:02] INFO     Animation 9 : Partial     scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B07SwitchingEqu                         
+                             ation\366519484_289388740                         
+                             _4066811886.mp4'                                  
+Animation 10: TransformFromCopy(MathTex('y_i = d_i\\, y_{1i} + y_{0i} - d_i\\, y_{0i}')), etc.:   0%|          | 0/18 [00:00<?, ?it/s]Animation 10: TransformFromCopy(MathTex('y_i = d_i\\, y_{1i} + y_{0i} - d_i\\, y_{0i}')), etc.:  22%|##2       | 4/18 [00:00<00:00, 37.20it/s]Animation 10: TransformFromCopy(MathTex('y_i = d_i\\, y_{1i} + y_{0i} - d_i\\, y_{0i}')), etc.:  44%|####4     | 8/18 [00:00<00:00, 37.53it/s]Animation 10: TransformFromCopy(MathTex('y_i = d_i\\, y_{1i} + y_{0i} - d_i\\, y_{0i}')), etc.:  67%|######6   | 12/18 [00:00<00:00, 38.20it/s]Animation 10: TransformFromCopy(MathTex('y_i = d_i\\, y_{1i} + y_{0i} - d_i\\, y_{0i}')), etc.:  89%|########8 | 16/18 [00:00<00:00, 37.69it/s]                                                                                                                                               [10/09/26 17:40:04] INFO     Animation 10 : Partial    scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B07SwitchingEqu                         
+                             ation\366519484_365356151                         
+                             4_1912328248.mp4'                                 
+[10/09/26 17:40:05] INFO     Animation 11 : Partial    scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B07SwitchingEqu                         
+                             ation\366519484_416216688                         
+                             3_829379733.mp4'                                  
+Animation 12: FadeOut(Text('d is 0 or 1: write the choice as a sum')), etc.:   0%|          | 0/9 [00:00<?, ?it/s]Animation 12: FadeOut(Text('d is 0 or 1: write the choice as a sum')), etc.:  33%|###3      | 3/9 [00:00<00:00, 27.73it/s]Animation 12: FadeOut(Text('d is 0 or 1: write the choice as a sum')), etc.:  67%|######6   | 6/9 [00:00<00:00, 23.34it/s]                                                                                                                          [10/09/26 17:40:07] INFO     Animation 12 : Partial    scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B07SwitchingEqu                         
+                             ation\366519484_240978131                         
+                             5_3593850485.mp4'                                 
+[10/09/26 17:40:08] INFO     Animation 13 : Partial    scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B07SwitchingEqu                         
+                             ation\366519484_803312807                         
+                             _3025164357.mp4'                                  
+Animation 14: Indicate(MathTex('y_i = d_i\\, y_{1i} + y_{0i} - d_i\\, y_{0i}')):   0%|          | 0/11 [00:00<?, ?it/s]Animation 14: Indicate(MathTex('y_i = d_i\\, y_{1i} + y_{0i} - d_i\\, y_{0i}')):  18%|#8        | 2/11 [00:00<00:00, 19.03it/s]Animation 14: Indicate(MathTex('y_i = d_i\\, y_{1i} + y_{0i} - d_i\\, y_{0i}')):  45%|####5     | 5/11 [00:00<00:00, 23.64it/s]Animation 14: Indicate(MathTex('y_i = d_i\\, y_{1i} + y_{0i} - d_i\\, y_{0i}')):  82%|########1 | 9/11 [00:00<00:00, 29.22it/s]                                                                                                                               [10/09/26 17:40:09] INFO     Animation 14 : Partial    scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B07SwitchingEqu                         
+                             ation\366519484_244077948                         
+                             5_729132528.mp4'                                  
+[10/09/26 17:40:10] INFO     Animation 15 : Partial    scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B07SwitchingEqu                         
+                             ation\366519484_733604574                         
+                             _2251669406.mp4'                                  
+Animation 16: TransformFromCopy(MathTex('y_i = y_{0i} + (y_{1i} - y_{0i})\\, d_i')), etc.:   0%|          | 0/18 [00:00<?, ?it/s]Animation 16: TransformFromCopy(MathTex('y_i = y_{0i} + (y_{1i} - y_{0i})\\, d_i')), etc.:  28%|##7       | 5/18 [00:00<00:00, 40.30it/s]Animation 16: TransformFromCopy(MathTex('y_i = y_{0i} + (y_{1i} - y_{0i})\\, d_i')), etc.:  56%|#####5    | 10/18 [00:00<00:00, 39.15it/s]Animation 16: TransformFromCopy(MathTex('y_i = y_{0i} + (y_{1i} - y_{0i})\\, d_i')), etc.:  83%|########3 | 15/18 [00:00<00:00, 41.03it/s]                                                                                                                                          [10/09/26 17:40:12] INFO     Animation 16 : Partial    scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B07SwitchingEqu                         
+                             ation\366519484_254842705                         
+                             9_3385747020.mp4'                                 
+[10/09/26 17:40:13] INFO     Animation 17 : Partial    scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B07SwitchingEqu                         
+                             ation\366519484_133773356                         
+                             4_3873793118.mp4'                                 
+Animation 18: FadeOut(Text('multiply out')), etc.:   0%|          | 0/9 [00:00<?, ?it/s]Animation 18: FadeOut(Text('multiply out')), etc.:  33%|###3      | 3/9 [00:00<00:00, 22.50it/s]Animation 18: FadeOut(Text('multiply out')), etc.:  67%|######6   | 6/9 [00:00<00:00, 21.81it/s]                                                                                                [10/09/26 17:40:15] INFO     Animation 18 : Partial    scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B07SwitchingEqu                         
+                             ation\366519484_218940870                         
+                             1_905997923.mp4'                                  
+[10/09/26 17:40:16] INFO     Animation 19 : Partial    scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B07SwitchingEqu                         
+                             ation\366519484_288225420                         
+                             9_2238436537.mp4'                                 
+Animation 20: Circumscribe(Group):   0%|          | 0/14 [00:00<?, ?it/s]                                                                         [10/09/26 17:40:17] INFO     Animation 20 : Partial    scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B07SwitchingEqu                         
+                             ation\366519484_392919708                         
+                             _203655238.mp4'                                   
+[10/09/26 17:40:18] INFO     Animation 21 : Partial    scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B07SwitchingEqu                         
+                             ation\366519484_356598953                         
+                             7_612289987.mp4'                                  
+Animation 22: FadeIn(VGroup of 2 submobjects):   0%|          | 0/11 [00:00<?, ?it/s]Animation 22: FadeIn(VGroup of 2 submobjects):  82%|########1 | 9/11 [00:00<00:00, 81.01it/s]                                                                                             [10/09/26 17:40:20] INFO     Animation 22 : Partial    scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B07SwitchingEqu                         
+                             ation\366519484_333953487                         
+                             9_7125826.mp4'                                    
+[10/09/26 17:40:22] INFO     Animation 23 : Partial    scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B07SwitchingEqu                         
+                             ation\366519484_249214260                         
+                             4_2715800646.mp4'                                 
+Animation 24: FadeIn(VGroup of 2 submobjects):   0%|          | 0/11 [00:00<?, ?it/s]Animation 24: FadeIn(VGroup of 2 submobjects): 100%|##########| 11/11 [00:00<00:00, 102.95it/s]                                                                                               [10/09/26 17:40:23] INFO     Animation 24 : Partial    scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B07SwitchingEqu                         
+                             ation\366519484_330359480                         
+                             3_2259248886.mp4'                                 
+[10/09/26 17:40:25] INFO     Animation 25 : Partial    scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B07SwitchingEqu                         
+                             ation\366519484_259855519                         
+                             7_3269376457.mp4'                                 
+Animation 26: FadeOut(VGroup of 2 submobjects), etc.:   0%|          | 0/14 [00:00<?, ?it/s]Animation 26: FadeOut(VGroup of 2 submobjects), etc.:  14%|#4        | 2/14 [00:00<00:01, 11.19it/s]Animation 26: FadeOut(VGroup of 2 submobjects), etc.:  29%|##8       | 4/14 [00:00<00:00, 11.51it/s]Animation 26: FadeOut(VGroup of 2 submobjects), etc.:  43%|####2     | 6/14 [00:00<00:00, 11.31it/s]Animation 26: FadeOut(VGroup of 2 submobjects), etc.:  57%|#####7    | 8/14 [00:00<00:00, 10.49it/s]Animation 26: FadeOut(VGroup of 2 submobjects), etc.:  71%|#######1  | 10/14 [00:00<00:00, 11.21it/s]Animation 26: FadeOut(VGroup of 2 submobjects), etc.:  86%|########5 | 12/14 [00:01<00:00, 11.91it/s]Animation 26: FadeOut(VGroup of 2 submobjects), etc.: 100%|##########| 14/14 [00:01<00:00, 11.55it/s]                                                                                                     [10/09/26 17:40:29] INFO     Animation 26 : Partial    scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B07SwitchingEqu                         
+                             ation\366519484_133632946                         
+                             5_3956535362.mp4'                                 
+[10/09/26 17:40:30] INFO     Animation 27 : Partial    scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B07SwitchingEqu                         
+                             ation\366519484_233087173                         
+                             3_3697046765.mp4'                                 
+Animation 28: FadeOut(Text('MHE eq. 2.1.1')), etc.:   0%|          | 0/11 [00:00<?, ?it/s]Animation 28: FadeOut(Text('MHE eq. 2.1.1')), etc.:  27%|##7       | 3/11 [00:00<00:00, 24.97it/s]Animation 28: FadeOut(Text('MHE eq. 2.1.1')), etc.:  55%|#####4    | 6/11 [00:00<00:00, 26.82it/s]Animation 28: FadeOut(Text('MHE eq. 2.1.1')), etc.:  91%|######### | 10/11 [00:00<00:00, 29.19it/s]                                                                                                   [10/09/26 17:40:32] INFO     Animation 28 : Partial    scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B07SwitchingEqu                         
+                             ation\366519484_298895208                         
+                             2_3519454119.mp4'                                 
+[10/09/26 17:40:35] INFO     Animation 29 : Partial    scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B07SwitchingEqu                         
+                             ation\366519484_384359684                         
+                             2_241034187.mp4'                                  
+Animation 30: Indicate(MathTexPart('(y_{1i} - y_{0i})')):   0%|          | 0/12 [00:00<?, ?it/s]Animation 30: Indicate(MathTexPart('(y_{1i} - y_{0i})')):  25%|##5       | 3/12 [00:00<00:00, 25.63it/s]Animation 30: Indicate(MathTexPart('(y_{1i} - y_{0i})')):  58%|#####8    | 7/12 [00:00<00:00, 29.91it/s]                                                                                                        [10/09/26 17:40:36] INFO     Animation 30 : Partial    scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B07SwitchingEqu                         
+                             ation\366519484_154151801                         
+                             _2406751449.mp4'                                  
+[10/09/26 17:40:37] INFO     Animation 31 : Partial    scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B07SwitchingEqu                         
+                             ation\366519484_235901738                         
+                             2_1333674000.mp4'                                 
+Animation 32: FadeOut(Text('everyone starts at y\u2080; treatment adds their own effect')), etc.:   0%|          | 0/11 [00:00<?, ?it/s]Animation 32: FadeOut(Text('everyone starts at y\u2080; treatment adds their own effect')), etc.:  27%|##7       | 3/11 [00:00<00:00, 24.54it/s]Animation 32: FadeOut(Text('everyone starts at y\u2080; treatment adds their own effect')), etc.:  55%|#####4    | 6/11 [00:00<00:00, 18.54it/s]Animation 32: FadeOut(Text('everyone starts at y\u2080; treatment adds their own effect')), etc.:  73%|#######2  | 8/11 [00:00<00:00, 17.57it/s]Animation 32: FadeOut(Text('everyone starts at y\u2080; treatment adds their own effect')), etc.:  91%|######### | 10/11 [00:00<00:00, 17.50it/s]                                                                                                                                            [10/09/26 17:40:39] INFO     Animation 32 : Partial    scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B07SwitchingEqu                         
+                             ation\366519484_144639190                         
+                             3_1243303521.mp4'                                 
+[10/09/26 17:40:41] INFO     Animation 33 : Partial    scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B07SwitchingEqu                         
+                             ation\366519484_181556923                         
+                             8_1657010069.mp4'                                 
+                    INFO     Animation 34 : Partial    scene_file_writer.py:192
+                             movie file written in                             
+                             'D:\Documents\Git\Github\                         
+                             econometria-avancada-01-m                         
+                             pe\Videos\class-01-potent                         
+                             ial-outcomes\media\videos                         
+                             \scenes\480p15\partial_mo                         
+                             vie_files\B07SwitchingEqu                         
+                             ation\366519484_265710293                         
+                             2_4035748262.mp4'                                 
+[10/09/26 17:40:42] INFO     Combining to Movie file.  scene_file_writer.py:952
+                    INFO                              scene_file_writer.py:1103
+                             File ready at                                     
+                             'D:\Documents\Git\Github                          
+                             \econometria-avancada-01                          
+                             -mpe\Videos\class-01-pot                          
+                             ential-outcomes\media\vi                          
+                             deos\scenes\480p15\B07Sw                          
+                             itchingEquation.mp4'                              
+                                                                               
+                    INFO     Rendered B07SwitchingEquation         scene.py:290
+                             Played 35 animations                              
+You are using manim version v0.21.0, but version v0.22.0 is available.
+You should consider upgrading via pip install -U manim

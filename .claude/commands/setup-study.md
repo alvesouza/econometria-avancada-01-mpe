@@ -236,6 +236,44 @@ Create only the directories that don't already exist. Use the discovered naming 
 chapter cut out of a large PDF belongs. `<notebooks-dir>/` is created on first use by
 `/lab-init`, which also writes its index `README.md` there — do not pre-populate it.
 
+### Step 2.5: Write .gitignore
+
+Always, whether or not videos or Graphify are wanted later. Merge into an existing
+`.gitignore` (add missing lines, keep the user's own); substitute the real books directory
+name from Step 0:
+
+```gitignore
+# secrets
+.env
+.env.*
+!.env.example
+# copyrighted material stays local
+<books-dir>/
+NotebookLM/sources/
+# video render output; scene scripts and companion.html stay versioned
+Videos/*/media*/
+Videos/*/audio/
+Videos/*/build/
+Videos/**/*.mp4
+Videos/*/*.log
+# tool output and caches
+graphify-out/
+__pycache__/
+.venv/
+.ipynb_checkpoints/
+```
+
+*Why:* `/intake` and `/lab-data` assume the books directory and `NotebookLM/sources/` are
+already ignored for copyright, and `/explainer` and `/companion` assume the render output is.
+Written later or only under an optional step, a book or a video gets staged before the rule
+exists. Notebook `data/` dirs are not ignored here: `/lab-data` decides per licence.
+
+If the project is a git repository, verify instead of assuming:
+`git check-ignore -v "<books-dir>/x.pdf" NotebookLM/sources/x Videos/s/build/x Videos/s/s.mp4 .env`
+must print a rule for every path, and `git check-ignore Videos/s/scene.py` must print
+nothing. If anything under these paths is already tracked, list it with
+`git ls-files <books-dir> NotebookLM/sources` and ask before running `git rm --cached`.
+
 ### Step 3: Generate CLAUDE.md
 
 Follow the Econometria project pattern:
@@ -321,13 +359,8 @@ Also copy the quiz validator `~/.claude/commands/templates/quiz-validate.py` int
 - `explainer_compile.py` — compiles the rendered beats and the narration into one video,
   frame-accurately, and fails if audio and video drift by more than a frame.
 
-Then create `.env.example` in the project root (committed, no values) and add `.env`,
-`.env.*`, `!.env.example` to `.gitignore`. The real key goes in `.env`, which is never
-committed. Verify the ignore actually works with `git check-ignore -v .env` — do not assume it.
-
-Also add the render artefacts to `.gitignore`: `Videos/*/media*/` (covers any `--media_dir`
-variant such as `media_nocache/`), `Videos/*/audio/`, `Videos/*/build/`, `Videos/**/*.mp4`
-(every generated video at any depth, the final one included) and `Videos/*/*.log`.
+Then create `.env.example` in the project root (committed, no values). The real key goes in
+`.env`, which Step 2.5 already ignores together with the render artefacts.
 
 Tell the user what `/explainer` needs that this step cannot provide: a **Speechify API key**
 in `.env` as `SPEECHIFY_API_KEY`, **Manim CE** (`python -m pip install manim`), **ffmpeg** on
@@ -372,7 +405,7 @@ Then, in the project:
    conversions, and indexing it swamps the graph. At minimum exclude the books directory, the
    NotebookLM sources, converted readings, `graphify-out/`, `__pycache__/`, `.venv/`, `*.pdf`
    and every `data/`, `cache/` and `figures/` directory.
-2. Add `graphify-out/` to `.gitignore`.
+2. `graphify-out/` is already in `.gitignore` (Step 2.5).
 3. Add to `.claude/settings.json`: `"Bash(graphify query:*)"`, `"Bash(graphify path:*)"`,
    `"Bash(graphify explain:*)"`, `"Bash(graphify update:*)"` under `permissions.allow`, and
    `"GRAPH_PATH": "graphify-out/graph.json"` under `env` — matching Efficient Token's own
