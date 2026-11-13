@@ -1,7 +1,8 @@
 """Reproduce and assert every number printed in Listas/lista-L07-book-exercises.tex.
 
 Unit L07 (Class 7): GLS with AR(1) errors, Student-t errors, hierarchical/panel models,
-Tobit, probit/logit, logistic odds ratios. Run from any directory:
+Tobit, probit/logit, logistic odds ratios; Q17 (original) ordered and multinomial probit
+(simulated data, seed 2026). Run from any directory:
 
     python Listas/L07-book-exercises-check.py
 
@@ -17,8 +18,9 @@ import pandas as pd
 import statsmodels.api as sm
 import wooldridge as wd
 from linearmodels.panel import PanelOLS
-from scipy import optimize, stats
+from scipy import integrate, optimize, stats
 from scipy.special import gammaln
+from statsmodels.miscmodels.ordinal_model import OrderedModel
 from statsmodels.tools.numdiff import approx_hess
 
 HERE = Path(__file__).resolve().parent
@@ -483,6 +485,102 @@ def g87():
         put(f"g87_probit{j+1}", pr.params[j])
 
 
+# ---------------------------------------------------------------- Q17 original: ordered / multinomial probit
+def bvn_cdf(h, k, rho):
+    """Standard bivariate normal cdf P(Z1 <= h, Z2 <= k), corr(Z1, Z2) = rho, |rho| < 1.
+
+    One-dimensional quadrature of phi(z) Phi((k - rho z)/sqrt(1 - rho^2)) over z <= h: deterministic,
+    unlike scipy's multivariate_normal.cdf, so the printed digits are reproducible.
+    """
+    s = np.sqrt(1 - rho**2)
+    f = lambda z: stats.norm.pdf(z) * stats.norm.cdf((k - rho * z) / s)
+    return integrate.quad(f, -np.inf, h, epsabs=1e-13, epsrel=1e-12)[0]
+
+
+def mnp_probs(x, g, d, S):
+    """Choice probabilities (P0, P1, P2) of the 3-alternative MNP with differenced utilities
+    y*_j = g_j + d_j x + e_j (j = 1, 2), e ~ N2(0, S); y = 0 if max(y*) < 0, else argmax.
+
+    Each event is {A y* <= 0} for a 2x2 matrix A, i.e. a bivariate normal cdf at 0 of A y*.
+    Returns (array of the three probabilities, list of (h, k, rho) per alternative).
+    """
+    mu = g + d * x
+    out, args = [], []
+    for A in (np.eye(2), np.array([[-1, 0], [-1, 1.0]]), np.array([[0, -1], [1, -1.0]])):
+        m, C = A @ mu, A @ S @ A.T
+        sd = np.sqrt(np.diag(C))
+        hk = -m / sd
+        rho = C[0, 1] / (sd[0] * sd[1])
+        args.append((hk[0], hk[1], rho))
+        out.append(bvn_cdf(hk[0], hk[1], rho))
+    return np.array(out), args
+
+
+def orig_probit():
+    Phi, phi = stats.norm.cdf, stats.norm.pdf
+    # (ii) population probabilities and partial effects at x = 0
+    b, k1, k2 = 0.8, -0.4, 0.9
+    put("op_P1", Phi(k1)); put("op_P2", Phi(k2) - Phi(k1)); put("op_P3", 1 - Phi(k2)); put("op_Phik2", Phi(k2))
+    put("op_phi1", phi(k1)); put("op_phi2", phi(k2))
+    put("op_ME1", -b * phi(k1)); put("op_ME2", b * (phi(k1) - phi(k2))); put("op_ME3", b * phi(k2))
+    # (iv) simulation and ML
+    rng = np.random.default_rng(2026)
+    n = 2000
+    x = rng.standard_normal(n)
+    ystar = b * x + rng.standard_normal(n)
+    y = 1 + (ystar > k1).astype(int) + (ystar > k2).astype(int)
+    for j in (1, 2, 3):
+        put(f"op_n{j}", (y == j).sum())
+
+    def ll(t):
+        bb, c1, c2 = t
+        if c2 <= c1:
+            return -np.inf
+        lo = np.array([-np.inf, c1, c2])[y - 1]
+        hi = np.array([c1, c2, np.inf])[y - 1]
+        return np.log(Phi(hi - bb * x) - Phi(lo - bb * x)).sum()
+
+    r = optimize.minimize(lambda t: -ll(t), [0.0, -0.5, 0.5], method="Nelder-Mead",
+                          options={"xatol": 1e-10, "fatol": 1e-12, "maxiter": 20000})
+    th = r.x
+    se = np.sqrt(np.diag(np.linalg.inv(-approx_hess(th, ll))))
+    for j, nm in enumerate(("b", "k1", "k2")):
+        put(f"op_{nm}", th[j]); put(f"op_se_{nm}", se[j])
+    put("op_ll", ll(th))
+    # independent path: statsmodels OrderedModel (cutpoints as k1, log(k2 - k1))
+    om = OrderedModel(y, x[:, None], distr="probit").fit(method="bfgs", disp=False, gtol=1e-10)
+    om_k = np.r_[om.params[1], om.params[1] + np.exp(om.params[2])]
+    assert np.allclose([om.params[0], *om_k], th, atol=1e-5), (om.params, th)
+    bb, c1, c2 = th
+    put("op_hP1", Phi(c1)); put("op_hP2", Phi(c2) - Phi(c1)); put("op_hP3", 1 - Phi(c2))
+    put("op_hME1", -bb * phi(c1)); put("op_hME2", bb * (phi(c1) - phi(c2))); put("op_hME3", bb * phi(c2))
+    # (vi)-(vii) multinomial probit at x = 0
+    g, d = np.array([0.5, -0.2]), np.array([-0.5, 0.6])
+    S = np.array([[1.0, 0.5], [0.5, 2.0]])
+    p, args = mnp_probs(0.0, g, d, S)
+    for j in range(3):
+        put(f"mnp_P{j}", p[j])
+        put(f"mnp_h{j}", args[j][0]); put(f"mnp_k{j}", args[j][1]); put(f"mnp_rho{j}", args[j][2])
+    put("mnp_sum", p.sum())
+    rng = np.random.default_rng(2026)
+    U = g + rng.multivariate_normal(np.zeros(2), S, 200_000)
+    ch = np.where(U.max(1) < 0, 0, 1 + U.argmax(1))
+    for j in range(3):
+        put(f"mnp_sim{j}", (ch == j).mean())
+    # analytic dP0/dx: P0 = Phi2(h, k; rho), h = -(g1 + d1 x), k = -(g2 + d2 x)/s2
+    h, k, rho = args[0]
+    s2, sr = np.sqrt(S[1, 1]), np.sqrt(1 - rho**2)
+    a = phi(h) * Phi((k - rho * h) / sr)
+    c = phi(k) * Phi((h - rho * k) / sr)
+    put("mnp_a", a); put("mnp_c", c); put("mnp_d2s", d[1] / s2)
+    put("mnp_ME0", -d[0] * a - d[1] / s2 * c)
+    eps = 1e-5
+    me = (mnp_probs(eps, g, d, S)[0] - mnp_probs(-eps, g, d, S)[0]) / (2 * eps)
+    for j in range(3):
+        put(f"mnp_ME{j}_num", me[j])
+    put("mnp_ME_sum", me.sum())
+
+
 # ---------------------------------------------------------------- expected values
 # (key, number as printed in the .tex[, absolute tolerance]). Without a tolerance the check is
 # half a unit in the last printed decimal. MCMC quantities carry an explicit Monte Carlo tolerance.
@@ -597,6 +695,23 @@ EXPECTED = [
     ("ms21_eta1", "-2.449148"), ("ms21_p1", "0.0795"), ("ms21_obs1", "0.0733"), ("ms21_eta22", "1.335319"),
     ("ms21_p22", "0.7917"), ("ms21_obs22", "0.6053"), ("ms21_dev_p", "0.032"), ("ms21_pearson", "14.82"),
     ("ms21_n", "942"),
+    # Q17 original: ordered probit (population values, simulation + ML) and multinomial probit
+    ("op_P1", "0.344578"), ("op_Phik2", "0.815940"), ("op_P2", "0.471362"), ("op_P3", "0.184060"),
+    ("op_phi1", "0.368270"), ("op_phi2", "0.266085"),
+    ("op_ME1", "-0.294616"), ("op_ME2", "0.081748"), ("op_ME3", "0.212868"),
+    ("op_n1", "780"), ("op_n2", "733"), ("op_n3", "487"), ("op_ll", "-1748.169"),
+    ("op_b", "0.853638"), ("op_k1", "-0.393106"), ("op_k2", "0.884504"),
+    ("op_se_b", "0.032493"), ("op_se_k1", "0.031873"), ("op_se_k2", "0.035457"),
+    ("op_hP1", "0.347121"), ("op_hP2", "0.464667"), ("op_hP3", "0.188212"),
+    ("op_hME1", "-0.315230"), ("op_hME2", "0.084927"), ("op_hME3", "0.230303"),
+    ("mnp_h0", "-0.5"), ("mnp_k0", "0.141421"), ("mnp_rho0", "0.353553"),
+    ("mnp_h1", "0.5"), ("mnp_k1", "0.494975"), ("mnp_rho1", "0.353553"),
+    ("mnp_h2", "-0.141421"), ("mnp_k2", "-0.494975"), ("mnp_rho2", "0.75"),
+    ("mnp_P0", "0.220892"), ("mnp_P1", "0.523449"), ("mnp_P2", "0.255658"), ("mnp_sum", "1", 1e-10),
+    ("mnp_sim0", "0.22067"), ("mnp_sim1", "0.52432"), ("mnp_sim2", "0.25501"),
+    ("mnp_a", "0.222905"), ("mnp_c", "0.109911"), ("mnp_d2s", "0.424264"), ("mnp_ME0", "0.064821"),
+    ("mnp_ME0_num", "0.064821"), ("mnp_ME1_num", "-0.286016"), ("mnp_ME2_num", "0.221195"),
+    ("mnp_ME_sum", "0.000000"),
 ]
 
 # Displayed arithmetic (estilo-avaliacao §4.4): each operation shown with printed numbers must give
@@ -635,6 +750,15 @@ DISPLAYED = [
     ("0.180213+1.96*0.014562", "0.20875"), ("math.exp(0.15167)", "1.1638"), ("math.exp(0.20875)", "1.2321"),
     ("1/(1+math.exp(2.449148))", "0.0795"), ("17/232", "0.0733"), ("1/(1+math.exp(-1.335319))", "0.7917"),
     ("23/38", "0.6053"),
+    ("0.815940-0.344578", "0.471362"), ("1-0.815940", "0.184060"),
+    ("-0.8*0.368270", "-0.294616"), ("0.8*(0.368270-0.266085)", "0.081748"), ("0.8*0.266085", "0.212868"),
+    ("-0.294616+0.081748+0.212868", "0.000000"), ("((-0.4+0.9)/2)/0.8", "0.3125"),
+    ("(0.853638-0.8)/0.032493", "1.65"),
+    ("0.2/math.sqrt(2)", "0.141421"), ("0.5/math.sqrt(2)", "0.353553"), ("0.7/math.sqrt(2)", "0.494975"),
+    ("1.5/2", "0.75"), ("0.6/math.sqrt(2)", "0.424264"), ("3-1", "2"),
+    ("-(-0.5)*0.222905-0.424264*0.109911", "0.064821"), ("0.064821-0.286016+0.221195", "0.000000"),
+    ("math.sqrt(0.25/200000)", "0.0011"),
+    ("abs(0.22067-0.220892)", "0.0002"), ("abs(0.52432-0.523449)", "0.0009"), ("abs(0.25501-0.255658)", "0.0006"),
 ]
 
 
@@ -646,7 +770,7 @@ def _tol(printed):
 
 if __name__ == "__main__":
     import math  # noqa: F401  (used inside the DISPLAYED expressions)
-    for f in (w12c2, w12c10, w17c2, w17c3, w17c9, w14c5, ms618, ms621, g83, g86, g87):
+    for f in (w12c2, w12c10, w17c2, w17c3, w17c9, w14c5, ms618, ms621, g83, g86, g87, orig_probit):
         f()
     bad = []
     for item in EXPECTED:

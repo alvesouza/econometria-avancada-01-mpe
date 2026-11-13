@@ -29,6 +29,7 @@
 \usepackage{microtype}
 \usepackage{booktabs}
 \usepackage{graphicx}
+\usepackage{tikz}
 
 % ====================== CONFIGURATION ======================
 \newif\ifsolucoes
@@ -64,6 +65,10 @@
   \textbf{Question \thequestao.}~#1\par}
 % Source line that opens every question (estilo-avaliacao §5, book questions)
 \newcommand{\fonte}[1]{\par\noindent{\small\textit{Source:} #1}\par\smallskip}
+% Origin line that opens every original exercise (never a book source line)
+\newcommand{\origem}[1]{\par\noindent{\small\sloppy\textit{Origin:} #1\par}\smallskip}
+% What a statement refers to outside itself (equation, example, data, reported estimates)
+\newenvironment{refmaterial}{\par\smallskip\noindent\begingroup\small\textbf{Referenced material.}~}{\endgroup\par\smallskip}
 
 % Notation list that opens every solution (estilo-avaliacao §4, "Equations, notation and layout").
 \newenvironment{notacao}{\par\smallskip\noindent\textbf{Notation.}\begin{itemize}[leftmargin=1.4em,topsep=1pt,itemsep=0pt]\small}{\end{itemize}}
@@ -86,10 +91,12 @@
 \vspace{2pt}
 
 {\footnotesize\noindent\textbf{Instructions.} These are the \emph{Practice} items of Classes 5+6 in
-\texttt{Map/class-plan.md}. Every question opens with a source line. Book statements (Wooldridge,
-Greenberg) are reproduced verbatim from the book PDF. \emph{Mostly Harmless Econometrics} has no
-end-of-chapter exercises: for each of its worked examples the table is reproduced verbatim and the
-question is original. Computer exercises are solved in Python (\texttt{statsmodels},
+\texttt{Map/class-plan.md}, plus one book exercise on errors in variables and two original
+exercises (DAGs, Simpson's paradox). Every question opens with a source line (book questions) or an
+origin line (original questions). Book statements (Wooldridge, Greenberg) are reproduced verbatim from
+the book PDF; whatever a statement refers to (an example, an equation, a table) follows it in a
+\emph{Referenced material} block. \emph{Mostly Harmless Econometrics} has no end-of-chapter exercises:
+for each of its worked examples the table is reproduced verbatim and the question is original. Computer exercises are solved in Python (\texttt{statsmodels},
 \texttt{linearmodels}); \texttt{Listas/L05-book-exercises-check.py} reproduces and asserts every number
 in the solutions. Show your steps.\par}
 
@@ -99,8 +106,9 @@ in the solutions. Show your steps.\par}
 % ---------------------------------------------------------------- Q1
 \questao{The STAR experiment: balance, selection bias and covariates (MHE Tables 2.2.1--2.2.2).}
 \fonte{Angrist and Pischke (2008), \textit{Mostly Harmless Econometrics: An Empiricist's Companion},
-\S2.2, Tables 2.2.1 and 2.2.2, printed pp.~14--15. The source has no exercise; the statement is
-original. The table numbers are reproduced verbatim from the PDF (table notes shortened).}
+1st ed., Ch.~2, \S2.2, Tables 2.2.1 and 2.2.2, printed pp.~14--15 [PDF pp.~30--31]; results reported in
+the book's tables; tables reproduced verbatim (notes shortened). The book has no exercise here: the
+questions are original.}
 
 \begin{center}\small
 \textit{Table 2.2.1: Comparison of treatment and control characteristics in the Tennessee STAR experiment}\\[2pt]
@@ -249,8 +257,9 @@ sign the randomization failed.}
 
 % ---------------------------------------------------------------- Q2
 \questao{Returns to schooling and omitted-variables bias (MHE Table 3.2.1).}
-\fonte{Angrist and Pischke (2008), \textit{Mostly Harmless Econometrics}, \S3.2.2, Table 3.2.1, printed
-p.~62. The source has no exercise; the statement is original. Table reproduced verbatim from the PDF.}
+\fonte{Angrist and Pischke (2008), \textit{Mostly Harmless Econometrics}, 1st ed., Ch.~3, \S3.2.2,
+Table 3.2.1, printed p.~46 [PDF p.~62]; results reported in the book's table; table reproduced verbatim.
+The book has no exercise here: the questions are original.}
 
 \begin{center}\small
 \textit{Table 3.2.1: Estimates of the returns to education for men in the NLSY}\\[2pt]
@@ -346,9 +355,10 @@ run anything; the bad-control argument tells you where to stop adding controls.}
 
 % ---------------------------------------------------------------- Q3
 \questao{Wald and 2SLS estimates: quarter of birth and the draft lottery (MHE Tables 4.1.1--4.1.3).}
-\fonte{Angrist and Pischke (2008), \textit{Mostly Harmless Econometrics}, \S4.1, Tables 4.1.1, 4.1.2 and
-4.1.3, printed pp.~92, 96 and 97. The source has no exercise; the statement is original. Table numbers
-reproduced verbatim from the PDF (notes shortened).}
+\fonte{Angrist and Pischke (2008), \textit{Mostly Harmless Econometrics}, 1st ed., Ch.~4, \S4.1, Tables
+4.1.1, 4.1.2 and 4.1.3, printed pp.~92, 96 and 97 [PDF pp.~108, 112 and 113]; results reported in the
+book's tables; tables reproduced verbatim (notes shortened). The book has no exercise here: the questions
+are original.}
 
 \begin{center}\small
 \textit{Table 4.1.1: 2SLS estimates of the economic returns to schooling}\\[2pt]
@@ -501,8 +511,9 @@ imprecise IV estimates; the draft first stage is larger (16 points), so the esti
 
 % ---------------------------------------------------------------- Q4
 \questao{Card and Krueger: difference-in-differences by hand (MHE Table 5.2.1).}
-\fonte{Angrist and Pischke (2008), \textit{Mostly Harmless Econometrics}, \S5.2, Table 5.2.1, printed
-p.~171. The source has no exercise; the statement is original. Table reproduced verbatim from the PDF.}
+\fonte{Angrist and Pischke (2008), \textit{Mostly Harmless Econometrics}, 1st ed., Ch.~5, \S5.2,
+Table 5.2.1, printed p.~171 [PDF p.~187]; results reported in the book's table; table reproduced
+verbatim. The book has no exercise here: the questions are original.}
 
 \begin{center}\small
 \textit{Table 5.2.1: Average employment per store before and after the New Jersey minimum wage increase}\\[2pt]
@@ -588,9 +599,10 @@ state effect $\gamma$ absorbs any permanent NJ--PA gap, so only differential tre
 
 % ---------------------------------------------------------------- Q5
 \questao{Incumbency and the sharp regression-discontinuity design (MHE Figure 6.1.2).}
-\fonte{Angrist and Pischke (2008), \textit{Mostly Harmless Econometrics}, \S6.1, Figure 6.1.2 and text,
-printed pp.~194--195. The source has no exercise; the statement is original. Caption and numbers from the
-text reproduced verbatim; the two fitted values at the cutoff are read off the figure (not printed in the book).}
+\fonte{Angrist and Pischke (2008), \textit{Mostly Harmless Econometrics}, 1st ed., Ch.~6, \S6.1,
+Figure 6.1.2 and text, printed pp.~194--195 [PDF pp.~210--211]; results reported in the book's figure
+and text; caption and text numbers reproduced verbatim; the two fitted values at the cutoff are read off
+the figure (not printed in the book). The book has no exercise here: the questions are original.}
 
 \smallskip
 \noindent Figure 6.1.2 (caption, verbatim): ``Probability of winning an election by past and future vote
@@ -661,9 +673,9 @@ discontinuity at a zero margin isolates what winning itself does to the next ele
 
 % ---------------------------------------------------------------- Q6
 \questao{Maimonides' rule and fuzzy RD as IV (MHE Table 6.2.1).}
-\fonte{Angrist and Pischke (2008), \textit{Mostly Harmless Econometrics}, \S6.2, Table 6.2.1 and text,
-printed pp.~199--202. The source has no exercise; the statement is original. Table and the rule
-reproduced verbatim from the PDF.}
+\fonte{Angrist and Pischke (2008), \textit{Mostly Harmless Econometrics}, 1st ed., Ch.~6, \S6.2,
+Table 6.2.1 and text, printed pp.~199--202 [PDF pp.~215--218]; results reported in the book's table;
+table and Maimonides' rule reproduced verbatim. The book has no exercise here: the questions are original.}
 
 \smallskip
 \noindent The text defines the predicted class size from Maimonides' rule (class size capped at 40) as
@@ -792,8 +804,9 @@ cutoffs by the class-size jumps, exactly like a Wald estimator.}
 
 % ---------------------------------------------------------------- Q7
 \questao{Wooldridge, Computer Exercise 15.C3.}
-\fonte{Wooldridge (2016), \textit{Introductory Econometrics: A Modern Approach}, 6th ed., Chapter 15,
-Computer Exercise C3, printed pp.~492--493, reproduced verbatim.}
+\fonte{Wooldridge (2016), \textit{Introductory Econometrics: A Modern Approach}, 6th ed., Ch.~15,
+Computer Exercise C3, printed pp.~492--493 [PDF pp.~516--517]; answer not given in the book; reproduced
+verbatim.}
 
 \noindent\textbf{C3} Use the data in CARD for this exercise.
 \begin{enumerate}[label=(\roman*)]
@@ -810,6 +823,17 @@ Reconcile this with your findings from part (ii).
 \item From parts (ii) and (iii), what do you conclude about the importance of controlling for $smsa66$ and
 the 1966 regional dummies in the $\log(wage)$ equation?
 \end{enumerate}
+\begin{refmaterial}
+Example 15.4 and Table 15.1 (W, printed pp.~473--474 [PDF pp.~497--498]). Card (1995): CARD has 3,010 men
+observed in 1976. The $\log(wage)$ equation has $educ$, $exper$, $exper^2$, $black$, $smsa$, $south$ and,
+as ``other controls'', $smsa66$ and $reg662,\dots,reg669$ (SMSA and region where the man lived in 1966);
+$nearc4=1$ if he grew up near a four-year college, used as the IV for $educ$. The reduced form reported is
+\[
+\widehat{educ}=\underset{(.24)}{16.64}+\underset{(.088)}{.320}\,nearc4-\underset{(.034)}{.413}\,exper+\dots,\qquad n=3{,}010,\ R^2=.477,
+\]
+with $t=3.64$ on $nearc4$. Table 15.1: the return to $educ$ is $.075$ $(.003)$ by OLS and $.132$ $(.055)$ by
+IV; the book gives the IV 95\% interval as $.024$ to $.239$.
+\end{refmaterial}
 \resolespaco
 \begin{sol}
 \begin{notacao}
@@ -878,8 +902,8 @@ Table 15.1; dropping them would let geography-driven ability differences contami
 
 % ---------------------------------------------------------------- Q8
 \questao{Wooldridge, Computer Exercise 15.C5.}
-\fonte{Wooldridge (2016), \textit{Introductory Econometrics: A Modern Approach}, 6th ed., Chapter 15,
-Computer Exercise C5, printed p.~493, reproduced verbatim.}
+\fonte{Wooldridge (2016), \textit{Introductory Econometrics: A Modern Approach}, 6th ed., Ch.~15,
+Computer Exercise C5, printed p.~493 [PDF p.~517]; answer not given in the book; reproduced verbatim.}
 
 \noindent\textbf{C5} Use the data in CARD for this exercise.
 \begin{enumerate}[label=(\roman*)]
@@ -891,6 +915,28 @@ difference between OLS and IV is statistically significant.
 \item Estimate the equation by 2SLS, adding $nearc2$ as an instrument. Does the coefficient on $educ$ change much?
 \item Test the single overidentifying restriction from part (ii).
 \end{enumerate}
+\begin{refmaterial}
+Table 15.1 (W, printed p.~474 [PDF p.~498]), from Example 15.4 (CARD data, $nearc4$ as the IV for
+$educ$; see Question 7). Dependent variable $\log(wage)$; standard errors in parentheses.
+\begin{center}\small
+\begin{tabular}{lcc}
+\toprule
+Explanatory variables & OLS & IV\\
+\midrule
+$educ$ & .075 (.003) & .132 (.055)\\
+$exper$ & .085 (.007) & .108 (.024)\\
+$exper^2$ & $-.0023$ (.0003) & $-.0023$ (.0003)\\
+$black$ & $-.199$ (.018) & $-.147$ (.054)\\
+$smsa$ & .136 (.020) & .112 (.032)\\
+$south$ & $-.148$ (.026) & $-.145$ (.027)\\
+Observations & 3,010 & 3,010\\
+R-squared & .300 & .238\\
+\bottomrule
+\end{tabular}\\[2pt]
+Other controls: $smsa66$, $reg662$, \dots, $reg669$.
+\end{center}
+$nearc2=1$ if the man grew up near a two-year college (a variable in CARD).
+\end{refmaterial}
 \resolespaco
 \begin{sol}
 \begin{notacao}
@@ -980,9 +1026,8 @@ test asks whether two instruments tell the same story.}
 
 % ---------------------------------------------------------------- Q9
 \questao{Wooldridge, Problem 13.2.}
-\fonte{Wooldridge (2016), \textit{Introductory Econometrics: A Modern Approach}, 6th ed., Chapter 13,
-Problem 2, printed p.~425, reproduced verbatim. Equation (13.9), which the problem refers to, is
-reproduced from p.~410 for reference.}
+\fonte{Wooldridge (2016), \textit{Introductory Econometrics: A Modern Approach}, 6th ed., Ch.~13,
+Problem 2, printed p.~425 [PDF p.~449]; answer not given in the book; reproduced verbatim.}
 
 \noindent\textbf{2} Using the data in KIELMC, the following equations were estimated using the years 1978 and 1981:
 \[
@@ -1001,11 +1046,16 @@ n&=321,\ R^2=.337.
 Compare the estimates on the interaction term $y81\cdot nearinc$ with those from equation (13.9). Why are
 the estimates so different?
 
-\smallskip
-\noindent\textit{For reference, equation (13.9), p.~410:}
+\begin{refmaterial}
+Example 13.3 (W, printed pp.~407--410 [PDF pp.~431--434]): Kiel and McClain (1995), effect of a garbage
+incinerator on house prices in North Andover, Massachusetts. KIELMC pools houses sold in 1978 (before the
+incinerator was rumored) and in 1981 (construction began); $y81=1$ for a 1981 sale and $nearinc=1$ if the
+house is within three miles of the site. With the 321 pooled observations the book estimates (13.8) and
+reports, p.~410,
 \[
 \widehat{\log(price)}=\underset{(.31)}{11.29}+\underset{(.045)}{.457}\,y81-\underset{(.055)}{.340}\,nearinc-\underset{(.083)}{.063}\,y81\cdot nearinc,\qquad n=321,\ R^2=.409.\tag{13.9}
 \]
+\end{refmaterial}
 \resolespaco
 \begin{sol}
 \begin{notacao}
@@ -1065,8 +1115,8 @@ interaction soak up the omitted level difference, a textbook case of omitted-var
 
 % ---------------------------------------------------------------- Q10
 \questao{Wooldridge, Problem 13.6.}
-\fonte{Wooldridge (2016), \textit{Introductory Econometrics: A Modern Approach}, 6th ed., Chapter 13,
-Problem 6, printed p.~426, reproduced verbatim.}
+\fonte{Wooldridge (2016), \textit{Introductory Econometrics: A Modern Approach}, 6th ed., Ch.~13,
+Problem 6, printed p.~426 [PDF p.~450]; answer not given in the book; reproduced verbatim.}
 
 \noindent\textbf{6} In 1985, neither Florida nor Georgia had laws banning open alcohol containers in vehicle
 passenger compartments. By 1990, Florida had passed such a law, but Georgia had not.
@@ -1132,8 +1182,8 @@ differences.}
 
 % ---------------------------------------------------------------- Q11
 \questao{Wooldridge, Computer Exercise 13.C3.}
-\fonte{Wooldridge (2016), \textit{Introductory Econometrics: A Modern Approach}, 6th ed., Chapter 13,
-Computer Exercise C3, printed p.~427, reproduced verbatim.}
+\fonte{Wooldridge (2016), \textit{Introductory Econometrics: A Modern Approach}, 6th ed., Ch.~13,
+Computer Exercise C3, printed p.~427 [PDF p.~451]; answer not given in the book; reproduced verbatim.}
 
 \noindent\textbf{C3} Use the data in KIELMC for this exercise.
 \begin{enumerate}[label=(\roman*)]
@@ -1148,6 +1198,15 @@ Now, what do you conclude about the effect of the incinerator on housing values?
 \item Why is the coefficient on $\log(dist)$ positive and statistically significant in part (ii) but not in
 part (iii)? What does this say about the controls used in part (iii)?
 \end{enumerate}
+\begin{refmaterial}
+The KIELMC data of Example 13.3 (W, printed pp.~407--410 [PDF pp.~431--434]; see Question 9): 321 houses
+sold in North Andover in 1978 (before the incinerator was rumored) or 1981 (construction began);
+$y81=1$ for 1981 sales. Variables used here: $price$; $dist$ (feet to the incinerator site); $age$;
+$rooms$; $baths$; $intst$ (feet to the interstate); $land$ (lot area, square feet); $area$ (house area,
+square feet). The example itself uses $nearinc=1(dist\leq3\text{ miles})$ and finds an interaction
+coefficient of $-.063$ $(.083)$ without controls, (13.9), and $-.132$ ($t\approx-2.53$) with the full set of
+controls (with $intst$, $land$, $area$ in logs), p.~410.
+\end{refmaterial}
 \resolespaco
 \begin{sol}
 \begin{notacao}
@@ -1220,8 +1279,8 @@ same, but now the identifying variation is the change in the price--distance gra
 % =============================================================================
 \bloco{4}{Bayesian treatment models}{Greenberg Ch.~11 \,\textbullet\, Questions 12--15}
 
-\noindent\textit{Context for Questions 12--15} (Greenberg 2007, \S11.1, printed pp.~169--172; the model and
-the results the exercises refer to, reproduced verbatim, selected passages). The response is related to the
+\noindent\textbf{Referenced material for Questions 12--15} (Greenberg 2007, \S11.1, printed pp.~169--172
+[PDF pp.~184--187]; the model and the results the exercises refer to, reproduced verbatim, selected passages). The response is related to the
 covariates and the treatment assignment through
 \[
 y_{0i}=x_i'\beta_0+u_{0i},\qquad y_{1i}=x_i'\beta_1+u_{1i},\tag{11.1}
@@ -1291,10 +1350,16 @@ a\mid b\sim N\!\left(\mu_a+\frac{\sigma_{ab}}{\sigma_{bb}}(b-\mu_b),\ \sigma_{aa
 
 % ---------------------------------------------------------------- Q12
 \questao{Greenberg, Exercise 11.1.}
-\fonte{Greenberg (2007), \textit{Introduction to Bayesian Econometrics}, 1st ed., Chapter 11, Exercise
-11.1, printed p.~180, reproduced verbatim.}
+\fonte{Greenberg (2007), \textit{Introduction to Bayesian Econometrics}, 1st ed., Ch.~11, \S11.5
+(Exercises), Exercise 11.1, printed p.~180 [PDF p.~195]; answer not given in the book; reproduced verbatim.}
 
 \noindent\textbf{11.1} Verify (11.4).
+\begin{refmaterial}
+Greenberg \S11.1, printed p.~171 [PDF p.~186]: given the model (11.1)--(11.3) and $\Sigma_j$ (block
+above),
+$y_{ji}\mid s_i^*,\beta_j,\gamma,\psi_j\sim N(x_i'\beta_j+\sigma_{jv}e_i,\omega_{jj})$ (11.4), where
+$e_i=s_i^*-x_i'\gamma_1-z_i'\gamma_2$ and $\omega_{jj}=\sigma_{jj}-\sigma_{jv}^2$.
+\end{refmaterial}
 \resolespaco
 \begin{sol}
 \begin{notacao}
@@ -1346,10 +1411,16 @@ function, the analogue of adding $\hat v_2$ in Question 8.}
 
 % ---------------------------------------------------------------- Q13
 \questao{Greenberg, Exercise 11.2.}
-\fonte{Greenberg (2007), \textit{Introduction to Bayesian Econometrics}, 1st ed., Chapter 11, Exercise
-11.2, printed p.~180, reproduced verbatim.}
+\fonte{Greenberg (2007), \textit{Introduction to Bayesian Econometrics}, 1st ed., Ch.~11, \S11.5
+(Exercises), Exercise 11.2, printed p.~180 [PDF p.~195]; answer not given in the book; reproduced verbatim.}
 
 \noindent\textbf{11.2} Verify (11.6) and (11.7).
+\begin{refmaterial}
+Greenberg \S11.1, printed p.~171 [PDF p.~186] (block above): (11.5) stacks (11.4) over $i\in N_j$,
+$Y_j\mid S_j^*,\beta_j,\gamma,\psi_j\sim N_{n_j}(X_j\beta_j+\sigma_{jv}E_j,\omega_{jj}I_{n_j})$; the prior is
+$\sigma_{jv}\mid\omega_{jj}\sim N(m_{j0},\omega_{jj}M_{j0})$; (11.6) and (11.7) are the mean
+$X_j\beta_j+m_{j0}E_j$ and variance $\omega_{jj}(I_{n_j}+E_jM_{j0}E_j')$ after $\sigma_{jv}$ is integrated out.
+\end{refmaterial}
 \resolespaco
 \begin{sol}
 \begin{notacao}
@@ -1400,10 +1471,16 @@ uncertain.}
 
 % ---------------------------------------------------------------- Q14
 \questao{Greenberg, Exercise 11.3.}
-\fonte{Greenberg (2007), \textit{Introduction to Bayesian Econometrics}, 1st ed., Chapter 11, Exercise
-11.3, printed p.~181, reproduced verbatim.}
+\fonte{Greenberg (2007), \textit{Introduction to Bayesian Econometrics}, 1st ed., Ch.~11, \S11.5
+(Exercises), Exercise 11.3, printed p.~181 [PDF p.~196]; answer not given in the book; reproduced verbatim.}
 
 \noindent\textbf{11.3} Verify (11.8).
+\begin{refmaterial}
+Greenberg \S11.1, printed p.~172 [PDF p.~187] (block above):
+$f(y_{ji},s_i=j\mid x_i,z_i,\beta,\psi_j)=N(y_{ji}\mid x_i'\beta_j,\sigma_{jj})\,\Phi\big((2j-1)\mu_{ji}/\phi_j\big)$
+(11.8), with $\mu_{ji}=x_i'\gamma_1+z_i'\gamma_2+\sigma_{jv}\sigma_{jj}^{-1}(y_{ji}-x_i'\beta_j)$ and
+$\phi_j^2=1-\sigma_{jv}^2\sigma_{jj}^{-1}$ (defined in step 11.3 of Algorithm 11.1).
+\end{refmaterial}
 \resolespaco
 \begin{sol}
 \begin{notacao}
@@ -1461,10 +1538,16 @@ it splits into a regression and an ordinary probit.}
 
 % ---------------------------------------------------------------- Q15
 \questao{Greenberg, Exercise 11.4.}
-\fonte{Greenberg (2007), \textit{Introduction to Bayesian Econometrics}, 1st ed., Chapter 11, Exercise
-11.4, printed p.~181, reproduced verbatim.}
+\fonte{Greenberg (2007), \textit{Introduction to Bayesian Econometrics}, 1st ed., Ch.~11, \S11.5
+(Exercises), Exercise 11.4, printed p.~181 [PDF p.~196]; answer not given in the book; reproduced verbatim.}
 
 \noindent\textbf{11.4} Verify the conditional posterior distributions used in Algorithm 11.1.
+\begin{refmaterial}
+Algorithm 11.1 (Greenberg \S11.1, printed pp.~171--172 [PDF pp.~186--187]) is reproduced in full in the
+block above Question 12: steps 11.1(a) $\omega_{jj}$ from an inverse gamma, 11.1(b) $\sigma_{jv}$ from a
+normal, 11.2 $\beta$ from $N_p(\hat\beta,B)$, 11.3 $s_i^*$ from truncated normals; the priors are
+$\beta\sim N_p(b_0,B_0)$ and $\pi(\psi_j)=\mathrm{IG}(\nu_{j0}/2,d_{j0}/2)\,N(m_{j0},\omega_{jj}M_{j0})$.
+\end{refmaterial}
 \resolespaco
 \begin{sol}
 \begin{notacao}
@@ -1550,6 +1633,381 @@ $s_i=1$, as in step 11.3 (whether $0$ is included is a set of probability zero).
 SUR regression with a control-function term, so the Gibbs sampler only cycles through inverse-gamma,
 normal and truncated-normal draws.}
 \refbib{Greenberg \S11.1 (pp.~170--172), Algorithm 11.1; \S9.1 (pp.~134--139), SUR; \S8.2.2, truncated-normal latent data.}
+\end{sol}
+
+% =============================================================================
+\bloco{5}{Errors in variables}{Wooldridge Ch.~9 \,\textbullet\, Question 16}
+
+% ---------------------------------------------------------------- Q16
+\questao{Wooldridge, Problem 9.7.}
+\fonte{Wooldridge (2016), \textit{Introductory Econometrics: A Modern Approach}, 6th ed., Ch.~9, Problem 7,
+printed p.~305 [PDF p.~329]; answer not given in the book; reproduced verbatim.}
+
+\noindent\textbf{7} Consider the simple regression model with classical measurement error,
+$y=\beta_0+\beta_1x^*+u$, where we have $m$ measures on $x^*$. Write these as $z_h=x^*+e_h$,
+$h=1,\dots,m$. Assume that $x^*$ is uncorrelated with $u,e_1,\dots,e_m$, that the measurement errors are
+pairwise uncorrelated, and have the same variance, $\sigma_e^2$. Let $w=(z_1+\dots+z_m)/m$ be the average
+of the measures on $x^*$, so that, for each observation $i$, $w_i=(z_{i1}+\dots+z_{im})/m$ is the average of
+the $m$ measures. Let $\bar\beta_1$ be the OLS estimator from the simple regression $y_i$ on $1,w_i$,
+$i=1,\dots,n$, using a random sample of data.
+\begin{enumerate}[label=(\roman*)]
+\item Show that
+\[
+\operatorname{plim}(\bar\beta_1)=\beta_1\left\{\frac{\sigma_{x^*}^2}{[\sigma_{x^*}^2+(\sigma_e^2/m)]}\right\}.
+\]
+[\textit{Hint:} The plim of $\bar\beta_1$ is $\operatorname{Cov}(w,y)/\operatorname{Var}(w)$.]
+\item How does the inconsistency in $\bar\beta_1$ compare with that when only a single measure is available
+(that is, $m=1$)? What happens as $m$ grows? Comment.
+\end{enumerate}
+\begin{refmaterial}
+W \S9.4b, printed pp.~289--291 [PDF pp.~313--315]. With one mismeasured regressor, $y=\beta_0+\beta_1x_1^*+u$
+(9.27) and $x_1=x_1^*+e_1$, the \emph{classical errors-in-variables} (CEV) assumption is
+$\operatorname{Cov}(x_1^*,e_1)=0$ (9.31), and $u$ is always maintained uncorrelated with $x_1^*$ and $x_1$
+(hence with $e_1$). Then OLS of $y$ on $x_1$ satisfies
+\[
+\operatorname{plim}(\hat\beta_1)=\beta_1\left(\frac{\sigma_{x_1^*}^2}{\sigma_{x_1^*}^2+\sigma_{e_1}^2}\right),\tag{9.33}
+\]
+the \emph{attenuation bias}: the factor is always below one, so $\hat\beta_1$ is pulled toward zero.
+\end{refmaterial}
+\resolespaco
+\begin{sol}
+\begin{notacao}
+\item $x_i^*$: true regressor, $\sigma_{x^*}^2=\operatorname{Var}(x^*)>0$; $z_{ih}=x_i^*+e_{ih}$: the $h$-th measure;
+$e_{ih}$: its error, mean zero, variance $\sigma_e^2$; $m\geq1$: number of measures.
+\item $w_i$: average of the $m$ measures; $\bar e_i=(e_{i1}+\dots+e_{im})/m$: average error;
+$\lambda_m=\sigma_{x^*}^2/(\sigma_{x^*}^2+\sigma_e^2/m)$: attenuation (reliability) factor, $0<\lambda_m\leq1$.
+\end{notacao}
+
+\passo{(i) the average measure}{Averaging the $m$ equations $z_h=x^*+e_h$ gives
+\begin{equation}
+w=x^*+\bar e,\qquad \operatorname{Var}(\bar e)=\frac{1}{m^2}\sum_{h=1}^m\operatorname{Var}(e_h)=\frac{m\,\sigma_e^2}{m^2}=\frac{\sigma_e^2}{m},\label{q16:ebar}
+\end{equation}
+where the cross terms vanish because the errors are pairwise uncorrelated.}
+
+\passo{(i) covariance and variance}{With CEV ($x^*$ uncorrelated with $u$ and the $e_h$, and, as always in
+\S9.4, $u$ uncorrelated with the measurement errors):
+\begin{align}
+\operatorname{Cov}(w,y)&=\operatorname{Cov}(x^*+\bar e,\ \beta_0+\beta_1x^*+u)=\beta_1\sigma_{x^*}^2,\label{q16:cov}\\
+\operatorname{Var}(w)&=\sigma_{x^*}^2+\frac{\sigma_e^2}{m}.\label{q16:var}
+\end{align}
+The OLS slope is the sample covariance over the sample variance; by the law of large numbers and the hint,
+substituting \eqref{q16:cov} and \eqref{q16:var}:
+\begin{equation}
+\operatorname{plim}(\bar\beta_1)=\frac{\operatorname{Cov}(w,y)}{\operatorname{Var}(w)}=\beta_1\left\{\frac{\sigma_{x^*}^2}{\sigma_{x^*}^2+(\sigma_e^2/m)}\right\}=\beta_1\lambda_m.\label{q16:plim}
+\end{equation}}
+
+\passo{(ii) comparison with $m=1$}{From \eqref{q16:plim} the inconsistency is
+\begin{equation}
+\operatorname{plim}(\bar\beta_1)-\beta_1=-\beta_1\,\frac{\sigma_e^2/m}{\sigma_{x^*}^2+\sigma_e^2/m}.\label{q16:incons}
+\end{equation}
+With $m=1$, \eqref{q16:incons} is the attenuation bias of (9.33). For $m>1$ the noise variance $\sigma_e^2/m$
+is smaller, so $\lambda_m$ is larger and the bias is smaller in absolute value; it keeps the sign of
+$-\beta_1$ (still toward zero). As $m\to\infty$, $\sigma_e^2/m\to0$, $\lambda_m\to1$ and $\bar\beta_1$ becomes
+consistent. With $\sigma_{x^*}^2=\sigma_e^2=1$:
+\begin{equation}
+\lambda_1=0.5,\qquad\lambda_2=0.6667,\qquad\lambda_4=0.8,\qquad\lambda_{10}=0.9091.\label{q16:lam}
+\end{equation}}
+
+\passo{simulation}{A check of \eqref{q16:lam} with $\beta_0=\beta_1=1$, $\sigma_{x^*}^2=\sigma_e^2=1$, $n=200{,}000$:}
+\begingroup\footnotesize
+\begin{verbatim}
+import numpy as np
+rng = np.random.default_rng(97)
+n = 200_000
+x = rng.normal(0, 1, n)                        # x*, variance 1
+y = 1 + 1 * x + rng.normal(0, 1, n)            # beta0 = beta1 = 1
+z = x[:, None] + rng.normal(0, 1, (n, 10))     # z_h = x* + e_h, var(e_h) = 1
+for m in (1, 2, 4, 10):
+    w = z[:, :m].mean(1)
+    print(m, round(np.cov(w, y)[0, 1] / np.var(w, ddof=1), 4))
+\end{verbatim}
+\endgroup
+\noindent\textit{Key output:} slopes $0.5010$, $0.6673$, $0.8007$, $0.9112$ for $m=1,2,4,10$, each within
+simulation error of $\lambda_m$ in \eqref{q16:lam}.
+
+\passo{comment}{Averaging works because independent errors cancel: the reliability ratio
+$\operatorname{Var}(x^*)/\operatorname{Var}(w)$ rises with $m$. It fails if the errors share a component
+(e.g.\ the same respondent misreports every time): with $\operatorname{Cov}(e_h,e_k)=\rho\sigma_e^2$,
+$\operatorname{Var}(\bar e)=\sigma_e^2[1+(m-1)\rho]/m\to\rho\sigma_e^2$, so the bias does not vanish. With
+two measures one can do better than averaging: using $z_2$ as an instrument for $z_1$ is consistent under
+CEV (W Ch.~15), since $z_2$ is correlated with $x^*$ but not with $e_1$.}
+
+\intuicao{Measurement error in a regressor adds noise to the denominator $\operatorname{Var}(w)$ but nothing to
+the numerator $\operatorname{Cov}(w,y)$, so the slope shrinks toward zero. More independent measures shrink
+the noise, not the signal.}
+\refbib{W \S9.4b (pp.~289--293), measurement error in an explanatory variable, (9.33) and (9.36); W \S15.1,
+IV as a remedy; class slides \texttt{error-in-variables.pdf}.}
+\end{sol}
+
+% =============================================================================
+\bloco{6}{Original exercises}{DAGs, Simpson's paradox \,\textbullet\, Questions 17--18}
+
+% ---------------------------------------------------------------- Q17
+\questao{Original: DAGs, d-separation, the back-door criterion and collider bias.}
+\origem{original exercise on DAGs, d-separation and the back-door criterion, built on Lopes,
+\textit{Causal Inference} (class notes, \texttt{notes-on-causal-inference.pdf} in \texttt{Aula/class-05-06/materials/}),
+\S\S4--6 (pp.~8--12), with back-door paths from \S10 (pp.~21--22).}
+
+\noindent Consider the DAG below. All variables are continuous; $X$ is the treatment and $Y$ the outcome.
+\begin{center}
+\begin{tikzpicture}[>=stealth,thick,node distance=1.6cm,every node/.style={circle,draw,minimum size=7mm,inner sep=0pt}]
+\node (X) at (0,0) {$X$};
+\node (M) at (2.6,0) {$M$};
+\node (Y) at (5.2,0) {$Y$};
+\node (Z) at (2.6,1.6) {$Z$};
+\node (W) at (-1.8,1.6) {$W$};
+\node (C) at (2.6,-1.6) {$C$};
+\node (D) at (5.2,-1.6) {$D$};
+\draw[->] (W) -- (X);
+\draw[->] (Z) -- (X);
+\draw[->] (Z) -- (Y);
+\draw[->] (X) -- (M);
+\draw[->] (M) -- (Y);
+\draw[->] (X) -- (C);
+\draw[->] (Y) -- (C);
+\draw[->] (C) -- (D);
+\end{tikzpicture}
+\end{center}
+\begin{enumerate}[label=(\alph*)]
+\item List every path between $X$ and $Y$. For each, name the junction (chain, fork or collider) at each
+intermediate node, say whether the path is open or blocked when nothing is conditioned on, and say which
+path carries the causal effect.
+\item State the back-door criterion. Which of these sets satisfy it for the effect of $X$ on $Y$:
+$\varnothing$, $\{Z\}$, $\{W\}$, $\{Z,W\}$, $\{M\}$, $\{Z,M\}$, $\{C\}$, $\{Z,C\}$, $\{Z,D\}$? For each set
+that fails, say why.
+\item Are $W$ and $Z$ d-separated (i) unconditionally, (ii) given $X$, (iii) given $D$? Are $W$ and $Y$
+d-separated given $\{X,Z\}$? Given $X$ alone?
+\item Let the DAG be the linear structural model, with mutually independent $N(0,1)$ errors $\varepsilon$:
+\begin{gather*}
+Z=\varepsilon_Z,\quad W=\varepsilon_W,\quad X=0.8Z+0.5W+\varepsilon_X,\quad M=X+\varepsilon_M,\\
+Y=0.5M+Z+\varepsilon_Y,\quad C=X+Y+\varepsilon_C,\quad D=C+\varepsilon_D.
+\end{gather*}
+What is the causal effect of $X$ on $Y$? Derive the population coefficient on $X$ in the regressions of $Y$
+on: $X$; $(X,Z)$; $(X,Z,W)$; $(X,Z,M)$; $(X,Z,C)$; $(X,Z,D)$. Derive also the coefficient on $W$ in the
+regressions of $Z$ on $W$ and of $Z$ on $(W,X)$.
+\item Simulate the model with NumPy (\texttt{default\_rng(17)}, $n=200{,}000$) and confirm part (d).
+\end{enumerate}
+\resolespaco
+\begin{sol}
+\begin{notacao}
+\item $A\to B$: $A$ causes $B$ directly; a \emph{path} is a sequence of adjacent edges in any direction
+with no repeated node; a \emph{descendant} of $A$ is any node reachable from $A$ along directed edges.
+\item $S$: a conditioning (adjustment) set; $A\perp\!\!\!\perp B\mid S$: $A$ and $B$ d-separated
+(hence independent) given $S$.
+\item $\beta_{X\mid S}$: population OLS coefficient on $X$ in the regression of $Y$ on $X$ and $S$;
+$v=0.5\varepsilon_M+\varepsilon_Y$, $\operatorname{Var}(v)=1.25$.
+\end{notacao}
+
+\passo{(a) paths}{$W$ and $D$ have one edge each, so no path between $X$ and $Y$ runs through them.
+The three paths are:
+\begin{enumerate}[label=\arabic*.,leftmargin=2em]
+\item $X\to M\to Y$: $M$ is a chain; open. It is the only directed path, so it carries the causal effect.
+\item $X\leftarrow Z\to Y$: $Z$ is a fork; open. A non-causal (back-door) path: it enters $X$ through an arrow into $X$.
+\item $X\to C\leftarrow Y$: $C$ is a collider; blocked when $C$ and its descendant $D$ are not conditioned on.
+\end{enumerate}
+Unconditionally, then, $X$ and $Y$ are associated through paths 1 and 2, and only path 1 is causal.}
+
+\passo{(b) back-door criterion}{A set $S$ satisfies the back-door criterion relative to $(X,Y)$ if
+(1) no node in $S$ is a descendant of $X$, and (2) $S$ blocks every path between $X$ and $Y$ that contains an
+arrow into $X$. Then $P(y\mid do(x))=\sum_sP(y\mid x,s)P(s)$; in a linear model the coefficient on $X$ in the
+regression of $Y$ on $(X,S)$ is the causal effect. The descendants of $X$ are $M$, $Y$, $C$, $D$; the only
+back-door path is $X\leftarrow Z\to Y$.
+\begin{itemize}[leftmargin=1.4em]
+\item Valid: $\{Z\}$ and $\{Z,W\}$ (they block the fork at $Z$ and contain no descendant of $X$).
+\item $\varnothing$ and $\{W\}$ fail condition (2): $X\leftarrow Z\to Y$ stays open ($W$ is not on it).
+\item $\{M\}$, $\{Z,M\}$ fail condition (1): $M$ is a mediator; conditioning on it blocks the causal path
+itself ($\{M\}$ also leaves the back-door path open).
+\item $\{C\}$, $\{Z,C\}$ fail condition (1): $C$ is a collider on path 3, and conditioning on it opens
+$X\to C\leftarrow Y$ ($\{C\}$ also leaves the back-door path open).
+\item $\{Z,D\}$ fails condition (1): $D$ is a descendant of the collider $C$, so conditioning on it partly opens path 3.
+\end{itemize}}
+
+\passo{(c) d-separation}{Every path from $W$ starts $W\to X$.
+(i) Every path from $W$ to $Z$ has a collider ($X$ in $W\to X\leftarrow Z$, $Y$ in $W\to X\to M\to Y\leftarrow Z$,
+$C$ in $W\to X\to C\leftarrow Y\leftarrow Z$), so $W\perp\!\!\!\perp Z$.
+(ii) Given $X$, the collider $X$ on $W\to X\leftarrow Z$ is conditioned on and the path opens: d-connected.
+(iii) Given $D$: $D$ is a descendant of $X$ (through $X\to C\to D$), so conditioning on $D$ also opens
+$W\to X\leftarrow Z$: d-connected.
+Given $\{X,Z\}$: paths that continue $W\to X\to\cdots$ are blocked at the chain node $X$; the only path that
+uses $X$ as a collider continues through $Z$ ($W\to X\leftarrow Z\to Y$), which is blocked at the fork $Z$.
+So $W\perp\!\!\!\perp Y\mid\{X,Z\}$. Given $X$ alone, $W\to X\leftarrow Z\to Y$ is open: d-connected.}
+
+\passo{(d) causal effect and short regression}{The only directed path is $X\to M\to Y$, so the causal effect
+is the product of its coefficients, $(1)(0.5)=0.5$. Substituting $M$ into $Y$:
+\begin{equation}
+Y=0.5X+Z+v,\qquad v=0.5\varepsilon_M+\varepsilon_Y,\label{q17:Y}
+\end{equation}
+with $v$ uncorrelated with $X$, $Z$, $W$. With $\operatorname{Var}(X)=(0.8)^2+(0.5)^2+1=1.89$ and
+$\operatorname{Cov}(X,Z)=0.8$, \eqref{q17:Y} gives
+\begin{equation}
+\beta_{X\mid\varnothing}=\frac{\operatorname{Cov}(X,Y)}{\operatorname{Var}(X)}=\frac{0.5(1.89)+0.8}{1.89}=\frac{1.745}{1.89}=0.92328=0.5+\underbrace{0.42328}_{0.8/1.89}.\label{q17:short}
+\end{equation}
+The extra $0.42328$ is the back-door (confounding) bias through $Z$.}
+
+\passo{(d) valid adjustment and the mediator}{Because $v$ in \eqref{q17:Y} is uncorrelated with $(X,Z)$ and with
+$(X,Z,W)$, \eqref{q17:Y} is the linear projection, so $\beta_{X\mid Z}=\beta_{X\mid Z,W}=0.5$. Adding $M$,
+$Y=0.5M+Z+\varepsilon_Y$ with $\varepsilon_Y$ uncorrelated with $(X,Z,M)$, so $\beta_{X\mid Z,M}=0$: the
+regression returns the direct effect of $X$, which is zero here.}
+
+\passo{(d) collider and its descendant}{Substituting \eqref{q17:Y} into $C$:
+\begin{equation}
+C=1.5X+Z+v+\varepsilon_C.\label{q17:C}
+\end{equation}
+Given $(X,Z)$, the new information in $C$ is $C-1.5X-Z=v+\varepsilon_C$; the projection of $v$ on it is
+$s\,(v+\varepsilon_C)$ with
+\begin{equation}
+s=\frac{\operatorname{Var}(v)}{\operatorname{Var}(v)+\operatorname{Var}(\varepsilon_C)}=\frac{1.25}{2.25}=0.55556.\label{q17:s}
+\end{equation}
+Inserting $v=s(C-1.5X-Z)+\text{(uncorrelated)}$ into \eqref{q17:Y} with \eqref{q17:C} and \eqref{q17:s}:
+\begin{equation}
+\beta_{X\mid Z,C}=0.5-1.5s=0.5-1.5\cdot\tfrac{5}{9}=-\tfrac13.\label{q17:betaC}
+\end{equation}
+For $D=C+\varepsilon_D$ the same steps give $s'=1.25/(1.25+2)=0.38462$ and
+\begin{equation}
+\beta_{X\mid Z,D}=0.5-1.5\cdot\tfrac{5}{13}=-\tfrac{1}{13}=-0.07692.\label{q17:betaD}
+\end{equation}
+Conditioning on the collider reverses the sign; its noisier descendant does less damage but is still biased.}
+
+\passo{(d) $W$ and $Z$}{$W$ and $Z$ are independent, so the coefficient of $Z$ on $W$ is $0$. Given $X$,
+$X-0.5W=0.8Z+\varepsilon_X$ is uncorrelated with $W$, and the projection of $Z$ on it has slope
+$0.8/(0.64+1)=0.8/1.64$, so
+\begin{equation}
+L(Z\mid W,X)=\frac{0.8}{1.64}(X-0.5W)\ \Rightarrow\ \text{coefficient on }W=-\frac{0.5(0.8)}{1.64}=-\frac{10}{41}=-0.24390.\label{q17:WZ}
+\end{equation}
+Two independent causes become negatively related once their common effect is held fixed (``explaining away'').}
+
+\passo{(e) simulation}{\ }
+\begingroup\footnotesize
+\begin{verbatim}
+import numpy as np
+rng = np.random.default_rng(17); n = 200_000
+e = lambda: rng.normal(size=n)
+Z, W = e(), e()
+X = 0.8 * Z + 0.5 * W + e(); M = X + e(); Y = 0.5 * M + Z + e()
+C = X + Y + e(); D = C + e()
+def b(y, *xs):                                 # OLS slopes, constant dropped
+    A = np.column_stack([np.ones(n), *xs])
+    return np.linalg.lstsq(A, y, rcond=None)[0][1:]
+for lab, v in [("Y~X", b(Y, X)), ("Y~X+Z", b(Y, X, Z)), ("Y~X+Z+W", b(Y, X, Z, W)),
+               ("Y~X+Z+M", b(Y, X, Z, M)), ("Y~X+Z+C", b(Y, X, Z, C)),
+               ("Y~X+Z+D", b(Y, X, Z, D)), ("Z~W", b(Z, W)), ("Z~W+X", b(Z, W, X))]:
+    print(f"{lab:8s} {v[0]: .4f}")
+\end{verbatim}
+\endgroup
+\noindent\textit{Key output} (first coefficient of each regression) against part (d):
+\begin{center}\small
+\begin{tabular}{lrr}
+\toprule
+Regression & Simulated & Population\\
+\midrule
+$Y$ on $X$ & 0.9210 & 0.92328\\
+$Y$ on $X,Z$ & 0.4979 & 0.5\\
+$Y$ on $X,Z,W$ & 0.4974 & 0.5\\
+$Y$ on $X,Z,M$ & $-0.0032$ & 0\\
+$Y$ on $X,Z,C$ & $-0.3342$ & $-0.33333$\\
+$Y$ on $X,Z,D$ & $-0.0792$ & $-0.07692$\\
+$Z$ on $W$ & $-0.0017$ & 0\\
+$Z$ on $W,X$ & $-0.2428$ & $-0.24390$\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\intuicao{Adjust for common causes (forks), never for consequences of the treatment (mediators, colliders, or
+their descendants). A regression cannot tell which is which: the DAG, built from subject knowledge, has to.}
+\refbib{Class notes \S\S4--6 (pp.~8--12), chains, forks, colliders and d-separation; \S7.1 (pp.~12--13),
+confounding by firm size; Neal (2020), back-door criterion, linked in \texttt{Aula/COURSE.md}.}
+\end{sol}
+
+% ---------------------------------------------------------------- Q18
+\questao{Original: Simpson's paradox and which comparison is causal.}
+\origem{original exercise on Simpson's paradox, built on Lopes, \textit{Causal Inference} (class notes,
+\texttt{notes-on-causal-inference.pdf} in \texttt{Aula/class-05-06/materials/}), \S2 and \S\S3.2--3.4 (pp.~5--8).
+The numbers are invented.}
+
+\noindent A hospital compares a new treatment ($T=1$) with the standard one ($T=0$); the outcome is recovery
+($R=1$). Patients are classified by severity $S\in\{\text{mild},\text{severe}\}$. Recovered / patients:
+\begin{center}\small
+\begin{tabular}{lcc}
+\toprule
+Severity & $T=1$ & $T=0$\\
+\midrule
+Mild & 180 / 200 & 510 / 600\\
+Severe & 240 / 400 & 100 / 200\\
+\midrule
+Total & 420 / 600 & 610 / 800\\
+\bottomrule
+\end{tabular}
+\end{center}
+\begin{enumerate}[label=(\alph*)]
+\item Compute the recovery rates within each severity stratum and in the aggregate, and the differences
+$T=1$ minus $T=0$. Show that the comparison reverses.
+\item Explain the reversal: compute $P(\text{severe}\mid T=1)$ and $P(\text{severe}\mid T=0)$, and decompose
+the aggregate difference into a within-stratum effect (at the treated group's severity mix) plus a
+composition term.
+\item Compute the standardized recovery rates $\sum_sP(R=1\mid T=t,S=s)P(S=s)$, $t\in\{0,1\}$, with $P(S=s)$
+taken from all 1,400 patients, and their difference.
+\item Draw a DAG for $T$, $S$, $R$ and say which comparison has a causal interpretation when
+(i) $S$ is severity at admission, which doctors use to decide who gets the new treatment;
+(ii) $S$ is severity measured one week after treatment, $T$ was randomized, and the treatment affects severity.
+(iii) In case (ii), suppose an unobserved frailty $U$ affects both $S$ and $R$. What does stratifying by $S$ do?
+\end{enumerate}
+\resolespaco
+\begin{sol}
+\begin{notacao}
+\item $p_{ts}=P(R=1\mid T=t,S=s)$: recovery rate in cell $(t,s)$; $p_t=P(R=1\mid T=t)$: aggregate rate.
+\item $\pi_{s\mid t}=P(S=s\mid T=t)$: severity mix of arm $t$; $\pi_s=P(S=s)$: mix of all 1,400 patients.
+\item $do(T=t)$: $T$ set by intervention; $U$: unobserved frailty.
+\end{notacao}
+
+\passo{(a) rates}{Within strata and in the aggregate:
+\begin{align}
+\text{mild:}&\quad p_{1,\text{m}}=\tfrac{180}{200}=0.90,\quad p_{0,\text{m}}=\tfrac{510}{600}=0.85,\quad\text{difference }+0.05,\label{q18:m}\\
+\text{severe:}&\quad p_{1,\text{s}}=\tfrac{240}{400}=0.60,\quad p_{0,\text{s}}=\tfrac{100}{200}=0.50,\quad\text{difference }+0.10,\label{q18:s}\\
+\text{total:}&\quad p_1=\tfrac{420}{600}=0.70,\quad p_0=\tfrac{610}{800}=0.7625,\quad\text{difference }-0.0625.\label{q18:agg}
+\end{align}
+The new treatment does better in each stratum and worse in the aggregate.}
+
+\passo{(b) why}{Each aggregate rate is a weighted average of the stratum rates, $p_t=\sum_s\pi_{s\mid t}\,p_{ts}$,
+with different weights in the two arms:
+\begin{equation}
+\pi_{\text{s}\mid1}=\tfrac{400}{600}=\tfrac23,\qquad \pi_{\text{s}\mid0}=\tfrac{200}{800}=0.25.\label{q18:mix}
+\end{equation}
+Adding and subtracting $\sum_s\pi_{s\mid1}p_{0s}$:
+\begin{equation}
+p_1-p_0=\underbrace{\sum_s\pi_{s\mid1}(p_{1s}-p_{0s})}_{\text{within-stratum effect}}+\underbrace{\sum_s\pi_{s\mid1}p_{0s}-p_0}_{\text{composition}}.\label{q18:dec}
+\end{equation}
+With \eqref{q18:m}--\eqref{q18:mix}:
+\begin{align}
+\text{within:}&\quad\tfrac13(0.05)+\tfrac23(0.10)=0.083333,\label{q18:att}\\
+\text{composition:}&\quad\tfrac13(0.85)+\tfrac23(0.50)-0.7625=0.616667-0.7625=-0.145833,\label{q18:comp}
+\end{align}
+and $0.083333-0.145833=-0.0625$, the aggregate gap \eqref{q18:agg}. Two thirds of the treated are severe
+against one quarter of the controls, and severe patients recover far less in either arm.}
+
+\passo{(c) standardization}{$\pi_{\text{m}}=800/1400=4/7$ and $\pi_{\text{s}}=600/1400=3/7$. Then
+\begin{align}
+\textstyle\sum_s\pi_sp_{1s}&=\tfrac47(0.90)+\tfrac37(0.60)=\tfrac{5.4}{7}=0.771429,\label{q18:std1}\\
+\textstyle\sum_s\pi_sp_{0s}&=\tfrac47(0.85)+\tfrac37(0.50)=\tfrac{4.9}{7}=0.700000,\label{q18:std0}
+\end{align}
+a difference of $0.071429=1/14$: positive, like every stratum.}
+
+\passo{(d) which comparison is causal}{(i) $S\to T$, $S\to R$, $T\to R$. Severity at admission is a common cause
+(fork) and $T\leftarrow S\to R$ is an open back-door path, so the aggregate $-0.0625$ is confounded. $\{S\}$
+satisfies the back-door criterion: $P(R=1\mid do(T=t))=\sum_s\pi_s\,p_{ts}$, so the causal effect is the
+standardized $0.071429$ \eqref{q18:std1}--\eqref{q18:std0}; the stratum differences $0.05$ and $0.10$ are the
+conditional effects by severity, and \eqref{q18:att} is the effect on the treated.
+(ii) $T\to S\to R$, $T\to R$, nothing into $T$ (randomized). $S$ is a mediator, a descendant of $T$: there is
+no back-door path, so the aggregate $-0.0625$ \emph{is} the total causal effect (the treatment worsens
+severity, which outweighs its direct benefit), and stratifying by $S$ blocks part of the effect.
+(iii) Adding $U\to S$, $U\to R$ makes $S$ a collider on $T\to S\leftarrow U\to R$. Stratifying by $S$ opens that
+path, so the within-stratum differences are not even the direct effect of $T$: they mix it with collider
+bias. The aggregate comparison is still the total effect, because randomization leaves no back-door path.}
+
+\intuicao{The table is the same in (i) and (ii), yet the right answer flips. The data cannot say whether to
+aggregate or stratify; the causal story (is $S$ a cause or a consequence of $T$?) decides, exactly as in the
+gender and blood-pressure versions of the drug example in the class notes.}
+\refbib{Class notes \S2 and \S\S3.2--3.4 (pp.~5--8), Simpson's paradox and its three examples; \S6 (pp.~11--12),
+d-separation; MHE \S3.2.3 (pp.~47--50), bad control.}
 \end{sol}
 
 \end{document}

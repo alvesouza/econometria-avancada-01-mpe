@@ -7,7 +7,8 @@ decimal), so a change in data, seed or library that moves a printed digit aborts
 Data: Wooldridge PHILLIPS via the ``wooldridge`` package (pip install wooldridge);
 ISLP Boston from Listas/data/Boston.csv (provenance in Listas/data/README.md); coal-mining
 disasters 1851-1962 typed below (Jarrett 1979, verified in .agent/notes/coal-mining-data.md).
-Stochastic results (Gibbs sampler, bootstrap) use fixed NumPy seeds and are asserted at the
+Q18 (original p-hacking exercise) simulates its own data (seed 2026; about 20 s).
+Stochastic results (Gibbs sampler, bootstrap, Q18 search) use fixed NumPy seeds and are asserted at the
 printed precision; another NumPy version may change the random stream and fail those lines.
 """
 from pathlib import Path
@@ -250,5 +251,80 @@ sqres = np.sum(fit.resid**2)
 sqreg = np.sum((fit.fittedvalues - yy.mean()) ** 2)
 assert abs(sqtot - sqres - sqreg) < 1e-9
 assert abs(np.sum(fit.resid)) < 1e-9 and abs(np.sum(fit.resid * fit.fittedvalues)) < 1e-9
+
+# ---------------------------------------------------------------- Q18 original: p-hacking (FWER, Bonferroni, Holm, search)
+alpha = 0.05
+for kk_, pr in [(1, "0.05"), (5, "0.2262"), (24, "0.7080"), (32, "0.8063"), (12, "0.4596"),
+                (13, "0.4867"), (14, "0.5123")]:
+    ok(1 - (1 - alpha) ** kk_, pr)
+ok(np.log(0.5) / np.log(0.95), "13.51")
+assert int(np.ceil(np.log(0.5) / np.log(0.95))) == 14
+ok(alpha / 32, "0.0015625"); ok(1 - (1 - alpha / 32) ** 32, "0.048808"); ok(1 - (1 - alpha) ** (1 / 32), "0.0016016")
+ok(alpha / 24, "0.002083"); ok(1 - (1 - alpha / 24) ** 24, "0.0488")
+pv = np.array([0.004, 0.011, 0.019, 0.030, 0.041]); m = len(pv)
+holm_thr = alpha / (m - np.arange(m))
+for v, pr in zip(holm_thr, ["0.0100", "0.0125", "0.0167", "0.0250", "0.0500"]):
+    ok(v, pr)
+passed = pv <= holm_thr
+assert (pv < alpha).sum() == 5 and (pv <= alpha / m).sum() == 1
+assert np.argmin(passed) == 2                                  # first failure at j = 3 -> 2 rejections
+holm_adj = np.maximum.accumulate(np.minimum(1, (m - np.arange(m)) * pv))
+for v, pr in zip(holm_adj, ["0.020", "0.044", "0.057", "0.060", "0.060"]):
+    ok(v, pr)
+ok(1.25 / 2.25, "0.5556")                                      # corr of weekly scores
+
+one, D = np.ones(30), np.r_[np.ones(15), np.zeros(15)]
+
+
+def draw_school(rng):
+    """One data set of the Q18 design: scores (30 x 3 weeks) and standardised GPA; no treatment effect."""
+    g = rng.normal(size=30)
+    ability = rng.normal(size=30)
+    return 0.5 * g[:, None] + ability[:, None] + rng.normal(size=(30, 3)), g
+
+
+def tstats(Y, g):
+    """t statistics and df for tau in the 12 regressions week x outlier rule x covariate (order fixed)."""
+    out = []
+    for w in range(3):
+        y = Y[:, w]
+        for drop in (False, True):
+            keep = np.abs(y - y.mean()) <= 2 * y.std(ddof=1) if drop else np.ones(30, bool)
+            for cov in (False, True):
+                X = np.column_stack([one, D, g] if cov else [one, D])[keep]
+                XtXi = np.linalg.inv(X.T @ X)
+                b = XtXi @ X.T @ y[keep]
+                e = y[keep] - X @ b
+                df = keep.sum() - X.shape[1]
+                out.append((b[1] / np.sqrt(e @ e / df * XtXi[1, 1]), df))
+    return np.array(out)
+
+
+def pvals(td):
+    """24 p-values per data set: for each regression, two-sided then one-sided (H1: tau > 0)."""
+    t, df = td[..., 0], td[..., 1]
+    return np.stack([2 * stats.t.sf(np.abs(t), df), stats.t.sf(t, df)], -1).reshape(*t.shape[:-1], -1)
+
+
+rng = np.random.default_rng(2026)
+R = 10000
+P = pvals(np.array([tstats(*draw_school(rng)) for _ in range(R)]))
+minp = P.min(1)
+q_single, q_search = np.mean(P[:, 0] < alpha), np.mean(minp < alpha)
+q_two, q_bonf = np.mean(P[:, 0::2].min(1) < alpha), np.mean(minp < alpha / 24)
+for q, pr, se_pr in [(q_single, "0.0496", "0.0022"), (q_search, "0.3080", "0.0046"),
+                     (q_two, "0.2254", "0.0042"), (q_bonf, "0.0176", "0.0013")]:
+    ok(q, pr); ok(np.sqrt(q * (1 - q) / R), se_pr)
+succ = np.flatnonzero(minp < alpha)
+best = P[succ].argmin(1)
+ok(len(succ), "3080"); ok(np.mean(best % 2 == 1), "0.615")    # odd columns = one-sided tests
+rep = np.array([pvals(tstats(*draw_school(rng)))[j] for j in best])   # fresh data, chosen spec only
+q_rep = np.mean(rep < alpha)
+ok(q_rep, "0.0529"); ok(np.sqrt(q_rep * (1 - q_rep) / len(succ)), "0.0040")
+for size, ppv_pr, fp_pr, rep_pr, a_pr, b_pr in [(0.05, "0.64", "0.045", "0.530", "0.512", "0.018"),
+                                                (round(q_search, 3), "0.2240", "0.2772", "0.2180", "0.1792", "0.0388")]:
+    ppv = 0.10 * 0.80 / (0.10 * 0.80 + 0.90 * size)
+    ok(0.90 * size, fp_pr); ok(ppv, ppv_pr)
+    ok(ppv * 0.80, a_pr); ok((1 - ppv) * 0.05, b_pr); ok(ppv * 0.80 + (1 - ppv) * 0.05, rep_pr)
 
 print(f"All {N_OK} printed values reproduced.")

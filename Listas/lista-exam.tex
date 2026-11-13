@@ -20,6 +20,10 @@
 \usepackage{enumitem}
 \usepackage{fancyhdr}
 \usepackage{comment}
+% One cut file per job: parallel builds in one folder would otherwise share comment.cut and
+% swap solutions. Redefine DefaultCutFileName; overriding CommentCutFile alone is reset by comment.sty.
+\def\DefaultCutFileName{\def\CommentCutFile{\jobname.cut}}
+\usepackage{needspace}
 \usepackage{xcolor}
 \usepackage{microtype}
 
@@ -56,6 +60,9 @@
 % Item objetivo de múltipla escolha: \mc{enunciado}{lista de \item}
 \newcommand{\mc}[1]{#1\par}
 \newenvironment{alternativas}{\begin{enumerate}[label=\Alph*.,leftmargin=2.2em,topsep=1pt]}{\end{enumerate}}
+% Notation list that opens every solution (estilo-avaliacao §4, "Equations, notation and layout").
+\newenvironment{notacao}{\par\smallskip\noindent\textbf{Notation.}\begin{itemize}[leftmargin=1.4em,topsep=1pt,itemsep=0pt]\small}{\end{itemize}}
+\allowdisplaybreaks
 
 % Gabarito objetivo (só aparece no modo soluções)
 \newcommand{\gabarito}[1]{\ifsolucoes\par\noindent\textbf{Gabarito:}~#1\fi}
@@ -68,7 +75,7 @@
 \newcommand{\intuicao}[1]{\par\smallskip\noindent\textit{Intuição econômica.}~#1}
 \newcommand{\refbib}[1]{\par\smallskip\noindent{\footnotesize\color{black!60}\textbf{Ref:} #1}}
 % Rubrica de correção
-\newcommand{\rubrica}[1]{\par\smallskip\noindent\textbf{Rubrica de correção.}\begin{itemize}[leftmargin=1.4em,topsep=1pt]#1\end{itemize}}
+\newcommand{\rubrica}[1]{\par\needspace{4\baselineskip}\smallskip\noindent\textbf{Rubrica de correção.}\begin{itemize}[leftmargin=1.4em,topsep=1pt]#1\end{itemize}}
 
 % =============================================================================
 \begin{document}

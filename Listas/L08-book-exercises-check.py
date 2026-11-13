@@ -1,7 +1,8 @@
 """Reproduce and assert every number printed in Listas/lista-L08-book-exercises.tex (L08 book exercises).
 
 Run from anywhere: python Listas/L08-book-exercises-check.py
-Data: Listas/data/ (Tsay FTS 3e files; TRAFFIC2 via the `wooldridge` package). See Listas/data/README.md.
+Data: Listas/data/ (Tsay FTS 3e files, incl. L08-m-fsp6508.txt for T 12.4; TRAFFIC2 via the `wooldridge`
+package). See Listas/data/README.md. MCMC sections (T 12.4 SV, Bayesian GARCH) use fixed NumPy seeds.
 GARCH-type models are fitted by conditional MLE in NumPy/SciPy (the `arch` package is not installed).
 Exits with AssertionError on the first mismatch; prints "ALL CHECKS PASSED" otherwise.
 """
@@ -11,7 +12,9 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 import statsmodels.api as sm
+from scipy.linalg import cho_solve_banded, cholesky_banded, solve_banded
 from scipy.optimize import minimize
+from scipy.signal import lfilter
 from scipy.special import gammaln
 from scipy.stats import t as student_t
 from statsmodels.stats.diagnostic import acorr_ljungbox, het_arch
@@ -561,5 +564,190 @@ check("3.14 alpha0 base", g14o["par"][1], 0.0540, 4)
 check("3.14 hand contrib", 0.0499 * 1.1749, 0.0586, 4)
 check("W12.4 8th moment", 105 * 0.5 ** 4, 6.56, 2)
 check("W12.4 r_u 3d", r_u, -0.003, 3); check("W12.4 r_u2", r_u2, 0.458, 3)
+
+# ==============================================================================================
+# T 12.4  Ford monthly log returns 1965-2008: (a) GARCH(1,1), (b) SV-AR(1) by Gibbs (KSC mixture), (c) compare
+# ==============================================================================================
+
+fsp = pd.read_csv(DATA / "L08-m-fsp6508.txt", sep=r"\s+")
+rf = 100 * np.log1p(fsp.F.values)
+check("12.4 T", len(rf), 528, 0)
+check("12.4 mean", rf.mean(), 0.429, 3); check("12.4 sd", rf.std(ddof=1), 9.543, 3); check("12.4 min", rf.min(), -86.48, 2)
+check("12.4 min date", fsp.date.values[rf.argmin()], 20081031, 0)
+qf, pf = lb(rf, [12]); qf2, pf2 = lb((rf - rf.mean()) ** 2, [12])
+print(f"[12.4] LB r Q(12)={qf[0]:.2f} p={pf[0]:.3f}; LB e^2 Q(12)={qf2[0]:.2f} p={pf2[0]:.4f}")
+check("12.4 Q12 r", qf[0], 14.99, 2); check("12.4 p r", pf[0], 0.242, 3)
+check("12.4 Q12 e2", qf2[0], 31.40, 2); check("12.4 p e2", pf2[0], 0.0017, 4)
+g124 = garch_fit(rf)
+print("[12.4] GARCH(1,1)-N", g124["par"].round(4), "se", g124["se"].round(4), "llf", round(g124["llf"], 2))
+for k, (e, s) in enumerate([(0.8818, 0.3378), (3.0047, 1.5608), (0.1430, 0.0333), (0.8381, 0.0390)]):
+    check(f"12.4 garch par{k}", g124["par"][k], e, 4); check(f"12.4 garch se{k}", g124["se"][k], s, 4)
+check("12.4 garch llf", g124["llf"], -1885.95, 2)
+qz, pz = lb(g124["z"], [12]); qz2, pz2 = lb(g124["z"] ** 2, [12])
+check("12.4 LB z", qz[0], 12.25, 2); check("12.4 LB z p", pz[0], 0.425, 3)
+check("12.4 LB z2", qz2[0], 16.93, 2); check("12.4 LB z2 p", pz2[0], 0.152, 3)
+check("12.4 kurt z", pd.Series(g124["z"]).kurt() + 3, 4.48, 2)
+pers_g = g124["par"][2] + g124["par"][3]
+check("12.4 garch pers", pers_g, 0.9811, 4)
+check("12.4 garch uncond var", g124["par"][1] / (1 - pers_g), 159.2, 1)
+check("12.4 sample var", rf.var(ddof=1), 91.07, 2)
+
+# Kim, Shephard and Chib (1998) 7-component normal mixture for log(chi2_1): weights, means, variances.
+KSC_Q = np.array([0.00730, 0.10556, 0.00002, 0.04395, 0.34001, 0.24566, 0.25750])
+KSC_M = np.array([-10.12999, -3.97281, -8.56686, 2.77786, 0.61942, 1.79518, -1.08819]) - 1.2704
+KSC_V = np.array([5.79596, 2.61369, 5.17950, 0.16735, 0.64009, 0.34023, 1.26261])
+mix_mean = KSC_Q @ KSC_M
+check("KSC mean = E log chi2_1", mix_mean, -1.2704, 4)               # psi(1/2) + log 2 = -1.27036
+check("KSC var = pi^2/2", KSC_Q @ (KSC_V + KSC_M ** 2) - mix_mean ** 2, np.pi ** 2 / 2, 3)
+
+
+def sv_gibbs(r, n_burn=2000, n_keep=10000, seed=2010):
+    """Gibbs sampler for r_t = mu + sqrt(h_t) eps_t, ln h_t = al0 + al1 ln h_{t-1} + v_t, v_t ~ N(0, s2v).
+
+    Priors as in Tsay (2010) Example 12.3: mu ~ N(0, 4); (al0, al1) ~ N((0, 0.6), diag(0.25, 0.04)) truncated
+    to |al1| < 1; 10*0.1/s2v ~ chi2_10, i.e. s2v ~ IG(5, 0.5); ln h_1 ~ N(ln var(r), 10), not depending on theta.
+    The ln h_t block uses the KSC mixture for log(r_t - mu)^2 and is drawn jointly from its Gaussian full
+    conditional (tridiagonal precision, banded Cholesky); so the chain targets the mixture-approximated posterior.
+    Returns (draws of (mu, al0, al1, s2v), posterior mean of sqrt(h_t) for t = 1..T).
+    """
+    rng = np.random.default_rng(seed)
+    T = len(r)
+    m0, C0 = np.log(np.var(r)), 10.0
+    a_mean, a_prec = np.array([0.0, 0.6]), np.diag([1 / 0.25, 1 / 0.04])
+    mu, al0, al1, s2v = r.mean(), 0.0, 0.9, 0.1
+    x = np.full(T, m0)
+    out, vol = np.empty((n_keep, 4)), np.zeros(T)
+    for it in range(n_burn + n_keep):
+        h = np.exp(x)
+        prec = 1 / 4 + np.sum(1 / h)
+        mu = rng.normal(np.sum(r / h) / prec, 1 / np.sqrt(prec))
+        ys = np.log((r - mu) ** 2 + 1e-4)          # offset keeps log finite; negligible on the percent scale
+        lp = np.log(KSC_Q) - 0.5 * np.log(KSC_V) - 0.5 * (ys[:, None] - x[:, None] - KSC_M) ** 2 / KSC_V
+        p = np.exp(lp - lp.max(1, keepdims=True)); p /= p.sum(1, keepdims=True)
+        s = (p.cumsum(1) < rng.random((T, 1))).sum(1)
+        dq = np.full(T, (1 + al1 ** 2) / s2v); dq[0] = 1 / C0 + al1 ** 2 / s2v; dq[-1] = 1 / s2v
+        b = np.full(T, al0 * (1 - al1) / s2v); b[0] = m0 / C0 - al1 * al0 / s2v; b[-1] = al0 / s2v
+        U = cholesky_banded(np.vstack([np.r_[0.0, np.full(T - 1, -al1 / s2v)], dq + 1 / KSC_V[s]]))
+        x = (cho_solve_banded((U, False), b + (ys - KSC_M[s]) / KSC_V[s])
+             + solve_banded((0, 1), U, rng.standard_normal(T)))
+        X, y = np.c_[np.ones(T - 1), x[:-1]], x[1:]
+        V = np.linalg.inv(a_prec + X.T @ X / s2v)
+        m = V @ (a_prec @ a_mean + X.T @ y / s2v)
+        while True:
+            al0, al1 = rng.multivariate_normal(m, V)
+            if abs(al1) < 1:
+                break
+        e = y - al0 - al1 * x[:-1]
+        s2v = (0.5 + e @ e / 2) / rng.gamma(5 + (T - 1) / 2)
+        if it >= n_burn:
+            out[it - n_burn] = mu, al0, al1, s2v
+            vol += np.exp(x / 2)
+    return out, vol / n_keep
+
+
+sv, sv_vol = sv_gibbs(rf)
+q = np.percentile(sv, [2.5, 97.5], axis=0)
+print("[12.4] SV post mean", sv.mean(0).round(4), "sd", sv.std(0).round(4), "2.5%", q[0].round(4), "97.5%", q[1].round(4))
+for k, (mn, sd, lo, hi) in enumerate([(0.663, 0.340, -0.004, 1.326), (0.373, 0.147, 0.138, 0.708),
+                                      (0.911, 0.035, 0.831, 0.968), (0.091, 0.031, 0.048, 0.165)]):
+    check(f"12.4 sv mean{k}", sv[:, k].mean(), mn, 3); check(f"12.4 sv sd{k}", sv[:, k].std(), sd, 3)
+    check(f"12.4 sv lo{k}", q[0, k], lo, 3); check(f"12.4 sv hi{k}", q[1, k], hi, 3)
+mu_h = sv[:, 1] / (1 - sv[:, 2]); s2_h = sv[:, 3] / (1 - sv[:, 2] ** 2)
+uv_sv = np.exp(mu_h + s2_h / 2)                                   # E(a_t^2) = E(h_t) under the SV model
+print(f"[12.4] SV mean ln h {np.median(mu_h):.3f}, var ln h {np.median(s2_h):.3f}, E h median {np.median(uv_sv):.2f}",
+      np.percentile(uv_sv, [2.5, 97.5]).round(2))
+check("12.4 sv E h median", np.median(uv_sv), 89.0, 1)
+check("12.4 sv mu_h", np.median(mu_h), 4.220, 3); check("12.4 sv s2_h", np.median(s2_h), 0.542, 3)
+check("12.4 sv E h lo", np.percentile(uv_sv, 2.5), 64.1, 1); check("12.4 sv E h hi", np.percentile(uv_sv, 97.5), 158.5, 1)
+gvol = np.sqrt(g124["s2"])
+corr_v = np.corrcoef(sv_vol, gvol)[0, 1]
+i08 = int(np.where(fsp.date.values == 20081031)[0][0])
+print(f"[12.4] corr(SV vol, GARCH vol)={corr_v:.3f}; mean vol SV {sv_vol.mean():.2f} GARCH {gvol.mean():.2f};"
+      f" Oct-2008 SV {sv_vol[i08]:.2f} GARCH {gvol[i08]:.2f}; Nov-2008 SV {sv_vol[i08 + 1]:.2f} GARCH {gvol[i08 + 1]:.2f};"
+      f" min SV {sv_vol.min():.2f} GARCH {gvol.min():.2f}")
+
+# ==============================================================================================
+# Original: Bayesian GARCH(1,1) for GM daily % log returns (Question 10 data), random-walk Metropolis-Hastings
+# ==============================================================================================
+def garch11_loglik(th, r):
+    """Gaussian GARCH(1,1) log-likelihood, same start-up as garch_filter (pre-sample a^2 and sigma^2 = mean a^2).
+
+    th = (mu, alpha0, alpha1, beta1). The variance recursion is a first-order linear filter in a_{t-1}^2.
+    """
+    mu, om, al, be = th
+    a = r - mu
+    s0 = np.mean(a ** 2)
+    s2 = lfilter([1.0], [1.0, -be], om + al * np.r_[s0, a[:-1] ** 2], zi=[be * s0])[0]
+    return -0.5 * np.sum(np.log(2 * np.pi) + np.log(s2) + a ** 2 / s2)
+
+
+def garch11_logpost(th, r):
+    """Log posterior: mu ~ N(0, 100); alpha0, alpha1, beta1 ~ N(0, 1000) on alpha0 > 0, alpha1 >= 0, beta1 >= 0,
+    and alpha1 + beta1 < 1 (covariance stationarity). Returns -inf outside the support."""
+    mu, om, al, be = th
+    if om <= 0 or al < 0 or be < 0 or al + be >= 1:
+        return -np.inf
+    return garch11_loglik(th, r) - 0.5 * mu ** 2 / 100 - 0.5 * (om ** 2 + al ** 2 + be ** 2) / 1000
+
+
+def rw_mh(logpost, th0, cov, n_burn=5000, n_keep=20000, seed=2015):
+    """Random-walk Metropolis-Hastings with Gaussian proposal N(theta, cov); returns (draws, acceptance rate)."""
+    rng = np.random.default_rng(seed)
+    L = np.linalg.cholesky(cov)
+    th, lp = np.array(th0, float), logpost(th0)
+    out, acc = np.empty((n_keep, len(th))), 0
+    for it in range(n_burn + n_keep):
+        prop = th + L @ rng.standard_normal(len(th))
+        lpp = logpost(prop)
+        if np.log(rng.random()) < lpp - lp:
+            th, lp = prop, lpp
+            acc += it >= n_burn
+        if it >= n_burn:
+            out[it - n_burn] = th
+    return out, acc / n_keep
+
+
+check("BG loglik = garch_fit llf", garch11_loglik(g11n["par"], gm), g11n["llf"], 6)
+cov_mle = np.linalg.inv(approx_hess3(g11n["par"], lambda th: garch_nll(th, gm, [], 1, 1, None, "norm")))
+bg, bg_acc = rw_mh(lambda th: garch11_logpost(th, gm), g11n["par"], cov_mle)
+bpers = bg[:, 2] + bg[:, 3]
+buv = bg[:, 1] / (1 - bpers)
+print("[BG] acc", round(bg_acc, 3), "mean", bg.mean(0).round(4), "sd", bg.std(0).round(4))
+print("[BG] pers mean", bpers.mean().round(4), "sd", bpers.std().round(4), "q", np.percentile(bpers, [2.5, 50, 97.5]).round(4),
+      "P(>0.99)", (bpers > 0.99).mean().round(3))
+print("[BG] uncond var median", np.median(buv).round(2), "q", np.percentile(buv, [2.5, 97.5]).round(2))
+check("12.4 corr vol", corr_v, 0.812, 3)
+check("12.4 mean vol sv", sv_vol.mean(), 8.57, 2); check("12.4 mean vol garch", gvol.mean(), 8.95, 2)
+check("12.4 Oct08 sv", sv_vol[i08], 27.89, 2); check("12.4 Oct08 garch", gvol[i08], 17.24, 2)
+check("12.4 Nov08 sv", sv_vol[i08 + 1], 24.93, 2); check("12.4 Nov08 garch", gvol[i08 + 1], 36.65, 2)
+check("12.4 min sv", sv_vol.min(), 5.54, 2); check("12.4 min garch", gvol.min(), 5.44, 2)
+check("12.4 sd sample", np.sqrt(91.07), 9.54, 2); check("12.4 sd garch uv", np.sqrt(159.2), 12.6, 1)
+check("12.4 sd sv E h", np.sqrt(89.0), 9.4, 1)
+check("12.4 hand mu_h", 0.373 / (1 - 0.911), 4.19, 2); check("12.4 hand s2_h", 0.091 / (1 - 0.911 ** 2), 0.535, 3)
+check("BG acc", bg_acc, 0.391, 3)
+for k, (mn, sd) in enumerate([(0.0227, 0.0439), (0.1029, 0.0231), (0.0733, 0.0098), (0.9168, 0.0105)]):
+    check(f"BG mean{k}", bg[:, k].mean(), mn, 4); check(f"BG sd{k}", bg[:, k].std(), sd, 4)
+qp = np.percentile(bpers, [2.5, 50, 97.5])
+check("BG pers mean", bpers.mean(), 0.9901, 4); check("BG pers sd", bpers.std(), 0.0043, 4)
+check("BG pers lo", qp[0], 0.9811, 4); check("BG pers med", qp[1], 0.9902, 4); check("BG pers hi", qp[2], 0.9977, 4)
+check("BG P>0.99", (bpers > 0.99).mean(), 0.517, 3)
+qu = np.percentile(buv, [2.5, 97.5])
+check("BG uv med", np.median(buv), 10.35, 2); check("BG uv lo", qu[0], 6.71, 2); check("BG uv hi", qu[1], 33.88, 2)
+p11 = g11n["par"]; pers11 = p11[2] + p11[3]; uv11 = p11[1] / (1 - pers11)
+gp, gu = np.array([0, 0, 1, 1.0]), np.array([0, 1 / (1 - pers11), uv11 / (1 - pers11), uv11 / (1 - pers11)])
+se_p, se_u = np.sqrt(gp @ cov_mle @ gp), np.sqrt(gu @ cov_mle @ gu)
+print(f"[BG] MLE pers {pers11:.4f} se {se_p:.4f}; uncond var {uv11:.2f} se {se_u:.2f}")
+check("BG mle pers", pers11, 0.9908, 4); check("BG mle pers se", se_p, 0.0041, 4)
+check("BG mle pers lo", pers11 - 1.96 * se_p, 0.9827, 4); check("BG mle pers hi", pers11 + 1.96 * se_p, 0.9988, 4)
+check("BG mle uv", uv11, 10.20, 2); check("BG mle uv se", se_u, 3.26, 2)
+check("BG mle uv lo", uv11 - 1.96 * se_u, 3.81, 2); check("BG mle uv hi", uv11 + 1.96 * se_u, 16.58, 2)
+check("BG sample var", np.var(gm), 10.39, 2)
+check("BG hand uv", 0.0942 / (1 - 0.9908), 10.2, 1)
+check("BG mle pers dist to 1 in se", (1 - pers11) / se_p, 2.2, 1)
+check("12.4 min %", rf.min(), -86.5, 1)
+check("12.4 half-life garch", np.log(0.5) / np.log(0.9811), 36.3, 1)
+check("12.4 half-life sv", np.log(0.5) / np.log(0.911), 7.4, 1)
+check("12.4 sv kurtosis 3exp(s2_h)", 3 * np.exp(0.542), 5.16, 2)
+check("12.4 sample kurtosis", pd.Series(rf).kurt() + 3, 16.27, 2)
 
 print(f"ALL CHECKS PASSED ({N_CHECKS} checks)")

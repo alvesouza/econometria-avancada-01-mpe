@@ -63,6 +63,10 @@
   \textbf{Question \thequestao.}~#1\par}
 % Source line that opens every question (estilo-avaliacao §5, book questions)
 \newcommand{\fonte}[1]{\par\noindent{\small\textit{Source:} #1}\par\smallskip}
+% Origin line that opens an original (non-book) question; same style as \fonte, never a book source line
+\newcommand{\origem}[1]{\par\noindent{\small\textit{Origin:} #1}\par\smallskip}
+% Material the statement refers to (data file, model, earlier exercise), shown in the list and the key
+\newenvironment{refmat}{\par\smallskip\noindent\begin{minipage}{\linewidth}\small\textbf{Referenced material.}~}{\end{minipage}\par\smallskip}
 
 % Notation list that opens every solution (estilo-avaliacao §4, "Equations, notation and layout").
 \newenvironment{notacao}{\par\smallskip\noindent\textbf{Notation.}\begin{itemize}[leftmargin=1.4em,topsep=1pt,itemsep=0pt]\small}{\end{itemize}}
@@ -86,10 +90,14 @@
 
 {\footnotesize\noindent\textbf{Instructions.} These are the \emph{Practice} items of Class 8 in
 \texttt{Map/class-plan.md} (T 2.1--2.6; W 18.C13; T 3.3, 3.4, 3.6, 3.11, 3.12, 3.14; W 12.4), grouped by
-book. Every question opens with a source line, and the statement is reproduced verbatim from the book PDF.
+book, plus Tsay 12.4 (stochastic volatility) and one original exercise on Bayesian GARCH (Block 4). Every book
+question opens with a source line, and the statement is reproduced verbatim from the book PDF; a
+\emph{Referenced material} paragraph after a statement summarizes what it refers to (data file, model,
+earlier exercise). The original exercise opens with an \emph{Origin} line instead.
 Data exercises use Tsay's data files (FTS 3e web page, retrieved from the Internet Archive) and the
 \texttt{wooldridge} package; see \texttt{Listas/data/README.md}. They are solved in Python
-(\texttt{statsmodels}; GARCH-type models by conditional maximum likelihood written in NumPy/SciPy);
+(\texttt{statsmodels}; GARCH-type models by conditional maximum likelihood, and the MCMC samplers of Block 4,
+written in NumPy/SciPy with fixed seeds);
 \texttt{Listas/L08-book-exercises-check.py} reproduces and asserts every number in the solutions. Tests
 use the 5\% level unless the statement says otherwise. Show your steps.\par}
 
@@ -99,7 +107,8 @@ use the 5\% level unless the statement says otherwise. Show your steps.\par}
 % ---------------------------------------------------------------- Q1
 \questao{Tsay, Exercise 2.1 (MA(1) forecasts).}
 \fonte{Tsay (2010), \textit{Analysis of Financial Time Series}, 3rd ed., Chapter 2, Exercise 2.1, printed
-p.~104, reproduced verbatim. The chapter's exercises open with: ``If not specifically specified, use 5\%
+p.~104 [PDF p.~131]; answer not given in the book; reproduced verbatim.
+The chapter's exercises open with: ``If not specifically specified, use 5\%
 significance level to draw conclusions in the exercises.''}
 
 \noindent\textbf{2.1.} Suppose that the simple return of a monthly bond index follows the MA(1) model
@@ -161,7 +170,7 @@ $\gamma_0$. The ACF cuts off after lag 1 for the same reason.}
 % ---------------------------------------------------------------- Q2
 \questao{Tsay, Exercise 2.2 (AR(2) with $\phi_1=0$: moments and forecasts).}
 \fonte{Tsay (2010), \textit{Analysis of Financial Time Series}, 3rd ed., Chapter 2, Exercise 2.2, printed
-p.~104, reproduced verbatim.}
+p.~104 [PDF p.~131]; answer not given in the book; reproduced verbatim.}
 
 \noindent\textbf{2.2.} Suppose that the daily log return of a security follows the model
 \[ r_t = 0.01 + 0.2r_{t-2} + a_t, \]
@@ -238,13 +247,21 @@ one shock of error.}
 % ---------------------------------------------------------------- Q3
 \questao{Tsay, Exercise 2.3 (U.S. unemployment rate: model, forecasts, business cycles).}
 \fonte{Tsay (2010), \textit{Analysis of Financial Time Series}, 3rd ed., Chapter 2, Exercise 2.3, printed
-p.~104, reproduced verbatim.}
+p.~104 [PDF p.~131]; answer not given in the book; reproduced verbatim.}
 
 \noindent\textbf{2.3.} Consider the monthly U.S. unemployment rate from January 1948 to March 2009 in the
 file \texttt{m-unrate.txt}. The data are seasonally adjusted and obtained from the Federal Reserve Bank of
 St Louis. Build a time series model for the series and use the model to forecast the unemployment rate for
 the April, May, June, and July of 2009. In addition, does the fitted model imply the existence of business
 cycles? Why? (Note that there are more than one model fits the data well. You only need an adequate model.)
+\begin{refmat}
+Data file \texttt{m-unrate.txt} (Tsay's FTS 3e data page; copy in \texttt{Listas/data/}): columns
+\texttt{Year Mon Day Rate}; 735 monthly values of the unemployment rate in percent, from 1948:01 ($3.4$) to
+2009:03 ($8.6$). Business cycles (Tsay \S2.4.1, printed p.~42 [PDF p.~69]): an AR(2) factor
+$1-\phi_1B-\phi_2B^2$ has a pair of complex characteristic roots, which ``give rise to the behavior of
+business cycles'', when $\phi_1^2+4\phi_2<0$; the average length of the stochastic cycles is then
+$k=2\pi/\cos^{-1}[\phi_1/(2\sqrt{-\phi_2})]$.
+\end{refmat}
 \resolespaco
 \begin{sol}
 \begin{notacao}
@@ -329,7 +346,8 @@ statement warns that more than one model fits.}
 % ---------------------------------------------------------------- Q4
 \questao{Tsay, Exercise 2.4 (CRSP decile returns: Ljung--Box test, ARMA model, forecasts).}
 \fonte{Tsay (2010), \textit{Analysis of Financial Time Series}, 3rd ed., Chapter 2, Exercise 2.4, printed
-p.~105, reproduced verbatim. The data file (not named in the statement) is Tsay's \texttt{m-deciles08.txt}.}
+p.~105 [PDF p.~132]; answer not given in the book; reproduced verbatim.
+The data file (not named in the statement) is Tsay's \texttt{m-deciles08.txt}.}
 
 \noindent\textbf{2.4.} Consider the monthly simple returns of the Decile 1, Decile 2, Decile 9, and Decile 10
 of NYSE/AMEX/NASDAQ based on market capitalization. The data span is from January 1970 to December 2008, and
@@ -341,6 +359,12 @@ autocorrelations are zero at the 5\% level. Draw your conclusion.
 \item Use the fitted ARMA model to produce 1- to 12-step-ahead forecasts of the series and the associated
 standard errors of forecasts.
 \end{enumerate}
+\begin{refmat}
+The statement does not name the file. Tsay's \texttt{m-deciles08.txt} (FTS 3e data page; copy in
+\texttt{Listas/data/}) has columns \texttt{date} (yyyymmdd), \texttt{CAP1RET}, \texttt{CAP2RET},
+\texttt{CAP9RET}, \texttt{CAP10RET}: monthly simple returns (decimals) of the CRSP Decile 1, 2, 9 and 10
+portfolios, 468 months from 1970:01 to 2008:12. Decile 2 is \texttt{CAP2RET}; Decile 10 is \texttt{CAP10RET}.
+\end{refmat}
 \resolespaco
 \begin{sol}
 \begin{notacao}
@@ -429,11 +453,19 @@ deterministic, and a dummy captures it with one parameter instead of two near-un
 % ---------------------------------------------------------------- Q5
 \questao{Tsay, Exercise 2.5 (long-range dependence in $|R_t|$ of IBM).}
 \fonte{Tsay (2010), \textit{Analysis of Financial Time Series}, 3rd ed., Chapter 2, Exercise 2.5, printed
-p.~105, reproduced verbatim.}
+p.~105 [PDF p.~132]; answer not given in the book; reproduced verbatim.}
 
 \noindent\textbf{2.5.} Consider the daily simple returns of IBM stock from 1970 to 2008 in the file
 \texttt{d-ibm3dx7008.txt}. Compute the first 100 lags of ACF of the absolute series of daily simple returns of
 IBM stock. Is there evidence of long-range dependence? Why?
+\begin{refmat}
+Data file \texttt{d-ibm3dx7008.txt} (FTS 3e data page; copy in \texttt{Listas/data/}): columns
+\texttt{Date}, \texttt{rtn} (IBM), \texttt{vwretd}, \texttt{ewretd}, \texttt{sprtrn} (CRSP value- and
+equal-weighted indexes, S\&P composite); 9,845 daily simple returns from 1970-01-02 to 2008-12-31. The IBM
+series is \texttt{rtn}. Long memory (Tsay \S2.11, printed p.~101 [PDF p.~128], Eq.~(2.52)): for a
+fractionally differenced series $(1-B)^dx_t=a_t$ with $-0.5<d<0.5$, the ACF behaves as $\rho_k\propto k^{2d-1}$
+for large $k$, a polynomial decay instead of the exponential decay of a stationary ARMA.
+\end{refmat}
 \resolespaco
 \begin{sol}
 \begin{notacao}
@@ -487,11 +519,16 @@ fact that motivates persistent GARCH and long-memory volatility models.}
 % ---------------------------------------------------------------- Q6
 \questao{Tsay, Exercise 2.6 (seasonal model for electricity demand).}
 \fonte{Tsay (2010), \textit{Analysis of Financial Time Series}, 3rd ed., Chapter 2, Exercise 2.6, printed
-p.~105, reproduced verbatim.}
+p.~105 [PDF p.~132]; answer not given in the book; reproduced verbatim.}
 
 \noindent\textbf{2.6.} Consider the demand of electricity of a manufacturing sector in the United States. The
 data are logged, denote the demand of a fixed day of each month, and are in \texttt{power6.txt}. Build a time
 series model for the series and use the fitted model to produce 1- to 24-step-ahead forecasts.
+\begin{refmat}
+Data file \texttt{power6.txt} (FTS 3e data page; copy in \texttt{Listas/data/}): a single column of 264
+monthly values of log demand (first value $9.2691$, last $9.9060$). Neither the file nor the book gives the
+calendar dates, so the forecasts are indexed by step $\ell=1,\dots,24$.
+\end{refmat}
 \resolespaco
 \begin{sol}
 \begin{notacao}
@@ -570,7 +607,7 @@ current level forward.}
 % ---------------------------------------------------------------- Q7
 \questao{Tsay, Exercise 3.3 (Gaussian AR(1)--GARCH(1,1) likelihood).}
 \fonte{Tsay (2010), \textit{Analysis of Financial Time Series}, 3rd ed., Chapter 3, Exercise 3.3, printed
-p.~168, reproduced verbatim.}
+p.~168 [PDF p.~195]; answer not given in the book; reproduced verbatim.}
 
 \noindent\textbf{3.3.} Suppose that $r_1,\dots,r_n$ are observations of a return series that follows the
 AR(1)-GARCH(1,1) model
@@ -617,10 +654,17 @@ prediction-error decomposition. Days with a large predicted variance count for l
 % ---------------------------------------------------------------- Q8
 \questao{Tsay, Exercise 3.4 (Student-$t$ AR(1)--GARCH(1,1) likelihood).}
 \fonte{Tsay (2010), \textit{Analysis of Financial Time Series}, 3rd ed., Chapter 3, Exercise 3.4, printed
-p.~168, reproduced verbatim.}
+p.~168 [PDF p.~195]; answer not given in the book; reproduced verbatim.}
 
 \noindent\textbf{3.4.} In the equation in Exercise 3.3, assume that $\epsilon_t$ follows a standardized
 Student-$t$ distribution with $v$ degrees of freedom. Derive the conditional log-likelihood function of the data.
+\begin{refmat}
+The equation in Exercise 3.3 (Question 7) is the AR(1)--GARCH(1,1) model
+$r_t=\mu+\phi_1r_{t-1}+a_t$, $a_t=\sigma_t\epsilon_t$, $\sigma_t^2=\alpha_0+\alpha_1a_{t-1}^2+\beta_1\sigma_{t-1}^2$,
+for observations $r_1,\dots,r_n$. Standardized Student-$t$ (Tsay \S3.4.3, printed p.~121 [PDF p.~148],
+Eq.~(3.7)): if $x_v\sim t_v$, then $\epsilon_t=x_v/\sqrt{v/(v-2)}$ has unit variance, with density
+$f(\epsilon_t\mid v)=\dfrac{\Gamma[(v+1)/2]}{\Gamma(v/2)\sqrt{(v-2)\pi}}\left(1+\dfrac{\epsilon_t^2}{v-2}\right)^{-(v+1)/2}$, $v>2$.
+\end{refmat}
 \resolespaco
 \begin{sol}
 \begin{notacao}
@@ -651,7 +695,7 @@ are: as $v\to\infty$, \eqref{q34:ll} tends to the Gaussian likelihood of Questio
 % ---------------------------------------------------------------- Q9
 \questao{Tsay, Exercise 3.6 (Merck monthly returns: serial correlation, ARCH effects, ARCH model).}
 \fonte{Tsay (2010), \textit{Analysis of Financial Time Series}, 3rd ed., Chapter 3, Exercise 3.6, printed
-p.~169, reproduced verbatim.}
+p.~169 [PDF p.~196]; answer not given in the book; reproduced verbatim.}
 
 \noindent\textbf{3.6.} The file \texttt{m-mrk4608.txt} contains monthly simple returns of Merck stock from
 June 1946 to December 2008. The file has two columns denoting date and simple return. Transform the simple
@@ -730,7 +774,7 @@ coefficients sum to only $0.18$, far from the persistence of 0.99 typical of dai
 % ---------------------------------------------------------------- Q10
 \questao{Tsay, Exercise 3.11 (GM daily log returns: ARCH test, PACF, normal and GED GARCH).}
 \fonte{Tsay (2010), \textit{Analysis of Financial Time Series}, 3rd ed., Chapter 3, Exercise 3.11, printed
-p.~170, reproduced verbatim.}
+p.~170 [PDF p.~197]; answer not given in the book; reproduced verbatim.}
 
 \noindent\textbf{3.11.} The file \texttt{d-gmsp9908.txt} contains the daily simple returns of GM stock and
 the S\&P composite index from 1999 to 2008. It has three columns denoting date, GM return, and S\&P return.
@@ -743,6 +787,13 @@ model checking and write down the fitted model.
 \item Find an adequate GARCH model for the series but using the generalized error distribution for the
 innovations. Write down the fitted model.
 \end{enumerate}
+\begin{refmat}
+\texttt{d-gmsp9908.txt} (FTS 3e data page; copy in \texttt{Listas/data/}): columns \texttt{date},
+\texttt{gm}, \texttt{sp}; 2,515 daily simple returns (decimals) from 1999-01-04 to 2008-12-31. Generalized
+error distribution (Tsay \S3.4.3, printed p.~122 [PDF p.~149], Eq.~(3.10)):
+$f(x)=\dfrac{v\exp\!\left(-\frac12|x/\lambda|^v\right)}{\lambda\,2^{(1+1/v)}\,\Gamma(1/v)}$, $0<v\le\infty$, with
+$\lambda=[2^{(-2/v)}\Gamma(1/v)/\Gamma(3/v)]^{1/2}$; it is Gaussian for $v=2$ and has heavy tails for $v<2$.
+\end{refmat}
 \resolespaco
 \begin{sol}
 \begin{notacao}
@@ -822,7 +873,7 @@ mass, and $\alpha_0$ falls because fewer extreme days have to be explained by th
 % ---------------------------------------------------------------- Q11
 \questao{Tsay, Exercise 3.12 (S\&P daily simple returns: ARCH test, GARCH model, forecasts).}
 \fonte{Tsay (2010), \textit{Analysis of Financial Time Series}, 3rd ed., Chapter 3, Exercise 3.12, printed
-p.~170, reproduced verbatim.}
+p.~170 [PDF p.~197]; answer not given in the book; reproduced verbatim.}
 
 \noindent\textbf{3.12.} Consider the daily simple returns of the S\&P composite index in the file
 \texttt{d-gmsp9908.txt}.
@@ -832,6 +883,11 @@ significance level to perform the test.
 \item Build an adequate GARCH model for the simple return series.
 \item Compute 1-step- to 4-step-ahead forecasts of the simple return and its volatility based on the fitted model.
 \end{enumerate}
+\begin{refmat}
+The file is described in Exercise 3.11 (Question 10): columns \texttt{date}, \texttt{gm}, \texttt{sp};
+2,515 daily simple returns from 1999-01-04 to 2008-12-31. The S\&P series is \texttt{sp}; the forecast origin
+is the last day, 2008-12-31.
+\end{refmat}
 \resolespaco
 \begin{sol}
 \begin{notacao}
@@ -921,7 +977,7 @@ $\mu/(1-\phi_1-\phi_2)=0.0357/1.1008\approx0.032$.}
 % ---------------------------------------------------------------- Q12
 \questao{Tsay, Exercise 3.14 (market volatility as a regressor in GM's volatility).}
 \fonte{Tsay (2010), \textit{Analysis of Financial Time Series}, 3rd ed., Chapter 3, Exercise 3.14, printed
-p.~171, reproduced verbatim.}
+p.~171 [PDF p.~198]; answer not given in the book; reproduced verbatim.}
 
 \noindent\textbf{3.14.} Revisit the file \texttt{d-gmsp9908.txt}. However, we shall investigate the value of
 using market volatility in modeling volatility of individual stocks. Convert the two simple return series into
@@ -934,6 +990,14 @@ Check the adequacy of the model, and write down the fitted model. In S-Plus, the
 \begin{center}\texttt{fit = garch(gm \textasciitilde 1, \textasciitilde garch(1,1)+spvol, cond.dist='ged')}\end{center}
 \item Discuss the implication of the fitted model.
 \end{enumerate}
+\begin{refmat}
+The file is described in Exercise 3.11 (Question 10): columns \texttt{date}, \texttt{gm}, \texttt{sp};
+2,515 daily simple returns from 1999-01-04 to 2008-12-31; percentage log returns are $100\ln(1+R_t)$. The
+generalized error distribution is Tsay's Eq.~(3.10), printed p.~122 [PDF p.~149], quoted in Question 10. In
+the S-Plus \texttt{garch} formula, \texttt{gm \textasciitilde{} 1} is a constant mean and
+\texttt{\textasciitilde{} garch(1,1)+spvol} is the variance equation, so \texttt{spvol} enters linearly
+next to the GARCH(1,1) terms: $\sigma_t^2=\alpha_0+\alpha_1a_{t-1}^2+\beta_1\sigma_{t-1}^2+\gamma\,\texttt{spvol}_t$.
+\end{refmat}
 \resolespaco
 \begin{sol}
 \begin{notacao}
@@ -1013,7 +1077,8 @@ information that the stock's own past does not: here it does not.}
 % ---------------------------------------------------------------- Q13
 \questao{Wooldridge, Computer Exercise 18.C13 (Dickey--Fuller tests, TRAFFIC2).}
 \fonte{Wooldridge (2016), \textit{Introductory Econometrics: A Modern Approach}, 6th ed., Chapter 18,
-Computer Exercise C13, printed p.~604, reproduced verbatim.}
+Computer Exercise C13, printed p.~604 [PDF p.~628]; answer not given in the book (its Appendix F answers only the
+in-chapter questions); reproduced verbatim.}
 
 \noindent\textbf{C13} Use the data in TRAFFIC2 for this exercise. These monthly data, on traffic accidents in
 California over the years 1981 to 1989, were used in Computer Exercise C11 in Chapter 10.
@@ -1027,6 +1092,27 @@ $ltotacc_t$: an I(1) process or an I(0) process about a linear time trend?
 \item Test the percentage of fatalities, $prcfat_t$, for a unit root, using two lags in an ADF regression. In
 this case, does it matter whether you include a linear time trend?
 \end{enumerate}
+\begin{refmat}
+TRAFFIC2 (Wooldridge Computer Exercise 10.C11, printed p.~342 [PDF p.~366]; read with
+\texttt{wooldridge.data("traffic2")}): ``108 monthly observations on automobile accidents, traffic laws,
+and some other variables for California from January 1981 through December 1989.'' Variables used:
+$totacc$ (statewide total accidents), $ltotacc=\log(totacc)$, $fatacc$ (fatal accidents) and
+$prcfat=100\cdot fatacc/totacc$, the percentage of accidents with at least one fatality (a percentage, not a
+proportion). Dickey--Fuller regressions (\S18-2, printed pp.~575--577 [PDF pp.~599--601]):
+$\Delta y_t=\alpha+\theta y_{t-1}+e_t$ (18.21); the augmented test adds $\Delta y_{t-1},\dots,\Delta y_{t-p}$
+(18.24); with a trend, $\Delta y_t=\alpha+\delta t+\theta y_{t-1}+e_t$ (18.25). $H_0\!:\theta=0$ is rejected if
+$t_{\hat\theta}<c$, with asymptotic critical values
+\begin{center}\small
+\begin{tabular}{lcccc}
+\toprule
+Significance level & 1\% & 2.5\% & 5\% & 10\%\\
+\midrule
+No time trend (Table 18.2) & $-3.43$ & $-3.12$ & $-2.86$ & $-2.57$\\
+Linear time trend (Table 18.3) & $-3.96$ & $-3.66$ & $-3.41$ & $-3.12$\\
+\bottomrule
+\end{tabular}
+\end{center}
+\end{refmat}
 \resolespaco
 \begin{sol}
 \begin{notacao}
@@ -1087,9 +1173,16 @@ specification does not matter for it.}
 % ---------------------------------------------------------------- Q14
 \questao{Wooldridge, Problem 12.4 (ARCH and serial correlation).}
 \fonte{Wooldridge (2016), \textit{Introductory Econometrics: A Modern Approach}, 6th ed., Chapter 12,
-Problem 4, printed p.~397, reproduced verbatim.}
+Problem 4, printed p.~397 [PDF p.~421]; answer not given in the book (its Appendix F answers only the
+in-chapter questions); reproduced verbatim.}
 
 \noindent\textbf{4} True or false: ``If the errors in a regression model contain ARCH, they must be serially correlated.''
+\begin{refmat}
+ARCH (Wooldridge \S12-6c, printed p.~393 [PDF p.~417]): the first-order ARCH model is
+$E(u_t^2\mid u_{t-1},u_{t-2},\dots)=E(u_t^2\mid u_{t-1})=\alpha_0+\alpha_1u_{t-1}^2$ (12.49), with $\alpha_0>0$,
+$\alpha_1\ge0$, for regression errors that satisfy $E(u_t\mid u_{t-1},u_{t-2},\dots)=0$; equivalently
+$u_t^2=\alpha_0+\alpha_1u_{t-1}^2+v_t$ (12.50).
+\end{refmat}
 \resolespaco
 \begin{sol}
 \begin{notacao}
@@ -1117,6 +1210,254 @@ fourth moment is finite ($3\alpha_1^2=0.75<1$). The sample value falls short bec
 OLS standard errors that assume no serial correlation remain valid (heteroskedasticity-robust ones are
 needed), and tests for serial correlation should not be confused with tests for ARCH (Ljung--Box on $u_t$ vs on $u_t^2$).}
 \refbib{Wooldridge (2016) \S12-6c (pp.~393--394, Eqs.~(12.49)--(12.50)); Tsay (2010) \S3.4.1 (pp.~117--118, properties of ARCH models: $a_t$ uncorrelated, $a_t^2$ autocorrelated).}
+\end{sol}
+
+% =============================================================================
+\bloco{4}{Stochastic volatility and Bayesian GARCH}{T Ch.~12 and class slides \,\textbullet\, Questions 15--16}
+
+% ---------------------------------------------------------------- Q15
+\questao{Tsay, Exercise 12.4 (Ford monthly returns: GARCH versus stochastic volatility).}
+\fonte{Tsay (2010), \textit{Analysis of Financial Time Series}, 3rd ed., Chapter 12, Exercise 12.4, printed
+p.~670 [PDF p.~697]; answer not given in the book; reproduced verbatim.}
+
+\noindent\textbf{12.4.} Consider the monthly log returns of Ford Motors stock from January 1965 to December
+2008: (a) Build a GARCH model for the series, (b) build a stochastic volatility model for the series, and (c)
+compare and discuss the two volatility models. The simple returns of the stock are in the file
+\texttt{m-fsp6508.txt}.
+\begin{refmat}
+Data file \texttt{m-fsp6508.txt} (FTS 3e data page, downloaded on 2026-11-12 from Tsay's current faculty
+page, \texttt{.../ruey-s-tsay/teaching/fts3/}; copy in \texttt{Listas/data/L08-m-fsp6508.txt}): columns \texttt{date} (yyyymmdd), \texttt{F} (Ford), \texttt{SP}
+(S\&P composite); 528 monthly simple returns in decimals, 1965:01 to 2008:12. GARCH(1,1) (Tsay \S3.5,
+printed p.~131 [PDF p.~158]): $a_t=\sigma_t\epsilon_t$, $\sigma_t^2=\alpha_0+\alpha_1a_{t-1}^2+\beta_1\sigma_{t-1}^2$.
+Stochastic volatility model of \S12.7.1 (printed p.~641 [PDF p.~668], Eq.~(12.27)):
+$r_t=\mu+a_t$, $a_t=\sqrt{h_t}\,\epsilon_t$, $\ln h_t=\alpha_0+\alpha_1\ln h_{t-1}+v_t$, with $v_t$ i.i.d.\ $N(0,\sigma_v^2)$.
+The priors of Tsay's Example 12.3 (printed pp.~640--642 [PDF pp.~667--669], monthly S\&P 500 returns in
+percent, 1962--2009) are $\mu\sim N(0,4)$, $\boldsymbol\alpha=(\alpha_0,\alpha_1)'\sim N[(0,0.6)',\operatorname{diag}(0.25,0.04)]$
+and $10\times0.1/\sigma_v^2\sim\chi^2_{10}$; there the posterior means of $(\mu,\alpha_0,\alpha_1,\sigma_v^2)$ are
+$(0.409, 0.454, 0.837, 0.086)$, from a Griddy Gibbs sampler.
+\end{refmat}
+\resolespaco
+\begin{sol}
+\begin{notacao}
+\item $r_t=100\ln(1+R_t)$: Ford monthly log return in percent, $T=528$; $R_t$: simple return (\texttt{F}).
+\item GARCH: $\mu$, $a_t=r_t-\mu$, $\sigma_t^2$, $(\alpha_0,\alpha_1,\beta_1)$; $\tilde a_t=a_t/\sigma_t$; persistence $\alpha_1+\beta_1$.
+\item SV: $h_t$: latent variance; $x_t=\ln h_t$; $(\alpha_0,\alpha_1,\sigma_v^2)$: AR(1) of $x_t$ (same symbols as Tsay, a different model from GARCH's $\alpha$'s); $\mu_h=\alpha_0/(1-\alpha_1)$, $\sigma_h^2=\sigma_v^2/(1-\alpha_1^2)$: mean and variance of $x_t$.
+\item $y_t^*=\ln[(r_t-\mu)^2+c]$, $c=10^{-4}$; $s_t\in\{1,\dots,7\}$: mixture indicator; $q_j,m_j,v_j^2$: Kim--Shephard--Chib (1998) mixture weights, means, variances.
+\end{notacao}
+\noindent\textit{Data:} mean $0.429$, s.d.\ $9.543$ (variance $91.07$); minimum $-86.48$ in October 2008.
+
+\passo{(a) identification}{$Q(12)=14.99$ ($p=0.242$) on $r_t$: no serial correlation, so a constant mean.
+$Q(12)=31.40$ ($p=0.0017$) on $(r_t-\bar r)^2$: ARCH effects. We fit a Gaussian GARCH(1,1),
+\texttt{garch\_fit(r)} of the check script (conditional MLE):}
+\begingroup\footnotesize
+\begin{verbatim}
+mu 0.8818 (0.3378)  alpha0 3.0047 (1.5608)  alpha1 0.1430 (0.0333)  beta1 0.8381 (0.0390)
+logL -1885.95
+std. resid: Q(12) = 12.25 (p 0.425);  squared: Q(12) = 16.93 (p 0.152);  kurtosis 4.48
+\end{verbatim}
+\endgroup
+\passo{(a) fitted model}{}
+\begin{equation}\label{q124:g} r_t=0.8818+a_t,\qquad a_t=\sigma_t\epsilon_t,\qquad \sigma_t^2=3.0047+0.1430\,a_{t-1}^2+0.8381\,\sigma_{t-1}^2,\qquad \epsilon_t\sim N(0,1). \end{equation}
+The Ljung--Box tests on $\tilde a_t$ and $\tilde a_t^2$ do not reject, so \eqref{q124:g} is adequate for the
+mean and the variance; the kurtosis $4.48>3$ of $\tilde a_t$ says the tails are fatter than normal. The
+persistence is $\hat\alpha_1+\hat\beta_1=0.9811$, and the implied unconditional variance (unrounded estimates) is
+$\hat\alpha_0/(1-\hat\alpha_1-\hat\beta_1)=159.2$, i.e.\ s.d.\ $12.6\%$, well above the sample s.d.\ $9.54\%$.
+
+\passo{(b) sampler}{\texttt{PyMC} is not installed, so the SV model is fitted with a Gibbs sampler written in
+NumPy/SciPy (\texttt{sv\_gibbs} in the check script), with Tsay's priors of Example 12.3 and
+$x_1\sim N(\ln s_r^2,10)$. Squaring and taking logs of $a_t=\sqrt{h_t}\epsilon_t$ gives a linear state-space model}
+\begin{equation}\label{q124:lin} y_t^*=x_t+\ln\epsilon_t^2,\qquad x_t=\alpha_0+\alpha_1x_{t-1}+v_t, \end{equation}
+in which $\ln\epsilon_t^2$ ($\ln\chi^2_1$, mean $-1.2704$, variance $\pi^2/2$) is replaced by the 7-component
+normal mixture $\sum_j q_jN(m_j-1.2704,v_j^2)$ of Kim, Shephard and Chib (1998); the check script verifies
+that the mixture has mean $-1.2704$ and variance $\pi^2/2$. One sweep draws, in turn:
+\begin{enumerate}[label=\arabic*.,leftmargin=1.6em]
+\item $\mu\mid h,r\sim N(m,1/P)$ with $P=1/4+\sum_t1/h_t$, $m=P^{-1}\sum_tr_t/h_t$ (exact, no mixture);
+\item each $s_t$ from $\Pr(s_t=j)\propto q_j\,\phi(y_t^*;\,x_t+m_j-1.2704,\,v_j^2)$;
+\item the whole path $x_{1:T}$ in one block: given $s$, \eqref{q124:lin} is Gaussian, so $x\mid\cdot$ is normal
+with a tridiagonal precision matrix, drawn by a banded Cholesky factorization;
+\item $\boldsymbol\alpha\mid x,\sigma_v^2$: the normal posterior of a regression of $x_t$ on $(1,x_{t-1})$,
+redrawn until $|\alpha_1|<1$;
+\item $\sigma_v^2\mid x,\boldsymbol\alpha\sim IG\big(5+(T-1)/2,\ 0.5+\tfrac12\sum_t(x_t-\alpha_0-\alpha_1x_{t-1})^2\big)$,
+since $10\times0.1/\sigma_v^2\sim\chi^2_{10}$ means $\sigma_v^2\sim IG(5,0.5)$.
+\end{enumerate}
+2,000 burn-in and 10,000 kept sweeps, seed 2010. Because of the mixture in step 2 the chain targets an
+approximation of the exact posterior (very accurate, as KSC show); another seed changes the posterior means
+below only in the third decimal.
+
+\passo{(b) posterior}{}
+\begin{center}\small
+\begin{tabular}{lcccc}
+\toprule
+ & $\mu$ & $\alpha_0$ & $\alpha_1$ & $\sigma_v^2$\\
+\midrule
+Posterior mean & 0.663 & 0.373 & 0.911 & 0.091\\
+Posterior s.d. & 0.340 & 0.147 & 0.035 & 0.031\\
+2.5\% & $-0.004$ & 0.138 & 0.831 & 0.048\\
+97.5\% & 1.326 & 0.708 & 0.968 & 0.165\\
+\bottomrule
+\end{tabular}
+\end{center}
+Using the posterior means, the fitted SV model is
+\begin{equation}\label{q124:sv} r_t=0.663+a_t,\qquad a_t=\sqrt{h_t}\,\epsilon_t,\qquad \ln h_t=0.373+0.911\ln h_{t-1}+v_t,\qquad \sigma_v^2=0.091 . \end{equation}
+The implied moments of $x_t=\ln h_t$ are
+\begin{align*}
+\mu_h &= \frac{\alpha_0}{1-\alpha_1} = \frac{0.373}{1-0.911} = 4.19, &
+\sigma_h^2 &= \frac{\sigma_v^2}{1-\alpha_1^2} = \frac{0.091}{1-0.911^2} = 0.535,
+\end{align*}
+(posterior medians of the draw-by-draw values: $4.220$ and $0.542$). Since $h_t$ is log-normal, the
+unconditional variance of $a_t$ is $E(h_t)=\exp(\mu_h+\sigma_h^2/2)$, with posterior median $89.0$ and 95\%
+interval $[64.1,\ 158.5]$, i.e.\ s.d.\ $\sqrt{89.0}=9.4\%$, close to the sample $9.54\%$.
+
+\passo{(c) comparison}{Volatility paths: posterior mean of $\sqrt{h_t}$ (SV) against $\hat\sigma_t$ (GARCH).}
+\begin{center}\small
+\begin{tabular}{lcccccc}
+\toprule
+ & Corr. of paths & Mean & Minimum & Oct 2008 & Nov 2008 & Persistence\\
+\midrule
+GARCH(1,1) & 0.812 & 8.95 & 5.44 & 17.24 & 36.65 & $\alpha_1+\beta_1=0.981$\\
+SV-AR(1) & 0.812 & 8.57 & 5.54 & 27.89 & 24.93 & $\alpha_1=0.911$\\
+\bottomrule
+\end{tabular}
+\end{center}
+\begin{itemize}[leftmargin=1.4em]
+\item \textit{Agreement.} Both models find persistent volatility clustering, and the two volatility paths
+move together (correlation $0.81$), with the peak in the 2008 crisis.
+\item \textit{Persistence.} The half-life of a volatility shock is $\ln0.5/\ln0.9811=36.3$ months in GARCH
+and $\ln0.5/\ln0.911=7.4$ months for $\ln h_t$ in SV. The GARCH persistence close to 1 inflates its implied
+unconditional variance ($159.2$) far above the sample value ($91.07$), while the SV value ($89.0$) matches it.
+\item \textit{Timing.} $\sigma_t^2$ in GARCH is known at $t-1$, so the October 2008 crash ($-86.5\%$) raises
+GARCH volatility only in November ($36.65$). The SV path is a smoothed posterior mean that uses all the data,
+including $r_t$ itself, so it places the jump in October ($27.89$).
+\item \textit{Tails.} The Gaussian GARCH leaves standardized residuals with kurtosis $4.48$. In SV the
+volatility has its own shock $v_t$, and the unconditional kurtosis of $a_t$ is $3\exp(\sigma_h^2)=3\exp(0.542)=5.16$
+even with Gaussian $\epsilon_t$. The sample kurtosis of $r_t$ is $16.27$, inflated by October 2008:
+neither Gaussian model reproduces that single month, and a Student-$t$ $\epsilon_t$ would be the next step in either.
+\item \textit{Cost.} GARCH is estimated by MLE in seconds and has closed-form forecasts; SV needs MCMC
+(12,000 sweeps here), because its likelihood integrates over the latent path $h_{1:T}$.
+\end{itemize}
+\intuicao{GARCH makes tomorrow's variance a deterministic function of today's squared shock; SV lets the
+variance take its own random step each month. The extra shock makes SV more flexible (fatter tails, a less
+inflated long-run variance), at the price of a latent path that must be integrated out by simulation.}
+\refbib{Tsay (2010) \S3.5 (pp.~131--135, GARCH), \S12.7.1 (pp.~637--643, univariate SV, Eq.~(12.27), Example 12.3); Kim, Shephard and Chib (1998), \textit{Review of Economic Studies} 65, 361--393 (mixture sampler); class site code \texttt{Aula/class-08/materials/GARCH11-SVar1.html} (GARCH(1,1) vs SV-AR(1), in R).}
+\end{sol}
+
+% ---------------------------------------------------------------- Q16
+\questao{Original: Bayesian GARCH(1,1) for GM daily returns by random-walk Metropolis--Hastings.}
+\origem{original exercise on Bayesian GARCH, built on \texttt{Aula/class-08/materials/bayes-garch.pdf},
+pp.~14--20 (model M3: GARCH(1,1), its prior, the \texttt{bayesGARCH} defaults and the posterior of
+$\alpha_1+\beta$); data of Tsay Exercise 3.11 (Question 10). Not from a book.}
+
+\noindent Use the GM daily percentage log returns $r_t=100\ln(1+R_t)$ of Question 10 ($n=2{,}515$ days,
+1999--2008) and the Gaussian GARCH(1,1) model
+\[ r_t=\mu+a_t,\qquad a_t=\sigma_t\epsilon_t,\qquad \epsilon_t\overset{iid}{\sim}N(0,1),\qquad \sigma_t^2=\alpha_0+\alpha_1a_{t-1}^2+\beta_1\sigma_{t-1}^2, \]
+with $\boldsymbol\theta=(\mu,\alpha_0,\alpha_1,\beta_1)'$.
+\begin{enumerate}[label=(\alph*)]
+\item Write out the conditional log-likelihood $\ell(\boldsymbol\theta)$, stating how the recursion is started.
+\item Take the priors $\mu\sim N(0,100)$ and $\alpha_0,\alpha_1,\beta_1$ independent $N(0,1000)$, truncated to
+$\alpha_0>0$, $\alpha_1\ge0$, $\beta_1\ge0$ and $\alpha_1+\beta_1<1$. Write the log posterior up to a constant and
+explain what the constraint $\alpha_1+\beta_1<1$ does.
+\item Write a random-walk Metropolis--Hastings sampler in NumPy with proposal
+$\boldsymbol\theta^*\sim N(\boldsymbol\theta^{(j-1)},\hat\Sigma)$, where $\hat\Sigma$ is the inverse Hessian of
+$-\ell$ at the MLE, started at the MLE; use 5,000 burn-in and 20,000 kept draws (seed 2015). Report the
+acceptance rate and the posterior means and standard deviations.
+\item Report the posterior mean, median and 95\% interval of the persistence $\alpha_1+\beta_1$, and
+$\Pr(\alpha_1+\beta_1>0.99\mid r)$. Report the posterior median and 95\% interval of the unconditional variance
+$\alpha_0/(1-\alpha_1-\beta_1)$. Does its posterior mean exist?
+\item Compare with the MLE of Question 10, including delta-method 95\% Wald intervals for the two quantities in (d).
+\end{enumerate}
+\begin{refmat}
+Question 10 (Tsay 3.11(c)): Gaussian GARCH(1,1) MLE for these data, $\hat\mu=0.0245$ (0.0437),
+$\hat\alpha_0=0.0942$ (0.0208), $\hat\alpha_1=0.0701$ (0.0091), $\hat\beta_1=0.9207$ (0.0097), $\ell=-5853.30$
+(standard errors in parentheses; this is the answer to Question 10(c), so solve that question first).
+Slides (\texttt{bayes-garch.pdf}): p.~14, model M3, a GARCH(1,1) with Student-$t$ errors; p.~15, prior
+$(\alpha_0,\alpha_1)'\sim N_2(\mu_\alpha,\Sigma_\alpha)I(\alpha>0)$, $\beta\sim N(\mu_\beta,\Sigma_\beta)I(\beta>0)$ and a
+translated exponential prior on $\nu$, whose ``normal case'' ($\lambda=100$, $\delta=500$) pushes $\nu$ to
+large values; p.~16, \texttt{bayesGARCH} defaults $\mu_\alpha=(0,0)'$, $\Sigma_\alpha=1000I_2$, $\mu_\beta=0$,
+$\Sigma_\beta=1000$ (Ardia and Hoogerheide 2010); p.~20, for Petrobras, $\Pr(\alpha_1+\beta>1\mid\text{data})=0.0034$
+(that prior has no stationarity truncation). This exercise uses Gaussian errors and adds the truncation $\alpha_1+\beta_1<1$.
+\end{refmat}
+\resolespaco
+\begin{sol}
+\begin{notacao}
+\item $r_t$: GM daily log return in percent, $t=1,\dots,n$, $n=2515$; $a_t=r_t-\mu$; $\sigma_t^2$: conditional variance.
+\item $\boldsymbol\theta=(\mu,\alpha_0,\alpha_1,\beta_1)'$; $p=\alpha_1+\beta_1$: persistence; $V=\alpha_0/(1-p)$: unconditional variance.
+\item $\pi(\boldsymbol\theta)$: prior; $\hat\Sigma$: inverse Hessian of $-\ell$ at the MLE $\hat{\boldsymbol\theta}$; $\boldsymbol\theta^{(j)}$: $j$-th draw.
+\end{notacao}
+
+\passo{(a) likelihood}{Given $F_{t-1}$, $r_t\sim N(\mu,\sigma_t^2)$ (as in Question 7 with $\phi_1=0$), so}
+\begin{equation}\label{bg:ll} \ell(\boldsymbol\theta)=-\frac12\sum_{t=1}^{n}\left[\ln(2\pi)+\ln\sigma_t^2+\frac{(r_t-\mu)^2}{\sigma_t^2}\right], \end{equation}
+\begin{equation}\label{bg:rec} \sigma_t^2=\alpha_0+\alpha_1a_{t-1}^2+\beta_1\sigma_{t-1}^2,\qquad a_0^2=\sigma_0^2=s_0\equiv\frac1n\sum_{t=1}^na_t^2 , \end{equation}
+the same start-up as \texttt{garch\_fit} (and R's \texttt{fGarch}). The recursion \eqref{bg:rec} is a
+first-order linear filter of $\alpha_0+\alpha_1a_{t-1}^2$, so it is computed with \texttt{scipy.signal.lfilter}
+instead of a Python loop; at the MLE, \eqref{bg:ll} reproduces $\ell=-5853.30$ of Question 10 (asserted).
+
+\passo{(b) posterior}{By Bayes' theorem, $\pi(\boldsymbol\theta\mid r)\propto\exp\{\ell(\boldsymbol\theta)\}\pi(\boldsymbol\theta)$:}
+\begin{equation}\label{bg:lp}
+\ln\pi(\boldsymbol\theta\mid r)=\begin{cases}\ell(\boldsymbol\theta)-\dfrac{\mu^2}{200}-\dfrac{\alpha_0^2+\alpha_1^2+\beta_1^2}{2000}+\text{const}, & \alpha_0>0,\ \alpha_1\ge0,\ \beta_1\ge0,\ \alpha_1+\beta_1<1,\\[4pt] -\infty, & \text{otherwise.}\end{cases}
+\end{equation}
+With variance 1000 the normal priors are almost flat on the relevant range, so the posterior is shaped by the
+likelihood and by the support. $\alpha_0>0$ and $\alpha_1,\beta_1\ge0$ keep $\sigma_t^2>0$. The constraint
+$\alpha_1+\beta_1<1$ is covariance stationarity: only then is $E(a_t^2)=\alpha_0/(1-\alpha_1-\beta_1)$ finite. The
+prior gives zero mass to $\alpha_1+\beta_1\ge1$, so the posterior does too, and a proposal there has
+$\ln\pi=-\infty$ and is always rejected.
+
+\passo{(c) sampler}{Random-walk MH (\texttt{rw\_mh} in the check script). At draw $j$: propose
+$\boldsymbol\theta^*=\boldsymbol\theta^{(j-1)}+L z$, $z\sim N(0,I_4)$, $LL'=\hat\Sigma$; accept with probability
+$\min\{1,\exp[\ln\pi(\boldsymbol\theta^*\mid r)-\ln\pi(\boldsymbol\theta^{(j-1)}\mid r)]\}$ (the proposal is
+symmetric, so it cancels), else keep $\boldsymbol\theta^{(j-1)}$. The acceptance rate is $0.391$, inside the
+usual 0.2--0.5 range for a random-walk sampler in four dimensions.}
+\begin{center}\small
+\begin{tabular}{lcccc}
+\toprule
+ & $\mu$ & $\alpha_0$ & $\alpha_1$ & $\beta_1$\\
+\midrule
+Posterior mean (s.d.) & 0.0227 (0.0439) & 0.1029 (0.0231) & 0.0733 (0.0098) & 0.9168 (0.0105)\\
+MLE (s.e.), Question 10 & 0.0245 (0.0437) & 0.0942 (0.0208) & 0.0701 (0.0091) & 0.9207 (0.0097)\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\passo{(d) persistence and unconditional variance}{From the 20,000 draws of $p^{(j)}=\alpha_1^{(j)}+\beta_1^{(j)}$ and
+$V^{(j)}=\alpha_0^{(j)}/(1-p^{(j)})$:}
+\begin{center}\small
+\begin{tabular}{lccc}
+\toprule
+ & Posterior mean (s.d.) & Median & 95\% interval\\
+\midrule
+$p=\alpha_1+\beta_1$ & 0.9901 (0.0043) & 0.9902 & $[0.9811,\ 0.9977]$\\
+$V=\alpha_0/(1-p)$ & does not exist & 10.35 & $[6.71,\ 33.88]$\\
+\bottomrule
+\end{tabular}
+\end{center}
+$\Pr(\alpha_1+\beta_1>0.99\mid r)=0.517$: the data put half of the posterior mass within $0.01$ of the
+unit-root boundary. The posterior mean of $V$ does not exist. Near $p=1$ the posterior density of $p$ stays
+bounded away from zero (the prior is flat there and the likelihood is positive at $p=1$), so
+\[ E(V\mid r)\ \ge\ c\int_{1-\varepsilon}^{1}\frac{dp}{1-p}=\infty \]
+for some $c,\varepsilon>0$. The sample mean of the draws $V^{(j)}$ therefore never settles down, and the
+median and quantiles are the right summaries. The median $10.35$ is close to the sample variance $10.39$.
+
+\passo{(e) comparison with the MLE}{With $\hat\Sigma$ and the gradients $\nabla p=(0,0,1,1)'$ and
+$\nabla V=(0,\ 1/(1-p),\ V/(1-p),\ V/(1-p))'$, the delta method gives}
+\begin{center}\small
+\begin{tabular}{lccc}
+\toprule
+ & MLE (s.e.) & Wald 95\% interval & Posterior 95\% interval\\
+\midrule
+$p$ & 0.9908 (0.0041) & $[0.9827,\ 0.9988]$ & $[0.9811,\ 0.9977]$\\
+$V$ & 10.20 (3.26) & $[3.81,\ 16.58]$ & $[6.71,\ 33.88]$\\
+\bottomrule
+\end{tabular}
+\end{center}
+The point estimates agree: the posterior means of the four parameters are within one posterior s.d.\ of the
+MLE, as expected with $n=2515$ and flat priors. The differences lie in the nonlinear quantity $V$. The Wald
+interval is symmetric and reaches down to $3.81$, a third of the sample variance. The posterior interval is
+right-skewed, because draws of $p$ close to 1 send $V$ up fast. The Bayesian answer reads exact
+finite-sample uncertainty off the draws, with no delta method, and it respects $p<1$ by construction. The Wald
+interval for $p$ also stays below 1 here, but only because $\hat p$ is $2.2$ standard errors away from the boundary.
+\intuicao{Daily GARCH persistence is close to 1 for almost every stock. Then the long-run variance
+$\alpha_0/(1-p)$ is poorly determined: a tiny change in $p$ moves it a lot. The posterior shows this
+directly as a long right tail, which a symmetric Wald interval hides.}
+\refbib{Class slides \texttt{bayes-garch.pdf} (H.~F.~Lopes, ``Bayesian GARCH modeling'', 2015), pp.~14--21; Ardia and Hoogerheide (2010), \textit{The R Journal} 2, 41--47; Tsay (2010) \S3.5 (pp.~131--133, GARCH(1,1), $E(a_t^2)=\alpha_0/(1-\alpha_1-\beta_1)$) and \S12.1--12.4 (pp.~614--623, MCMC, Gibbs sampling, Metropolis--Hastings).}
 \end{sol}
 
 \end{document}

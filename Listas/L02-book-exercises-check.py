@@ -1,6 +1,6 @@
 """Reproduce and assert every number printed in Listas/lista-L02-book-exercises.tex.
 
-Unit L02 (Class 2, introduction to statistical learning): ISLP 2.1-7.9 and 4.1-4.14,
+Unit L02 (Class 2, introduction to statistical learning): ISLP 2.1-7.9 (with 5.4) and 4.1-4.14,
 Wooldridge 17.C1/C4/C5, Morettin & Singer 8.9/8.4/8.6/8.11.
 
 Run from anywhere:  python Listas/L02-book-exercises-check.py
@@ -8,6 +8,8 @@ Data: Listas/data/*.csv|*.xls (provenance in Listas/data/README.md) and the `woo
 package (pip install wooldridge). scikit-learn is not used: LDA, QDA, naive Bayes, KNN and
 cross-validation are written with numpy/statsmodels below.
 Fails with AssertionError naming the first printed number the code does not reproduce.
+Book numbers quoted in the "Referenced material" blocks (Tables 4.3, 13.1, 17.5, MS Example 8.3)
+are re-estimated here too and checked at the book's rounding.
 """
 from itertools import combinations
 from pathlib import Path
@@ -200,6 +202,23 @@ edges = np.linspace(lo_a, hi_a, R["7.6_cbest"] + 1)
 bins = np.clip(np.searchsorted(edges, age, side="left") - 1, 0, R["7.6_cbest"] - 1)
 R["7.6_edges"] = edges
 R["7.6_steplevels"] = np.array([wg[bins == j].mean() for j in range(R["7.6_cbest"])])
+
+# ----------------------------------------------------------------------------- ISLP 5.4 (illustration)
+# Pairs bootstrap of the quartic Wage fit at ages 25, 50, 75 (B = 1000, default_rng(1)).
+X54 = poly_basis(age, 4, ca, sa)
+X054 = poly_basis(np.array([25.0, 50.0, 75.0]), 4, ca, sa)
+f54, f54r = sm.OLS(wg, X54).fit(), sm.OLS(wg, X54).fit(cov_type="HC1")
+R["5.4_pred"] = X054 @ f54.params
+R["5.4_se_ols"] = np.sqrt(np.einsum("ij,jk,ik->i", X054, f54.cov_params(), X054))
+R["5.4_se_hc1"] = np.sqrt(np.einsum("ij,jk,ik->i", X054, f54r.cov_params(), X054))
+rng54 = np.random.default_rng(1)
+boot54 = np.empty((1000, 3))
+for r in range(1000):
+    i = rng54.integers(0, len(wg), len(wg))
+    boot54[r] = X054 @ np.linalg.lstsq(X54[i], wg[i], rcond=None)[0]
+R["5.4_se_boot"] = boot54.std(0, ddof=1)
+R["5.4_q025"], R["5.4_q975"] = np.quantile(boot54, [0.025, 0.975], axis=0)
+R["5.4_ratio75_50"] = round(R["5.4_se_boot"][2], 3) / round(R["5.4_se_boot"][1], 3)  # ratio of the printed values
 
 # ----------------------------------------------------------------------------- ISLP 7.9
 bos = pd.read_csv(DATA / "Boston.csv")
@@ -485,6 +504,22 @@ for a, b in (("logit", "bayes"), ("logit", "fisher"), ("bayes", "fisher")):
 R["MS11_agree_logit_bayes"] = float(np.mean(preds["logit"] == preds["bayes"]))
 
 
+# ----------------------------------------------------------------------------- referenced-material numbers
+t43 = sm.Logit(yD, sm.add_constant(np.column_stack([dflt["balance"], dflt["income"] / 1000,
+                                                    (dflt["student"] == "Yes").astype(int)]))).fit(disp=0)
+R["ref_T43_b"], R["ref_T43_se"] = t43.params, t43.bse
+R["ref_default_yes"] = int(yD.sum())
+R["ref_T175_b"], R["ref_T175_se"] = pr_r.params.to_numpy(), pr_r.bse.to_numpy()
+R["ref_T175_r2"] = np.corrcoef(cr["narr86"], pr_r.predict())[0, 1] ** 2
+R["ref_narr86_zero"] = int((cr["narr86"] == 0).sum())
+R["ref_T131_b"] = ol.params[["educ", "black", "y82", "y84", "const"]].to_numpy()
+R["ref_T131_r2"], R["ref_T131_r2adj"] = ol.rsquared, ol.rsquared_adj
+dif = Xi[:, 1] - Xi[:, 0]
+R["ref_E83_means"] = np.array([dif[yi == 1].mean(), dif[yi == 0].mean()])
+R["ref_E83_vars"] = np.array([dif[yi == 1].var(ddof=1), dif[yi == 0].var(ddof=1)])
+R["ref_E83_S2"] = (18 * R["ref_E83_vars"][0] + 12 * R["ref_E83_vars"][1]) / 30
+R["ref_E83_table"] = confusion((lda_fit(dif[:, None], yi)(dif[:, None]) > 0.5).astype(int), yi)
+
 # ----------------------------------------------------------------------------- values printed rescaled
 R["5.5a_binc_e5"], R["5.5a_bbal_e3"] = 1e5 * R["5.5a_binc"], 1e3 * R["5.5a_bbal"]
 R["5.5a_seinc_e6"], R["5.5a_sebal_e4"] = 1e6 * R["5.5a_seinc"], 1e4 * R["5.5a_sebal"]
@@ -517,6 +552,27 @@ def show():
 
 # Printed value and number of decimals shown in the .tex; a computed value must round to it.
 EXPECTED = {
+    '5.4_pred': ([88.47, 119.57, 97.10], 2),
+    '5.4_se_boot': ([1.068, 1.178, 5.131], 3),
+    '5.4_se_ols': ([1.662, 1.130, 6.753], 3),
+    '5.4_se_hc1': ([1.080, 1.170, 4.750], 3),
+    '5.4_q025': ([86.40, 117.22, 86.97], 2),
+    '5.4_q975': ([90.57, 121.85, 106.72], 2),
+    '5.4_ratio75_50': (4.36, 2),
+    'ref_T43_b': ([-10.8690, 0.0057, 0.0030, -0.6468], 4),
+    'ref_T43_se': ([0.4923, 0.0002, 0.0082, 0.236], 3),
+    'ref_default_yes': (333, 0),
+    'ref_T175_b': ([-0.600, -0.402, -0.024, 0.024, -0.099, -0.038, -0.0081, 0.661, 0.500, -0.051], 3),
+    'ref_T175_se': ([0.067, 0.085, 0.020, 0.015, 0.021, 0.029, 0.0010, 0.074, 0.074, 0.064], 3),
+    'ref_T175_r2': (0.077, 3),
+    'ref_narr86_zero': (1970, 0),
+    'ref_T131_b': ([-0.128, 1.076, -0.522, -0.545, -7.742], 3),
+    'ref_T131_r2': (0.1295, 4),
+    'ref_T131_r2adj': (0.1162, 4),
+    'ref_E83_means': ([202.7, 49.0], 1),
+    'ref_E83_vars': ([31630.5, 2852.8], 1),
+    'ref_E83_S2': (20119.4, 1),
+    'ref_E83_table': ([[9, 2], [4, 17]], 0),
     '5.5a_b0': (-11.5405, 4),
     '5.5a_binc_e5': (2.0809, 4),
     '5.5a_bbal_e3': (5.6471, 4),

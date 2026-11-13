@@ -68,6 +68,9 @@
 \newcommand{\fonte}[1]{\par\noindent{\small\color{black!70}\textbf{Source:} #1}\par\smallskip}
 % Notation list that opens every solution (estilo-avaliacao §4, "Equations, notation and layout").
 \newenvironment{notacao}{\par\smallskip\noindent\textbf{Notation.}\begin{itemize}[leftmargin=1.4em,topsep=1pt,itemsep=0pt]\small}{\end{itemize}}
+% Referenced material: what a statement points to outside itself (earlier exercise, example,
+% table, data set), summarized with page references; shown in both modes.
+\newenvironment{refmat}{\par\smallskip\noindent\begin{small}\textbf{Referenced material.}\ }{\end{small}\par\smallskip}
 \allowdisplaybreaks
 
 % Space to solve in the blank problem set
@@ -91,20 +94,22 @@
 {\footnotesize\noindent\textbf{Instructions.} These are the textbook exercises listed under
 \emph{Practice} for Class~2 in \texttt{Map/class-plan.md}, grouped by book in the order of the class
 plan: ISLP (Block~1), Wooldridge (Block~2), Morettin \& Singer (Block~3). Each statement is
-reproduced verbatim from the book PDF, with a source line; the Portuguese statements of Morettin \&
-Singer stay in Portuguese. Computer exercises are solved in Python (numpy, pandas, statsmodels;
+reproduced verbatim from the book PDF, after a source line (book, chapter, exercise, printed page with
+the PDF page in brackets, whether the book gives the answer); when a statement points to material
+outside it (an example, a table, an equation, a data set), a \emph{Referenced material} block after it
+gives what is needed to solve it. The Portuguese statements of Morettin \& Singer stay in Portuguese. Computer exercises are solved in Python (numpy, pandas, statsmodels;
 no scikit-learn): the answer key shows the code that matters and the key output, and
 \texttt{Listas/L02-book-exercises-check.py} reproduces and asserts every number printed in it.
 Data: \texttt{Listas/data/} (provenance in \texttt{Listas/data/README.md}) and the
 \texttt{wooldridge} Python package. Show every step.\par}
 
 % =============================================================================
-\bloco{1}{\textit{ISLP}, James et al.\ (2023)}{Ch.~2, 5, 7, 4 \,\textbullet\, 12 problems}
+\bloco{1}{\textit{ISLP}, James et al.\ (2023)}{Ch.~2, 5, 7, 4 \,\textbullet\, 13 problems}
 
 % -----------------------------------------------------------------------------
-\questao{Flexible versus inflexible methods (ISLP 2.1).}
+\questao{Flexible versus inflexible methods (ISLP 2.1).}\label{q:I21}
 \fonte{James, Witten, Hastie, Tibshirani \& Taylor (2023), \textit{An Introduction to Statistical
-Learning with Applications in Python}, Exercise~2.1 (Section~2.4, Conceptual), p.~63. Reproduced verbatim.}
+Learning with Applications in Python}, 1st ed., Chapter~2, Exercise~2.1 (Section~2.4, Conceptual), printed p.~63 [PDF p.~73]. Answer not given in the book. Reproduced verbatim.}
 
 For each of parts (a) through (d), indicate whether we would generally expect the performance of
 a flexible statistical learning method to be better or worse than an inflexible method. Justify
@@ -181,9 +186,9 @@ are scarce relative to the parameters (b) or the signal is buried in noise (d).}
 \end{sol}
 
 % -----------------------------------------------------------------------------
-\questao{Sketch of the bias--variance decomposition (ISLP 2.3).}
+\questao{Sketch of the bias--variance decomposition (ISLP 2.3).}\label{q:I23}
 \fonte{James, Witten, Hastie, Tibshirani \& Taylor (2023), \textit{An Introduction to Statistical
-Learning with Applications in Python}, Exercise~2.3 (Section~2.4, Conceptual), p.~63. Reproduced verbatim.}
+Learning with Applications in Python}, 1st ed., Chapter~2, Exercise~2.3 (Section~2.4, Conceptual), printed p.~63 [PDF p.~73]. Answer not given in the book. Reproduced verbatim.}
 
 We now revisit the bias-variance decomposition.
 \begin{enumerate}[label=(\alph*)]
@@ -194,6 +199,12 @@ flexibility in the method, and the y-axis should represent the values for each c
 should be five curves. Make sure to label each one.
 \item Explain why each of the five curves has the shape displayed in part (a).
 \end{enumerate}
+\begin{refmat}The bias--variance decomposition (ISLP §2.2.2, eq.~(2.7), printed p.~32 [PDF p.~42]):
+for a test point $x_0$,
+\[E\big(y_0-\hat f(x_0)\big)^2=\mathrm{Var}\big(\hat f(x_0)\big)+\big[\mathrm{Bias}\big(\hat f(x_0)\big)\big]^2+\mathrm{Var}(\epsilon),\]
+where the left side is the expected test MSE at $x_0$, the average test error at $x_0$ over many
+training sets; the overall expected test MSE averages it over the $x_0$ of the test set.
+$\mathrm{Var}(\epsilon)$ is the irreducible error (the Bayes error in classification).\end{refmat}
 \resolespaco
 \begin{sol}
 \begin{notacao}
@@ -230,7 +241,7 @@ $\mathrm{Bias}^2=3e^{-0.45d}$, $\mathrm{Var}=0.02e^{0.38d}$, $\sigma^2=1$, the t
 closer to) the true $f$, so the systematic error of the fit falls, quickly at first and then
 slowly once $f$ is captured.}
 
-\passo{(b) variance}{Increasing: by \eqref{eq:I21-avgvar} of Question~1, the average variance
+\passo{(b) variance}{Increasing: by \eqref{eq:I21-avgvar} of Question~\ref{q:I21}, the average variance
 of a least-squares fit is $\sigma^2 d/n$, rising with $d$; a flexible fit changes a lot when one
 training point changes.}
 
@@ -263,9 +274,9 @@ flexibility grows.}
 \end{sol}
 
 % -----------------------------------------------------------------------------
-\questao{$k$-fold cross-validation (ISLP 5.3).}
+\questao{$k$-fold cross-validation (ISLP 5.3).}\label{q:I53}
 \fonte{James, Witten, Hastie, Tibshirani \& Taylor (2023), \textit{An Introduction to Statistical
-Learning with Applications in Python}, Exercise~5.3 (Section~5.4, Conceptual), p.~225. Reproduced verbatim.}
+Learning with Applications in Python}, 1st ed., Chapter~5, Exercise~5.3 (Section~5.4, Conceptual), printed p.~225 [PDF p.~233]. Answer not given in the book. Reproduced verbatim.}
 
 We now review $k$-fold cross-validation.
 \begin{enumerate}[label=(\alph*)]
@@ -335,9 +346,106 @@ but its $n$ near-identical fits make it noisy; $k$-fold sits in between.}
 \end{sol}
 
 % -----------------------------------------------------------------------------
-\questao{Validation-set error of a logistic regression on \texttt{Default} (ISLP 5.5).}
+\questao{Standard deviation of a prediction: the bootstrap (ISLP 5.4).}\label{q:I54}
 \fonte{James, Witten, Hastie, Tibshirani \& Taylor (2023), \textit{An Introduction to Statistical
-Learning with Applications in Python}, Exercise~5.5 (Section~5.4, Applied), pp.~225--226. Reproduced verbatim.}
+Learning with Applications in Python}, 1st ed., Chapter~5, Exercise~5.4 (Section~5.4, Conceptual),
+printed p.~225 [PDF p.~233]. Answer not given in the book. Reproduced verbatim. Added for the Class~2
+goal ``bootstrap confidence bands''.}
+
+Suppose that we use some statistical learning method to make a prediction for the response $Y$ for a
+particular value of the predictor $X$. Carefully describe how we might estimate the standard deviation
+of our prediction.
+\resolespaco
+\begin{sol}
+\begin{notacao}
+\item $Z=\{(x_1,y_1),\dots,(x_n,y_n)\}$: the training data; $x_0$: the value of $X$ at which we predict.
+\item $\hat f$: the fit of the method on $Z$ (with its tuning fixed: degree, $K$, $\lambda$, \dots);
+  $\hat y_0=\hat f(x_0)$: the prediction.
+\item $B\ge2$: number of bootstrap samples; $Z^{*r}$, $r=1,\dots,B$: the $r$-th bootstrap sample;
+  $\hat f^{*r}$ and $\hat y_0^{*r}=\hat f^{*r}(x_0)$: the fit and the prediction computed on it.
+\item $\mathrm{SE}_B(\hat y_0)$: the bootstrap estimate of the standard deviation of $\hat y_0$.
+\end{notacao}
+
+\passo{what is asked}{$\hat y_0$ is a function of the training sample, so it varies from sample to
+sample; its standard deviation is $\sqrt{\mathrm{Var}(\hat f(x_0))}$, the square root of the variance
+term of \eqref{eq:I21-bv} in Question~\ref{q:I21}. To estimate it directly we would need many training
+sets from the population; we have one. The bootstrap replaces sampling from the population by
+sampling from the data (ISLP §5.2).}
+
+\passo{the algorithm (pairs bootstrap)}{(1) For $r=1,\dots,B$, draw $n$ indices with replacement from
+$\{1,\dots,n\}$ and form $Z^{*r}$ from the corresponding pairs $(x_i,y_i)$ (some appear several times,
+some not at all). (2) Fit the same method, with the same tuning, on $Z^{*r}$ and record
+$\hat y_0^{*r}=\hat f^{*r}(x_0)$. (3) Take the standard deviation of the $B$ predictions (ISLP
+eq.~5.8):
+\begin{equation}\label{eq:I54-seB}
+\mathrm{SE}_B(\hat y_0)=\sqrt{\frac1{B-1}\sum_{r=1}^B\Big(\hat y_0^{*r}-\frac1B\sum_{r'=1}^B\hat y_0^{*r'}\Big)^2}.
+\end{equation}
+$B$ of a few hundred to a few thousand suffices. Resampling the pairs needs no formula for
+$\mathrm{Var}(\hat f(x_0))$ and no assumption of constant error variance, so it applies to any method
+(KNN, splines, trees) for which no closed form exists. If the tuning parameter was chosen by
+cross-validation, repeat the choice inside each replicate so that its variability is counted too.}
+
+\passo{prediction of the mean versus of a new response}{\eqref{eq:I54-seB} measures the uncertainty
+of $\hat f(x_0)$ as an estimate of $f(x_0)=E(Y\mid X=x_0)$. A new response is $Y_0=f(x_0)+\epsilon$,
+with $\epsilon$ independent of the training data, so the standard deviation of the prediction error
+$Y_0-\hat y_0$ is
+\begin{equation}\label{eq:I54-pred}
+\sqrt{\mathrm{SE}_B(\hat y_0)^2+\hat\sigma^2},
+\end{equation}
+with $\hat\sigma^2$ an estimate of $\mathrm{Var}(\epsilon)$ (e.g.\ the residual variance, or the
+squared out-of-bag residuals of the bootstrap fits).}
+
+\passo{from one point to a band}{Repeating step (2) on a grid of $x_0$ values with the same $B$
+samples gives a pointwise band: $\hat f(x_0)\pm2\,\mathrm{SE}_B(x_0)$, the bootstrap analogue of the
+twice-standard-error curves of ISLP Figure~7.1 (§7.1, printed p.~291 [PDF p.~299]), or the percentile band
+$[q_{0.025}(x_0),q_{0.975}(x_0)]$ of the $\hat y_0^{*r}$. This is the bootstrap confidence band of the
+Class~2 slides.}
+
+\passo{illustration (not required by the book)}{The degree-4 polynomial for \texttt{wage} of
+Question~\ref{q:I76}, \eqref{eq:I76-fit4}, at ages 25, 50 and 75, with $B=1000$ pairs-bootstrap samples
+(\texttt{default\_rng(1)}). The least-squares standard error is
+$\sqrt{\mathbf x_0'\widehat{\mathrm{Var}}(\hat{\boldsymbol\beta})\mathbf x_0}$, with
+$\mathbf x_0=(1,x_0,\dots,x_0^4)'$ and $\widehat{\mathrm{Var}}(\hat{\boldsymbol\beta})$ either
+$\hat\sigma^2(\mathbf X'\mathbf X)^{-1}$ (classical) or the HC1 sandwich (robust):
+\begin{center}\small\begin{tabular}{lcccccc}\toprule
+age $x_0$ & $\hat f(x_0)$ & $\mathrm{SE}_B$ \eqref{eq:I54-seB} & classical s.e. & HC1 s.e. & bootstrap 2.5\% & 97.5\%\\\midrule
+25 & 88.47 & 1.068 & 1.662 & 1.080 & 86.40 & 90.57\\
+50 & 119.57 & 1.178 & 1.130 & 1.170 & 117.22 & 121.85\\
+75 & 97.10 & 5.131 & 6.753 & 4.750 & 86.97 & 106.72\\\bottomrule\end{tabular}\end{center}
+At 75 the standard error is about $5.131/1.178=4.36$ times that at 50: few men are that old, and a
+quartic is driven by its edge points, so the band flares at the boundary. The bootstrap tracks the
+robust standard error, not the classical one ($1.068$ against $1.080$ and $1.662$ at age 25): resampling
+pairs keeps the smaller spread of wages among young men, which the classical formula, averaging one
+$\hat\sigma^2$ over all ages, overstates.}
+
+\begin{lstlisting}
+X = np.column_stack([((age - age.mean()) / age.std())**j for j in range(5)])
+X0 = np.column_stack([((np.array([25., 50., 75.]) - age.mean()) / age.std())**j for j in range(5)])
+rng = np.random.default_rng(1); boot = np.empty((1000, 3))
+for r in range(1000):
+    i = rng.integers(0, len(wg), len(wg))                  # n pairs drawn with replacement
+    boot[r] = X0 @ np.linalg.lstsq(X[i], wg[i], rcond=None)[0]
+se_B = boot.std(0, ddof=1); band = np.quantile(boot, [0.025, 0.975], axis=0)
+\end{lstlisting}
+
+\intuicao{The bootstrap answers ``how much would my prediction move with another sample?'' by
+treating the sample as the population and drawing new samples from it. Whatever the method, refit and
+re-predict; the spread of the re-predictions is the standard error.}
+\refbib{ISLP §5.2 (the bootstrap, eq.~5.8, printed pp.~212--214 [PDF pp.~220--222]); Lab~5.3.3
+(printed p.~220 [PDF p.~228]); §7.1 (pointwise standard-error curves, printed pp.~290--291 [PDF pp.~298--299]).}
+\rubrica{
+\item Resample $n$ pairs with replacement, refit the same method, predict at $x_0$, repeat $B$ times: 5 pts.
+\item The standard deviation of the $B$ predictions, \eqref{eq:I54-seB}, with a sensible $B$: 2 pts.
+\item Distinguishing the standard deviation of $\hat f(x_0)$ from that of a new $Y_0$
+  \eqref{eq:I54-pred}, or extending to a band over $x_0$: 3 pts.
+\item Using the standard deviation of the $y_i$, or of the residuals, as the answer: max.\ 2 pts.
+}
+\end{sol}
+
+% -----------------------------------------------------------------------------
+\questao{Validation-set error of a logistic regression on \texttt{Default} (ISLP 5.5).}\label{q:I55}
+\fonte{James, Witten, Hastie, Tibshirani \& Taylor (2023), \textit{An Introduction to Statistical
+Learning with Applications in Python}, 1st ed., Chapter~5, Exercise~5.5 (Section~5.4, Applied), printed pp.~225--226 [PDF pp.~233--234]. Answer not given in the book. Reproduced verbatim.}
 
 In Chapter~4, we used logistic regression to predict the probability of \texttt{default} using
 \texttt{income} and \texttt{balance} on the \texttt{Default} data set. We will now estimate the test
@@ -363,6 +471,15 @@ using \texttt{income}, \texttt{balance}, and a dummy variable for \texttt{studen
 error for this model using the validation set approach. Comment on whether or not including a
 dummy variable for \texttt{student} leads to a reduction in the test error rate.
 \end{enumerate}
+\begin{refmat}The \texttt{Default} data (ISLP §4.1, printed p.~136 [PDF p.~145]; Table~1.1, p.~12
+[PDF p.~23]): simulated records of $10{,}000$ credit-card customers with \texttt{default} (Yes/No; 333
+Yes, a rate of $0.0333$, p.~140 [PDF p.~149]), \texttt{student} (Yes/No), \texttt{balance} (monthly
+credit-card balance, USD) and \texttt{income} (annual income, USD); file \texttt{Listas/data/Default.csv}.
+The Chapter~4 model is the multiple logistic regression (eq.~(4.7), printed p.~142 [PDF p.~151])
+\[p(X)=\Pr(Y=1\mid X)=\frac{e^{\beta_0+\beta_1X_1+\dots+\beta_pX_p}}{1+e^{\beta_0+\beta_1X_1+\dots+\beta_pX_p}},\]
+fitted by maximum likelihood. Its Table~4.3 (printed p.~143 [PDF p.~152]), with \texttt{income} in
+thousands of dollars, reports: intercept $-10.8690$ (s.e.\ $0.4923$), \texttt{balance} $0.0057$
+($0.0002$), \texttt{income} $0.0030$ ($0.0082$), \texttt{student[Yes]} $-0.6468$ ($0.2362$).\end{refmat}
 \resolespaco
 \begin{sol}
 \begin{notacao}
@@ -450,7 +567,7 @@ single split is fragile; that is why ISLP moves on to LOOCV and $k$-fold CV.}
 % -----------------------------------------------------------------------------
 \questao{LOOCV for the polynomial degree on simulated data (ISLP 5.8).}
 \fonte{James, Witten, Hastie, Tibshirani \& Taylor (2023), \textit{An Introduction to Statistical
-Learning with Applications in Python}, Exercise~5.8 (Section~5.4, Applied), p.~227. Reproduced verbatim.}
+Learning with Applications in Python}, 1st ed., Chapter~5, Exercise~5.8 (Section~5.4, Applied), printed p.~227 [PDF p.~235]. Answer not given in the book. Reproduced verbatim.}
 
 We will now perform cross-validation on a simulated data set.
 \begin{enumerate}[label=(\alph*)]
@@ -567,9 +684,9 @@ superfluous terms automatically, while each $t$-test asks only whether one coeff
 \end{sol}
 
 % -----------------------------------------------------------------------------
-\questao{CV-chosen polynomial degree and step functions for \texttt{Wage} (ISLP 7.6).}
+\questao{CV-chosen polynomial degree and step functions for \texttt{Wage} (ISLP 7.6).}\label{q:I76}
 \fonte{James, Witten, Hastie, Tibshirani \& Taylor (2023), \textit{An Introduction to Statistical
-Learning with Applications in Python}, Exercise~7.6 (Section~7.9, Applied), p.~327. Reproduced verbatim.}
+Learning with Applications in Python}, 1st ed., Chapter~7, Exercise~7.6 (Section~7.9, Applied), printed p.~327 [PDF p.~335]. Answer not given in the book. Reproduced verbatim.}
 
 In this exercise, you will further analyze the \texttt{Wage} data set considered throughout this chapter.
 \begin{enumerate}[label=(\alph*)]
@@ -580,6 +697,16 @@ resulting polynomial fit to the data.
 \item Fit a step function to predict \texttt{wage} using \texttt{age}, and perform
 cross-validation to choose the optimal number of cuts. Make a plot of the fit obtained.
 \end{enumerate}
+\begin{refmat}The \texttt{Wage} data (ISLP Ch.~1, printed p.~1 [PDF p.~12]; §7.1, printed pp.~290--291
+[PDF pp.~298--299]): income and demographic information for men in the central Atlantic region of the
+United States, $3{,}000$ rows; used here: \texttt{wage} (thousands of dollars) and \texttt{age} (18--80);
+file \texttt{Listas/data/Wage.csv}. ``Hypothesis testing using ANOVA'' is the procedure of Lab~7.8.1
+(printed pp.~312--313 [PDF pp.~320--321]): fit the nested polynomials of degree $1,\dots,5$ and compare
+each with the next by the $F$-test of \texttt{anova\_lm()}, of $H_0$: the smaller model $M_1$ suffices,
+against $H_1$: the larger model $M_2$ is required. A step function (§7.2, eq.~(7.5), printed p.~292
+[PDF p.~300]) cuts the range of $X$ at $c_1<\dots<c_K$ and regresses $y$ by least squares on the
+interval dummies $C_1(X),\dots,C_K(X)$:
+$y_i=\beta_0+\beta_1C_1(x_i)+\dots+\beta_KC_K(x_i)+\epsilon_i$.\end{refmat}
 \resolespaco
 \begin{sol}
 \begin{notacao}
@@ -597,7 +724,7 @@ y_i=\beta_0+\beta_1x_i+\beta_2x_i^2+\dots+\beta_dx_i^d+\epsilon_i ,
 \end{equation}
 fitted by least squares (with $x$ standardized before taking powers, which changes no fitted
 value but avoids ill-conditioning). For each $d$ the 10-fold CV error is \eqref{eq:I53-cv} of
-Question~3 with $k=10$.}
+Question~\ref{q:I53} with $k=10$.}
 
 \passo{(a) CV choice}{The 10-fold CV errors are:
 \begin{center}\small\setlength{\tabcolsep}{3.5pt}\begin{tabular}{lcccccccccc}\toprule
@@ -693,7 +820,7 @@ distinguish from no change. Step functions pay a bias price for being flat insid
 % -----------------------------------------------------------------------------
 \questao{Polynomials and regression splines for \texttt{nox} on \texttt{dis} (ISLP 7.9).}
 \fonte{James, Witten, Hastie, Tibshirani \& Taylor (2023), \textit{An Introduction to Statistical
-Learning with Applications in Python}, Exercise~7.9 (Section~7.9, Applied), p.~327. Reproduced verbatim.}
+Learning with Applications in Python}, 1st ed., Chapter~7, Exercise~7.9 (Section~7.9, Applied), printed p.~327 [PDF p.~335]. Answer not given in the book. Reproduced verbatim.}
 
 This question uses the variables \texttt{dis} (the weighted mean of distances to five Boston
 employment centers) and \texttt{nox} (nitrogen oxides concentration in parts per 10 million) from
@@ -714,6 +841,13 @@ and report the resulting RSS. Describe the results obtained.
 \item Perform cross-validation or another approach in order to select the best degrees of
 freedom for a regression spline on this data. Describe your results.
 \end{enumerate}
+\begin{refmat}The \texttt{Boston} data (ISLP Lab~3.6.2, printed p.~117 [PDF p.~126]): 506 Boston
+neighbourhoods (census tracts), with \texttt{dis} and \texttt{nox} among 13 variables; file
+\texttt{Listas/data/Boston.csv}. \texttt{poly(x, degree=d)} (Lab~7.8.1, printed p.~311 [PDF p.~319])
+builds an orthogonal polynomial basis of degree $d$, with the same fitted values as the raw powers
+$1,x,\dots,x^d$. \texttt{bs(x, df=k)} (Lab~7.8.2, printed pp.~315--316 [PDF pp.~323--324]) builds a
+cubic B-spline basis with $k$ columns and no intercept column, so it places $k-3$ interior knots at
+uniform quantiles of $x$ (\texttt{df=6} gives knots at the 25th, 50th and 75th percentiles).\end{refmat}
 \resolespaco
 \begin{sol}
 \begin{notacao}
@@ -740,7 +874,7 @@ where data are sparse.}
 $d$ & 1 & 2 & 3 & 4 & 5 & 6 & 7 & 8 & 9 & 10\\\midrule
 RSS & 2.7686 & 2.0353 & 1.9341 & 1.9330 & 1.9153 & 1.8783 & 1.8495 & 1.8356 & 1.8333 & 1.8322\\\bottomrule\end{tabular}\end{center}
 RSS falls monotonically because the models are nested (each adds one column): training error
-cannot rise with flexibility (Question~2). The drop is large up to $d=3$ and small afterwards.}
+cannot rise with flexibility (Question~\ref{q:I23}). The drop is large up to $d=3$ and small afterwards.}
 
 \passo{(c) CV for the degree}{10-fold CV errors (multiplied by $10^3$):
 \begin{center}\small\setlength{\tabcolsep}{3.5pt}\begin{tabular}{lcccccccccc}\toprule
@@ -822,13 +956,17 @@ near the center forces strange behaviour at the far end; a spline adapts locally
 \end{sol}
 
 % -----------------------------------------------------------------------------
-\questao{Logistic function and logit are equivalent (ISLP 4.1).}
+\questao{Logistic function and logit are equivalent (ISLP 4.1).}\label{q:I41}
 \fonte{James, Witten, Hastie, Tibshirani \& Taylor (2023), \textit{An Introduction to Statistical
-Learning with Applications in Python}, Exercise~4.1 (Section~4.8, Conceptual), p.~193. Reproduced verbatim.
-Equations (4.2) and (4.3) of the book are restated in the solution.}
+Learning with Applications in Python}, 1st ed., Chapter~4, Exercise~4.1 (Section~4.8, Conceptual), printed p.~193 [PDF p.~202]. Answer not given in the book. Reproduced verbatim.}
 
 Using a little bit of algebra, prove that (4.2) is equivalent to (4.3). In other words, the
 logistic function representation and logit representation for the logistic regression model are equivalent.
+\begin{refmat}The two equations (ISLP §4.3.1, printed pp.~139--140 [PDF pp.~148--149]): the logistic
+function (4.2) and the odds form (4.3),
+\[p(X)=\frac{e^{\beta_0+\beta_1X}}{1+e^{\beta_0+\beta_1X}}\quad\text{(4.2)},\qquad
+\frac{p(X)}{1-p(X)}=e^{\beta_0+\beta_1X}\quad\text{(4.3)},\]
+where $p(X)=\Pr(Y=1\mid X)$.\end{refmat}
 \resolespaco
 \begin{sol}
 \begin{notacao}
@@ -876,7 +1014,7 @@ log-odds scale, where it is linear.}
 % -----------------------------------------------------------------------------
 \questao{Odds and probabilities (ISLP 4.9).}
 \fonte{James, Witten, Hastie, Tibshirani \& Taylor (2023), \textit{An Introduction to Statistical
-Learning with Applications in Python}, Exercise~4.9 (Section~4.8, Conceptual), p.~195. Reproduced verbatim.}
+Learning with Applications in Python}, 1st ed., Chapter~4, Exercise~4.9 (Section~4.8, Conceptual), printed p.~195 [PDF p.~204]. Answer not given in the book. Reproduced verbatim.}
 
 This problem has to do with \emph{odds}.
 \begin{enumerate}[label=(\alph*)]
@@ -889,7 +1027,7 @@ This problem has to do with \emph{odds}.
 \item $p\in(0,1)$: probability of default; $o=p/(1-p)\in(0,\infty)$: odds of default.
 \end{notacao}
 
-\passo{the two maps}{By definition, and by solving it for $p$ (the steps of Question~8),
+\passo{the two maps}{By definition, and by solving it for $p$ (the steps of Question~\ref{q:I41}),
 \begin{equation}\label{eq:I49-odds}
 o=\frac{p}{1-p},\qquad p=\frac{o}{1+o}.
 \end{equation}}
@@ -918,8 +1056,8 @@ already exceed $p$ by $0.1905-0.16=0.0305$, and the gap grows quickly as $p$ ris
 % -----------------------------------------------------------------------------
 \questao{Logistic regression versus the softmax coding (ISLP 4.12).}
 \fonte{James, Witten, Hastie, Tibshirani \& Taylor (2023), \textit{An Introduction to Statistical
-Learning with Applications in Python}, Exercise~4.12 (Section~4.8, Conceptual), p.~196. Reproduced
-verbatim, including a misprint in item~(d) flagged in the note after the statement.}
+Learning with Applications in Python}, 1st ed., Chapter~4, Exercise~4.12 (Section~4.8, Conceptual), printed p.~196 [PDF p.~205]. Answer not given
+in the book. Reproduced verbatim, including a misprint in item~(d) flagged in the note after the statement.}
 
 Suppose that you wish to classify an observation $X\in\mathbb R$ into \texttt{apples} and
 \texttt{oranges}. You fit a logistic regression model and find that
@@ -943,6 +1081,12 @@ What are the coefficient estimates in your model?
 What fraction of the time do you expect the predicted class labels from your model to agree with
 those from your friend's model? Explain your answer.
 \end{enumerate}
+\begin{refmat}The softmax coding (ISLP §4.3.5, eq.~(4.13), printed p.~145 [PDF p.~154]) treats the $K$
+classes symmetrically: for $k=1,\dots,K$,
+\[\Pr(Y=k\mid X=x)=\frac{e^{\beta_{k0}+\beta_{k1}x_1+\dots+\beta_{kp}x_p}}{\sum_{l=1}^K e^{\beta_{l0}+\beta_{l1}x_1+\dots+\beta_{lp}x_p}},\]
+and the book notes (eq.~(4.14), p.~146 [PDF p.~155]) that the log odds between classes $k$ and $k'$ is
+then $(\beta_{k0}-\beta_{k'0})+(\beta_{k1}-\beta_{k'1})x_1+\dots+(\beta_{kp}-\beta_{k'p})x_p$. Here $K=2$
+and $p=1$.\end{refmat}
 {\small\textit{Note (not in the book):} in (d) the book prints the second pair as
 $\hat\alpha_{\texttt{orange}0}=3$, $\hat\alpha_{\texttt{orange}1}=0.6$; it is a misprint for
 $\hat\alpha_{\texttt{apple}0}=3$, $\hat\alpha_{\texttt{apple}1}=0.6$, and is read that way below.\par}
@@ -953,7 +1097,7 @@ $\hat\alpha_{\texttt{apple}0}=3$, $\hat\alpha_{\texttt{apple}1}=0.6$, and is rea
 \item $\hat\beta_0,\hat\beta_1$: your (baseline-coded) coefficients; $\hat\alpha_{o0},\hat\alpha_{o1},\hat\alpha_{a0},\hat\alpha_{a1}$: your friend's softmax coefficients.
 \end{notacao}
 
-\passo{(a) your log odds}{By Question~8, \eqref{eq:I41-odds} in logs:
+\passo{(a) your log odds}{By Question~\ref{q:I41}, \eqref{eq:I41-odds} in logs:
 \begin{equation}\label{eq:I412-a}
 \log\frac{p_o(x)}{p_a(x)}=\hat\beta_0+\hat\beta_1x .
 \end{equation}}
@@ -1004,7 +1148,7 @@ without changing a single prediction.}
 % -----------------------------------------------------------------------------
 \questao{Classifying the direction of the market with \texttt{Weekly} (ISLP 4.13).}
 \fonte{James, Witten, Hastie, Tibshirani \& Taylor (2023), \textit{An Introduction to Statistical
-Learning with Applications in Python}, Exercise~4.13 (Section~4.8, Applied), pp.~196--197. Reproduced verbatim.}
+Learning with Applications in Python}, 1st ed., Chapter~4, Exercise~4.13 (Section~4.8, Applied), printed pp.~196--197 [PDF pp.~205--206]. Answer not given in the book. Reproduced verbatim.}
 
 This question should be answered using the \texttt{Weekly} data set, which is part of the
 \texttt{ISLP} package. This data is similar in nature to the \texttt{Smarket} data from this
@@ -1030,6 +1174,12 @@ and interactions, for each of the methods. Report the variables, method, and ass
 confusion matrix that appears to provide the best results on the held out data. Note that you
 should also experiment with values for $K$ in the KNN classifier.
 \end{enumerate}
+\begin{refmat}The \texttt{Weekly} data (ISLP Table~1.1, printed p.~12 [PDF p.~23]: ``1,089 weekly stock
+market returns for 21 years''), with the columns of the \texttt{Smarket} data of Lab~4.7.1 (printed
+p.~173 [PDF p.~182]): \texttt{Year}; \texttt{Lag1}--\texttt{Lag5}, the percentage returns of the five
+previous periods (weeks here); \texttt{Volume}, shares traded (billions); \texttt{Today}, the percentage
+return of the period; \texttt{Direction}, Up or Down (the sign of \texttt{Today}). File
+\texttt{Listas/data/Weekly.csv}.\end{refmat}
 \resolespaco
 \begin{sol}
 \begin{notacao}
@@ -1055,7 +1205,7 @@ $\hat\beta$ & 0.2669 & $-0.0413$ & 0.0584 & $-0.0161$ & $-0.0278$ & $-0.0145$ & 
 $p$ & 0.0019 & 0.1181 & 0.0296 & 0.5469 & 0.2937 & 0.5833 & 0.5377\\\bottomrule\end{tabular}\end{center}
 Only \texttt{Lag2} is significant at 5\% (besides the intercept).}
 
-\passo{(c) confusion matrix (training data)}{With the rule \eqref{eq:I55-rule} of Question~4:
+\passo{(c) confusion matrix (training data)}{With the rule \eqref{eq:I55-rule} of Question~\ref{q:I55}:
 \begin{center}\begin{tabular}{lcc}\toprule
  & true Down & true Up\\\midrule
 predicted Down & 54 & 48\\
@@ -1169,7 +1319,7 @@ ends up near ``always Up''. The methods that win are the smooth, low-variance on
 % -----------------------------------------------------------------------------
 \questao{High versus low gas mileage with \texttt{Auto} (ISLP 4.14).}
 \fonte{James, Witten, Hastie, Tibshirani \& Taylor (2023), \textit{An Introduction to Statistical
-Learning with Applications in Python}, Exercise~4.14 (Section~4.8, Applied), pp.~197--198. Reproduced verbatim.}
+Learning with Applications in Python}, 1st ed., Chapter~4, Exercise~4.14 (Section~4.8, Applied), printed pp.~197--198 [PDF pp.~206--207]. Answer not given in the book. Reproduced verbatim.}
 
 In this problem, you will develop a model to predict whether a given car gets high or low gas
 mileage based on the \texttt{Auto} data set.
@@ -1198,6 +1348,11 @@ variables that seemed most associated with \texttt{mpg01} in (b). What is the te
 \texttt{mpg01}. Use only the variables that seemed most associated with \texttt{mpg01} in (b). What
 test errors do you obtain? Which value of $K$ seems to perform the best on this data set?
 \end{enumerate}
+\begin{refmat}The \texttt{Auto} data (ISLP Table~1.1, p.~12 [PDF p.~23]; Lab~2.3.7, printed
+pp.~55--56 [PDF pp.~65--66]): gas mileage and other information for 397 cars, 392 after dropping the
+rows with missing \texttt{horsepower}; columns \texttt{mpg}, \texttt{cylinders}, \texttt{displacement},
+\texttt{horsepower}, \texttt{weight}, \texttt{acceleration}, \texttt{year} (model year), \texttt{origin}
+(coded 1, 2, 3) and \texttt{name}. File \texttt{Listas/data/Auto.csv} (the 392 complete rows).\end{refmat}
 \resolespaco
 \begin{sol}
 \begin{notacao}
@@ -1279,7 +1434,7 @@ median, where no method can be sure.}
 % -----------------------------------------------------------------------------
 \questao{Point spreads: linear probability model versus probit (W 17.C1).}
 \fonte{Wooldridge (2016), \textit{Introductory Econometrics: A Modern Approach}, 6th ed., Chapter~17,
-Computer Exercise~C1, p.~560. Reproduced verbatim.}
+Computer Exercise~C1, printed p.~560 [PDF p.~584]. Answer not given in the book (its Appendix~F answers only the in-chapter questions). Reproduced verbatim.}
 
 Use the data in PNTSPRD for this exercise.
 \begin{enumerate}[label=(\roman*)]
@@ -1300,6 +1455,13 @@ test joint significance of these variables using the likelihood ratio test. (How
 the chi-square distribution?) Interpret this result, focusing on the question of whether the
 spread incorporates all observable information prior to a game.
 \end{enumerate}
+\begin{refmat}PNTSPRD (W data set; the book describes it as ``information on men's college basketball
+games'', §19, printed p.~623 [PDF p.~647]; variable labels from the data documentation): 553 games;
+\textit{favwin} $=1$ if the favored team wins; \textit{spread}, the Las Vegas point spread;
+\textit{favhome} $=1$ if the favored team is at home; \textit{fav25}, \textit{und25} $=1$ if the favored
+team, the underdog, is in the top 25. Loaded with \texttt{wooldridge.data("pntsprd")}. The likelihood
+ratio statistic is W eq.~(17.12), printed p.~529 [PDF p.~553]: $LR=2(\mathcal L_{ur}-\mathcal L_r)$,
+approximately $\chi^2_q$ under $H_0$ for $q$ exclusion restrictions.\end{refmat}
 \resolespaco
 \begin{sol}
 \begin{notacao}
@@ -1399,7 +1561,7 @@ range, supports that; the LPM's rejection in (ii) comes partly from forcing a li
 % -----------------------------------------------------------------------------
 \questao{Quadratics in the Poisson regression for arrests (W 17.C4).}
 \fonte{Wooldridge (2016), \textit{Introductory Econometrics: A Modern Approach}, 6th ed., Chapter~17,
-Computer Exercise~C4, p.~561. Reproduced verbatim.}
+Computer Exercise~C4, printed p.~561 [PDF p.~585]. Answer not given in the book (its Appendix~F answers only the in-chapter questions). Reproduced verbatim.}
 
 In Example~9.1, we added the quadratic terms $\textit{pcnv}^2$, $\textit{ptime86}^2$, and
 $\textit{inc86}^2$ to a linear model for \textit{narr86}.
@@ -1410,6 +1572,20 @@ Is there evidence of overdispersion? How should the Poisson MLE standard errors 
 \item Use the results from parts (i) and (ii) and Table~17.5 to compute the quasi-likelihood ratio
 statistic for joint significance of the three quadratic terms. What do you conclude?
 \end{enumerate}
+\begin{refmat}Example~9.1 (W, printed pp.~275--276 [PDF pp.~299--300], Table~9.1): OLS of
+\textit{narr86} (times arrested in 1986) on \textit{pcnv}, \textit{avgsen}, \textit{tottime},
+\textit{ptime86}, \textit{qemp86}, \textit{inc86}, \textit{black}, \textit{hispan}, \textit{born60}
+(column 1), then with $\textit{pcnv}^2$, $\textit{ptime86}^2$, $\textit{inc86}^2$ added (column 2).
+Example~17.3 and Table~17.5 (printed pp.~546--547 [PDF pp.~570--571]): Poisson QMLE of
+$E(\textit{narr86}\mid\mathbf x)=\exp(\mathbf x\boldsymbol\beta)$ on the nine regressors of column~1,
+CRIME1, $n=2{,}725$ men (\textit{narr86} $=0$ for 1,970). Poisson column, coefficient (s.e.):
+\textit{pcnv} $-.402$ (.085), \textit{avgsen} $-.024$ (.020), \textit{tottime} .024 (.015),
+\textit{ptime86} $-.099$ (.021), \textit{qemp86} $-.038$ (.029), \textit{inc86} $-.0081$ (.0010),
+\textit{black} .661 (.074), \textit{hispan} .500 (.074), \textit{born60} $-.051$ (.064), constant
+$-.600$ (.067); log-likelihood $-2{,}248.76$, $R^2=.077$, $\hat\sigma=1.232$. The variance assumption
+is (17.35), printed p.~545 [PDF p.~569]: $\mathrm{Var}(y\mid\mathbf x)=\sigma^2E(y\mid\mathbf x)$; the
+quasi-LR statistic (p.~546 [PDF p.~570]) is the LR statistic (17.12), $2(\mathcal L_{ur}-\mathcal L_r)$,
+divided by $\hat\sigma^2$ from the unrestricted model. Data: \texttt{wooldridge.data("crime1")}.\end{refmat}
 \resolespaco
 \begin{sol}
 \begin{notacao}
@@ -1495,7 +1671,7 @@ deflated by $\hat\sigma^2$. Here the signal in the quadratics is strong enough t
 % -----------------------------------------------------------------------------
 \questao{Poisson regression for fertility (W 17.C5).}
 \fonte{Wooldridge (2016), \textit{Introductory Econometrics: A Modern Approach}, 6th ed., Chapter~17,
-Computer Exercise~C5, p.~561. Reproduced verbatim.}
+Computer Exercise~C5, printed p.~561 [PDF p.~585]. Answer not given in the book (its Appendix~F answers only the in-chapter questions). Reproduced verbatim.}
 
 Refer to Table~13.1 in Chapter~13. There, we used the data in FERTIL1 to estimate a linear model for
 \textit{kids}, the number of children ever born to a woman.
@@ -1509,6 +1685,15 @@ woman, holding other factors fixed?
 squared correlation between $\textit{kids}_i$ and $\widehat{\textit{kids}}_i$. Compare this with the
 $R$-squared for the linear regression model.
 \end{enumerate}
+\begin{refmat}Table~13.1 (W Example~13.1, printed p.~404 [PDF p.~428]): OLS of \textit{kids} (children
+ever born) on \textit{educ}, \textit{age}, $\textit{age}^2$, \textit{black}, region at 16 (\textit{east},
+\textit{northcen}, \textit{west}), environment at 16 (\textit{farm}, \textit{othrural}, \textit{town},
+\textit{smcity}) and the year dummies \textit{y74}, \textit{y76}, \textit{y78}, \textit{y80},
+\textit{y82}, \textit{y84} (base 1972), with FERTIL1 (General Social Survey, even years 1972--1984,
+$n=1{,}129$). Selected estimates: \textit{educ} $-.128$, \textit{black} $1.076$, \textit{y82} $-.522$,
+\textit{y84} $-.545$, constant $-7.742$; $R^2=.1295$, $\bar R^2=.1162$. Data:
+\texttt{wooldridge.data("fertil1")}. For $\hat\sigma$, the Poisson dispersion estimator of W §17.3
+(printed p.~546 [PDF p.~570]) is $\hat\sigma^2=(n-k-1)^{-1}\sum_{i=1}^n\hat u_i^2/\hat y_i$.\end{refmat}
 \resolespaco
 \begin{sol}
 \begin{notacao}
@@ -1587,9 +1772,9 @@ fertility across groups and years.}
 \bloco{3}{Morettin \& Singer (2021)}{Ch.~8 \,\textbullet\, 4 problems (in Portuguese)}
 
 % -----------------------------------------------------------------------------
-\questao{KNN with LOOCV for the disc data (MS 8.9).}
-\fonte{Morettin \& Singer (2021), \textit{Estatística e Ciência de Dados} (versão preliminar, abril
-2021), Capítulo~8, Exercício~9 (Seção~8.7, Exercícios), p.~289. Reproduced verbatim (Portuguese original).}
+\questao{KNN with LOOCV for the disc data (MS 8.9).}\label{q:M9}
+\fonte{Morettin \& Singer (2021), \textit{Estatística e Ciência de Dados}, preliminary edition (versão
+preliminar, abril 2021), Capítulo~8, Exercício~9 (Seção~8.7, Exercícios), printed p.~289 [PDF p.~299]. Answer not given in the book. Reproduced verbatim (Portuguese original).}
 
 Use o conjunto de dados do Exemplo~8.1 e distância aberta como variável preditora. Use LOOCV e o
 classificador KNN, com vizinhos mais próximos de 1 a 5.
@@ -1598,6 +1783,17 @@ classificador KNN, com vizinhos mais próximos de 1 a 5.
 \item Obtenha a matriz de confusão e realize o teste de McNemar.
 \item Obtenha a sensibilidade e a especificidade e explique seus significados nesse caso.
 \end{enumerate}
+\begin{refmat}Exemplo~8.1 (MS, printed pp.~264--265 [PDF pp.~274--275], Tabela~8.1): ultrasound
+capsule--condyle distances (mm) with the mouth open (\texttt{distanciaA}, ``distância aberta'') and
+closed (\texttt{distanciaF}) for 104 temporomandibular joints, and \texttt{deslocamento} $=1$ if magnetic
+resonance classified the disc as displaced (29 joints), $0$ otherwise; file \texttt{disco}
+(\texttt{Listas/data/disco.xls}). KNN (MS §8.4, eq.~(8.27), printed p.~282 [PDF p.~292]):
+$\hat P(Y=j\mid X=x_0)=K^{-1}\sum_{i\in V_0}I(y_i=j)$, $V_0$ the $K$ points nearest to $x_0$.
+Confusion matrix as in Tabela~8.2 (printed p.~267 [PDF p.~277]): $n_{11}$ (decision sim, true sim),
+$n_{12}$ (decision sim, true não), $n_{21}$ (decision não, true sim), $n_{22}$; sensitivity
+$n_{11}/(n_{11}+n_{21})$, specificity $n_{22}/(n_{12}+n_{22})$. McNemar test (§8.6 Nota~2, eq.~(8.35),
+printed p.~287 [PDF p.~297]): $M=(n_{12}-n_{21})^2/(n_{12}+n_{21})$, approximately $\chi^2_1$, with an
+exact binomial $p$-value when $n_{12}+n_{21}$ is small (e.g.\ below 25).\end{refmat}
 \resolespaco
 \begin{sol}
 \begin{notacao}
@@ -1678,13 +1874,22 @@ sensitivity/specificity pair expose that imbalance.}
 
 % -----------------------------------------------------------------------------
 \questao{LDA with two inhibin predictors and $k$-fold CV (MS 8.4).}
-\fonte{Morettin \& Singer (2021), \textit{Estatística e Ciência de Dados} (versão preliminar, abril
-2021), Capítulo~8, Exercício~4 (Seção~8.7, Exercícios), p.~289. Reproduced verbatim (Portuguese
+\fonte{Morettin \& Singer (2021), \textit{Estatística e Ciência de Dados}, preliminary edition (versão
+preliminar, abril 2021), Capítulo~8, Exercício~4 (Seção~8.7, Exercícios), printed p.~289 [PDF p.~299]. Answer not given in the book. Reproduced verbatim (Portuguese
 original; ``varáveis'' is the book's spelling).}
 
 Reanalise os dados do Exemplo~8.3 considerando duas varáveis preditoras \texttt{inibpre} e
 \texttt{inibpos} e validação cruzada de ordem $k$ com diferentes valores de $k$. Avalie o efeito da
 semente nos resultados.
+\begin{refmat}Exemplo~8.3 (MS, printed pp.~274--275 [PDF pp.~284--285]): file \texttt{inibina}
+(in \texttt{Listas/data}), 32 patients, 19 with a positive response to the inhibin treatment
+($59.4\%$), classified by LDA (\texttt{lda()}: Gaussian classes, common variance, priors equal to the
+class shares) on the single predictor $\textit{difinib}=\texttt{inibpos}-\texttt{inibpre}$. Class means
+$\bar x_1=202.7$, $\bar x_0=49.0$; variances $S_1^2=31630.5$, $S_0^2=2852.8$; pooled
+$S^2=(18S_1^2+12S_0^2)/30=20119.4$. On the same data (rows predicted, columns true, negativa/positiva)
+the classification table is $\begin{smallmatrix}9&2\\4&17\end{smallmatrix}$, $81\%$ correct. With
+$p\ge2$ predictors the pooled covariance is (8.17), printed p.~274 [PDF p.~284]:
+\[\mathbf S=\frac{(n_1-1)\mathbf S_1+(n_2-1)\mathbf S_2}{n_1+n_2-2}.\]\end{refmat}
 \resolespaco
 \begin{sol}
 \begin{notacao}
@@ -1752,9 +1957,9 @@ using LOOCV removes the dependence on one split, though not the small-sample unc
 \end{sol}
 
 % -----------------------------------------------------------------------------
-\questao{Choosing a logistic model for endometriosis by 5-fold CV (MS 8.6).}
-\fonte{Morettin \& Singer (2021), \textit{Estatística e Ciência de Dados} (versão preliminar, abril
-2021), Capítulo~8, Exercício~6 (Seção~8.7, Exercícios), p.~289. Reproduced verbatim (Portuguese original).}
+\questao{Choosing a logistic model for endometriosis by 5-fold CV (MS 8.6).}\label{q:M6}
+\fonte{Morettin \& Singer (2021), \textit{Estatística e Ciência de Dados}, preliminary edition (versão
+preliminar, abril 2021), Capítulo~8, Exercício~6 (Seção~8.7, Exercícios), printed p.~289 [PDF p.~299]. Answer not given in the book. Reproduced verbatim (Portuguese original).}
 
 Considere os dados do arquivo \texttt{endometriose2}. Com propósitos de previsão, ajuste modelos de
 regressão logística com validação cruzada de ordem 5 tendo \texttt{endometriose} como variável
@@ -1767,6 +1972,15 @@ como variáveis explicativas (4 modelos);
 \item as quatro variáveis do item i) como variáveis explicativas (1 modelo).
 \end{enumerate}
 Escolha o melhor modelo com base na acurácia.
+\begin{refmat}File \texttt{endometriose2} (MS §1.5 data list, printed p.~18 [PDF p.~28]: ``Dados de um
+estudo sobre endometriose (1500 pacientes)''; the downloaded \texttt{Listas/data/endometriose2.xls} has
+1,872 rows and 24 variables, described in its sheet \texttt{descricao}). Variables used:
+\texttt{endometriose} (sim/não), \texttt{idade} (years), \texttt{dormenstrual} (menstrual pain, sim/não),
+\texttt{dismenorreia} (não, leve, moderada, intensa, incapacitante), \texttt{tipoesteril} (não, primária,
+secundária). Classification by logistic regression as in MS §8.2 (printed pp.~264--271 [PDF
+pp.~274--281]): a patient is classified positive when $\hat p(\mathbf x)$ exceeds a cut-off; accuracy is
+the share of correct classifications; $k$-fold CV as in §8.6 Nota~1 (printed pp.~285--286 [PDF
+pp.~295--296]).\end{refmat}
 \resolespaco
 \begin{sol}
 \begin{notacao}
@@ -1851,20 +2065,26 @@ sterility singles out a group in which endometriosis is the majority.}
 
 % -----------------------------------------------------------------------------
 \questao{Logistic regression, Bayes classifier and Fisher's discriminant (MS 8.11).}
-\fonte{Morettin \& Singer (2021), \textit{Estatística e Ciência de Dados} (versão preliminar, abril
-2021), Capítulo~8, Exercício~11 (Seção~8.7, Exercícios), p.~289. Reproduced verbatim (Portuguese
-original). Exercise~5, to which it refers, is quoted for context.}
+\fonte{Morettin \& Singer (2021), \textit{Estatística e Ciência de Dados}, preliminary edition (versão
+preliminar, abril 2021), Capítulo~8, Exercício~11 (Seção~8.7, Exercícios), printed p.~289 [PDF p.~299]. Answer not given in the book. Reproduced verbatim (Portuguese
+original).}
 
 Para os dados do Exercício~5, compare os classificadores usando regressão logística, classificador
 bayesiano e função discriminante linear de Fisher.
 
-{\small\textit{Exercise~5 (p.~289):} Analise os dados do arquivo \texttt{endometriose2} por meio das
-técnicas de classificação descritas neste capítulo, utilizando validação cruzada com diferentes
-parâmetros. Compare-as e discuta os resultados.\par}
+\begin{refmat}Exercise~5 (MS Capítulo~8, printed p.~289 [PDF p.~299]), quoted: ``Analise os dados do
+arquivo \texttt{endometriose2} por meio das técnicas de classificação descritas neste capítulo,
+utilizando validação cruzada com diferentes parâmetros. Compare-as e discuta os resultados.'' Data and
+variables: as in Question~\ref{q:M6}. The three classifiers: logistic regression (MS §8.2); the Bayes
+classifier (§8.3.1, printed p.~272 [PDF p.~282]), which assigns $\mathbf x$ to the class with the
+largest $\pi_kf_k(\mathbf x)$ and, with Gaussian classes of common covariance, is linear in $\mathbf x$;
+Fisher's linear discriminant (8.18), printed p.~274 [PDF p.~284], which classifies $\mathbf x$ into
+$C_1$ if $(\bar{\mathbf x}_1-\bar{\mathbf x}_2)'\mathbf S^{-1}\mathbf x\ge\frac12(\bar{\mathbf x}_1-\bar{\mathbf x}_2)'\mathbf S^{-1}(\bar{\mathbf x}_1+\bar{\mathbf x}_2)$,
+the Bayes rule with equal priors (Exemplo~8.6, printed p.~282 [PDF p.~292]).\end{refmat}
 \resolespaco
 \begin{sol}
 \begin{notacao}
-\item Data and coding as in Question~18 ($n=1866$, 492 positives); $\mathbf x_i\in\mathbb R^8$: the four
+\item Data and coding as in Question~\ref{q:M6} ($n=1866$, 492 positives); $\mathbf x_i\in\mathbb R^8$: the four
   predictors of model iv (\texttt{idade}, \texttt{dormenstrual}, 4 \texttt{dismenorreia} dummies, 2
   \texttt{tipoesteril} dummies).
 \item $\bar{\mathbf x}_1,\bar{\mathbf x}_0$, $\mathbf S$: class means and pooled covariance \eqref{eq:M4-S};
@@ -1896,7 +2116,7 @@ detects more than three times as many endometriosis cases ($0.7646$ against $0.2
 
 \passo{McNemar comparisons}{On the first repetition, for each pair, $n_{12}$ counts patients
 classified correctly by the first rule only and $n_{21}$ by the second only (MS Nota~3, Tabela~8.8);
-the statistic is \eqref{eq:M9-M} of Question~16:
+the statistic is \eqref{eq:M9-M} of Question~\ref{q:M9}:
 \begin{align}
 \text{logistic vs.\ Bayes:}\quad M&=\frac{(19-28)^2}{19+28}=\frac{81}{47}=1.7234,\quad p=0.189,\label{eq:M11-m1}\\
 \text{logistic vs.\ Fisher:}\quad M&=\frac{(365-270)^2}{365+270}=\frac{9025}{635}=14.2126,\quad p=0.00016,\label{eq:M11-m2}\\
@@ -1913,7 +2133,7 @@ Gaussian assumption behind (2) and (3) is false for dummy predictors, yet the ru
 because they only need a good linear direction.}
 
 \begin{lstlisting}
-X = np.column_stack([np.asarray(blocks[b], float) for b in blocks])     # model iv of Question 18
+X = np.column_stack([np.asarray(blocks[b], float) for b in blocks])     # model iv of MS 8.6
 clfs = {"logit": logit_fit, "bayes": lda_fit,
         "fisher": lambda X, y: lda_fit(X, y, prior=(0.5, 0.5))}          # (8.18): equal priors
 for name, f in clfs.items():

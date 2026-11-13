@@ -8,6 +8,9 @@
 %
 % Compile (copyable PDF, lmodern+cmap):  pdflatex lista-L03-book-exercises.tex  (2x);  pdffonts -> Type 1 only
 % Every number in the solutions is reproduced and asserted by Listas/L03-book-exercises-check.py.
+% Book questions: \fonte{} (book, chapter, exercise, printed page [PDF page], answer flag) + verbatim
+% statement; whatever the statement refers to goes in a `contexto' block, printed "Referenced material".
+% Original exercises (gap topics, authorised by the user 2026-11-12): \origem{} line, never \fonte{}.
 % =============================================================================
 \documentclass[11pt,a4paper]{article}
 \usepackage[utf8]{inputenc}
@@ -27,6 +30,7 @@
 \usepackage{xcolor}
 \usepackage{microtype}
 \usepackage{booktabs}
+\usepackage[hyphens]{url}   % \path{} for file names: breaks at / . -
 \usepackage{listings}
 \lstset{language=Python,basicstyle=\ttfamily\footnotesize,columns=fullflexible,keepspaces=true,
   breaklines=true,frame=single,framerule=0.3pt,rulecolor=\color{black!40},
@@ -67,9 +71,12 @@
   \textbf{Question \thequestao.}~#1\par}
 % Source line of a book question (estilo-avaliacao, Book-questions rule)
 \newcommand{\fonte}[1]{\par\noindent{\small\textit{Source:} #1}\par}
-% Verbatim statement and verbatim context (context = book material the item refers to)
+% Origin line of an original exercise (written for this list, no book source)
+\newcommand{\origem}[1]{\par\noindent{\small\textit{Origin:} #1}\par}
+% Verbatim statement; referenced material = what the statement refers to (equations, tables, data,
+% earlier exercises), as a verbatim excerpt or a short summary, always with its page
 \newenvironment{enunciado}{\begin{quote}}{\end{quote}}
-\newenvironment{contexto}[1]{\begin{quote}\small\noindent\textit{Context the item refers to (not part of the exercise; #1, reproduced verbatim).}\par}{\end{quote}}
+\newenvironment{contexto}[1]{\begin{quote}\small\noindent\textbf{Referenced material} \textit{(#1; not part of the exercise).}\par}{\end{quote}}
 % Notation list that opens every solution (estilo-avaliacao §4, "Equations, notation and layout").
 \newenvironment{notacao}{\par\smallskip\noindent\textbf{Notation.}\begin{itemize}[leftmargin=1.4em,topsep=1pt,itemsep=0pt]\small}{\end{itemize}}
 \allowdisplaybreaks
@@ -90,11 +97,15 @@
 \end{center}
 \vspace{2pt}
 
-{\footnotesize\noindent\textbf{Instructions.} Every question is a textbook exercise from the
+{\footnotesize\noindent\textbf{Instructions.} Questions 1--26 are textbook exercises from the
 ``Practice'' list of Classes 3+4 in \texttt{Map/class-plan.md}, reproduced verbatim from the book PDF
 with its source line; Portuguese-language books (Bolfarine \& Sandoval; Morettin \& Singer) are quoted
-in Portuguese. When an exercise refers to an equation, table or exercise elsewhere in the book, that
-material is reproduced as \emph{context}. Show every step. Computational items are solved in Python
+in Portuguese. Each source line gives the printed page and, in brackets, the page of the PDF on disk;
+none of the four books prints answers. When an exercise refers to an equation, table, data set or
+exercise elsewhere in the book, a \emph{Referenced material} block right after the statement gives it
+(verbatim excerpt or short summary, with page). Block~5 holds two \emph{original} exercises on syllabus
+topics that no book on disk covers (sparsity priors; Hamiltonian Monte Carlo), marked
+\emph{Origin} instead of \emph{Source}. Show every step. Computational items are solved in Python
 (NumPy/SciPy only, fixed seeds); every number printed in the solutions is reproduced and asserted by
 \texttt{Listas/L03-book-exercises-check.py}. Greenberg's gamma $G(\alpha,\beta)$ and Bolfarine's
 $Gama(\alpha,\beta)$ both use the rate form $\beta^\alpha\theta^{\alpha-1}e^{-\beta\theta}/\Gamma(\alpha)$,
@@ -106,7 +117,7 @@ $\beta^\alpha y^{-(\alpha+1)}e^{-\beta/y}/\Gamma(\alpha)$ (Greenberg, App.~A.1.7
 
 % -----------------------------------------------------------------------------
 \questao{Greenberg 2.2 --- gamma--Poisson conjugacy.}
-\fonte{Greenberg, E. (2007), \textit{Introduction to Bayesian Econometrics}, Cambridge University Press, Exercise 2.2, p.~19 --- reproduced verbatim.}
+\fonte{Greenberg, E. (2007), \textit{Introduction to Bayesian Econometrics}, 1st ed., Cambridge University Press, Ch.~2 (``Basic Concepts of Probability and Inference''), Exercise~2.2, printed p.~19 [PDF p.~34]; answer not given in the book --- reproduced verbatim.}
 \begin{enunciado}
 \textbf{2.2} The Poisson distribution has probability mass function
 \[
@@ -166,7 +177,7 @@ E(\theta|y)&=\frac{\beta\,(\alpha/\beta)+n\,(\bar y)}{\beta+n}\label{g22:pm2}\\
 
 % -----------------------------------------------------------------------------
 \questao{Greenberg 2.4 --- Pareto--uniform conjugacy.}
-\fonte{Greenberg, E. (2007), \textit{Introduction to Bayesian Econometrics}, Cambridge University Press, Exercise 2.4, p.~19 --- reproduced verbatim.}
+\fonte{Greenberg, E. (2007), \textit{Introduction to Bayesian Econometrics}, 1st ed., Cambridge University Press, Ch.~2 (``Basic Concepts of Probability and Inference''), Exercise~2.4, printed p.~19 [PDF p.~34]; answer not given in the book --- reproduced verbatim.}
 \begin{enunciado}
 \textbf{2.4} Consider the uniform distribution with density function $f(y_i|\theta)=1/\theta$, $0\le y_i\le\theta$, and $\theta$ unknown.
 \begin{enumerate}[label=\textbf{(\alph*)},leftmargin=2em]
@@ -224,7 +235,7 @@ finite because $a+n>1$ whenever $n\ge1$.}
 
 % -----------------------------------------------------------------------------
 \questao{Greenberg 3.3 --- normal predictive distribution.}
-\fonte{Greenberg, E. (2007), \textit{Introduction to Bayesian Econometrics}, Cambridge University Press, Exercise 3.3, p.~39 --- reproduced verbatim.}
+\fonte{Greenberg, E. (2007), \textit{Introduction to Bayesian Econometrics}, 1st ed., Cambridge University Press, Ch.~3 (``Posterior Distributions and Inference''), Exercise~3.3, printed p.~39 [PDF p.~54]; answer not given in the book --- reproduced verbatim.}
 \begin{enunciado}
 \textbf{3.3} Compute the predictive distribution for $y_{n+1}$ if the $y_i$ have independent normal distributions $N(\mu,1)$, where the prior distribution for $\mu$ is $N(\mu_0,\sigma_0^2)$.
 \end{enunciado}
@@ -274,10 +285,15 @@ The check script evaluates \eqref{g33:pred} by quadrature and matches \eqref{g33
 
 % -----------------------------------------------------------------------------
 \questao{Greenberg 3.4 --- sequential updating, Poisson model.}
-\fonte{Greenberg, E. (2007), \textit{Introduction to Bayesian Econometrics}, Cambridge University Press, Exercise 3.4, p.~39 --- reproduced verbatim.}
+\fonte{Greenberg, E. (2007), \textit{Introduction to Bayesian Econometrics}, 1st ed., Cambridge University Press, Ch.~3 (``Posterior Distributions and Inference''), Exercise~3.4, printed p.~39 [PDF p.~54]; answer not given in the book --- reproduced verbatim.}
 \begin{enunciado}
 \textbf{3.4} Explicitly verify the updating feature of the posterior distribution for the case where $y$ has a Poisson distribution with parameter $\theta$. Choose $G(\alpha,\beta)$ as the prior distribution, and consider observing a total of $s_1$ events in the first of two independent experiments and $s_2$ in the second.
 \end{enunciado}
+\begin{contexto}{Greenberg \S3.1.3 ``Bayesian Updating'', printed pp.~24--25 [PDF pp.~39--40]; summary}
+The ``updating feature'': if $y_1$ and $y_2$ are independent given $\theta$, then
+$\pi(\theta|y_1,y_2)\propto f(y_1,y_2|\theta)\pi(\theta)=f(y_2|\theta)\,[f(y_1|\theta)\pi(\theta)]\propto f(y_2|\theta)\,\pi(\theta|y_1)$:
+the posterior after the first experiment acts as the prior for the second, and the result equals the posterior computed from both data sets at once. The book illustrates it with Bernoulli trials and a $\text{Beta}(\alpha_0,\beta_0)$ prior: $\theta|s_1\sim\text{Beta}(\alpha_0+s_1,\beta_0+n_1-s_1)$, then $\theta|s_1,s_2\sim\text{Beta}(\alpha_0+s_1+s_2,\beta_0+n_1+n_2-s_1-s_2)$. The exercise asks for the same check with the Poisson model and the $G(\alpha,\beta)$ prior of Exercise~2.2 (Question~1).
+\end{contexto}
 \resolespaco
 \begin{sol}
 \begin{notacao}
@@ -310,7 +326,7 @@ identical to \eqref{g34:e}: $G(\alpha+s_1+s_2,\ \beta+n_1+n_2)$, which is $G(\al
 
 % -----------------------------------------------------------------------------
 \questao{Greenberg 3.2 --- Poisson--gamma predictive distribution.}
-\fonte{Greenberg, E. (2007), \textit{Introduction to Bayesian Econometrics}, Cambridge University Press, Exercise 3.2, p.~39 --- reproduced verbatim.}
+\fonte{Greenberg, E. (2007), \textit{Introduction to Bayesian Econometrics}, 1st ed., Cambridge University Press, Ch.~3 (``Posterior Distributions and Inference''), Exercise~3.2, printed p.~39 [PDF p.~54]; answer not given in the book --- reproduced verbatim.}
 \begin{enunciado}
 \textbf{3.2} Compute the predictive distribution for $y_{n+1}$ if the $y_i$ have independent Poisson distributions with parameter $\theta$, given that the first $n$ experiments yielded $y_1,y_2,\ldots,y_n$ events, respectively. Assume the prior distribution $G(\alpha,\beta)$.
 \end{enunciado}
@@ -348,11 +364,12 @@ E(y_{n+1}|y_{1:n})&=\frac{\alpha_1}{\beta_1},\label{g32:m}\\
 
 % -----------------------------------------------------------------------------
 \questao{Greenberg 3.8 --- Bayes factor for two typists.}
-\fonte{Greenberg, E. (2007), \textit{Introduction to Bayesian Econometrics}, Cambridge University Press, Exercise 3.8, p.~40 --- reproduced verbatim.}
+\fonte{Greenberg, E. (2007), \textit{Introduction to Bayesian Econometrics}, 1st ed., Cambridge University Press, Ch.~3 (``Posterior Distributions and Inference''), Exercise~3.8, printed p.~40 [PDF p.~55]; answer not given in the book --- reproduced verbatim.}
 \begin{enunciado}
 \textbf{3.8} Suppose the number of typographical errors per page has a Poisson distribution $P(\theta)$. Sam types the first $m$ pages of a manuscript and makes $e_1$ errors in total, and Levi types the last $m$ pages and makes $e_2$ errors. Let Sam's error rate be $\theta_1$ and Levi's error rate be $\theta_2$. To compare model $M_1:\theta_1=\theta_2=\theta$ with model $M_2:\theta_1\neq\theta_2$, produce a table like Table~3.2 for $m=100$ with 10 total errors and for $m=200$ with 20 total errors and Sam's error proportions of 0.9, 0.8, 0.7, 0.6, and 0.5. Take $G(1,1)$ as a prior for $\theta_1$ and $\theta_2$.
 \end{enunciado}
-\begin{contexto}{Greenberg, Table~3.2, p.~38}
+\begin{contexto}{Greenberg \S3.2.4, setup summarised from printed p.~37 [PDF p.~52]; Table~3.2 reproduced verbatim from printed p.~38 [PDF p.~53]}
+Table~3.2 comes from a coin example: Michaela and Lila each toss a coin $m$ times; $\theta_1$, $\theta_2$ are their probabilities of heads. $M_1$: $\theta_1=\theta_2=\theta$; $M_2$: $\theta_1\neq\theta_2$; priors $\text{Beta}(1,1)$ (uniform) for $\theta$, $\theta_1$, $\theta_2$. With $\bar y_1$, $\bar y_2$ the two proportions of heads and $\bar y=(\bar y_1+\bar y_2)/2$, the marginal likelihoods are $m_1=\Gamma(2m\bar y+1)\Gamma(2m-2m\bar y+1)/\Gamma(2m+2)$ and (3.5) $m_2=\prod_{j=1,2}\Gamma(m\bar y_j+1)\Gamma(m-m\bar y_j+1)/\Gamma(m+2)$; the table lists $\log_{10}(m_1/m_2)$. Exercise~3.8 asks for the same table with Poisson counts and $G(1,1)$ priors.
 \begin{center}\small
 \textbf{Table 3.2.} Bayes Factors for Selected Possible Outcomes\\[2pt]
 \begin{tabular}{ccrr}
@@ -423,7 +440,7 @@ Sam's proportion & $(e_1,e_2)$ & $\log_{10}B_{12}$ & $(e_1,e_2)$ & $\log_{10}B_{
 
 % -----------------------------------------------------------------------------
 \questao{Greenberg 4.5 --- marginal likelihood of the conjugate normal regression.}
-\fonte{Greenberg, E. (2007), \textit{Introduction to Bayesian Econometrics}, Cambridge University Press, Exercise 4.5, p.~58 --- reproduced verbatim.}
+\fonte{Greenberg, E. (2007), \textit{Introduction to Bayesian Econometrics}, 1st ed., Cambridge University Press, Ch.~4 (``Prior Distributions''), Exercise~4.5, printed p.~58 [PDF p.~73]; answer not given in the book --- reproduced verbatim.}
 \begin{enunciado}
 \textbf{4.5} Since the posterior distribution of $(\beta,\sigma^2)$ in Section 4.3 is of known form, it is possible to compute its marginal likelihood analytically. Start from the definition of the marginal likelihood:
 \begin{align*}
@@ -439,12 +456,17 @@ where we have used (4.5). Now integrate the first pair of curly braces as a mult
 \left(\frac{1}{\pi}\right)^{n/2}\frac{|B_1|^{1/2}}{|B_0|^{1/2}}\frac{\Gamma(\alpha_1/2)}{\Gamma(\alpha_0/2)}\frac{\delta_0^{\alpha_0/2}}{\delta_1^{\alpha_1/2}}.
 \]
 \end{enunciado}
-\begin{contexto}{Greenberg \S4.3, pp.~45--46, equations (4.2) and (4.6)}
+\begin{contexto}{Greenberg \S4.3, printed p.~45 [PDF p.~60], equations (4.2), (4.5) and (4.6), reproduced verbatim; the model is $y=X\beta+u$, $u\sim N_n(0,\sigma^2I_n)$, likelihood (4.1)}
 \begin{align*}
 \pi(\beta,\sigma^2)&=\pi(\beta|\sigma^2)\pi(\sigma^2) \tag{4.2}\\
 &=N_K(\beta|\beta_0,\sigma^2B_0)\,IG(\sigma^2|\alpha_0/2,\delta_0/2),
 \end{align*}
-[\ldots] where the updated parameters are
+[\ldots] you should verify that
+\begin{align*}
+\pi(\beta,\sigma^2|y)&\propto\left(\frac{1}{\sigma^2}\right)^{K/2}\exp\left[-\frac{1}{2\sigma^2}(\beta-\bar\beta)'B_1^{-1}(\beta-\bar\beta)\right]\\
+&\quad\times\left(\frac{1}{\sigma^2}\right)^{\alpha_1/2+1}\exp\left[-\frac{\delta_1}{2\sigma^2}\right], \tag{4.5}
+\end{align*}
+where the updated parameters are
 \begin{align*}
 B_1&=(X'X+B_0^{-1})^{-1} \tag{4.6}\\
 \bar\beta&=B_1(X'y+B_0^{-1}\beta_0)\\
@@ -516,11 +538,11 @@ the expression of the statement. Independent check: under (4.2) the prior predic
 
 % -----------------------------------------------------------------------------
 \questao{Greenberg 5.4 --- accept--reject sampling of Beta(3, 3).}
-\fonte{Greenberg, E. (2007), \textit{Introduction to Bayesian Econometrics}, Cambridge University Press, Exercise 5.4, p.~75 --- reproduced verbatim.}
+\fonte{Greenberg, E. (2007), \textit{Introduction to Bayesian Econometrics}, 1st ed., Cambridge University Press, Ch.~5 (``Classical Simulation''), Exercise~5.4, printed p.~75 [PDF p.~90]; answer not given in the book --- reproduced verbatim.}
 \begin{enunciado}
 \textbf{5.4} Draw 500 observations from Beta(3, 3) using algorithm 5.3. Compute the mean and variance of the sample and compare them to the true values.
 \end{enunciado}
-\begin{contexto}{Greenberg \S5.3, p.~67, Algorithm 5.3}
+\begin{contexto}{Greenberg \S5.3, Algorithm~5.3, printed p.~67 [PDF p.~82], reproduced verbatim}
 \textbf{Algorithm 5.3: Beta distribution}\\
 \textbf{5.1} Draw $u_1$ and $u_2$ from $U(0,1)$.\\
 \textbf{5.2} If
@@ -565,7 +587,7 @@ d = np.array(draws); print(500 / tried, d.mean(), d.var(ddof=1))
 
 % -----------------------------------------------------------------------------
 \questao{Greenberg 6.2 --- the two-state Markov chain.}
-\fonte{Greenberg, E. (2007), \textit{Introduction to Bayesian Econometrics}, Cambridge University Press, Exercise 6.2, pp.~87--88 --- reproduced verbatim.}
+\fonte{Greenberg, E. (2007), \textit{Introduction to Bayesian Econometrics}, 1st ed., Cambridge University Press, Ch.~6 (``Basics of Markov Chains''), Exercise~6.2, printed pp.~87--88 [PDF pp.~102--103]; answer not given in the book --- reproduced verbatim.}
 \begin{enunciado}
 \textbf{6.2} Let
 \[
@@ -610,11 +632,11 @@ Example: the matrix (6.2) is \eqref{g62:Pn} with $\alpha=0.25$, $\beta=0.125$, s
 
 % -----------------------------------------------------------------------------
 \questao{Greenberg 7.1 --- full conditionals of the normal model.}
-\fonte{Greenberg, E. (2007), \textit{Introduction to Bayesian Econometrics}, Cambridge University Press, Exercise 7.1, p.~105 --- reproduced verbatim.}
+\fonte{Greenberg, E. (2007), \textit{Introduction to Bayesian Econometrics}, 1st ed., Cambridge University Press, Ch.~7 (``Simulation by MCMC Methods''), Exercise~7.1, printed p.~105 [PDF p.~120]; answer not given in the book --- reproduced verbatim.}
 \begin{enunciado}
 \textbf{7.1} Verify (7.1) and (7.2).
 \end{enunciado}
-\begin{contexto}{Greenberg \S7.1.1, p.~93}
+\begin{contexto}{Greenberg \S7.1.1, printed p.~93 [PDF p.~108], reproduced verbatim}
 Let $y_i\sim N(\mu,h^{-1})$, $i=1,\ldots,n$, be independently distributed, where the distribution has been parameterized in terms of the precision. We assume the conditionally conjugate priors $\mu\sim N(\mu_0,h_0^{-1})$ and $h\sim G(\alpha_0/2,\delta_0/2)$. [\ldots] From this specification, we have
 \[
 \pi(\mu,h|y)\propto h^{n/2}\exp\left[-\frac h2\sum(y_i-\mu)^2\right]\exp\left[-\frac{h_0}{2}(\mu-\mu_0)^2\right]\times h^{\alpha_0/2-1}\exp\left[-\frac{\delta_0h}{2}\right].
@@ -667,7 +689,7 @@ Substituting \eqref{g71:m4} into \eqref{g71:m2} gives (7.2), the kernel of $N\bi
 
 % -----------------------------------------------------------------------------
 \questao{Greenberg 7.3 --- Gibbs sampler for the coal-mining switch point.}
-\fonte{Greenberg, E. (2007), \textit{Introduction to Bayesian Econometrics}, Cambridge University Press, Exercise 7.3, p.~106 --- reproduced verbatim.}
+\fonte{Greenberg, E. (2007), \textit{Introduction to Bayesian Econometrics}, 1st ed., Cambridge University Press, Ch.~7 (``Simulation by MCMC Methods''), Exercise~7.3, printed p.~106 [PDF p.~121]; answer not given in the book --- reproduced verbatim.}
 \begin{enunciado}
 \textbf{7.3} Construct a Gibbs algorithm to analyze the Poisson model with unknown switch point. Given the specification in Equations (7.3) and (7.4), show that
 \[
@@ -681,7 +703,7 @@ and verify that
 \end{align*}
 Apply your algorithm to the mining disaster data analyzed by Carlin et al. (1992a); the data may be found in the article. Your analysis should generate marginal posterior distributions for $\theta_1$, $\theta_2$, $p(k)$, and the marginal likelihood computed by the method of Chib (1995). For simplicity, set $\alpha_{10}=\alpha_{20}=0.5$ and $\beta_{10}=\beta_{20}=1.0$. (Curiously, although these data have been analyzed from the Bayesian viewpoint in several papers, none of them present historical material that might shed light on when changes in parameters took place. For example, changes in government regulation, technology, or the location of mines might be expected to affect the probability of a disaster. A more general version of the model permits multiple switch points if necessary.)
 \end{enunciado}
-\begin{contexto}{Greenberg \S7.1.1, pp.~93--94, equations (7.3)--(7.4)}
+\begin{contexto}{Greenberg \S7.1.1, equations (7.3)--(7.4), printed pp.~93--94 [PDF pp.~108--109], reproduced verbatim}
 \[
 p(y_i)=\begin{cases}\dfrac{e^{-\theta_1}\theta_1^{y_i}}{y_i!}, & \text{for } i=1,\ldots,k,\\[8pt]\dfrac{e^{-\theta_2}\theta_2^{y_i}}{y_i!}, & \text{for } i=k+1,\ldots,n,\end{cases}\tag{7.3}
 \]
@@ -689,6 +711,32 @@ where $y_i=0,1,\ldots$, and the switch point $k$ is unknown. The specification i
 \[
 \theta_1\sim G(\alpha_{10},\beta_{10}),\quad\theta_2\sim G(\alpha_{20},\beta_{20}),\quad\pi(k=j)=1/n,\ j=1,\ldots,n.\tag{7.4}
 \]
+\end{contexto}
+\begin{contexto}{data: not printed in Greenberg; British coal-mining disasters per year, 1851--1962, as in Carlin, Gelfand and Smith (1992a), from Jarrett (1979); the series the check script embeds, verified in \path{.agent/notes/coal-mining-data.md}}
+$n=112$ years, $\sum_iy_i=191$ disasters ($125$ in 1851--1890, as on the lecturer's slides); $y_i$ is the count in year $1850+i$.
+\begin{center}\footnotesize\setlength{\tabcolsep}{4pt}
+\begin{tabular}{l*{10}{c}r}
+\toprule
+years & $+0$ & $+1$ & $+2$ & $+3$ & $+4$ & $+5$ & $+6$ & $+7$ & $+8$ & $+9$ & total\\
+\midrule
+1851--1860 & 4 & 5 & 4 & 1 & 0 & 4 & 3 & 4 & 0 & 6 & 31\\
+1861--1870 & 3 & 3 & 4 & 0 & 2 & 6 & 3 & 3 & 5 & 4 & 33\\
+1871--1880 & 5 & 3 & 1 & 4 & 4 & 1 & 5 & 5 & 3 & 4 & 35\\
+1881--1890 & 2 & 5 & 2 & 2 & 3 & 4 & 2 & 1 & 3 & 2 & 26\\
+1891--1900 & 2 & 1 & 1 & 1 & 1 & 3 & 0 & 0 & 1 & 0 & 10\\
+1901--1910 & 1 & 1 & 0 & 0 & 3 & 1 & 0 & 3 & 2 & 2 & 13\\
+1911--1920 & 0 & 1 & 1 & 1 & 0 & 1 & 0 & 1 & 0 & 0 & 5\\
+1921--1930 & 0 & 2 & 1 & 0 & 0 & 0 & 1 & 1 & 0 & 2 & 7\\
+1931--1940 & 3 & 3 & 1 & 1 & 2 & 1 & 1 & 1 & 1 & 2 & 16\\
+1941--1950 & 4 & 2 & 0 & 0 & 0 & 1 & 4 & 0 & 0 & 0 & 11\\
+1951--1960 & 1 & 0 & 0 & 0 & 0 & 0 & 1 & 0 & 0 & 1 & 3\\
+1961--1962 & 0 & 1 & & & & & & & & & 1\\
+\bottomrule
+\end{tabular}
+\end{center}
+\end{contexto}
+\begin{contexto}{Chib's (1995) method, Greenberg \S7.1.2, printed pp.~95--96 [PDF pp.~110--111]; summary}
+For any point $\theta^*$, Bayes theorem rearranged gives $f(y)=f(y|\theta^*)\pi(\theta^*)/\pi(\theta^*|y)$; $\theta^*$ is usually the posterior mean of the sample. The likelihood and prior ordinates are computed directly; the posterior ordinate is estimated from the Gibbs output. With two blocks, $\pi(\theta_1^*,\theta_2^*|y)=\pi(\theta_1^*|\theta_2^*,y)\,\pi(\theta_2^*|y)$ and $\hat\pi(\theta_2^*|y)=G^{-1}\sum_{g=1}^G\pi(\theta_2^*|\theta_1^{(g)},y)$, averaging the known full conditional over the draws $\theta_1^{(g)}$.
 \end{contexto}
 \resolespaco
 \begin{sol}
@@ -773,7 +821,7 @@ against the exact $\log m(y)=-179.4590$ from \eqref{g73:exact}.}
 
 % -----------------------------------------------------------------------------
 \questao{Greenberg 7.5 --- random-walk Metropolis--Hastings for the Laplace distribution.}
-\fonte{Greenberg, E. (2007), \textit{Introduction to Bayesian Econometrics}, Cambridge University Press, Exercise 7.5, p.~106 --- reproduced verbatim.}
+\fonte{Greenberg, E. (2007), \textit{Introduction to Bayesian Econometrics}, 1st ed., Cambridge University Press, Ch.~7 (``Simulation by MCMC Methods''), Exercise~7.5, printed p.~106 [PDF p.~121]; answer not given in the book --- reproduced verbatim.}
 \begin{enunciado}
 \textbf{7.5} Construct a random walk MH sampler to generate a sample of 10,000 from the Laplace distribution, $f(x)=(1/2)\,e^{-|x|}$, $-\infty<x<\infty$. Use $u\sim N(0,\sigma^2)$ to generate proposals $y=x^{(g-1)}+u$. Compare the mean, variances, and autocorrelations of the generated series for various values of $\sigma^2$.
 \end{enunciado}
@@ -821,11 +869,11 @@ A tiny step ($\sigma^2=0.1$) is almost always accepted but barely moves: $r_1=0.
 
 % -----------------------------------------------------------------------------
 \questao{Greenberg 7.8 --- MH within Gibbs with a tailored truncated-$t$ proposal.}
-\fonte{Greenberg, E. (2007), \textit{Introduction to Bayesian Econometrics}, Cambridge University Press, Exercise 7.8, p.~107 --- reproduced verbatim.}
+\fonte{Greenberg, E. (2007), \textit{Introduction to Bayesian Econometrics}, 1st ed., Cambridge University Press, Ch.~7 (``Simulation by MCMC Methods''), Exercise~7.8, printed p.~107 [PDF p.~122]; answer not given in the book --- reproduced verbatim.}
 \begin{enunciado}
 \textbf{7.8} Generalize Exercise 7.7 to allow for an unknown variance, $u_i\sim N(0,\sigma^2)$, with prior distribution $\sigma^2\sim\mathrm{IG}(5/2,3/2)$. Verify that $\sigma^2|y,\beta$ has an inverse gamma distribution, but that the distribution of $\beta|y,\sigma^2$ is not standard. Devise a two-block algorithm in which $\sigma^2|y,\beta$ is generated in a Gibbs step and $\beta$ is generated by a tailored kernel where $\hat\beta$ depends on $\sigma^2$, so that the mean and scale factor of the truncated Student-$t$ distribution must be recomputed at each step. Choose a value of $\sigma^2$ from its prior distribution, and generate and analyze a data set as in Exercise 7.7.
 \end{enunciado}
-\begin{contexto}{Greenberg, Exercise 7.7, pp.~106--107}
+\begin{contexto}{Greenberg, Exercise~7.7, printed pp.~106--107 [PDF pp.~121--122], reproduced verbatim}
 \textbf{7.7} Consider the model
 \[
 y_i=\beta x_i+u_i,\quad u_i\sim N(0,1),\quad i=1,\ldots,n,
@@ -911,12 +959,15 @@ for g in range(G + burn):
 
 % -----------------------------------------------------------------------------
 \questao{Greenberg 8.1 --- Bayesian regression for birth weight.}
-\fonte{Greenberg, E. (2007), \textit{Introduction to Bayesian Econometrics}, Cambridge University Press, Exercise 8.1, p.~132 --- reproduced verbatim.}
+\fonte{Greenberg, E. (2007), \textit{Introduction to Bayesian Econometrics}, 1st ed., Cambridge University Press, Ch.~8 (``Linear Regression and Extensions''), Exercise~8.1, printed p.~132 [PDF p.~147]; answer not given in the book --- reproduced verbatim.}
 \begin{enunciado}
 \textbf{8.1} Download the data in ``Birth weight II'' from the StatLabs Web site, www.stat.berkeley.\allowbreak edu/\allowbreak users/\allowbreak statlabs/\allowbreak labs.html. The variables are birth weight (ounces, 999 unknown), gestation (length of pregnancy in days, 999 unknown), parity (0 = firstborn, 9 is unknown), age (mother's age in years), height (mother's height in inches), weight (mother's prepregnancy weight in pounds), smoke (0 not now, 1 yes now, 9 = unknown).
 
 Specify a linear regression, where the response variable is birth weight, and the covariates are a constant and the remaining variables in the data set. Eliminate observations for which you do not have complete information on the variables. Specify prior distributions for the coefficients and the variance (or precision). Summarize the results for the dummy variable for smoking. Does smoking by the mother appear to affect the baby's birth weight?
 \end{enunciado}
+\begin{contexto}{data: StatLabs ``Birth weight II'' (Nolan and Speed, \textit{Stat Labs}), saved as \path{Listas/data/babies.data}, downloaded from \path{www.stat.berkeley.edu/users/statlabs/data/babies.data}, provenance in \path{Listas/data/README.md}; summary}
+1{,}236 births, one row each after a header line, whitespace-separated columns \texttt{bwt gestation parity age height weight smoke} (the seven variables of the statement, in that order). Missing-value codes actually present in the file: gestation 999, age 99, height 99, weight 999, smoke 9; birth weight has no missing values and parity is coded 0/1 only. Dropping incomplete rows leaves 1{,}174 births.
+\end{contexto}
 \resolespaco
 \begin{sol}
 \begin{notacao}
@@ -963,7 +1014,7 @@ For the smoking dummy, $P(\beta_{\text{smoke}}<0|y)=1.0000$ (all 10{,}000 draws 
 
 % -----------------------------------------------------------------------------
 \questao{Greenberg 8.8 --- logit posterior and latent data.}
-\fonte{Greenberg, E. (2007), \textit{Introduction to Bayesian Econometrics}, Cambridge University Press, Exercise 8.8, pp.~132--133 --- reproduced verbatim.}
+\fonte{Greenberg, E. (2007), \textit{Introduction to Bayesian Econometrics}, 1st ed., Cambridge University Press, Ch.~8 (``Linear Regression and Extensions''), Exercise~8.8, printed pp.~132--133 [PDF pp.~147--148]; answer not given in the book --- reproduced verbatim.}
 \begin{enunciado}
 \textbf{8.8} Verify that the posterior distribution of the logit model with a normal prior (Section 8.2.3) has the form
 \begin{align*}
@@ -972,7 +1023,7 @@ For the smoking dummy, $P(\beta_{\text{smoke}}<0|y)=1.0000$ (all 10{,}000 draws 
 \end{align*}
 and show that including the latent data in the sampler does not simplify the posterior distribution.
 \end{enunciado}
-\begin{contexto}{Greenberg \S8.2.3, pp.~126--127}
+\begin{contexto}{Greenberg \S8.2.3, printed pp.~126--127 [PDF pp.~141--142], reproduced verbatim}
 The binary logit model is another model for binary data. It is based on
 \[
 P(y_i=1)=P_i=\frac{\exp[x_i'\beta]}{1+\exp[x_i'\beta]},
@@ -1023,7 +1074,7 @@ and $\int_{-\infty}^0\lambda(y_i^*-x_i'\beta)dy_i^*=1-P_i$ for $y_i=0$.}
 
 % -----------------------------------------------------------------------------
 \questao{Tsay 12.1 --- normal mean, one observation.}
-\fonte{Tsay, R. S. (2010), \textit{Analysis of Financial Time Series}, 3rd ed., Wiley, Exercise 12.1, p.~670 --- reproduced verbatim.}
+\fonte{Tsay, R. S. (2010), \textit{Analysis of Financial Time Series}, 3rd ed., Wiley, Ch.~12 (``Markov Chain Monte Carlo Methods with Applications''), Exercise~12.1, printed p.~670 [PDF p.~697]; answer not given in the book --- reproduced verbatim.}
 \begin{enunciado}
 \textbf{12.1.} Suppose that $x$ is normally distributed with mean $\mu$ and variance 4. Assume that the prior distribution of $\mu$ is also normal with mean 0 and variance 25. What is the posterior distribution of $\mu$ given the data point $x$?
 \end{enunciado}
@@ -1055,14 +1106,14 @@ In precisions, $\eta_*=0.04+0.25=0.29$ and $1/0.29=3.448276$, matching \eqref{t1
 
 % -----------------------------------------------------------------------------
 \questao{Tsay 12.2 --- Gibbs conditionals for regression with AR($p$) errors.}
-\fonte{Tsay, R. S. (2010), \textit{Analysis of Financial Time Series}, 3rd ed., Wiley, Exercise 12.2, p.~670 --- reproduced verbatim.}
+\fonte{Tsay, R. S. (2010), \textit{Analysis of Financial Time Series}, 3rd ed., Wiley, Ch.~12 (``Markov Chain Monte Carlo Methods with Applications''), Exercise~12.2, printed p.~670 [PDF p.~697]; answer not given in the book --- reproduced verbatim.}
 \begin{enunciado}
 \textbf{12.2.} Consider the linear regression model with time series errors in Section 12.5. Assume that $z_t$ is an AR($p$) process (i.e., $z_t=\phi_1z_{t-1}+\cdots+\phi_pz_{t-p}+a_t$). Let $\boldsymbol\phi=(\phi_1,\ldots,\phi_p)'$ be the vector of AR parameters. Derive the conditional posterior distributions of $f(\boldsymbol\beta|\boldsymbol Y,\boldsymbol X,\boldsymbol\phi,\sigma^2)$, $f(\boldsymbol\phi|\boldsymbol Y,\boldsymbol X,\boldsymbol\beta,\sigma^2)$, and $f(\sigma^2|\boldsymbol Y,\boldsymbol X,\boldsymbol\beta,\boldsymbol\phi)$ using the conjugate prior distributions, that is, the priors are
 \[
 \boldsymbol\beta\sim N(\boldsymbol\beta_o,\boldsymbol\Sigma_o),\qquad\boldsymbol\phi\sim N(\boldsymbol\phi_o,\boldsymbol A_o),\qquad(v\lambda)/\sigma^2\sim\chi_v^2.
 \]
 \end{enunciado}
-\begin{contexto}{Tsay \S12.5, p.~624, equation (12.6)}
+\begin{contexto}{Tsay \S12.5, equation (12.6), printed p.~624 [PDF p.~651], reproduced verbatim}
 The model becomes
 \[
 y_t=\boldsymbol x_t'\boldsymbol\beta+z_t,\qquad z_t=\phi z_{t-1}+a_t,\qquad t=1,\ldots,n,\tag{12.6}
@@ -1140,11 +1191,11 @@ s2 = (v * lam + at @ at) / rng.chisquare(v + n - p)           # (Q17.11)
 
 % -----------------------------------------------------------------------------
 \questao{Tsay 12.3 --- two consecutive missing values in an AR($p$).}
-\fonte{Tsay, R. S. (2010), \textit{Analysis of Financial Time Series}, 3rd ed., Wiley, Exercise 12.3, p.~670 --- reproduced verbatim.}
+\fonte{Tsay, R. S. (2010), \textit{Analysis of Financial Time Series}, 3rd ed., Wiley, Ch.~12 (``Markov Chain Monte Carlo Methods with Applications''), Exercise~12.3, printed p.~670 [PDF p.~697]; answer not given in the book --- reproduced verbatim.}
 \begin{enunciado}
 \textbf{12.3.} Consider the linear AR($p$) model in Section 12.6.1. Suppose that $x_h$ and $x_{h+1}$ are two missing values with a joint prior distribution being multivariate normal with mean $\boldsymbol\mu_o$ and covariance matrix $\boldsymbol\Sigma_o$. Other prior distributions are the same as that in the text. What is the conditional posterior distribution of the two missing values?
 \end{enunciado}
-\begin{contexto}{Tsay \S12.6.1, pp.~629--630}
+\begin{contexto}{Tsay \S12.6.1, printed pp.~629--630 [PDF pp.~656--657], reproduced verbatim}
 For ease in presentation, consider an AR($p$) time series
 \[
 x_t=\phi_1x_{t-1}+\cdots+\phi_px_{t-p}+a_t,\tag{12.15}
@@ -1202,7 +1253,7 @@ The script (function \texttt{t123}) builds $\boldsymbol C$ for an AR(2), checks 
 
 % -----------------------------------------------------------------------------
 \questao{Bolfarine \& Sandoval 4.3 --- risk and Bayes risk, binomial.}
-\fonte{Bolfarine, H. and Sandoval, M. C. (2010), \textit{Introdução à Inferência Estatística}, 2nd ed., SBM, Exercício 4.3, p.~71 --- reproduced verbatim (Portuguese original).}
+\fonte{Bolfarine, H. and Sandoval, M. C. (2010), \textit{Introdução à Inferência Estatística}, 2nd ed., SBM, Ch.~4 (``Introdução à Teoria das Decisões''), Exercício~4.3, printed p.~71 [PDF p.~77]; answer not given in the book --- reproduced verbatim (Portuguese original).}
 \begin{enunciado}\begin{otherlanguage}{brazil}
 \textbf{4.3.} Considere uma única observação da variável aleatória $X\sim Binomial(m,\theta)$. Seja $l(\theta,d)=(\theta-d)^2$.\\
 (i) Encontre o risco de $d(X)=X/m$.\\
@@ -1233,7 +1284,7 @@ r(\pi,d)&=\int_0^1\frac{\theta(1-\theta)}{m}\,(1)\,d\theta\label{b43:c}\\
 
 % -----------------------------------------------------------------------------
 \questao{Bolfarine \& Sandoval 4.5 --- Bayes risk of $X$ under a gamma prior.}
-\fonte{Bolfarine, H. and Sandoval, M. C. (2010), \textit{Introdução à Inferência Estatística}, 2nd ed., SBM, Exercício 4.5, p.~71 --- reproduced verbatim (Portuguese original).}
+\fonte{Bolfarine, H. and Sandoval, M. C. (2010), \textit{Introdução à Inferência Estatística}, 2nd ed., SBM, Ch.~4 (``Introdução à Teoria das Decisões''), Exercício~4.5, printed p.~71 [PDF p.~77]; answer not given in the book --- reproduced verbatim (Portuguese original).}
 \begin{enunciado}\begin{otherlanguage}{brazil}
 \textbf{4.5.} Seja uma única observação da distribuição $Poisson(\theta)$. Encontre o risco de Bayes do estimador $d(X)=X$, com relação à perda quadrática e a priori $Gama(\alpha,\beta)$.
 \end{otherlanguage}\end{enunciado}
@@ -1264,7 +1315,7 @@ using $E(X)=E[E(X|\theta)]=E(\theta)=\alpha/\beta$ (checked numerically in the s
 
 % -----------------------------------------------------------------------------
 \questao{Bolfarine \& Sandoval 4.9 --- Bayes estimator of $P_\theta(X=0)$.}
-\fonte{Bolfarine, H. and Sandoval, M. C. (2010), \textit{Introdução à Inferência Estatística}, 2nd ed., SBM, Exercício 4.9, p.~72 --- reproduced verbatim (Portuguese original).}
+\fonte{Bolfarine, H. and Sandoval, M. C. (2010), \textit{Introdução à Inferência Estatística}, 2nd ed., SBM, Ch.~4 (``Introdução à Teoria das Decisões''), Exercício~4.9, printed p.~72 [PDF p.~78]; answer not given in the book --- reproduced verbatim (Portuguese original).}
 \begin{enunciado}\begin{otherlanguage}{brazil}
 \textbf{4.9.} Em uma área de reflorestamento, o número de árvores de determinada espécie, por hectare, com certa doença tem uma distribuição $Poisson(\theta)$. A distribuição a priori de $\theta$ é exponencial com média igual a 1. Encontre o estimador de Bayes de $P_\theta(X=0)$ com relação à perda quadrática..
 \end{otherlanguage}\end{enunciado}
@@ -1300,7 +1351,7 @@ e.g.\ $2/3$ for $x=0$ and $(2/3)^4=0.1975$ for $x=3$.}
 
 % -----------------------------------------------------------------------------
 \questao{Bolfarine \& Sandoval 4.10 --- Pareto prior for $U(0,\theta)$.}
-\fonte{Bolfarine, H. and Sandoval, M. C. (2010), \textit{Introdução à Inferência Estatística}, 2nd ed., SBM, Exercício 4.10, p.~72 --- reproduced verbatim (Portuguese original).}
+\fonte{Bolfarine, H. and Sandoval, M. C. (2010), \textit{Introdução à Inferência Estatística}, 2nd ed., SBM, Ch.~4 (``Introdução à Teoria das Decisões''), Exercício~4.10, printed p.~72 [PDF p.~78]; answer not given in the book --- reproduced verbatim (Portuguese original).}
 \begin{enunciado}\begin{otherlanguage}{brazil}
 \textbf{4.10.} Sejam $X_1,\ldots,X_n$ uma amostra aleatória da distribuição $U(0,\theta)$. Suponhamos que $\theta$ seja uma variável aleatória com função de densidade de probabilidade (Pareto)
 \[
@@ -1335,7 +1386,7 @@ d_B(\boldsymbol X)&=\int_M^\infty\theta\,\frac{(n+b)M^{n+b}}{\theta^{n+b+1}}d\th
 
 % -----------------------------------------------------------------------------
 \questao{Bolfarine \& Sandoval 5.11 --- equal-tailed Bayesian interval for a Poisson mean.}
-\fonte{Bolfarine, H. and Sandoval, M. C. (2010), \textit{Introdução à Inferência Estatística}, 2nd ed., SBM, Exercício 5.11, p.~89 --- reproduced verbatim (Portuguese original).}
+\fonte{Bolfarine, H. and Sandoval, M. C. (2010), \textit{Introdução à Inferência Estatística}, 2nd ed., SBM, Ch.~5 (``Estimação por Intervalo''), Exercício~5.11, printed p.~89 [PDF p.~95]; answer not given in the book --- reproduced verbatim (Portuguese original).}
 \begin{enunciado}\begin{otherlanguage}{brazil}
 \textbf{5.11.} Sejam $X_1,\ldots,X_n$ uma amostra aleatória de tamanho $n$ da distribuição $Poisson(\theta)$, com priori
 \[
@@ -1343,6 +1394,9 @@ d_B(\boldsymbol X)&=\int_M^\infty\theta\,\frac{(n+b)M^{n+b}}{\theta^{n+b+1}}d\th
 \]
 Construa um intervalo de confiança Bayesiano simétrico para $\theta$ com $\gamma=0{,}95$. Se $n=10$ e $\sum_{i=1}^nX_i=18$, como fica o intervalo?
 \end{otherlanguage}\end{enunciado}
+\begin{contexto}{Bolfarine \& Sandoval \S5.5, Definição~5.5.1 and Exemplos~5.5.1--5.5.2, printed pp.~85--87 [PDF pp.~91--93]; summary}
+Definição~5.5.1: $[t_1;t_2]$ is a Bayesian confidence interval for $\theta$ with coefficient $\gamma=1-\alpha$ if $\int_{t_1}^{t_2}\pi(\theta|\mathbf X)\,d\theta=\gamma$. Among the many such intervals, the book's examples take the \emph{symmetric} (equal-tailed) one: posterior probability $\alpha/2$ below $t_1$ and $\alpha/2$ above $t_2$. Gamma notation: $Gama(\alpha,\beta)$ has density $\beta^\alpha\theta^{\alpha-1}e^{-\beta\theta}/\Gamma(\alpha)$ (see the Instructions).
+\end{contexto}
 \resolespaco
 \begin{sol}
 \begin{notacao}
@@ -1373,7 +1427,7 @@ The posterior mean is $19/11=1.7273$ (MLE $\bar x=1.8$).}
 
 % -----------------------------------------------------------------------------
 \questao{Morettin \& Singer B.16 --- accept--reject for a truncated gamma.}
-\fonte{Morettin, P. A. and Singer, J. M. (2021), \textit{Estatística e Ciência de Dados} (preliminary version, April 2021), Apêndice B, Exercício 16, p.~478 --- reproduced verbatim (Portuguese original).}
+\fonte{Morettin, P. A. and Singer, J. M. (2021), \textit{Estatística e Ciência de Dados}, preliminary version (April 2021), Apêndice~B (``Noções de Simulação''), Exercício~16, printed p.~478 [PDF p.~488]; answer not given in the book --- reproduced verbatim (Portuguese original).}
 \begin{enunciado}\begin{otherlanguage}{brazil}
 16) Considere a distribuição gama truncada $\pi(x)\propto x^2\exp(-x)$, $0\le x\le1$. Simule uma amostra de tamanho 1.000 dessa distribuição usando o método da aceitação-rejeição com $g(x)=\exp(-x)$.
 \end{otherlanguage}\end{enunciado}
@@ -1413,10 +1467,13 @@ while len(acc) < 1000:
 
 % -----------------------------------------------------------------------------
 \questao{Morettin \& Singer B.19 --- accept--reject for discrete variables.}
-\fonte{Morettin, P. A. and Singer, J. M. (2021), \textit{Estatística e Ciência de Dados} (preliminary version, April 2021), Apêndice B, Exercício 19, p.~478 --- reproduced verbatim (Portuguese original).}
+\fonte{Morettin, P. A. and Singer, J. M. (2021), \textit{Estatística e Ciência de Dados}, preliminary version (April 2021), Apêndice~B (``Noções de Simulação''), Exercício~19, printed p.~478 [PDF p.~488]; answer not given in the book --- reproduced verbatim (Portuguese original).}
 \begin{enunciado}\begin{otherlanguage}{brazil}
 19) Considere o método da aceitação-rejeição no caso de variáveis discretas. Especificamente, suponha que queiramos simular valores de uma variável aleatória $X$, com probabilidades $\pi_j=P(X=j)$ e dispomos de um método para simular valores da variável aleatória $Y$, com probabilidades $g_j=P(Y=j)$. Suponha ainda, que exista uma constante $c$, tal que $\pi_j\le cg_j$, para todo $j$. Usando o algoritmo de aceitação-rejeição, mostre que $P(\text{aceitar})=1/c$ e que o número de iterações necessárias para obter $X$ é uma variável aleatória com distribuição geométrica com média $c$. Com esse resultado, mostre que $P(X=j)=\pi_j$.
 \end{otherlanguage}\end{enunciado}
+\begin{contexto}{Morettin \& Singer \S B.6.1 ``Amostragem por aceitação-rejeição'', printed p.~468 [PDF p.~478]; summary}
+The book's algorithm (continuous case, envelope $\pi\le Ag$): 1) draw $x$ from $g$; 2) draw $u\sim U(0,1)$ independently of $x$; 3) accept $x$ as a draw from $\pi$ if $u\le\pi(x)/[Ag(x)]$, otherwise return to 1). It shows $P(\text{aceitação})=1/A$ (B.14), so $A\ge1$. The exercise asks for the discrete version, with $c$ in the role of $A$ and p.m.f.s $\pi_j$, $g_j$ in place of the densities.
+\end{contexto}
 \resolespaco
 \begin{sol}
 \begin{notacao}
@@ -1450,14 +1507,14 @@ P(X=j)&=\sum_{k=1}^\infty\Big(1-\frac1c\Big)^{k-1}\frac{\pi_j}{c}\label{b19:d}\\
 
 % -----------------------------------------------------------------------------
 \questao{Morettin \& Singer C.5 --- chained data (data augmentation) algorithm.}
-\fonte{Morettin, P. A. and Singer, J. M. (2021), \textit{Estatística e Ciência de Dados} (preliminary version, April 2021), Apêndice C, Exercício 5, p.~489 --- reproduced verbatim (Portuguese original).}
+\fonte{Morettin, P. A. and Singer, J. M. (2021), \textit{Estatística e Ciência de Dados}, preliminary version (April 2021), Apêndice~C (``Algoritmos para dados aumentados''), Exercício~5, printed p.~489 [PDF p.~499]; answer not given in the book --- reproduced verbatim (Portuguese original).}
 \begin{enunciado}\begin{otherlanguage}{brazil}
 5) \textbf{Algoritmo de Dados Encadeados} (\textit{Chain Data Algorithm})\\
 Numa abordagem um pouco diferente do algoritmos para dados aumentados, iteramos sucessivamente de $p(\mathbf z|\boldsymbol\theta,\mathbf y)$ e $p(\boldsymbol\theta|\mathbf y,\mathbf z)$ para obter uma sequência de realizações $(\mathbf z^{(1)},\boldsymbol\theta^{(1)}),\ldots,(\mathbf z^{(n)},\boldsymbol\theta^{(n)})$ com as simulações de uma variável realizadas condicionalmente aos valores atuais da outra variável. Esperamos que a distribuição de equilíbrio dessa cadeia seja a distribuição conjunta $p(\mathbf z,\boldsymbol\theta|\mathbf y)$. Este algoritmo é um caso especial do amostrador de Gibbs, descrito na Nota de Capítulo 2 do Apêndice B. Normalmente, estaremos interessados nas distribuições marginais.
 
 Para os dados do Exemplo C.2, obtenha as sequências de realizações de $Z$ e $\theta$. Simule $n=200$ valores, desprezando os primeiros 50 valores, conhecidos como \textbf{valores de aquecimento}) (\textit{burn-in}).
 \end{otherlanguage}\end{enunciado}
-\begin{contexto}{Morettin \& Singer, Exemplo C.2, p.~480, excerpt}
+\begin{contexto}{Morettin \& Singer, Exemplo~C.2, printed p.~480 [PDF p.~490], excerpt reproduced verbatim}
 \begin{otherlanguage}{brazil}
 \textbf{Exemplo C.2.} Retomemos o problema da ligação genética discutido no Exemplo B.16, segundo o qual os dados $\mathbf y=(y_1,y_2,y_3,y_4)^\top=(125,18,20,34)^\top$ ocorrem com probabilidades $\pi_1=(2+\theta)/4$, $\pi_2=\pi_3=(1-\theta)/4$, $\pi_4=\theta/4$, $0<\theta<1$. [\ldots] Admitamos que $\mathbf x=(x_1,\ldots,x_5)^\top$ sejam os dados completos que ocorrem, respectivamente, com probabilidades $(1/2,\theta/4,(1-\theta)/4,(1-\theta)/4,\theta/4)$, mas que só observamos $y_1=x_1+x_2$, $y_2=x_3$, $y_3=x_4$ e $y_4=x_5$, [\ldots] Podemos simplificar as expressões acima obtendo
 \[
@@ -1499,6 +1556,238 @@ keep = out[50:]                                # drop 50 burn-in values
 \passo{check against the exact posterior}{Normalising (C.2) numerically gives $E(\theta|\mathbf y)=0.6228$ and s.d.\ $0.0509$; the posterior mode equals the MLE $0.62682$ of Tabela C.1 (flat prior). The chain's mean is $0.0073$ below the exact mean; with 150 draws the naive standard error is $0.0523/\sqrt{150}=0.0043$, and positive autocorrelation inflates it, so the gap is ordinary Monte Carlo error. A longer run would shrink it.}
 \intuicao{EM replaces the latent count by its expectation and maximises; the chained-data algorithm \emph{draws} the latent count and then \emph{draws} $\theta$. Its draws describe the whole posterior (spread included), and its marginal for $\theta$ centres on the same value EM finds.}
 \refbib{Morettin \& Singer \S C.2 (Exemplos C.2--C.3, pp.~480--482) and \S B.7, Nota 2 (O Amostrador de Gibbs, p.~472); Greenberg \S7.1 and \S8.2 (latent data).}
+\end{sol}
+
+% =============================================================================
+\bloco{5}{Original exercises}{syllabus gaps \,\textbullet\, 2 questions}
+
+% -----------------------------------------------------------------------------
+\questao{Original --- sparsity priors: horseshoe, normal--gamma, ridge and lasso.}
+\origem{original exercise on sparsity priors (horseshoe and normal--gamma), built on \path{Aula/class-03-04/materials/sparse-priors.pdf}, pp.~1--2 (Carvalho, Polson and Scott 2010: the horseshoe model, the shrinkage coefficient $\kappa_i$, Table~1 and Fig.~2) and pp.~4--7 (Griffin and Brown 2010: scale mixtures of normals, eq.~(2); the normal--gamma prior, eq.~(3), with variance $2\lambda\gamma^2$ and excess kurtosis $3/\lambda$; Figure~1); ridge and lasso as posterior modes: Izbicki \& Mendonça \S3.6, printed p.~42 [PDF p.~60]. Written for this list; no book gives it or its answer.}
+\begin{enunciado}
+Take the normal-means model of the horseshoe slide with $\sigma=1$ known: $y_i|\theta_i\sim N(\theta_i,1)$, $i=1,\ldots,p$, independent. Every prior below is a scale mixture of normals, $\theta_i|\psi_i\sim N(0,\psi_i)$, $\psi_i\sim G$, independent over $i$; $\kappa_i=1/(1+\psi_i)\in(0,1)$ is the shrinkage coefficient. The index $i$ is dropped below.
+\begin{enumerate}[label=\textbf{(\alph*)},leftmargin=2em]
+\item Show that $E(\theta|y,\psi)=(1-\kappa)y$, hence $E(\theta|y)=\{1-E(\kappa|y)\}y$, and that $p(\kappa|y)\propto p(\kappa)\,\kappa^{1/2}\exp(-\kappa y^2/2)$.
+\item \emph{Horseshoe} ($\tau=1$): $\psi=\lambda^2$ with $\lambda\sim C^+(0,1)$, density $2/\{\pi(1+\lambda^2)\}$, $\lambda>0$. Show that $\kappa\sim\text{Beta}(1/2,1/2)$ and compute $P(\kappa<0.1)$. Find $p(\kappa|y)$ and $E(\kappa|y=0)$, and show that $E(\kappa|y)\approx2/y^2$ for large $|y|$, so that $y-E(\theta|y)\to0$.
+\item \emph{Normal--gamma}: $\psi\sim\text{Ga}(\lambda,1/(2\gamma^2))$ (shape $\lambda$, rate $1/(2\gamma^2)$). Show that $\operatorname{Var}(\theta)=2\lambda\gamma^2$ and that the excess kurtosis of $\theta$ is $3/\lambda$. Show that $\lambda=1$ gives the double-exponential (Laplace) prior $\pi(\theta)=(2\gamma)^{-1}e^{-|\theta|/\gamma}$. Derive the implied density of $\kappa$ and describe it as $\kappa\to0$ and as $\kappa\to1$ when $\lambda<1$; contrast with (b).
+\item Show that the posterior mode of $\theta$ is $\frac{v}{1+v}\,y$ under the prior $N(0,v)$ (ridge) and $\operatorname{sign}(y)(|y|-1/\gamma)_+$ under the Laplace prior of (c) (lasso, soft thresholding). As $|y|\to\infty$, how does the bias $y-\hat\theta$ behave for ridge, lasso and horseshoe?
+\item In NumPy, compute $E(\theta|y)$ for $y\in\{0.5,1,2,3,5,10\}$ under: ridge ($v=2$); Laplace with $\gamma=1$ (its mode, and its posterior mean, the ``Bayesian lasso''); normal--gamma with $\lambda=0.1$, $\gamma^2=10$; horseshoe with $\tau=1$. All but the horseshoe have prior variance 2, as in Figure~1 of the slides. Use $10^6$ prior draws of $\psi$ weighted by the likelihood $N(y;0,1+\psi)$ (seed 2010), check against one-dimensional quadrature, and compare the shrinkage profiles.
+\end{enumerate}
+\end{enunciado}
+\resolespaco
+\begin{sol}
+\begin{notacao}
+\item $y$: observation; $\theta$: its mean; $\psi>0$: prior variance of $\theta$ (local scale squared); $\kappa=1/(1+\psi)$; $\phi$: standard normal density.
+\item Horseshoe: $\lambda>0$ is the local scale, $\psi=\lambda^2$. Normal--gamma: $\lambda>0$ is the gamma \emph{shape} (the slides' notation; a different $\lambda$), $\gamma>0$ a scale, $b=1/(2\gamma^2)$ the rate.
+\item $v>0$: ridge prior variance; $(x)_+=\max(x,0)$; $\hat\theta$: posterior mode.
+\end{notacao}
+\passo{(a) conditional on $\psi$}{Given $\psi$, prior and likelihood are both normal, so precisions add and the mean is precision-weighted (Question~3, \eqref{g33:s}--\eqref{g33:m} with $n=1$, $\mu_0=0$, $\sigma_0^2=\psi$):
+\begin{align}
+\theta|y,\psi&\sim N\Big(\frac{y}{1+1/\psi},\ \frac{1}{1+1/\psi}\Big)=N\big((1-\kappa)y,\ 1-\kappa\big),\label{o1:cond}
+\end{align}
+because $1/(1+1/\psi)=\psi/(1+\psi)=1-\kappa$. By iterated expectations,
+\begin{align}
+E(\theta|y)&=E\big[E(\theta|y,\psi)\,\big|\,y\big]=E\big[(1-\kappa)y\,|\,y\big]=\{1-E(\kappa|y)\}\,y.\label{o1:tower}
+\end{align}}
+\passo{(a) posterior of $\kappa$}{Integrating $\theta$ out, $y|\psi\sim N(0,1+\psi)=N(0,1/\kappa)$, so
+\begin{align}
+p(y|\kappa)&=\Big(\frac{\kappa}{2\pi}\Big)^{1/2}\exp\Big(-\frac{\kappa y^2}{2}\Big),\qquad
+p(\kappa|y)\propto p(\kappa)\,\kappa^{1/2}e^{-\kappa y^2/2}.\label{o1:pk}
+\end{align}}
+\passo{(b) prior of $\kappa$}{$\lambda=\{(1-\kappa)/\kappa\}^{1/2}$ is decreasing in $\kappa$, with
+\begin{align}
+\Big|\frac{d\lambda}{d\kappa}\Big|&=\frac12\,\kappa^{-3/2}(1-\kappa)^{-1/2},\qquad1+\lambda^2=\frac1\kappa.\label{o1:jac}
+\end{align}
+Substituting \eqref{o1:jac} into $p(\kappa)=p_\lambda(\lambda(\kappa))\,|d\lambda/d\kappa|$:
+\begin{align}
+p(\kappa)&=\frac{2\kappa}{\pi}\cdot\frac12\,\kappa^{-3/2}(1-\kappa)^{-1/2}=\frac{1}{\pi}\,\kappa^{-1/2}(1-\kappa)^{-1/2},\qquad0<\kappa<1,\label{o1:beta}
+\end{align}
+the Beta$(1/2,1/2)$ density, since $B(1/2,1/2)=\Gamma(1/2)^2/\Gamma(1)=\pi$. With $\kappa=\sin^2\varphi$,
+\begin{align}
+P(\kappa<0.1)&=\frac{2}{\pi}\arcsin\sqrt{0.1}=0.2048,\label{o1:p01}
+\end{align}
+and the share of the $10^6$ simulated $\kappa=1/(1+\lambda^2)$ below $0.1$ is $0.2049$.}
+\passo{(b) posterior of $\kappa$}{Substituting \eqref{o1:beta} into \eqref{o1:pk}:
+\begin{align}
+p(\kappa|y)&\propto\kappa^{-1/2}(1-\kappa)^{-1/2}\,\kappa^{1/2}e^{-\kappa y^2/2}=(1-\kappa)^{-1/2}e^{-\kappa y^2/2}.\label{o1:hspost}
+\end{align}
+At $y=0$ this is the Beta$(1,1/2)$ kernel, so $E(\kappa|y=0)=1/(1+1/2)=2/3$: with no signal the horseshoe shrinks by two thirds on average.}
+\passo{(b) large $|y|$}{Put $a=y^2/2$. By \eqref{o1:hspost},
+\begin{align}
+E(\kappa|y)&=\frac{\int_0^1\kappa(1-\kappa)^{-1/2}e^{-a\kappa}d\kappa}{\int_0^1(1-\kappa)^{-1/2}e^{-a\kappa}d\kappa}.\label{o1:ratio}
+\end{align}
+For large $a$ both integrands are negligible except near $\kappa=0$, where $(1-\kappa)^{-1/2}=1+O(\kappa)$; replacing it by $1$ and the upper limit by $\infty$:
+\begin{align}
+E(\kappa|y)&\approx\frac{\int_0^\infty\kappa e^{-a\kappa}d\kappa}{\int_0^\infty e^{-a\kappa}d\kappa}=\frac{1/a^2}{1/a}=\frac1a=\frac{2}{y^2},\label{o1:asym}\\
+y-E(\theta|y)&=E(\kappa|y)\,y\approx\frac{2}{y}\to0.\label{o1:bias}
+\end{align}
+At $y=10$ quadrature gives $E(\kappa|y)=0.0202$ against $2/y^2=0.0200$.}
+\passo{(c) moments}{By the variance decomposition and $E(\theta|\psi)=0$:
+\begin{align}
+\operatorname{Var}(\theta)&=E[\operatorname{Var}(\theta|\psi)]+\operatorname{Var}[E(\theta|\psi)]=E(\psi)=\lambda\cdot2\gamma^2=2\lambda\gamma^2.\label{o1:var}
+\end{align}
+A normal has $E(\theta^4|\psi)=3\psi^2$, and the gamma has $\operatorname{Var}(\psi)=\lambda(2\gamma^2)^2$:
+\begin{align}
+E(\theta^4)&=3E(\psi^2)=3\big[\lambda(2\gamma^2)^2+\lambda^2(2\gamma^2)^2\big]=12\gamma^4\lambda(1+\lambda),\label{o1:m4}\\
+\frac{E(\theta^4)}{\operatorname{Var}(\theta)^2}-3&=\frac{12\gamma^4\lambda(1+\lambda)}{4\lambda^2\gamma^4}-3=\frac{3(1+\lambda)}{\lambda}-3=\frac3\lambda.\label{o1:kurt}
+\end{align}
+Small $\lambda$ means heavy tails and a sharp peak at zero (Figure~1 of the slides).}
+\passo{(c) $\lambda=1$ is the Laplace prior}{With $\lambda=1$, $\psi\sim$ exponential with rate $b=1/(2\gamma^2)$:
+\begin{align}
+\pi(\theta)&=\int_0^\infty(2\pi\psi)^{-1/2}e^{-\theta^2/(2\psi)}\,b\,e^{-b\psi}\,d\psi.\label{o1:lap1}
+\end{align}
+The generalised-inverse-Gaussian integral $\int_0^\infty\psi^{-1/2}e^{-A/\psi-B\psi}d\psi=(\pi/B)^{1/2}e^{-2\sqrt{AB}}$ ($A\ge0$, $B>0$), with $A=\theta^2/2$ and $B=b$, gives $2\sqrt{AB}=|\theta|\sqrt{2b}=|\theta|/\gamma$; substituting into \eqref{o1:lap1}:
+\begin{align}
+\pi(\theta)&=\frac{b}{\sqrt{2\pi}}\Big(\frac{\pi}{b}\Big)^{1/2}e^{-|\theta|/\gamma}=\Big(\frac b2\Big)^{1/2}e^{-|\theta|/\gamma}=\frac{1}{2\gamma}e^{-|\theta|/\gamma}.\label{o1:lap}
+\end{align}
+(The script checks \eqref{o1:lap} by quadrature at $\theta=0.7$, $\gamma=1$.)}
+\passo{(c) implied prior of $\kappa$}{$\psi=(1-\kappa)/\kappa$, $|d\psi/d\kappa|=\kappa^{-2}$, and $p(\psi)\propto\psi^{\lambda-1}e^{-b\psi}$:
+\begin{align}
+p(\kappa)&\propto\Big(\frac{1-\kappa}{\kappa}\Big)^{\lambda-1}\exp\Big[-\frac{1-\kappa}{2\gamma^2\kappa}\Big]\kappa^{-2}=(1-\kappa)^{\lambda-1}\kappa^{-\lambda-1}\exp\Big[-\frac{1-\kappa}{2\gamma^2\kappa}\Big].\label{o1:ngk}
+\end{align}
+As $\kappa\to0$ the factor $e^{-1/(2\gamma^2\kappa)}$ goes to zero faster than $\kappa^{-\lambda-1}$ grows: $p(\kappa)\to0$, no prior mass at ``no shrinkage''. As $\kappa\to1$, $(1-\kappa)^{\lambda-1}\to\infty$ when $\lambda<1$: a pole at total shrinkage, which pulls noise to zero. The horseshoe \eqref{o1:beta} has a pole at \emph{both} ends: it also lets large signals through almost unshrunk (the ``horseshoe'' shape of Fig.~2 in the slides).}
+\passo{(d) posterior modes}{Under $N(0,v)$ the log posterior and its derivative are
+\begin{align}
+\ell(\theta)&=-\tfrac12(y-\theta)^2-\frac{\theta^2}{2v},\qquad\ell'(\theta)=y-\theta-\frac{\theta}{v}=0\ \Rightarrow\ \hat\theta=\frac{v}{1+v}\,y.\label{o1:ridge}
+\end{align}
+Under the Laplace prior \eqref{o1:lap}, $\ell(\theta)=-\tfrac12(y-\theta)^2-|\theta|/\gamma$. On $\theta>0$, $\ell'(\theta)=y-\theta-1/\gamma=0$ gives $\theta=y-1/\gamma$, admissible only if $y>1/\gamma$; symmetrically $\theta=y+1/\gamma$ if $y<-1/\gamma$. Otherwise ($|y|\le1/\gamma$) $\ell$ increases up to $0$ and decreases after it, so the mode is $0$:
+\begin{align}
+\hat\theta&=\operatorname{sign}(y)\,\big(|y|-1/\gamma\big)_+.\label{o1:soft}
+\end{align}
+With a design matrix $X$ in place of the identity the same two log posteriors are the ridge and lasso objectives (Izbicki \& Mendonça \S3.6). Biases as $|y|\to\infty$: ridge $y-\hat\theta=y/(1+v)$ grows without bound; lasso $1/\gamma$ stays constant; horseshoe $\approx2/y$ by \eqref{o1:bias} goes to zero.}
+\passo{(e) code (seed 2010; function \texttt{orig\_sparse})}{}
+\begin{lstlisting}
+rng = np.random.default_rng(2010); M = 10**6
+psi_hs = np.abs(rng.standard_cauchy(M)) ** 2     # horseshoe: lambda ~ C+(0,1), psi = lambda^2
+psi_bl = rng.gamma(1.0, 2 * 1.0, M)              # Laplace (NG, lambda=1, gamma^2=1)
+psi_ng = rng.gamma(0.1, 2 * 10.0, M)             # NG, lambda=0.1, gamma^2=10
+for y in (0.5, 1, 2, 3, 5, 10):
+    for psi in (psi_bl, psi_ng, psi_hs):
+        w = stats.norm.pdf(y, 0, np.sqrt(1 + psi))   # likelihood weight N(y; 0, 1+psi)
+        print(y * np.sum(w * psi / (1 + psi)) / w.sum())   # (Q27.2): y E(1-kappa|y)
+\end{lstlisting}
+\passo{(e) results}{Quadrature values of $E(\theta|y)$ (the ridge and lasso columns are \eqref{o1:ridge}--\eqref{o1:soft}); the Monte Carlo estimates differ from the quadrature by at most $0.0011$:
+\begin{center}\small
+\begin{tabular}{rcccccc}
+\toprule
+$y$ & ridge, $v=2$ & lasso mode & Laplace mean & NG, $\lambda=0.1$ & horseshoe & $E(\kappa|y)$, horseshoe\\
+\midrule
+0.5 & 0.3333 & 0 & 0.2410 & 0.0693 & 0.1723 & 0.6554\\
+1 & 0.6667 & 0 & 0.5032 & 0.1648 & 0.3797 & 0.6203\\
+2 & 1.3333 & 1 & 1.1611 & 0.6360 & 1.0625 & 0.4687\\
+3 & 2.0000 & 2 & 2.0258 & 1.9283 & 2.2101 & 0.2633\\
+5 & 3.3333 & 4 & 4.0000 & 4.4737 & 4.5791 & 0.0842\\
+10 & 6.6667 & 9 & 9.0000 & 9.5901 & 9.7979 & 0.0202\\
+\bottomrule
+\end{tabular}
+\end{center}
+Ridge shrinks every observation by the same factor $2/3$, so $y=10$ comes back as $6.67$. The Laplace prior, as mode or mean, subtracts about $1/\gamma=1$ from large $y$ (both give $9.00$ at $y=10$). The normal--gamma with $\lambda=0.1$ crushes small observations hardest ($0.07$ at $y=0.5$) and keeps large ones closer ($9.59$). The horseshoe keeps $9.80$ of $y=10$, a bias of $0.20\approx2/y$, while still shrinking $y=0.5$ by two thirds.}
+\intuicao{A sparsity prior needs two things at once: lots of mass near $\theta=0$ (to kill noise) and heavy tails (to leave signals alone). In $\kappa$-space that is mass near $\kappa=1$ and near $\kappa=0$. Ridge has a single fixed $\kappa$; the Laplace and normal--gamma priors put mass near $\kappa=1$ but none near $\kappa=0$, so they still bias big signals by a constant; the horseshoe's Beta$(1/2,1/2)$ covers both ends.}
+\refbib{Slides \texttt{sparse-priors.pdf} (Carvalho, Polson and Scott 2010; Griffin and Brown 2010); class code \texttt{sparseregression-simulation-R.txt} (ridge, lasso and horseshoe priors in a sparse regression); Izbicki \& Mendonça \S3.6; ISLP \S6.2 (ridge and lasso).}
+\end{sol}
+
+% -----------------------------------------------------------------------------
+\questao{Original --- Hamiltonian Monte Carlo against random-walk Metropolis.}
+\origem{original exercise on Hamiltonian Monte Carlo, built on \path{Aula/class-03-04/materials/exemplos-1-2-3-R-STAN.txt} (Stan Examples 1--3 of classes 3+4, whose \path{sampling()} calls run Stan's HMC/NUTS sampler) and \path{aprendizagembayesiana-bayesianingredients.pdf}, pp.~53--56 (Monte Carlo). No class 3+4 slide derives HMC, so the leapfrog algorithm follows Neal (2011), ``MCMC using Hamiltonian dynamics'', \textit{Handbook of Markov Chain Monte Carlo}, ch.~5; random-walk MH as in Greenberg \S7.2.1 (Question~12). Written for this list; no book gives it or its answer.}
+\begin{enunciado}
+The target is $\pi(\theta)=N_2(0,\Sigma)$ with $\Sigma=\begin{pmatrix}1&\rho\\\rho&1\end{pmatrix}$, $\rho=0.95$: the elongated shape of a posterior with two strongly correlated parameters. Hamiltonian Monte Carlo (HMC) adds a momentum $p\sim N_2(0,I)$, independent of $\theta$, and uses the Hamiltonian $H(\theta,p)=U(\theta)+\frac12p'p$, $U(\theta)=-\log\pi(\theta)+\text{const}=\frac12\theta'\Sigma^{-1}\theta$. One HMC iteration draws a fresh $p$, runs $L$ leapfrog steps of size $\varepsilon$ from $(\theta,p)$ to $(\theta^*,p^*)$, and accepts $\theta^*$ with probability $\min\{1,\exp[H(\theta,p)-H(\theta^*,p^*)]\}$.
+\begin{enumerate}[label=\textbf{(\alph*)},leftmargin=2em]
+\item Write Hamilton's equations $d\theta/dt=\partial H/\partial p$, $dp/dt=-\partial H/\partial\theta$ for this $H$. Show that $H$ is constant along their solutions and that the flow preserves volume.
+\item One leapfrog step is $p_{1/2}=p-\frac\varepsilon2\nabla U(\theta)$, $\theta'=\theta+\varepsilon p_{1/2}$, $p'=p_{1/2}-\frac\varepsilon2\nabla U(\theta')$. Show that each of the three updates has Jacobian determinant 1 and that the step is reversible: applied to $(\theta',-p')$ it returns $(\theta,-p)$. Use both facts to explain the acceptance probability above, and why it would equal 1 if the dynamics were solved exactly.
+\item In one dimension with $U(q)=q^2/(2s^2)$, show that one leapfrog step maps $(q,p)'$ to $A(q,p)'$ for a matrix $A$ with $\det A=1$, and that $\tilde H=\frac12p^2+\frac{q^2}{2s^2}\big(1-\frac{\varepsilon^2}{4s^2}\big)$ is exactly conserved. Deduce that the energy error stays bounded and of order $\varepsilon^2$ when $\varepsilon<2s$, and that the iterates diverge when $\varepsilon>2s$. What is the largest stable $\varepsilon$ for the bivariate target?
+\item From $\theta=(0.5,0.3)'$, $p=(-0.4,0.9)'$, run 100 leapfrog steps with $\varepsilon\in\{0.05,0.1,0.2,0.45\}$ and report $\max|H-H_0|$.
+\item With seed 2026 and start $\theta=0$, run HMC with $\varepsilon=0.25$, $L=8$ for 5{,}000 iterations (40{,}000 gradient evaluations), and random-walk MH with proposal $\theta+cz$, $z\sim N_2(0,I)$, for 40{,}000 iterations (40{,}000 density evaluations), $c\in\{0.25,0.5,1\}$. Report acceptance rates, the effective sample size (ESS) of $\theta_1$ and of $\theta_1^2$, and ESS per 1{,}000 evaluations. Then rerun HMC with $\varepsilon=0.15$, $L=30$ and explain what happens.
+\end{enumerate}
+\end{enunciado}
+\resolespaco
+\begin{sol}
+\begin{notacao}
+\item $\theta\in\mathbb R^2$: position (the parameters); $p\in\mathbb R^2$: momentum, unit mass; $P=\Sigma^{-1}$, so $\nabla U(\theta)=P\theta$; eigenvalues of $\Sigma$: $1\pm\rho=1.95,\ 0.05$.
+\item $\varepsilon>0$: step size; $L$: steps per trajectory; $(\theta^*,p^*)$: end of the trajectory; $H_0$: energy at the start.
+\item ESS of a chain $x_1,\ldots,x_N$: $N/\tau$, $\tau=-1+2\sum_{m\ge0}(\hat\rho_{2m}+\hat\rho_{2m+1})$ summed while the pair sums are positive (Geyer's initial positive sequence), $\hat\rho_k$ the lag-$k$ sample autocorrelation.
+\end{notacao}
+\passo{(a) Hamilton's equations}{Here $\partial H/\partial p=p$ and $\partial H/\partial\theta=P\theta$:
+\begin{align}
+\dot\theta&=p,\qquad\dot p=-P\theta.\label{o2:ham}
+\end{align}
+Along any solution of Hamilton's equations, by the chain rule,
+\begin{align}
+\frac{dH}{dt}&=\Big(\frac{\partial H}{\partial\theta}\Big)'\dot\theta+\Big(\frac{\partial H}{\partial p}\Big)'\dot p=\Big(\frac{\partial H}{\partial\theta}\Big)'\frac{\partial H}{\partial p}-\Big(\frac{\partial H}{\partial p}\Big)'\frac{\partial H}{\partial\theta}=0.\label{o2:cons}
+\end{align}
+The velocity field $F=(\partial H/\partial p,\,-\partial H/\partial\theta)$ has divergence $\sum_j\big(\partial^2H/\partial\theta_j\partial p_j-\partial^2H/\partial p_j\partial\theta_j\big)=0$, so by Liouville's theorem the flow preserves volume.}
+\passo{(b) volume and reversibility}{Each update changes one block by a function of the other block only. Their Jacobians are block triangular with identity diagonal blocks:
+\begin{align}
+\frac{\partial(\theta,p_{1/2})}{\partial(\theta,p)}&=\begin{pmatrix}I&0\\-\frac\varepsilon2P&I\end{pmatrix},\qquad
+\frac{\partial(\theta',p_{1/2})}{\partial(\theta,p_{1/2})}=\begin{pmatrix}I&\varepsilon I\\0&I\end{pmatrix},\label{o2:jac}
+\end{align}
+both with determinant 1 (the third update is like the first), so the step preserves volume. Reversibility: start at $(\theta',-p')$. The first half step gives $-p'-\frac\varepsilon2P\theta'=-p_{1/2}$; the position step gives $\theta'+\varepsilon(-p_{1/2})=\theta$; the last half step gives $-p_{1/2}-\frac\varepsilon2P\theta=-p$. The same holds for $L$ steps.}
+\passo{(b) acceptance probability}{Let the proposal be $(\theta,p)\mapsto(\theta^*,-p^*)$: $L$ leapfrog steps then a momentum flip. By reversibility this map is its own inverse, and it preserves volume, so it is a symmetric deterministic proposal: the MH ratio reduces to the ratio of joint target densities,
+\begin{align}
+\frac{\pi(\theta^*)\phi_2(-p^*)}{\pi(\theta)\phi_2(p)}&=\frac{e^{-U(\theta^*)-\frac12p^{*\prime}p^*}}{e^{-U(\theta)-\frac12p'p}}=\exp\big[H(\theta,p)-H(\theta^*,p^*)\big],\label{o2:acc}
+\end{align}
+the flip being harmless because $\frac12p'p$ is even in $p$. Redrawing $p\sim N_2(0,I)$ is a Gibbs step on the momentum, so the chain leaves $\pi(\theta)\phi_2(p)$ invariant and its $\theta$-marginal is $\pi$. With the exact flow \eqref{o2:cons}, $H(\theta^*,p^*)=H(\theta,p)$ and \eqref{o2:acc} equals 1: rejections come only from the discretisation error.}
+\passo{(c) the leapfrog matrix}{With $U'(q)=q/s^2$:
+\begin{align}
+p_{1/2}&=p-\frac{\varepsilon}{2s^2}q,\label{o2:l1}\\
+q'&=q+\varepsilon p_{1/2}=\Big(1-\frac{\varepsilon^2}{2s^2}\Big)q+\varepsilon p,\label{o2:l2}\\
+p'&=p_{1/2}-\frac{\varepsilon}{2s^2}q'=\Big(1-\frac{\varepsilon^2}{2s^2}\Big)p-\frac{\varepsilon}{s^2}\Big(1-\frac{\varepsilon^2}{4s^2}\Big)q,\label{o2:l3}
+\end{align}
+where \eqref{o2:l3} substitutes \eqref{o2:l1}--\eqref{o2:l2}. With $d=1-\varepsilon^2/(2s^2)$ and $\omega=s^{-2}\big(1-\varepsilon^2/(4s^2)\big)$,
+\begin{align}
+A&=\begin{pmatrix}d&\varepsilon\\-\varepsilon\omega&d\end{pmatrix},\qquad\det A=d^2+\varepsilon^2\omega.\label{o2:A}
+\end{align}
+Expanding, $d^2=1-\varepsilon^2/s^2+\varepsilon^4/(4s^4)$ and $\varepsilon^2\omega=\varepsilon^2/s^2-\varepsilon^4/(4s^4)$, so $\det A=1$.}
+\passo{(c) the conserved quantity}{$\tilde H=\frac12(\omega q^2+p^2)$ is conserved if $A'DA=D$ with $D=\operatorname{diag}(\omega,1)$:
+\begin{align}
+A'DA&=\begin{pmatrix}\omega d^2+\varepsilon^2\omega^2&\omega d\varepsilon-\varepsilon\omega d\\ \omega d\varepsilon-\varepsilon\omega d&\omega\varepsilon^2+d^2\end{pmatrix}=\begin{pmatrix}\omega(d^2+\varepsilon^2\omega)&0\\0&d^2+\varepsilon^2\omega\end{pmatrix}=D,\label{o2:shadow}
+\end{align}
+using $d^2+\varepsilon^2\omega=\det A=1$. Since $H-\tilde H=\frac{q^2}{2s^2}-\frac{\omega q^2}{2}=\frac{\varepsilon^2}{8s^4}q^2$ and $\tilde H$ never changes,
+\begin{align}
+H-H_0&=\frac{\varepsilon^2}{8s^4}\big(q^2-q_0^2\big).\label{o2:err}
+\end{align}
+If $\varepsilon<2s$, $\omega>0$ and $(q,p)$ stays on the ellipse $\tilde H=\tilde H_0$: $q$ is bounded and the error \eqref{o2:err} is $O(\varepsilon^2)$ and does not grow with the number of steps. If $\varepsilon>2s$, $|\operatorname{tr}A|=|2-\varepsilon^2/s^2|>2$; the eigenvalues of $A$ are real with product $\det A=1$, so one exceeds 1 in modulus and the iterates grow geometrically.}
+\passo{(c) the bivariate target}{Let $\Sigma=V\Lambda V'$ with $V$ orthogonal. In $z=V'\theta$, $r=V'p$ the Hamiltonian splits into two independent oscillators with $s^2=1.95$ and $s^2=0.05$, and the leapfrog step commutes with the rotation. Both must be stable:
+\begin{align}
+\varepsilon&<2\sqrt{\lambda_{\min}(\Sigma)}=2\sqrt{1-\rho}=2\sqrt{0.05}=0.4472.\label{o2:epsmax}
+\end{align}
+The narrow direction (s.d.\ $0.224$) caps the step size. In $\theta$ coordinates the conserved quantity is $\tilde H=H-\frac{\varepsilon^2}{8}\theta'P^2\theta$, which the script checks to $10^{-10}$ along every stable trajectory of part (d).}
+\passo{(d) energy error (function \texttt{orig\_hmc})}{$\max|H-H_0|$ over 100 steps: $0.005343$ ($\varepsilon=0.05$), $0.02201$ ($0.1$), $0.1059$ ($0.2$), and $2.4\times10^{20}$ ($0.45>0.4472$). Doubling $\varepsilon$ multiplies the error by $4.1$ and then $4.8$, close to the factor $4$ that \eqref{o2:err} predicts for small $\varepsilon$; just above the bound \eqref{o2:epsmax} the trajectory explodes.}
+\passo{(e) code (seed 2026)}{}
+\begin{lstlisting}
+def leapfrog(q, p, eps, L):
+    p = p - 0.5 * eps * PREC @ q                  # half step in p, statement (b)
+    for step in range(L):
+        q = q + eps * p                           # full step in theta
+        if step < L - 1:
+            p = p - eps * PREC @ q
+    return q, p - 0.5 * eps * PREC @ q            # last half step in p
+for i in range(N):                                # HMC
+    p = rng.normal(size=2); qn, pn = leapfrog(q, p, eps, L)
+    if np.log(rng.uniform()) < energy(q, p) - energy(qn, pn):   # (Q28.4)
+        q = qn
+    out[i] = q
+\end{lstlisting}
+\passo{(e) results}{\par
+\begin{center}\small
+\begin{tabular}{lrrrrrr}
+\toprule
+& & & \multicolumn{2}{c}{ESS} & \multicolumn{2}{c}{ESS per 1{,}000 evaluations}\\
+\cmidrule(lr){4-5}\cmidrule(lr){6-7}
+sampler & draws & acceptance & $\theta_1$ & $\theta_1^2$ & $\theta_1$ & $\theta_1^2$\\
+\midrule
+HMC, $\varepsilon=0.25$, $L=8$ & 5{,}000 & 0.9906 & 3{,}701 & 4{,}544 & 92.5 & 113.6\\
+RW-MH, $c=0.25$ & 40{,}000 & 0.6685 & 226 & 422 & 5.6 & 10.5\\
+RW-MH, $c=0.5$ & 40{,}000 & 0.4452 & 515 & 619 & 12.9 & 15.5\\
+RW-MH, $c=1$ & 40{,}000 & 0.2374 & 808 & 1{,}597 & 20.2 & 39.9\\
+\midrule
+HMC, $\varepsilon=0.15$, $L=30$ & 5{,}000 & 0.9628 & 35{,}992 & 15 & 239.9 & 0.1\\
+\bottomrule
+\end{tabular}
+\end{center}
+For the same 40{,}000 evaluations of the target (or its gradient), HMC delivers $4.6$ times the ESS of the best random walk for $\theta_1$ ($92.5$ vs $20.2$) and $2.8$ times for $\theta_1^2$ ($113.6$ vs $39.9$), with almost every proposal accepted. The random walk is stuck in a dilemma set by the narrow direction: small $c$ accepts often but crawls along the long axis, large $c$ is rejected three times out of four. HMC's trajectories follow the gradient along the ridge, $\varepsilon L=2$ units per iteration.}
+\passo{(e) the rerun with $\varepsilon=0.15$, $L=30$}{The trajectory length is $\varepsilon L=4.5$, almost exactly half the period of the slow oscillator, $\pi s=\pi\sqrt{1.95}=4.39$. Every trajectory carries $\theta$ to nearly $-\theta$ along the long axis: the lag-1 autocorrelation of $\theta_1$ is $-0.901$. Alternating signs make the ESS of $\theta_1$ exceed the number of draws ($35{,}992>5{,}000$), but $\theta_1^2$ barely moves between iterations: its ESS is $15$, and the sample variance of $\theta_1$ is $1.189$ against the true $1$. The same chain looks superb for one function and useless for another.}
+\intuicao{HMC turns the gradient into long, coherent moves that the Metropolis step almost always accepts, because the leapfrog integrator nearly conserves energy as long as $\varepsilon$ stays below the stability bound of the narrowest direction. Its weak spot is the choice of $\varepsilon$ and $L$: a fixed trajectory length can resonate with the target, as the rerun shows. Stan's NUTS sampler, which runs the class examples, tunes $\varepsilon$ during warm-up and picks the trajectory length on the fly (stopping when the path starts to turn back), which removes both choices.}
+\refbib{Class code \texttt{exemplos-1-2-3-R-STAN.txt}; Neal (2011), \textit{Handbook of MCMC}, ch.~5; Greenberg \S7.2.1 and \S7.3 (random-walk MH, autocorrelation and n.s.e.); Question~12 (random-walk MH tuning).}
 \end{sol}
 
 \end{document}

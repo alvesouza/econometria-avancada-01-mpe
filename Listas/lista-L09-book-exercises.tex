@@ -25,6 +25,7 @@
 % swap solutions. Redefine DefaultCutFileName; overriding CommentCutFile alone is reset by comment.sty.
 \def\DefaultCutFileName{\def\CommentCutFile{\jobname.cut}}
 \usepackage{needspace}
+\usepackage[hyphens]{url}   % \path{} for long file paths in Origin lines (breaks at / . -)
 \usepackage{xcolor}
 \usepackage{microtype}
 \usepackage{booktabs}
@@ -65,6 +66,10 @@
   \textbf{Question \thequestao.}~#1\par}
 % Source line that opens every question (estilo-avaliacao §5, book questions)
 \newcommand{\fonte}[1]{\par\noindent{\small\textit{Source:} #1}\par\smallskip}
+% Origin line that opens every ORIGINAL exercise (never a book source line), styled like \fonte
+\newcommand{\origem}[1]{\par\noindent{\small\textit{Origin:} #1}\par\smallskip}
+% Short summary, after a statement, of what it refers to (model, data, sample, numbers), with page refs
+\newenvironment{refmat}{\par\smallskip\noindent{\small\textbf{Referenced material.}}\begin{itemize}[leftmargin=1.4em,topsep=1pt,itemsep=1pt]\small}{\end{itemize}}
 
 % Notation list that opens every solution (estilo-avaliacao §4, "Equations, notation and layout").
 \newenvironment{notacao}{\par\smallskip\noindent\textbf{Notation.}\begin{itemize}[leftmargin=1.4em,topsep=1pt,itemsep=0pt]\small}{\end{itemize}}
@@ -93,7 +98,12 @@
 
 {\footnotesize\noindent\textbf{Instructions.} These are the \emph{Practice} items of Class~9 in
 \texttt{Map/class-plan.md}: Tsay 8.1, 8.2, 8.5, 8.7; Tsay 9.7; Tsay 10.1--10.6; Greenberg 10.4.
-Every question opens with a source line, and the statement is reproduced verbatim from the book PDF.
+Every book question opens with a source line, and the statement is reproduced verbatim from the book PDF;
+when a statement refers to an example, a model, an equation or a data file described elsewhere, a
+\emph{Referenced material} block after it summarizes what is needed, with page references.
+Questions 13--16 are \emph{original exercises} (no book on disk has exercises on large BVARs, FAVARs,
+TVP-VARs or factor stochastic volatility): each opens with an \emph{Origin} line naming the class slides it is
+built on, and uses simulated data with fixed NumPy seeds.
 Data exercises use Tsay's data files (\texttt{Listas/data/}, provenance in \texttt{Listas/data/README.md})
 and are solved in Python (NumPy, SciPy, \texttt{statsmodels}); the multivariate GARCH models are
 estimated by Gaussian maximum likelihood written in NumPy and \texttt{scipy.optimize}.
@@ -105,8 +115,7 @@ Show your steps.\par}
 
 % ---------------------------------------------------------------- Q1 = T 8.1
 \questao{Cross-correlation matrices and the multivariate portmanteau test (Tsay 8.1).}
-\fonte{Tsay (2010), \textit{Analysis of Financial Time Series}, 3rd ed., Chapter~8, Exercise~8.1,
-printed p.~462. Reproduced verbatim.}
+\fonte{Tsay, R.~S. (2010), \textit{Analysis of Financial Time Series}, 3rd ed., Chapter~8, Exercise~8.1, printed p.~462 [PDF p.~489]; answer not given in the book; reproduced verbatim.}
 
 \begin{quote}\small
 8.1. Consider the monthly log stock returns, in percentages and including dividends, of Merck \&
@@ -221,8 +230,7 @@ stock'' pattern; it is small for large, liquid stocks, as here.}
 
 % ---------------------------------------------------------------- Q2 = T 8.2
 \questao{Bivariate AR and MA models for interest-rate changes; structural form (Tsay 8.2).}
-\fonte{Tsay (2010), \textit{Analysis of Financial Time Series}, 3rd ed., Chapter~8, Exercise~8.2,
-printed pp.~462--463. Reproduced verbatim.}
+\fonte{Tsay, R.~S. (2010), \textit{Analysis of Financial Time Series}, 3rd ed., Chapter~8, Exercise~8.2, printed pp.~462--463 [PDF pp.~489--490]; answer not given in the book; reproduced verbatim.}
 
 \begin{quote}\small
 8.2. The Federal Reserve Bank of St.\ Louis publishes selected interest rates and U.S.\ financial data
@@ -367,8 +375,7 @@ captures the decay through its recursion.}
 
 % ---------------------------------------------------------------- Q3 = T 8.5
 \questao{A seasonal bivariate AR(4) model (Tsay 8.5).}
-\fonte{Tsay (2010), \textit{Analysis of Financial Time Series}, 3rd ed., Chapter~8, Exercise~8.5,
-printed p.~463. Reproduced verbatim.}
+\fonte{Tsay, R.~S. (2010), \textit{Analysis of Financial Time Series}, 3rd ed., Chapter~8, Exercise~8.5, printed p.~463 [PDF p.~490]; answer not given in the book; reproduced verbatim.}
 
 \begin{quote}\small
 8.5. The bivariate AR(4) model $\bx_t-\bPhi_4\bx_{t-4}=\bphi_0+\ba_t$ is a special seasonal model with
@@ -463,8 +470,7 @@ the companion eigenvalues and \eqref{eq:q3c} numerically on a simulated example.
 
 % ---------------------------------------------------------------- Q4 = T 8.7
 \questao{VAR, impulse responses, forecasts, cointegration and ECM for 1- and 3-year rates (Tsay 8.7).}
-\fonte{Tsay (2010), \textit{Analysis of Financial Time Series}, 3rd ed., Chapter~8, Exercise~8.7,
-printed pp.~463--464. Reproduced verbatim.}
+\fonte{Tsay, R.~S. (2010), \textit{Analysis of Financial Time Series}, 3rd ed., Chapter~8, Exercise~8.7, printed pp.~463--464 [PDF pp.~490--491]; answer not given in the book; reproduced verbatim.}
 
 \begin{quote}\small
 8.7. Consider the monthly U.S.\ 1-year and 3-year Treasury constant maturity rates from April 1953 to
@@ -485,6 +491,20 @@ that the forecast origin is March 2004.
 \item Compare the forecasts produced by the VAR model and the ECM.
 \end{enumerate}
 \end{quote}
+\begin{refmat}
+\item \textit{Data.} \texttt{m-gs1n3-5304.txt}: five columns (1-year rate, 3-year rate, year, month, day),
+monthly, April 1953--March 2004, 612 observations, rates in percent.
+\item \textit{Example 8.6} (Tsay \S8.4, printed pp.~425--426 [PDF pp.~452--453]): the same two FRB St.\ Louis
+series, April 1953--January 2001 (574 observations), analysed in \emph{logs}. The $M(i)$ statistics and AIC
+point to a VAR(4); Tsay fits a VARMA(2,1) by exact likelihood (his Table~8.7) and reports a residual
+contemporaneous correlation of $2.50/\sqrt{3.58\times2.19}=0.893$. The exercise uses the levels and a longer span.
+\item \textit{Restricted constant} (Tsay \S8.6.1, case 2, printed p.~435 [PDF p.~462]): in the ECM
+$\Delta\bx_t=\bm\alpha(\bm\beta'\bx_{t-1}+\bm c_0)+\sum_{i=1}^{p-1}\bPhi_i^*\Delta\bx_{t-i}+\ba_t$ the constant
+enters only through the cointegrating relation, so the components of $\bx_t$ are I(1) without drift and
+$w_t=\bm\beta'\bx_t$ has the nonzero mean $-\bm c_0$. Johansen's trace and maximum-eigenvalue tests of the rank
+of $\bm\Pi=\bm\alpha\bm\beta'$ are in \S8.6.3 (printed p.~436 [PDF p.~463]); Tsay picks this case for interest rates
+in \S8.6.5 (printed p.~439 [PDF p.~466]) because there is no a priori reason to expect a drift.
+\end{refmat}
 \resolespaco
 \begin{sol}
 \begin{notacao}
@@ -628,8 +648,7 @@ pull forecasts towards the sample mean; the ECM writes the restriction down.}
 
 % ---------------------------------------------------------------- Q5 = T 9.7
 \questao{A macroeconomic factor model with VAR surprises (Tsay 9.7).}
-\fonte{Tsay (2010), \textit{Analysis of Financial Time Series}, 3rd ed., Chapter~9, Exercise~9.7,
-printed p.~503. Reproduced verbatim.}
+\fonte{Tsay, R.~S. (2010), \textit{Analysis of Financial Time Series}, 3rd ed., Chapter~9, Exercise~9.7, printed p.~503 [PDF p.~530]; answer not given in the book; reproduced verbatim.}
 
 \begin{quote}\small
 9.7. The file \texttt{m-fedip.txt} contains year, month, effective federal funds rate, and the
@@ -639,6 +658,21 @@ macroeconomic variables. Fit a macroeconomic factor model to the 10 excess retur
 \texttt{m-excess-c10sp-9003.txt}. You can use a VAR model to obtain the surprise series of the
 macroeconomic variables. Comment on the fitted factor model.
 \end{quote}
+\begin{refmat}
+\item \textit{Factor model} (Tsay Eq.~9.1, printed p.~468 [PDF p.~495]):
+$r_{it}=\alpha_i+\beta_{i1}f_{1t}+\cdots+\beta_{im}f_{mt}+\epsilon_{it}$, $t=1,\dots,T$, $i=1,\dots,k$, with
+$\mathrm{Var}(\epsilon_{it})=\sigma_i^2$, the $\epsilon_{it}$ uncorrelated across $i$ and $t$ and uncorrelated with the factors.
+\item \textit{Macroeconomic factor model} (Tsay \S9.2.2, printed pp.~474--475 [PDF pp.~501--502]): following
+Chen, Roll and Ross (1986), the factors are \emph{surprises} of macroeconomic variables, i.e.\ the residuals of a
+VAR fitted to them. Tsay's illustration: growth rates (first differences of logs, in \%) of CPI and civilian
+employment, January 1975--December 2003, VAR(3) chosen by BIC, the 1990--2003 residuals used as $f_t$, and
+$(\alpha_i,\bm\beta_i)$ by least squares for each stock; all $R^2$ come out low.
+\item \textit{Data.} \texttt{m-excess-c10sp-9003.txt} (described in Tsay Exercise~9.3, printed p.~502 [PDF p.~529]):
+monthly simple excess returns over the 3-month T-bill rate, January 1990--December 2003, 168 observations;
+11 columns ABT, LLY, MRK, PFE (drugs), F, GM (autos), BP, CVX, RD, XOM (oil) and SP5 (the S\&P 500, not used here).
+\texttt{m-fedip.txt}: columns year, month, effective federal funds rate (\%), industrial production index;
+July 1954--December 2003, 594 observations.
+\end{refmat}
 \resolespaco
 \begin{sol}
 \begin{notacao}
@@ -716,8 +750,7 @@ with $k^2m$ degrees of freedom (Tsay p.~533). Figures plot every sixth month.\pa
 
 % ---------------------------------------------------------------- Q6 = T 10.1
 \questao{EWMA covariance matrix for IBM, HPQ and the S\&P index (Tsay 10.1).}
-\fonte{Tsay (2010), \textit{Analysis of Financial Time Series}, 3rd ed., Chapter~10, Exercise~10.1,
-printed p.~554. Reproduced verbatim.}
+\fonte{Tsay, R.~S. (2010), \textit{Analysis of Financial Time Series}, 3rd ed., Chapter~10, Exercise~10.1, printed p.~554 [PDF p.~581]; answer not given in the book; reproduced verbatim.}
 
 \begin{quote}\small
 10.1. Consider the monthly simple returns, including dividends, of IBM stock, Hewlett-Packard (HPQ)
@@ -726,6 +759,17 @@ are in the file \texttt{m-ibmhpqsp6208.txt}. Transform into log returns in perce
 exponentially weighted moving-average method to obtain a multivariate volatility series for the three
 return series. What is the estimated $\lambda$? Plot the three volatility series.
 \end{quote}
+\begin{refmat}
+\item \textit{EWMA method} (Tsay \S10.1, Eq.~10.2, printed pp.~506--507 [PDF pp.~533--534]): with innovations
+$\ba_t=\br_t-\bmu_t$,
+$\hat\bSigma_t=\frac{1-\lambda}{1-\lambda^{t-1}}\sum_{j=1}^{t-1}\lambda^{j-1}\ba_{t-j}\ba_{t-j}'$, $0<\lambda<1$, which for
+large $t$ is the recursion $\hat\bSigma_t=(1-\lambda)\ba_{t-1}\ba_{t-1}'+\lambda\hat\bSigma_{t-1}$. Given an initial
+$\hat\bSigma_1$, $\lambda$ and the mean parameters are estimated jointly by maximum likelihood under
+$\ba_t\sim N(\bm0,\bSigma_t)$:
+$\ln L=-\frac12\sum_t\ln|\bSigma_t|-\frac12\sum_t(\br_t-\bmu_t)'\bSigma_t^{-1}(\br_t-\bmu_t)$ (up to a constant).
+\item \textit{Data.} \texttt{m-ibmhpqsp6208.txt}: columns date, IBM, HPQ, SP (simple returns); 564 months.
+Log returns in percent: $100\ln(1+R_t)$.
+\end{refmat}
 \resolespaco
 \begin{sol}
 \begin{notacao}
@@ -786,14 +830,24 @@ so its forecasts are flat.}
 
 % ---------------------------------------------------------------- Q7 = T 10.2
 \questao{DVEC(1,1) model for IBM and HPQ (Tsay 10.2).}
-\fonte{Tsay (2010), \textit{Analysis of Financial Time Series}, 3rd ed., Chapter~10, Exercise~10.2,
-printed p.~554. Reproduced verbatim.}
+\fonte{Tsay, R.~S. (2010), \textit{Analysis of Financial Time Series}, 3rd ed., Chapter~10, Exercise~10.2, printed p.~554 [PDF p.~581]; answer not given in the book; reproduced verbatim.}
 
 \begin{quote}\small
 10.2. Focus on the monthly log returns of IBM and HPQ stocks from January 1962 to December 2008. Fit a
 DVEC(1,1) model to the bivariate return series. Is the model adequate? Plot the fitted volatility series
 and the time-varying correlations.
 \end{quote}
+\begin{refmat}
+\item \textit{DVEC model} (Tsay \S10.2.1, Eq.~10.5, printed p.~510 [PDF p.~537]):
+$\bSigma_t=\bm A_0+\sum_{i=1}^m\bm A_i\odot(\ba_{t-i}\ba_{t-i}')+\sum_{j=1}^s\bm B_j\odot\bSigma_{t-j}$, with symmetric
+$\bm A_i,\bm B_j$ and $\odot$ the element-by-element product. For a bivariate DVEC(1,1) each element is a
+GARCH(1,1)-type equation:
+$\sigma_{11,t}=A_{11,0}+A_{11,1}a_{1,t-1}^2+B_{11,1}\sigma_{11,t-1}$,
+$\sigma_{21,t}=A_{21,0}+A_{21,1}a_{1,t-1}a_{2,t-1}+B_{21,1}\sigma_{21,t-1}$,
+$\sigma_{22,t}=A_{22,0}+A_{22,1}a_{2,t-1}^2+B_{22,1}\sigma_{22,t-1}$ (9 parameters); positive definiteness is not guaranteed.
+\item \textit{Data} (from Exercise~10.1): IBM and HPQ columns of \texttt{m-ibmhpqsp6208.txt}, January 1962--December 2008,
+564 months, log returns in percent.
+\end{refmat}
 \resolespaco
 \begin{sol}
 \begin{notacao}
@@ -865,14 +919,21 @@ but with no volatility spillover between the two stocks and no built-in positive
 
 % ---------------------------------------------------------------- Q8 = T 10.3
 \questao{BEKK(1,1) model for the S\&P index and HPQ (Tsay 10.3).}
-\fonte{Tsay (2010), \textit{Analysis of Financial Time Series}, 3rd ed., Chapter~10, Exercise~10.3,
-printed p.~554. Reproduced verbatim.}
+\fonte{Tsay, R.~S. (2010), \textit{Analysis of Financial Time Series}, 3rd ed., Chapter~10, Exercise~10.3, printed p.~554 [PDF p.~581]; answer not given in the book; reproduced verbatim.}
 
 \begin{quote}\small
 10.3. Focus on the monthly log returns of the S\&P composite index and HPQ stock. Build a BEKK model for
 the bivariate series. What is the fitted model? Plot the fitted volatility series and the time-varying
 correlations.
 \end{quote}
+\begin{refmat}
+\item \textit{BEKK model} (Tsay \S10.2.2, Eq.~10.6, printed p.~513 [PDF p.~540]):
+$\bSigma_t=\bm A\bm A'+\sum_{i=1}^m\bm A_i(\ba_{t-i}\ba_{t-i}')\bm A_i'+\sum_{j=1}^s\bm B_j\bSigma_{t-j}\bm B_j'$, with
+$\bm A$ lower triangular and $\bm A_i,\bm B_j$ full $k\times k$ matrices; $\bSigma_t$ is positive definite if
+$\bm A\bm A'$ is. Number of parameters $k^2(m+s)+k(k+1)/2$, i.e.\ 11 for a bivariate BEKK(1,1).
+\item \textit{Data} (from Exercise~10.1): SP and HPQ columns of \texttt{m-ibmhpqsp6208.txt}, January 1962--December 2008,
+564 months, log returns in percent.
+\end{refmat}
 \resolespaco
 \begin{sol}
 \begin{notacao}
@@ -942,13 +1003,22 @@ of parameters with no direct meaning: only after multiplying out can one read th
 
 % ---------------------------------------------------------------- Q9 = T 10.4
 \questao{Constant-correlation model for IBM, HPQ and the S\&P index (Tsay 10.4).}
-\fonte{Tsay (2010), \textit{Analysis of Financial Time Series}, 3rd ed., Chapter~10, Exercise~10.4,
-printed p.~554. Reproduced verbatim.}
+\fonte{Tsay, R.~S. (2010), \textit{Analysis of Financial Time Series}, 3rd ed., Chapter~10, Exercise~10.4, printed p.~554 [PDF p.~581]; answer not given in the book; reproduced verbatim.}
 
 \begin{quote}\small
 10.4. Build a constant-correlation volatility model for the three monthly log returns of IBM stock, HPQ
 stock, and S\&P composite index. Write down the fitted model. Is the model adequate? Why?
 \end{quote}
+\begin{refmat}
+\item \textit{Constant-correlation model} (Tsay \S10.4.1, Eqs.~10.21--10.22, printed pp.~521--522 [PDF pp.~548--549];
+Bollerslev 1990): $\bSigma_t=\bm D_t\bm\rho\bm D_t$ (Eq.~10.7) with a time-invariant correlation matrix $\bm\rho$ and the
+variances $\bm\Lambda_t=(\sigma_{11,t},\dots,\sigma_{kk,t})'$ following
+$\bm\Lambda_t=\bm\alpha_0+\bm\alpha_1\ba_{t-1}^2+\bm\beta_1\bm\Lambda_{t-1}$, $\ba_{t-1}^2=(a_{1,t-1}^2,\dots,a_{k,t-1}^2)'$,
+$\bm\alpha_0>\bm0$, $\bm\alpha_1,\bm\beta_1$ nonnegative; with diagonal $\bm\alpha_1,\bm\beta_1$ this is $k$ univariate
+GARCH(1,1) models tied together only by $\bm\rho$.
+\item \textit{Data} (from Exercise~10.1): IBM, HPQ and SP columns of \texttt{m-ibmhpqsp6208.txt}, January 1962--December 2008,
+564 months, log returns in percent.
+\end{refmat}
 \resolespaco
 \begin{sol}
 \begin{notacao}
@@ -1003,8 +1073,7 @@ out the rise of correlations in crises that the other models detect.}
 
 % ---------------------------------------------------------------- Q10 = T 10.5
 \questao{Constant-correlation GARCH for GE and the S\&P index, with a covariance forecast (Tsay 10.5).}
-\fonte{Tsay (2010), \textit{Analysis of Financial Time Series}, 3rd ed., Chapter~10, Exercise~10.5,
-printed p.~554. Reproduced verbatim.}
+\fonte{Tsay, R.~S. (2010), \textit{Analysis of Financial Time Series}, 3rd ed., Chapter~10, Exercise~10.5, printed p.~554 [PDF p.~581]; answer not given in the book; reproduced verbatim.}
 
 \begin{quote}\small
 10.5. The file \texttt{m-geibmsp2608.txt} contains the monthly simple returns of General Electric stock,
@@ -1014,6 +1083,14 @@ GE stock and the S\&P 500 index. Build a constant-correlation GARCH model for th
 the adequacy of the fitted model, and obtain the 1-step-ahead forecast of the covariance matrix at the
 forecast origin December 2008.
 \end{quote}
+\begin{refmat}
+\item \textit{Constant-correlation GARCH} (Tsay \S10.4.1, Eqs.~10.21--10.22, printed pp.~521--522 [PDF pp.~548--549]):
+$\sigma_{21,t}=\rho_{21}\sqrt{\sigma_{11,t}\sigma_{22,t}}$ with $|\rho_{21}|<1$ constant and
+$\bm\Lambda_t=(\sigma_{11,t},\sigma_{22,t})'=\bm\alpha_0+\bm\alpha_1\ba_{t-1}^2+\bm\beta_1\bm\Lambda_{t-1}$. The 1-step
+forecast at origin $h$ (printed p.~522) is $\bm\Lambda_h(1)=\bm\alpha_0+\bm\alpha_1\ba_h^2+\bm\beta_1\bm\Lambda_h$, and the
+covariance forecast is $\rho_{21}\sqrt{\sigma_{11,h}(1)\sigma_{22,h}(1)}$.
+\item \textit{Data.} \texttt{m-geibmsp2608.txt}: columns date, GE, IBM, SP (simple returns), 996 months.
+\end{refmat}
 \resolespaco
 \begin{sol}
 \begin{notacao}
@@ -1095,14 +1172,24 @@ up together with them in a crisis, but the correlation itself stays at 0.78.}
 
 % ---------------------------------------------------------------- Q11 = T 10.6
 \questao{Dynamic conditional correlation model for GE, IBM and the S\&P index (Tsay 10.6).}
-\fonte{Tsay (2010), \textit{Analysis of Financial Time Series}, 3rd ed., Chapter~10, Exercise~10.6,
-printed p.~554. Reproduced verbatim.}
+\fonte{Tsay, R.~S. (2010), \textit{Analysis of Financial Time Series}, 3rd ed., Chapter~10, Exercise~10.6, printed p.~554 [PDF p.~581]; answer not given in the book; reproduced verbatim.}
 
 \begin{quote}\small
 10.6. Again, consider the monthly log returns of GE, IBM, and S\&P composite index from January 1926 to
 December 2008. Build a dynamic correlation model for the three-dimensional series. For simplicity, use
 the sample correlation matrix for $\bm\rho$ in Eq.~(10.32).
 \end{quote}
+\begin{refmat}
+\item \textit{Data} (``Again'': Exercise~10.5): GE, IBM and SP columns of \texttt{m-geibmsp2608.txt},
+January 1926--December 2008, 996 months, log returns in percent.
+\item \textit{Eq.~(10.32)} (Tsay \S10.4.3, printed pp.~531--532 [PDF pp.~558--559]):
+$\bm\rho_t=(1-\theta_1-\theta_2)\hat{\bm\rho}+\theta_1\bm\psi_{t-1}+\theta_2\bm\rho_{t-1}$, where $\hat{\bm\rho}$ is the
+sample correlation matrix of the returns, $\bm\psi_{t-1}$ the sample correlation matrix of the shocks from
+$t-m$ to $t-1$ for a prespecified $m$ (Tse and Tsui 2002, printed p.~531), and $\theta_i\ge0$,
+$0\le\theta_1+\theta_2<1$. The covariance is $\bSigma_t=\bm D_t\bm\rho_t\bm D_t$ (Eq.~10.7), the volatilities in
+$\bm D_t$ following Eq.~(10.31), $\bm D_t^2=\bm\Lambda_0+\bm\Lambda_1\bm D_{t-1}^2+\bm\Lambda_2\bm A_{t-1}^2+\bm\Lambda_3\bm L_{t-1}^2$
+(diagonal parameter matrices; $\bm\Lambda_3$ is a leverage term on negative shocks).
+\end{refmat}
 \resolespaco
 \begin{sol}
 \begin{notacao}
@@ -1162,13 +1249,26 @@ assets has the same correlation dynamics.}
 
 % ---------------------------------------------------------------- Q12 = G 10.4
 \questao{SUR model with first-order autocorrelation: a Gibbs algorithm (Greenberg 10.4).}
-\fonte{Greenberg (2007), \textit{Introduction to Bayesian Econometrics}, 1st ed., Chapter~10
-(Time Series), Section~10.6, Exercise~10.4, printed p.~167. Reproduced verbatim.}
+\fonte{Greenberg, E. (2007), \textit{Introduction to Bayesian Econometrics}, 1st ed., Chapter~10 (Time Series), Section~10.6, Exercise~10.4, printed p.~167 [PDF p.~182]; answer not given in the book; reproduced verbatim.}
 
 \begin{quote}\small
 10.4 Modify the SUR model to include first-order autocorrelation, and describe an algorithm for
 estimating parameters.
 \end{quote}
+\begin{refmat}
+\item \textit{The SUR model} (Greenberg \S9.1, Eqs.~9.1--9.5 and Algorithm~9.1, printed pp.~134--137 [PDF pp.~149--152]):
+$y_{sj}=\bm x_{sj}'\bm\beta_s+u_{sj}$, $s=1,\dots,S$ equations, $j=1,\dots,J$ observations; stacked,
+$\bm y_j=\bm X_j\bm\beta+\bm u_j$ with $\bm X_j=\mathrm{diag}(\bm x_{1j}',\dots,\bm x_{Sj}')$ ($S\times K$, $K=\sum_sK_s$) and
+$\bm u_j\mid\bm X\sim N_S(\bm0,\bSigma)$, independent over $j$. Priors $\bm\beta\sim N_K(\bm\beta_0,\bm B_0)$,
+$\bSigma^{-1}\sim W_S(\nu_0,\bm R_0)$. Gibbs conditionals:
+$\bm\beta\mid\bm y,\bSigma\sim N_K(\bar{\bm\beta},\bm B_1)$, $\bm B_1=(\sum_j\bm X_j'\bSigma^{-1}\bm X_j+\bm B_0^{-1})^{-1}$,
+$\bar{\bm\beta}=\bm B_1(\sum_j\bm X_j'\bSigma^{-1}\bm y_j+\bm B_0^{-1}\bm\beta_0)$ (Eq.~9.4); and
+$\bSigma^{-1}\mid\bm y,\bm\beta\sim W_S(\nu_1,\bm R_1)$, $\nu_1=\nu_0+J$,
+$\bm R_1=[\bm R_0^{-1}+\sum_j(\bm y_j-\bm X_j\bm\beta)(\bm y_j-\bm X_j\bm\beta)']^{-1}$ (Eq.~9.5).
+\item \textit{Autocorrelated errors in one equation} (Greenberg \S10.1, Eq.~10.1, printed p.~153 [PDF p.~168]):
+$y_t=\bm x_t'\bm\beta+\epsilon_t$, $\epsilon_t=\phi_1\epsilon_{t-1}+\cdots+\phi_p\epsilon_{t-p}+u_t$, $u_t\sim N(0,\sigma_u^2)$,
+with the stationarity restriction on the $\phi$'s.
+\end{refmat}
 \resolespaco
 \begin{sol}
 \begin{notacao}
@@ -1272,6 +1372,440 @@ and quasi-differencing needs $\bm\rho$; Gibbs sampling breaks the circle by alte
 estimate $\bm\beta$ by SUR-GLS on filtered data; given $\bm\beta$, estimate $\bm\rho$ by regressing residuals
 on their lags; given both, update $\bSigma$ from the innovations.}
 \refbib{Greenberg (2007) \S9.1 (Eqs.~9.1--9.5, Algorithm 9.1), pp.~134--137; \S10.1 (Eqs.~10.1--10.3), pp.~153--157.}
+\end{sol}
+
+% =============================================================================
+\bloco{5}{Original exercises: large BVAR, FAVAR, TVP-VAR, factor SV}{class slides \,\textbullet\, Questions 13--16}
+
+% ---------------------------------------------------------------- Q13 = original (large BVAR, Minnesota prior)
+\questao{Large Bayesian VAR with a Minnesota-type prior: shrinkage toward the random walk.}
+\origem{original exercise on large Bayesian VARs with a Minnesota-type prior, built on
+\path{Aula/class-09/materials/BVAR-part11.pdf}, pp.~4--7, 22--25 and 45, and
+\path{Aula/class-09/materials/BVAR-part2.pdf}, pp.~3 and 56--57.}
+
+Let $\bm y_t=(y_{1t},\dots,y_{qt})'$ follow the VAR($p$) $\bm y_t=\bm B_1\bm y_{t-1}+\cdots+\bm B_p\bm y_{t-p}+\bm u_t$,
+$\bm u_t\sim N_q(\bm0,\bSigma)$ i.i.d.
+\begin{enumerate}[label=(\alph*),leftmargin=2em]
+\item Count the free parameters of a VAR(1) without intercept (the coefficients plus the distinct elements of
+$\bSigma$) for $q=3$, $20$ and $131$. Why does this make unrestricted VARs forecast poorly when $q$ is large?
+\item The Minnesota prior centres each equation on a random walk: prior mean 1 for the own first lag and 0 for every
+other coefficient, independent normal coefficients with prior variance $\lambda^2/k^2$ for the own lag $k$ and
+$\theta^2\lambda^2\sigma_i^2/(k^2\sigma_j^2)$ for lag $k$ of variable $j\neq i$ in equation $i$, with $\bSigma$ fixed.
+For $q=3$, $p=2$, $\lambda=0.2$, $\theta=0.5$ and $(\sigma_1,\sigma_2,\sigma_3)=(1,2,0.5)$, give the prior standard
+deviations, in equation~1, of the coefficients on $y_{1,t-1}$, $y_{1,t-2}$, $y_{2,t-1}$ and $y_{3,t-2}$. State the role
+of $\lambda$, $\theta$, $k^2$ and $\sigma_i/\sigma_j$, and what happens as $\lambda\to0$ and $\lambda\to\infty$.
+\item Scalar case: $y_t=b\,y_{t-1}+u_t$, $u_t\sim N(0,\sigma^2)$ with $\sigma^2$ known, prior $b\sim N(1,v_0)$. Show that the
+posterior mean is $w\cdot1+(1-w)\hat b$, with $\hat b$ the OLS estimate, and find $w$. Then write the VAR(1) as
+$\bm Y=\bm X\bm B+\bm U$ ($\bm Y$, $\bm X$: $T\times q$, $\bm B=\bm B_1'$) with the conjugate prior
+$\bm B\mid\bSigma\sim MN(\bm B_0,\bm\Omega_0,\bSigma)$ (i.e.\ $\mathrm{vec}(\bm B)\mid\bSigma\sim N(\mathrm{vec}(\bm B_0),\bSigma\otimes\bm\Omega_0)$),
+$\bSigma\sim IW(\bm S_0,\nu_0)$, and show that the posterior mean of $\bm B$ is the matrix-weighted average
+$\bm W\bm B_0+(\bm I-\bm W)\hat{\bm B}$.
+\item Show that the conjugate prior reproduces the Minnesota variances only with $\theta=1$, and that appending the dummy
+observations $\bm Y_d=\bm\Omega_0^{-1/2}\bm B_0$, $\bm X_d=\bm\Omega_0^{-1/2}$ to the data and running OLS gives the
+posterior mean of $\bm B$.
+\item NumPy (seed 2026, \texttt{o\_bvar()} in the check script): simulate $T=60$ observations (after 50 burn-in) of a
+VAR(1) with $q=3$,
+$\bm B_1=\begin{pmatrix}0.9&0.1&0\\0&0.6&0.2\\0.2&0&0.4\end{pmatrix}$,
+$\bSigma=\begin{pmatrix}1&0.3&0\\0.3&1&0.2\\0&0.2&1\end{pmatrix}$. Set $\bm B_0=\bm I_3$,
+$\bm\Omega_0=\mathrm{diag}(\lambda^2/s_1^2,\lambda^2/s_2^2,\lambda^2/s_3^2)$ with $s_j^2$ the residual variance of a
+univariate AR(1) for $y_j$, $\nu_0=q+2$, $\bm S_0=\mathrm{diag}(s_j^2)$. Compute the OLS estimate and, for $\lambda=0.2$, the
+posterior mean and standard deviations of $\bm B_1$ and $E(\bSigma\mid\bm Y)$. Then tabulate, for
+$\lambda\in\{0.01,0.1,0.2,0.5,1,10\}$, the posterior means of $B_{1,11}$ and $B_{1,12}$ and the Frobenius distances of the
+posterior mean to $\bm I$, to OLS and to the true $\bm B_1$.
+\item Repeat the last comparison in a $q=20$ system with $T=60$, true $\bm B_1=0.7\bm I+\bm E$ (off-diagonal entries of $\bm E$
+i.i.d.\ $N(0,0.05^2)$, zero diagonal), $\bSigma=\bm I$, for OLS and $\lambda\in\{0.05,0.1,0.2,0.5,1\}$. Comment.
+\end{enumerate}
+\resolespaco
+\begin{sol}
+\begin{notacao}
+\item $q$: number of variables; $p$: lags; $k=1,\dots,p$: lag index; $T$: number of regressions (observations used).
+\item $\bm B_k$: $q\times q$ coefficient matrix of lag $k$; $B_{k,ij}$: coefficient of $y_{j,t-k}$ in the equation of $y_{it}$.
+\item $\bm Y=(\bm y_1,\dots,\bm y_T)'$, $\bm X=(\bm y_0,\dots,\bm y_{T-1})'$, $\bm B=\bm B_1'$ (column $i$ = equation $i$);
+$\hat{\bm B}=(\bm X'\bm X)^{-1}\bm X'\bm Y$: OLS.
+\item $\lambda$: overall tightness; $\theta$: cross-variable tightness; $s_j^2$ (or $\sigma_j^2$): scale of variable $j$.
+\item $MN(\bm M,\bm\Omega,\bSigma)$: matrix normal, $\mathrm{vec}(\bm B)\sim N(\mathrm{vec}(\bm M),\bSigma\otimes\bm\Omega)$;
+$IW(\bm S,\nu)$: inverse Wishart with mean $\bm S/(\nu-q-1)$.
+\item $\bm\Omega_1,\bm B_1^{\mathrm{post}},\bm S_1,\nu_1$: posterior hyperparameters; $\bm W=\bm\Omega_1\bm\Omega_0^{-1}$: shrinkage matrix;
+$\|\cdot\|_F$: Frobenius norm.
+\end{notacao}
+
+\passo{(a) parameter count}{A VAR(1) without intercept has $q^2$ coefficients and $q(q+1)/2$ distinct elements of $\bSigma$:
+\begin{align}
+q=3:&\quad 9+6=15,\nonumber\\
+q=20:&\quad 400+210=610,\nonumber\\
+q=131:&\quad 17{,}161+8{,}646=25{,}807.\nonumber
+\end{align}
+Each equation has $q$ regressors per lag. With $q=131$ and one lag, each equation has 131 coefficients; with 200 monthly
+observations OLS is barely defined and its sampling variance is huge, so forecasts are dominated by estimation noise
+(the over-parameterization problem, BVAR-part2 p.~3). Shrinkage trades a small bias for a large cut in variance.}
+
+\passo{(b) Minnesota prior moments}{The prior standard deviations are the square roots of the slide's variances:
+\begin{align}
+\text{own lag 1 } (y_{1,t-1}):&\quad \frac{\lambda}{1}=0.2,\nonumber\\
+\text{own lag 2 } (y_{1,t-2}):&\quad \frac{\lambda}{2}=0.1,\nonumber\\
+y_{2,t-1}:&\quad \frac{\theta\lambda\sigma_1}{1\cdot\sigma_2}=\frac{(0.5)(0.2)(1)}{(1)(2)}=0.05,\nonumber\\
+y_{3,t-2}:&\quad \frac{\theta\lambda\sigma_1}{2\cdot\sigma_3}=\frac{(0.5)(0.2)(1)}{(2)(0.5)}=0.1.\nonumber
+\end{align}
+The prior means are 1 for $y_{1,t-1}$ and 0 for the other three. $\lambda$ sets the overall tightness around the random
+walk; $\theta<1$ shrinks other variables' lags more than own lags (own lags should explain more); $1/k^2$ shrinks
+distant lags harder toward zero (shrinking $p$ toward 1); $\sigma_i/\sigma_j$ converts units, since a coefficient of $y_j$ in
+the equation of $y_i$ is measured in units of $y_i$ per unit of $y_j$. As $\lambda\to0$ the posterior collapses on the prior,
+every equation a random walk; as $\lambda\to\infty$ the prior is flat and the posterior mean is OLS.}
+
+\passo{(c) shrinkage form}{Scalar case: the likelihood in $b$ is
+$\exp\{-\sum_t(y_t-by_{t-1})^2/(2\sigma^2)\}\propto\exp\{-(b-\hat b)^2\sum_ty_{t-1}^2/(2\sigma^2)\}$, so with the prior
+$N(1,v_0)$ the posterior is normal with precision the sum of precisions and mean the precision-weighted average:
+\begin{align}
+E(b\mid\bm y)&=\frac{v_0^{-1}\cdot1+\sigma^{-2}\sum_ty_{t-1}^2\,\hat b}{v_0^{-1}+\sigma^{-2}\sum_ty_{t-1}^2}
+=w\cdot1+(1-w)\hat b,\label{eq:q13w}\\
+w&=\frac{v_0^{-1}}{v_0^{-1}+\sigma^{-2}\sum_ty_{t-1}^2}.\nonumber
+\end{align}
+Matrix case: the conjugate posterior is $\bm B\mid\bSigma,\bm Y\sim MN(\bm B_1^{\mathrm{post}},\bm\Omega_1,\bSigma)$,
+$\bSigma\mid\bm Y\sim IW(\bm S_1,\nu_1)$ with
+\begin{align}
+\bm\Omega_1&=(\bm\Omega_0^{-1}+\bm X'\bm X)^{-1},\qquad
+\bm B_1^{\mathrm{post}}=\bm\Omega_1(\bm\Omega_0^{-1}\bm B_0+\bm X'\bm Y),\label{eq:q13post}\\
+\nu_1&=\nu_0+T,\qquad
+\bm S_1=\bm S_0+\bm Y'\bm Y+\bm B_0'\bm\Omega_0^{-1}\bm B_0-\bm B_1^{\mathrm{post}\prime}\bm\Omega_1^{-1}\bm B_1^{\mathrm{post}}.\label{eq:q13S}
+\end{align}
+Since $\bm X'\bm Y=\bm X'\bm X\hat{\bm B}$ and $\bm\Omega_1\bm X'\bm X=\bm\Omega_1(\bm\Omega_1^{-1}-\bm\Omega_0^{-1})=\bm I-\bm W$:
+\begin{equation}
+\bm B_1^{\mathrm{post}}=\bm W\bm B_0+(\bm I-\bm W)\hat{\bm B},\qquad \bm W=\bm\Omega_1\bm\Omega_0^{-1},\label{eq:q13W}
+\end{equation}
+the matrix version of \eqref{eq:q13w}: posterior mean = shrinkage of OLS toward the random walk $\bm B_0=\bm I$.}
+
+\passo{(d) conjugacy and dummy observations}{Under the matrix normal prior,
+$\mathrm{Var}(B_{ji}\mid\bSigma)=\Sigma_{ii}\,\Omega_{0,jj}$ for the coefficient of $y_{j,t-1}$ in equation $i$. With
+$\Omega_{0,jj}=\lambda^2/s_j^2$ and $\Sigma_{ii}\approx s_i^2$ this is $\lambda^2 s_i^2/s_j^2$: the own-lag variance is
+$\lambda^2$ and the cross-variable variance is the Minnesota one with $\theta=1$. The Kronecker form forces every
+equation to share $\bm\Omega_0$ up to the scale $\Sigma_{ii}$, so own and other lags cannot be treated asymmetrically
+($\theta<1$); that needs a non-conjugate prior and Gibbs sampling (Kadiyala and Karlsson, BVAR-part11 p.~25).
+Stacking $\bm Y_*=(\bm Y_d',\bm Y')'$, $\bm X_*=(\bm X_d',\bm X')'$ gives
+$\bm X_*'\bm X_*=\bm\Omega_0^{-1}+\bm X'\bm X$ and $\bm X_*'\bm Y_*=\bm\Omega_0^{-1}\bm B_0+\bm X'\bm Y$, so OLS on the
+augmented data is exactly \eqref{eq:q13post}; its residual cross-product equals
+$\bm Y'\bm Y+\bm B_0'\bm\Omega_0^{-1}\bm B_0-\bm B_1^{\mathrm{post}\prime}\bm\Omega_1^{-1}\bm B_1^{\mathrm{post}}$, so
+$\bm S_1=\bm S_0+$ (augmented residual cross-product). The script checks both identities to $10^{-8}$.}
+
+\passo{(e) $q=3$, NumPy}{The AR(1) residual variances are $s^2=(0.779,\ 1.266,\ 1.213)$. Written as $\bm B_1$ (rows = equations):
+\begin{align}
+\hat{\bm B}_1^{\mathrm{OLS}}&=\begin{pmatrix}0.838&0.086&0.144\\-0.107&0.727&0.268\\0.183&-0.110&0.432\end{pmatrix},\qquad
+E(\bm B_1\mid\bm Y)_{\lambda=0.2}=\begin{pmatrix}0.866&0.073&0.098\\-0.082&0.776&0.182\\0.118&-0.100&0.598\end{pmatrix},\nonumber\\
+\mathrm{sd}(\bm B_1\mid\bm Y)_{\lambda=0.2}&=\begin{pmatrix}0.059&0.062&0.082\\0.075&0.080&0.106\\0.075&0.080&0.105\end{pmatrix},\qquad
+E(\bSigma\mid\bm Y)_{\lambda=0.2}=\begin{pmatrix}0.733&0.078&0.089\\0.078&1.212&0.252\\0.089&0.252&1.202\end{pmatrix},\nonumber
+\end{align}
+using $\mathrm{Var}(B_{ji}\mid\bm Y)=\Omega_{1,jj}S_{1,ii}/(\nu_1-q-1)$, $\nu_1=65$. Every diagonal element moves toward 1 (e.g.\
+$0.432\to0.598$) and every off-diagonal element toward 0 ($0.268\to0.182$). Varying $\lambda$:}
+\begin{center}\small
+\begin{tabular}{rrrrrr}
+\toprule
+$\lambda$ & $E(B_{1,11}\mid\bm Y)$ & $E(B_{1,12}\mid\bm Y)$ & $\|\cdot-\bm I\|_F$ & $\|\cdot-\hat{\bm B}^{\mathrm{OLS}}\|_F$ & $\|\cdot-\bm B_1^{\mathrm{true}}\|_F$\\
+\midrule
+0.01 & 0.997 & 0.001 & 0.007 & 0.756 & 0.782\\
+0.1 & 0.906 & 0.048 & 0.318 & 0.457 & 0.509\\
+0.2 & 0.866 & 0.073 & 0.555 & 0.213 & 0.324\\
+0.5 & 0.844 & 0.084 & 0.718 & 0.045 & 0.264\\
+1 & 0.840 & 0.086 & 0.751 & 0.012 & 0.264\\
+10 & 0.838 & 0.086 & 0.762 & 0.000 & 0.265\\
+\bottomrule
+\end{tabular}
+\end{center}
+As $\lambda$ grows the posterior mean moves monotonically from the random walk ($\|\cdot-\bm I\|_F=0.007$) to OLS
+($\|\cdot-\hat{\bm B}\|_F=0.000$). With only $q=3$ variables and $T=60$, OLS is already accurate
+($\|\hat{\bm B}-\bm B_1^{\mathrm{true}}\|_F=0.265$), the truth is not a random walk, and tight priors hurt; $\lambda$ between
+0.5 and 1 is as good as OLS.
+
+\passo{(f) $q=20$}{Now each equation has 20 regressors and 60 observations. Distances to the true $\bm B_1$:
+\begin{center}\small
+\begin{tabular}{lrrrrrr}
+\toprule
+ & OLS & $\lambda=0.05$ & $0.1$ & $0.2$ & $0.5$ & $1$\\
+\midrule
+$\|\cdot-\bm B_1^{\mathrm{true}}\|_F$ & 3.227 & 1.393 & 1.187 & 1.675 & 2.744 & 3.087\\
+\bottomrule
+\end{tabular}
+\end{center}
+The prior mean alone has $\|\bm I-\bm B_1^{\mathrm{true}}\|_F=1.673$, half the OLS error; $\lambda=0.1$ beats both. The best
+$\lambda$ is smaller than with $q=3$: the more variables, the tighter the prior should be, which is Bańbura, Giannone and
+Reichlin's (2010) recipe of setting the shrinkage in relation to the cross-sectional dimension (BVAR-part2 p.~56).}
+\intuicao{OLS uses only the sample; the random walk uses only prior beliefs. The Minnesota posterior mean is a
+weighted average of the two, with weights set by $\lambda$ and by how much information $\bm X'\bm X$ carries. In a large
+system each coefficient is poorly estimated, so most of the weight should go to the prior.}
+\refbib{BVAR-part11.pdf pp.~4--7 (VAR as multivariate regression), 22--25 (Minnesota and conjugate priors), 45 (parameter
+counts); BVAR-part2.pdf pp.~3, 56--57 (large BVAR, Bańbura et al.\ 2010).}
+\end{sol}
+
+% ---------------------------------------------------------------- Q14 = original (FAVAR)
+\questao{Factor-augmented VAR: principal-component factors from a large panel.}
+\origem{original exercise on the factor-augmented VAR (FAVAR), built on
+\path{Aula/class-09/materials/BVAR-part2.pdf}, pp.~15, 17 and 51--53.}
+
+A target series $y_t$ (say, a policy-relevant macro variable) and a panel $\bm x_t=(x_{1t},\dots,x_{Nt})'$ of $N$
+indicators are driven by $k$ latent factors $\bm f_t$. The FAVAR of the slides is
+$\bm y_t\mid\bm y_{t-1:t-p},\bm\theta\sim N\big(\sum_{i=1}^p\bm B_i\bm y_{t-i}+\sum_{i=0}^s\bm A_i\bm f_{t-i},\bSigma\big)$,
+$\bm x_t\mid\bm f_t\sim N(\bm\Lambda\bm f_t,\bm\Omega)$, $\bm\Omega$ diagonal.
+\begin{enumerate}[label=(\alph*),leftmargin=2em]
+\item With $N=50$ indicators, count the coefficients plus distinct error covariances of a VAR(1) with intercepts in
+all $N+1=51$ variables, and of a VAR(1) with intercepts in $(y_t,f_{1t},f_{2t})$. What else must the FAVAR estimate,
+and why is that cheaper? Why does the factor structure help when the information set is large?
+\item NumPy (seed 2027, \texttt{o\_favar()} in the check script): simulate, after 50 burn-in periods, $T=240$
+observations of $\bm f_t=\bm A\bm f_{t-1}+\bm w_t$, $\bm A=\begin{pmatrix}0.8&0.1\\0&0.5\end{pmatrix}$,
+$\bm w_t\sim N(\bm0,\bm I_2)$; $y_t=0.3y_{t-1}+0.5f_{1,t-1}+0.4f_{2,t-1}+u_t$, $u_t\sim N(0,0.5^2)$; and
+$x_{it}=\bm\lambda_i'\bm f_t+e_{it}$, $\bm\lambda_i\sim N(\bm0,\bm I_2)$, $e_{it}\sim N(0,1)$, $i=1,\dots,50$.
+Using only the first $T_0=180$ observations, standardize the panel, compute the eigenvalues of its correlation
+matrix and the first two principal components (PCs), and report the shares of the first three eigenvalues in the
+total variance. Extend the PCs to $t>180$ with the training means, standard deviations and eigenvectors. Regress
+each true factor on a constant and the two PCs over the training sample and report the $R^2$. Why do the PCs
+recover the factors only up to a rotation?
+\item Estimate by OLS on the training sample, and use for one-step-ahead forecasts of $y_t$, $t=181,\dots,240$:
+(i) an AR(1) with intercept; (ii) the FAVAR equation, $y_t$ on a constant, $y_{t-1}$, $\mathrm{PC}_{1,t-1}$ and $\mathrm{PC}_{2,t-1}$;
+(iii) the infeasible equation with the true $\bm f_{t-1}$; (iv) $y_t$ on $(1,y_{t-1},\bm x_{t-1}')$, all 50 indicators.
+Report the root mean squared forecast errors (RMSFE) and comment.
+\end{enumerate}
+\resolespaco
+\begin{sol}
+\begin{notacao}
+\item $N=50$: panel size; $k=2$: number of factors; $T=240$, $T_0=180$: sample and training sizes.
+\item $\bm f_t$: latent factors; $\bm\Lambda=(\bm\lambda_1,\dots,\bm\lambda_N)'$: $N\times k$ loadings; $e_{it}$: idiosyncratic noise.
+\item $\bm z_t$: panel standardized with training moments; $\bm R=\mathrm{corr}(\bm z_{1:T_0})$ with eigenvalues
+$\ell_1\ge\ell_2\ge\cdots$ and eigenvectors $\bm v_1,\bm v_2,\dots$; $\mathrm{PC}_{jt}=\bm v_j'\bm z_t$.
+\item RMSFE $=\big[\frac1{60}\sum_{t=181}^{240}(y_t-\hat y_{t\mid t-1})^2\big]^{1/2}$.
+\end{notacao}
+
+\passo{(a) parameter count}{A VAR(1) with intercepts in $m$ variables has $m(m+1)$ coefficients and $m(m+1)/2$ covariances:
+\begin{align}
+m=51:&\quad 51\cdot52+\frac{51\cdot52}{2}=2{,}652+1{,}326=3{,}978,\nonumber\\
+m=3:&\quad 3\cdot4+\frac{3\cdot4}{2}=12+6=18.\nonumber
+\end{align}
+The FAVAR also needs the factors, i.e.\ the measurement equation: $Nk=100$ loadings and $N=50$ idiosyncratic
+variances. These are estimated series by series (one regression of $x_{it}$ on $\bm f_t$ each, or one eigen-decomposition
+for PCs), not jointly in a 51-equation system, so each estimate uses all $T$ observations for at most $k$ parameters.
+The factor structure says the comovement of 50 series is driven by 2 common shocks: the information in the panel
+enters the VAR through $k$ regressors instead of $N$, which keeps the VAR small (as in Bernanke, Boivin and Eliasz's
+FAVAR and Korobilis's forecasting with 132 Stock--Watson series, BVAR-part2 pp.~52--53).}
+
+\passo{(b) principal components}{Eigenvalue shares $\ell_j/N$ of the training correlation matrix:
+\begin{equation}
+\ell_1/N=0.481,\qquad \ell_2/N=0.269,\qquad \ell_3/N=0.021.\nonumber
+\end{equation}
+Two eigenvalues explain $75\%$ of the variance and the third drops to $2\%$: a clear two-factor structure. The $R^2$ of
+each true factor on $(1,\mathrm{PC}_1,\mathrm{PC}_2)$ in the training sample are $0.991$ for $f_1$ and $0.983$ for $f_2$.
+The PCs span (almost) the same space as $\bm f_t$ but are not $\bm f_t$: since $\bm\Lambda\bm f_t=(\bm\Lambda\bm P)(\bm P^{-1}\bm f_t)$ for
+any invertible $\bm P$, the data identify the factor space, not the factors (the invariance of BVAR-part2 p.~16). For
+forecasting this does not matter: a regression on $\bm P^{-1}\bm f_t$ has the same fit as on $\bm f_t$.}
+
+\passo{(c) forecasts}{RMSFE over $t=181,\dots,240$:
+\begin{center}\small
+\begin{tabular}{lrrrr}
+\toprule
+ & (i) AR(1) & (ii) FAVAR & (iii) true $\bm f$ & (iv) all 50 $x$'s\\
+\midrule
+RMSFE & 0.743 & 0.520 & 0.512 & 0.651\\
+\bottomrule
+\end{tabular}
+\end{center}
+The two PCs cut the RMSFE by $30\%$ relative to the AR(1), and lose almost nothing against the infeasible true
+factors ($0.520$ vs $0.512$; the floor is the innovation s.d.\ $0.5$). Using all 50 indicators directly does worse:
+52 coefficients estimated from 179 observations add so much estimation noise that most of the information gain is lost.}
+\intuicao{Each indicator is a noisy reading of the same few factors; averaging 50 of them (which is what a PC does)
+removes the idiosyncratic noise and leaves the factors. The VAR then needs a few coefficients on the factors instead
+of fifty on the raw series.}
+\refbib{BVAR-part2.pdf pp.~15, 17 (factor model and its covariance), 16 (rotation invariance), 51--53 (forecasting with
+many predictors, FAVAR, Korobilis 2008).}
+\end{sol}
+
+% ---------------------------------------------------------------- Q15 = original (TVP-VAR)
+\questao{Time-varying-parameter VAR: state-space form and the Kalman filter for a TVP-AR(1).}
+\origem{original exercise on time-varying-parameter VARs, built on \path{Aula/class-09/materials/BVAR-part2.pdf},
+p.~61, and \path{Aula/class-09/materials/BVAR-part11.pdf}, pp.~41--42.}
+
+The slides write the TVP-VAR($p$) in SUR form as $\bm y_t=\bm Z_t\bm\beta_t+\bm u_t$, $\bm\beta_t=\bm\beta_{t-1}+\bm v_t$,
+$\bm u_t\sim N(\bm0,\bSigma)$, $\bm v_t\sim N(\bm0,\bm V_t)$, with $\bm Z_t=\bm I_q\otimes(1,\bm y_{t-1}',\dots,\bm y_{t-p}')$.
+\begin{enumerate}[label=(\alph*),leftmargin=2em]
+\item Identify the observation and state equations. For $q=3$ and $p=2$ (with intercepts), what is the dimension of
+$\bm\beta_t$ and how many free elements has an unrestricted constant $\bm V_t=\bm Q$? Koop and Korobilis avoid
+estimating $\bm Q$ with a forgetting factor $\delta$: the predicted state variance is $\bm P_{t\mid t-1}=\bm P_{t-1\mid t-1}/\delta$.
+What does $\delta$ play the role of?
+\item Scalar case: $y_t=\phi_ty_{t-1}+\varepsilon_t$, $\varepsilon_t\sim N(0,\sigma^2)$, $\phi_t=\phi_{t-1}+\eta_t$, $\eta_t\sim N(0,q)$,
+$\phi_0\sim N(a_0,P_0)$, with $\sigma^2$ and $q$ known. Derive the Kalman filter (prediction, forecast error and its
+variance, gain, update) and the prediction-error log-likelihood. Show that with $q=0$ and $P_0\to\infty$ the filtered
+mean $a_{T\mid T}$ is the OLS estimate of a constant AR(1) coefficient.
+\item NumPy (seed 2028, \texttt{o\_tvp()} in the check script): simulate $T=300$ observations with $y_0=0$, $\sigma^2=1$ and a
+break, $\phi_t=0.2$ for $t\le150$ and $\phi_t=0.8$ for $t>150$. Filter with $\sigma^2=1$, $a_0=0$, $P_0=1$ for
+$q\in\{0,10^{-4},10^{-3},10^{-2},10^{-1}\}$ and with the forgetting factor $\delta=0.97$. Report the log-likelihood,
+$a_{150\mid150}$, $a_{175\mid175}$, $a_{300\mid300}$ and the RMSE of $a_{t\mid t}$ around $\phi_t$; then maximize the
+likelihood over $q$. Explain the role of the state variance $q$.
+\item Primiceri's TVP-VAR with stochastic volatility lets $\bSigma_t=\bm A_t^{-1}\bm D_t(\bm A_t')^{-1}$ change too:
+$\bm A_t$ unit lower triangular with random-walk free elements, $\bm D_t=\mathrm{diag}(\sigma_{1t}^2,\dots,\sigma_{qt}^2)$,
+$\log\sigma_{it}=\log\sigma_{i,t-1}+\eta_{it}$. Why add stochastic volatility to a TVP model: what would the model of (b)
+do if $\sigma^2$ changed over time but were held fixed?
+\end{enumerate}
+\resolespaco
+\begin{sol}
+\begin{notacao}
+\item $\phi_t$: time-varying AR coefficient (the state); $q=\mathrm{Var}(\eta_t)$: state variance; $\sigma^2$: observation variance.
+\item $a_{t\mid t-1},P_{t\mid t-1}$: predicted mean and variance of $\phi_t$ given $y_{0:t-1}$; $a_{t\mid t},P_{t\mid t}$: filtered.
+\item $v_t$: one-step forecast error; $F_t$: its variance; $K_t$: Kalman gain; $\ell(q)$: log-likelihood.
+\item $\delta\in(0,1]$: forgetting (discount) factor.
+\end{notacao}
+
+\passo{(a) state-space form}{Observation equation: $\bm y_t=\bm Z_t\bm\beta_t+\bm u_t$, linear in the state with known
+(data-dependent) design $\bm Z_t$. State equation: $\bm\beta_t=\bm\beta_{t-1}+\bm v_t$, a random walk. With $q=3$,
+$p=2$, each equation has $1+qp=7$ coefficients, so
+\begin{align}
+\dim(\bm\beta_t)&=q(1+qp)=3\cdot7=21,\nonumber\\
+\#\,\text{free elements of }\bm Q&=\frac{21\cdot22}{2}=231,\nonumber
+\end{align}
+far more than the data can pin down. The forgetting factor replaces $\bm P_{t-1\mid t-1}+\bm Q$ by $\bm P_{t-1\mid t-1}/\delta$,
+i.e.\ it sets $\bm Q_t=(\delta^{-1}-1)\bm P_{t-1\mid t-1}$: one number instead of 231, and no MCMC. $\delta=1$ is a
+constant-coefficient VAR; smaller $\delta$ discounts old data faster (effective memory about $1/(1-\delta)$ periods).}
+
+\passo{(b) Kalman filter}{Given $\phi_{t-1}\mid y_{0:t-1}\sim N(a_{t-1\mid t-1},P_{t-1\mid t-1})$:
+\begin{align}
+\text{prediction:}&\quad a_{t\mid t-1}=a_{t-1\mid t-1},\qquad P_{t\mid t-1}=P_{t-1\mid t-1}+q,\label{eq:q15pred}\\
+\text{forecast error:}&\quad v_t=y_t-y_{t-1}a_{t\mid t-1},\qquad F_t=y_{t-1}^2P_{t\mid t-1}+\sigma^2,\label{eq:q15F}\\
+\text{gain and update:}&\quad K_t=\frac{P_{t\mid t-1}y_{t-1}}{F_t},\qquad a_{t\mid t}=a_{t\mid t-1}+K_tv_t,\qquad
+P_{t\mid t}=P_{t\mid t-1}(1-K_ty_{t-1}).\label{eq:q15upd}
+\end{align}
+The update is the normal--normal conjugate step for one observation $y_t\sim N(y_{t-1}\phi_t,\sigma^2)$ on the prior
+$\phi_t\sim N(a_{t\mid t-1},P_{t\mid t-1})$. Since $y_t\mid y_{0:t-1}\sim N(y_{t-1}a_{t\mid t-1},F_t)$, the likelihood is
+\begin{equation}
+\ell(q)=-\frac12\sum_{t=1}^T\Big(\ln2\pi+\ln F_t+\frac{v_t^2}{F_t}\Big).\label{eq:q15ll}
+\end{equation}
+With $q=0$ the precision accumulates: $P_{t\mid t}^{-1}=P_{t-1\mid t-1}^{-1}+y_{t-1}^2/\sigma^2$, so
+$P_{T\mid T}^{-1}=P_0^{-1}+\sum_ty_{t-1}^2/\sigma^2$ and $a_{T\mid T}=P_{T\mid T}(P_0^{-1}a_0+\sum_ty_ty_{t-1}/\sigma^2)$. As
+$P_0\to\infty$, $a_{T\mid T}\to\sum_ty_ty_{t-1}/\sum_ty_{t-1}^2$, the OLS estimate (the filter is recursive least squares). The
+script confirms this with $P_0=10^8$ to $10^{-6}$.}
+
+\passo{(c) simulation}{Results (log-likelihood \eqref{eq:q15ll}, filtered means, RMSE over $t=1,\dots,300$):
+\begin{center}\small
+\begin{tabular}{lrrrrr}
+\toprule
+ & $\ell$ & $a_{150\mid150}$ & $a_{175\mid175}$ & $a_{300\mid300}$ & RMSE\\
+\midrule
+$q=0$ & $-465.090$ & 0.098 & 0.312 & 0.587 & 0.241\\
+$q=10^{-4}$ & $-455.551$ & 0.087 & 0.414 & 0.648 & 0.184\\
+$q=10^{-3}$ & $-448.159$ & 0.068 & 0.615 & 0.570 & 0.151\\
+$q=10^{-2}$ & $-452.284$ & 0.114 & 0.651 & 0.469 & 0.192\\
+$q=10^{-1}$ & $-472.840$ & 0.287 & 0.479 & 0.615 & 0.333\\
+$\delta=0.97$ & $-447.665$ & 0.069 & 0.617 & 0.618 & 0.145\\
+\bottomrule
+\end{tabular}
+\end{center}
+Maximizing \eqref{eq:q15ll} over $q$ gives $\hat q=0.0015$ with $\ell=-447.948$. With $q=0$ the filter is recursive
+least squares: 25 periods after the break it is still at $0.312$, and at $t=300$ it estimates the full-sample average
+($0.587$, between $0.2$ and $0.8$). A small positive $q$ keeps $P_{t\mid t-1}$ from shrinking to zero, so the gain stays
+positive and the filter forgets old data: with $q=10^{-3}$ it reaches $0.615$ by $t=175$. Too large a $q$ ($10^{-1}$)
+makes the filter chase noise ($a_{150\mid150}=0.287$ although $\phi_{150}=0.2$; worst RMSE and likelihood). $q$ is the
+signal-to-noise ratio of parameter change; the likelihood picks it, here near $10^{-3}$, and the forgetting factor
+$\delta=0.97$ performs as well with a single interpretable number.}
+
+\passo{(d) why stochastic volatility}{In (b) the only way the model can explain a larger $|v_t|$ is through $\phi_t$. If the
+shock variance rises (a volatile period) but $\sigma^2$ is held fixed, the filter treats the large errors as evidence that the
+coefficients moved and pushes $\phi_t$ around: variance changes leak into spurious coefficient drift, and the
+estimated $q$ is inflated. Letting $\bSigma_t$ follow its own law of motion (log-volatilities as random walks, and
+time-varying contemporaneous relations $\bm A_t$) separates ``the propagation mechanism changed'' from ``the shocks got
+bigger'', which is Primiceri's (2005) question about US monetary policy.}
+\intuicao{A TVP model is a regression whose coefficients are allowed to drift; $q$ says how much drift to expect per
+period. Too little and the model cannot follow a break; too much and it mistakes noise for change.}
+\refbib{BVAR-part2.pdf p.~61 (large TVP-VAR, Koop and Korobilis 2012, discounting); BVAR-part11.pdf pp.~41--42 (Primiceri 2005).
+State-space background: Tsay \S11.1--11.3, printed pp.~558--591 [PDF pp.~585--618].}
+\end{sol}
+
+% ---------------------------------------------------------------- Q16 = original (factor SV vs DCC)
+\questao{Factor stochastic volatility: covariance decomposition, implied correlations, and DCC.}
+\origem{original exercise on factor stochastic volatility, built on \path{Aula/class-09/materials/BVAR-part2.pdf},
+pp.~15, 17 and 38--40, and \path{Aula/class-09/materials/wti-sp500-timevaryingcovariance.html}, Sections~3--4.}
+
+In the factor stochastic volatility (FSV) model of the slides, $\bm y_t\mid\bm f_t\sim N_p(\bm\beta\bm f_t,\bSigma_t)$,
+$\bm f_t\sim N_k(\bm0,\bm H_t)$, with $\bSigma_t=\mathrm{diag}(\sigma_{1t}^2,\dots,\sigma_{pt}^2)$,
+$\bm H_t=\mathrm{diag}(\sigma_{p+1,t}^2,\dots,\sigma_{p+k,t}^2)$, and every log-variance following an AR(1).
+\begin{enumerate}[label=(\alph*),leftmargin=2em]
+\item Derive $\bm\Omega_t=\mathrm{Var}(\bm y_t\mid\bSigma_t,\bm H_t)$ and write its diagonal and off-diagonal elements.
+\item Take $k=1$, $\bm\beta=(1,\ 0.8,\ 0.6)'$, constant idiosyncratic variances $\sigma_i^2=0.5$, and factor variance $H_t$.
+Derive the conditional correlation $\rho_{ij,t}$, compute $\rho_{12,t}$ for $H_t=0.25$, $1$ and $4$, and find its limits as
+$H_t\to0$ and $H_t\to\infty$.
+\item Count parameters with these conventions: loadings with zeros above the diagonal ($pk-k(k-1)/2$ free elements);
+3 parameters ($\mu,\phi,\sigma_\eta$) per idiosyncratic log-variance AR(1); 2 parameters ($\phi,\sigma_\eta$) per factor
+log-variance (mean fixed at 0 to set the factor scale). Do it for $(p,k)=(6,2)$ and $(50,3)$ and compare with the
+number of distinct elements of $\bm\Omega_t$, a full BEKK(1,1) [$p(p+1)/2+2p^2$], and Engle's DCC with GARCH(1,1)
+margins [$3p+2$, plus $p(p-1)/2$ if the unconditional correlation $\bar{\bm Q}$ is counted].
+\item NumPy (seed 2029, \texttt{o\_fsv()} in the check script): with the parameters of (b), simulate $T=1000$
+observations with $h_t=\ln H_t=0.98\,h_{t-1}+0.2\,\eta_t$, $\eta_t\sim N(0,1)$, $h_1$ drawn from its stationary
+distribution. Report the minimum, median and maximum of the implied $\rho_{12,t}$, and the sample correlation of
+$(y_{1t},y_{2t})$ over the periods with $H_t$ below its median, above it, and overall.
+\item Compare FSV with the DCC model (Tsay Eq.~10.32, or Engle's $\bm Q_t$ recursion): how each generates time-varying
+correlations, how each is estimated, how each scales with $p$, and what each implies about correlations in
+high-volatility periods.
+\end{enumerate}
+\resolespaco
+\begin{sol}
+\begin{notacao}
+\item $p$: number of series; $k$: number of factors; $\bm\beta$: $p\times k$ loadings, $\beta_{il}$ its elements.
+\item $\bSigma_t$: idiosyncratic variances; $\bm H_t$ (scalar $H_t$ when $k=1$): factor variances; $h_t=\ln H_t$.
+\item $\bm\Omega_t=[\omega_{ij,t}]$: conditional covariance of $\bm y_t$; $\rho_{ij,t}=\omega_{ij,t}/\sqrt{\omega_{ii,t}\omega_{jj,t}}$.
+\end{notacao}
+
+\passo{(a) covariance decomposition}{By the law of total variance, with $\bm f_t$ independent of the idiosyncratic noise,
+\begin{align}
+\bm\Omega_t&=E[\mathrm{Var}(\bm y_t\mid\bm f_t)]+\mathrm{Var}[E(\bm y_t\mid\bm f_t)]\nonumber\\
+&=\bSigma_t+\bm\beta\bm H_t\bm\beta',\label{eq:q16Om}\\
+\omega_{ii,t}&=\sum_{l=1}^k\beta_{il}^2\sigma_{p+l,t}^2+\sigma_{it}^2,\qquad
+\omega_{ij,t}=\sum_{l=1}^k\beta_{il}\beta_{jl}\sigma_{p+l,t}^2\quad(i\neq j).\nonumber
+\end{align}
+All covariances come from the factors; $\bm\Omega_t$ is positive definite by construction because $\bSigma_t$ is diagonal
+with positive entries.}
+
+\passo{(b) implied correlation}{With $k=1$, \eqref{eq:q16Om} gives
+\begin{equation}
+\rho_{ij,t}=\frac{\beta_i\beta_jH_t}{\sqrt{(\beta_i^2H_t+\sigma_i^2)(\beta_j^2H_t+\sigma_j^2)}}
+=\frac{\beta_i\beta_j}{\sqrt{(\beta_i^2+\sigma_i^2/H_t)(\beta_j^2+\sigma_j^2/H_t)}}.\label{eq:q16rho}
+\end{equation}
+For $i=1$, $j=2$:
+\begin{align}
+H_t=0.25:&\quad \frac{0.8(0.25)}{\sqrt{(0.25+0.5)(0.16+0.5)}}=\frac{0.2}{0.7036}=0.284,\nonumber\\
+H_t=1:&\quad \frac{0.8}{\sqrt{(1.5)(1.14)}}=\frac{0.8}{1.3077}=0.612,\nonumber\\
+H_t=4:&\quad \frac{3.2}{\sqrt{(4.5)(3.06)}}=\frac{3.2}{3.7108}=0.862.\nonumber
+\end{align}
+By the second form of \eqref{eq:q16rho}, $|\rho_{ij,t}|$ increases with $H_t$, tends to 0 as $H_t\to0$ and to
+$\mathrm{sign}(\beta_i\beta_j)=1$ as $H_t\to\infty$: when the common factor is volatile, the series move together.}
+
+\passo{(c) parameter counts}{FSV: $pk-k(k-1)/2+3p+2k$. Then
+\begin{center}\small
+\begin{tabular}{lrrrrr}
+\toprule
+$(p,k)$ & elements of $\bm\Omega_t$ & FSV & DCC & DCC $+\bar{\bm Q}$ & BEKK(1,1)\\
+\midrule
+$(6,2)$ & 21 & $12-1+18+4=33$ & 20 & 35 & 93\\
+$(50,3)$ & 1{,}275 & $150-3+150+6=303$ & 152 & 1{,}377 & 6{,}275\\
+\bottomrule
+\end{tabular}
+\end{center}
+FSV and DCC (with $\bar{\bm Q}$ fixed by correlation targeting) both grow linearly in $p$; BEKK grows like $2p^2$ and is
+infeasible for $p=50$. Once $\bar{\bm Q}$ is counted, DCC carries $p(p-1)/2$ correlation parameters, while FSV stays at a
+few hundred because all correlations come from the $pk$ loadings (the factor count bound of BVAR-part2 p.~17).}
+
+\passo{(d) simulation}{Implied $\rho_{12,t}$ from \eqref{eq:q16rho}: minimum $0.073$, median $0.585$, maximum $0.966$, a wide
+swing driven only by $H_t$. Sample correlations of $(y_{1t},y_{2t})$: $0.299$ when $H_t$ is below its median, $0.831$ when
+above, $0.710$ overall. A constant-correlation model would report about $0.71$ throughout, overstating co-movement in
+calm periods and understating it in turbulent ones, exactly when diversification matters.}
+
+\passo{(e) FSV vs DCC}{\textit{Mechanism.} DCC models correlations directly: $\bm\rho_t$ (Tsay Eq.~10.32) or $\bm Q_t$ (Engle)
+is a GARCH-like recursion in the recent co-movement of standardized residuals, with two scalar parameters shared by
+all pairs; correlations need not move with volatility. FSV models covariances through the factors: correlations change
+only when the factor variances move relative to the idiosyncratic ones, and \eqref{eq:q16rho} implies they rise in
+high-volatility periods. \textit{Estimation.} DCC is two-step Gaussian QML (univariate GARCH, then the correlation
+parameters), cheap and fast. FSV has $T(p+k)$ latent log-variances and $Tk$ factors, so it needs MCMC (the lecturer's
+example uses \texttt{factorstochvol}). \textit{Scaling.} Both grow linearly in $p$ (part (c)); DCC forces every pair to
+have the same correlation dynamics, FSV gives each pair its own path through its loadings. \textit{Limitation of
+FSV.} With constant loadings, correlations cannot change unless volatilities change; time-varying loadings (Lopes and
+Carvalho 2007, BVAR-part2 p.~40) relax this. In the lecturer's W\&T Offshore / S\&P 500 example both models are fitted to the
+same returns and their correlation paths are compared (Sections~3--4 of the page).}
+\intuicao{FSV says: assets are correlated because they load on the same few sources of risk, and those sources
+are sometimes calm and sometimes wild. DCC says: correlations have their own memory, learned from recent co-movement.
+The first is a structural story that scales; the second is a flexible filter.}
+\refbib{BVAR-part2.pdf pp.~15 (factor covariance $\bm\beta\bm\beta'+\bSigma$), 17 (parameter count), 38--40 (FSV, correlated
+factor volatilities, time-varying loadings); Tsay \S10.4.3, printed pp.~531--532 [PDF pp.~558--559] (DCC);
+\path{wti-sp500-timevaryingcovariance.html} (FSV vs DCC in R).}
 \end{sol}
 
 \end{document}

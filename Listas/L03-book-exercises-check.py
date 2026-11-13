@@ -6,6 +6,8 @@ Each block prints the numbers quoted in the solutions and asserts them; closed f
 checked against an independent route (quadrature, brute force, exact enumeration). MCMC and
 simulation blocks use fixed seeds; their printed values are asserted to the printed rounding,
 and against the exact answer within a Monte Carlo tolerance. Prints PASS at the end.
+Questions 27-28 are the list's two original exercises (sparsity priors, seed 2010; Hamiltonian Monte
+Carlo vs random-walk MH, seed 2026): orig_sparse() and orig_hmc().
 Data: Listas/data/babies.data (StatLabs "Birth weight II", see Listas/data/README.md);
 coal-mining counts embedded below (Carlin, Gelfand and Smith 1992, 1851-1962).
 """
@@ -558,7 +560,189 @@ def ms_c5(N=200, burn=50, seed=5):
     close(keep[:, 1].std(ddof=1) / len(keep) ** 0.5, 0.0043, 5e-5, "C.5 naive se")
 
 
+# ---------------------------------------------------------------- Original 1: sparsity priors
+YS = (0.5, 1.0, 2.0, 3.0, 5.0, 10.0)
+
+
+def shrink_hs(y):
+    """Horseshoe (tau = sigma = 1) in the normal-means model: returns (E(kappa|y), E(theta|y)).
+    p(kappa|y) is proportional to (1-kappa)^(-1/2) exp(-kappa y^2/2) on (0, 1); the (1-kappa)^(-1/2)
+    end-point singularity is handed to QUADPACK's algebraic weight."""
+    f = lambda k: np.exp(-k * y * y / 2)
+    Z = integrate.quad(f, 0, 1, weight="alg", wvar=(0, -0.5))[0]
+    Ek = integrate.quad(lambda k: k * f(k), 0, 1, weight="alg", wvar=(0, -0.5))[0] / Z
+    return Ek, (1 - Ek) * y
+
+
+def shrink_ng(y, lam, g2):
+    """E(theta|y) under the normal-gamma prior theta|psi ~ N(0, psi), psi ~ Ga(lam, rate 1/(2 g2)),
+    sigma = 1. Integrates over u = psi^lam, which removes the psi^(lam-1) singularity at 0."""
+    rate = 1 / (2 * g2)
+    psi = lambda u: u ** (1 / lam)
+    w = lambda u: np.exp(-rate * psi(u)) * stats.norm.pdf(y, 0, np.sqrt(1 + psi(u)))
+    up = (80 / rate) ** lam
+    Z = integrate.quad(w, 0, up, limit=500)[0]
+    return y * integrate.quad(lambda u: psi(u) / (1 + psi(u)) * w(u), 0, up, limit=500)[0] / Z
+
+
+def orig_sparse(M=1_000_000, seed=2010):
+    # (b) kappa = 1/(1+lambda^2) with lambda ~ C+(0,1) is Beta(1/2,1/2): P(kappa < 0.1) by MC vs exact
+    rng = np.random.default_rng(seed)
+    psi_hs = np.abs(rng.standard_cauchy(M)) ** 2
+    kap = 1 / (1 + psi_hs)
+    p01, p01_mc = 2 / np.pi * np.arcsin(0.1 ** 0.5), (kap < 0.1).mean()
+    Ek0 = shrink_hs(0.0)[0]
+    # (c) normal-gamma moments and the lambda = 1 Laplace identity
+    for lam, g2 in ((1.0, 1.0), (0.1, 10.0), (1 / 3, 3.0)):
+        psi_law = stats.gamma(lam, scale=2 * g2)
+        var, kurt = psi_law.moment(1), 3 * psi_law.moment(2) / psi_law.moment(1) ** 2
+        close(var, 2 * lam * g2, 1e-12, "NG variance"); close(kurt - 3, 3 / lam, 1e-9, "NG excess kurtosis")
+    th = 0.7
+    lap = integrate.quad(lambda s: stats.norm.pdf(th, 0, s ** 0.5) * stats.expon.pdf(s, scale=2.0), 0, np.inf)[0]
+    close(lap, 0.5 * exp(-th), 1e-10, "NG lambda=1 is Laplace(gamma=1)")
+    # (e) shrinkage profiles: quadrature, and MC (prior draws weighted by the N(y; 0, 1+psi) likelihood)
+    psi_bl = rng.gamma(1.0, 2 * 1.0, M)          # Laplace, gamma = 1 (variance 2)
+    psi_ng = rng.gamma(0.1, 2 * 10.0, M)         # normal-gamma, lambda = 0.1, gamma^2 = 10 (variance 2)
+    rows, mc_gap = [], 0.0
+    for y in YS:
+        Ek, hs = shrink_hs(y)
+        row = (y, 2 / 3 * y, np.sign(y) * max(abs(y) - 1, 0), shrink_ng(y, 1.0, 1.0), shrink_ng(y, 0.1, 10.0), hs, Ek)
+        rows.append(row)
+        for col, psi in ((3, psi_bl), (4, psi_ng), (5, psi_hs)):
+            w = stats.norm.pdf(y, 0, np.sqrt(1 + psi))
+            mc_gap = max(mc_gap, abs(y * np.sum(w * psi / (1 + psi)) / w.sum() - row[col]))
+    print(f"Orig sparse: P(kappa<0.1)={p01:.4f} (MC {p01_mc:.4f}); E(kappa|y=0)={Ek0:.4f}; max |MC-quad|={mc_gap:.4f}")
+    for r in rows:
+        print("  y={:>4}: ridge={:.4f} soft={:.4f} lasso-mean={:.4f} NG(0.1)={:.4f} HS={:.4f} E(kappa|y)={:.4f}".format(*r))
+    close(p01, 0.2048, 5e-5, "P(kappa<0.1)"); close(p01_mc, 0.2049, 5e-5, "P(kappa<0.1) MC")
+    close(Ek0, 2 / 3, 1e-9, "E(kappa|y=0)"); close(mc_gap, 0.0011, 5e-5, "max |MC - quad|")
+    table = [  # y: ridge, lasso mode, Laplace mean, NG(0.1), horseshoe, E(kappa|y) -- as printed in the list
+        (0.3333, 0, 0.2410, 0.0693, 0.1723, 0.6554), (0.6667, 0, 0.5032, 0.1648, 0.3797, 0.6203),
+        (1.3333, 1, 1.1611, 0.6360, 1.0625, 0.4687), (2.0000, 2, 2.0258, 1.9283, 2.2101, 0.2633),
+        (3.3333, 4, 4.0000, 4.4737, 4.5791, 0.0842), (6.6667, 9, 9.0000, 9.5901, 9.7979, 0.0202)]
+    for r, t in zip(rows, table):
+        for got, e in zip(r[1:], t):
+            close(got, e, 5e-5, f"sparse table y={r[0]}")
+    close(rows[-1][6], 2 / 10 ** 2, 5e-4, "E(kappa|y=10) ~ 2/y^2")
+    close(10 - rows[-1][5], 2 / 10, 5e-3, "horseshoe bias ~ 2/y")
+    return rows, p01, p01_mc, Ek0, mc_gap
+
+
+# ---------------------------------------------------------------- Original 2: Hamiltonian Monte Carlo
+RHO = 0.95
+SIG = np.array([[1.0, RHO], [RHO, 1.0]])
+PREC = np.linalg.inv(SIG)
+
+
+def leapfrog(q, p, eps, L):
+    """L leapfrog steps of size eps for H = q'PREC q/2 + p'p/2 (unit mass); returns the end point."""
+    p = p - 0.5 * eps * PREC @ q
+    for step in range(L):
+        q = q + eps * p
+        if step < L - 1:
+            p = p - eps * PREC @ q
+    return q, p - 0.5 * eps * PREC @ q
+
+
+def energy(q, p):
+    return 0.5 * q @ PREC @ q + 0.5 * p @ p
+
+
+def ess(x):
+    """Effective sample size N / tau, tau = -1 + 2 sum_m (rho_2m + rho_2m+1), summed while the pair
+    sums stay positive (Geyer's initial positive sequence); autocorrelations by FFT."""
+    x = np.asarray(x, float) - np.mean(x)
+    n = x.size
+    f = np.fft.rfft(x, 2 * n)
+    acf = np.fft.irfft(f * np.conj(f))[:n]
+    acf /= acf[0]
+    tau = -1.0
+    for m in range(n // 2):
+        pair = acf[2 * m] + acf[2 * m + 1]
+        if pair < 0:
+            break
+        tau += 2 * pair
+    return n / tau
+
+
+def hmc(N, eps, L, seed):
+    rng = np.random.default_rng(seed)
+    q, out, acc = np.zeros(2), np.empty((N, 2)), 0
+    for i in range(N):
+        p = rng.normal(size=2)
+        qn, pn = leapfrog(q, p, eps, L)
+        if np.log(rng.uniform()) < energy(q, p) - energy(qn, pn):
+            q, acc = qn, acc + 1
+        out[i] = q
+    return out, acc / N
+
+
+def rwmh(N, c, seed):
+    rng = np.random.default_rng(seed)
+    q, out, acc = np.zeros(2), np.empty((N, 2)), 0
+    u = 0.5 * q @ PREC @ q
+    for i in range(N):
+        qn = q + c * rng.normal(size=2)
+        un = 0.5 * qn @ PREC @ qn
+        if np.log(rng.uniform()) < u - un:
+            q, u, acc = qn, un, acc + 1
+        out[i] = q
+    return out, acc / N
+
+
+def orig_hmc():
+    lam = np.linalg.eigvalsh(SIG)
+    eps_max = 2 * lam.min() ** 0.5
+    q0, p0 = np.array([0.5, 0.3]), np.array([-0.4, 0.9])
+    H0 = energy(q0, p0)
+    maxdH = {}
+    for eps in (0.05, 0.1, 0.2, 0.45):
+        q, p, errs = q0, p0, []
+        shadow = lambda q, p: energy(q, p) - eps ** 2 / 8 * q @ PREC @ PREC @ q
+        S0 = shadow(q0, p0)
+        for _ in range(100):
+            q, p = leapfrog(q, p, eps, 1)
+            errs.append(energy(q, p) - H0)
+            if eps < eps_max:
+                close(shadow(q, p), S0, 1e-10 * max(1, abs(S0)), "leapfrog shadow energy conserved")
+        maxdH[eps] = max(abs(e) for e in errs)
+    print(f"Orig HMC: eigenvalues={lam.round(4)} eps_max={eps_max:.4f} max|dH| over 100 steps: "
+          + " ".join(f"{e}:{v:.4g}" for e, v in maxdH.items()))
+    res = {}
+    o, a = hmc(5_000, 0.25, 8, 2026)
+    res["hmc"] = (a, ess(o[:, 0]), ess(o[:, 0] ** 2), o[:, 0].mean(), o[:, 0].var(ddof=1), np.corrcoef(o.T)[0, 1], 40_000)
+    for c in (0.25, 0.5, 1.0):
+        o, a = rwmh(40_000, c, 2026)
+        res[f"rw{c}"] = (a, ess(o[:, 0]), ess(o[:, 0] ** 2), o[:, 0].mean(), o[:, 0].var(ddof=1), np.corrcoef(o.T)[0, 1], 40_000)
+    o, a = hmc(5_000, 0.15, 30, 2026)
+    r1 = np.corrcoef(o[:-1, 0], o[1:, 0])[0, 1]
+    res["hmc_res"] = (a, ess(o[:, 0]), ess(o[:, 0] ** 2), o[:, 0].mean(), o[:, 0].var(ddof=1), r1, 150_000)
+    for k, (a, e1, e2, m, v, r, cost) in res.items():
+        print(f"  {k}: acc={a:.4f} ESS(t1)={e1:.0f} ESS(t1^2)={e2:.0f} per 1000 evals=({1000*e1/cost:.1f}, {1000*e2/cost:.1f}) "
+              f"mean={m:.3f} var={v:.3f} corr/r1={r:.3f}")
+    close(eps_max, 0.4472, 5e-5, "HMC stability bound")
+    for eps, e in ((0.05, 0.005343), (0.1, 0.02201), (0.2, 0.1059)):
+        close(maxdH[eps], e, 5e-4 * e, f"max|dH| eps={eps}")
+    assert 2.35e20 < maxdH[0.45] < 2.45e20, maxdH[0.45]
+    close(maxdH[0.1] / maxdH[0.05], 4.1, 0.05, "dH ratio 1"); close(maxdH[0.2] / maxdH[0.1], 4.8, 0.05, "dH ratio 2")
+    printed = {  # acceptance, ESS(t1), ESS(t1^2), ESS(t1) and ESS(t1^2) per 1000 evaluations
+        "hmc": (0.9906, 3701, 4544, 92.5, 113.6), "rw0.25": (0.6685, 226, 422, 5.6, 10.5),
+        "rw0.5": (0.4452, 515, 619, 12.9, 15.5), "rw1.0": (0.2374, 808, 1597, 20.2, 39.9),
+        "hmc_res": (0.9628, 35992, 15, 239.9, 0.1)}
+    for k, (a, e1, e2, pe1, pe2) in printed.items():
+        ga, g1, g2, _, _, _, cost = res[k]
+        close(ga, a, 5e-5, f"{k} acceptance"); close(g1, e1, 0.5, f"{k} ESS t1"); close(g2, e2, 0.5, f"{k} ESS t1^2")
+        close(1000 * g1 / cost, pe1, 0.05, f"{k} ESS/1000"); close(1000 * g2 / cost, pe2, 0.05, f"{k} ESS2/1000")
+    close(res["hmc"][1] / 40 / (res["rw1.0"][1] / 40), 4.6, 0.05, "HMC/RW ratio t1")
+    close(res["hmc"][2] / res["rw1.0"][2], 2.8, 0.05, "HMC/RW ratio t1^2")
+    close(res["hmc_res"][5], -0.901, 5e-4, "resonance lag-1 autocorrelation")
+    close(res["hmc_res"][4], 1.189, 5e-4, "resonance variance")
+    close(np.pi * 1.95 ** 0.5, 4.39, 5e-3, "half period of the slow mode")
+    return eps_max, maxdH, res
+
+
 if __name__ == "__main__":
     g22_g32(); g33(); g38(); g45(); g54(); g62(); g73(); g75(); g78(); g81()
     t121(); t122(); t123(); bolfarine(); ms_b16(); ms_b19(); ms_c5()
+    orig_sparse(); orig_hmc()
     print("PASS")

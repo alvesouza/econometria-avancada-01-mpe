@@ -3,7 +3,9 @@
 Purpose: the L09 book-exercise answer key (Tsay AFTS 3e Ch. 8-10, Greenberg 1e Ch. 10)
 prints VAR / VMA / cointegration / factor-model / multivariate-volatility estimates.
 This script recomputes each one from the raw data in Listas/data/ and aborts on the
-first mismatch (AssertionError naming the quantity).
+first mismatch (AssertionError naming the quantity). Questions 13-16 are original exercises
+(large BVAR, FAVAR, TVP-AR Kalman filter, factor SV) on simulated data with fixed seeds
+2026-2029: o_bvar, o_favar, o_tvp, o_fsv.
 
 Usage:  python Listas/L09-book-exercises-check.py            # recompute + assert
         python Listas/L09-book-exercises-check.py --print    # also print every value
@@ -794,9 +796,192 @@ def g104():
     chk("G10.4 post sd", psd, [0.107, 0.039, 0.051, 0.061, 0.038, 0.044, 0.061, 0.068, 0.132], 3, slack=2)
 
 
+# ============================================================================ Q13-Q16: original exercises (simulated)
+def o_bvar():
+    """Q13: Minnesota prior moments; conjugate normal-inverse-Wishart BVAR(1), q = 3, simulated (seed 2026)."""
+    chk("Q13a VAR(1) parameter counts q=3,20,131", [q * q + q * (q + 1) // 2 for q in (3, 20, 131)], [15, 610, 25807], 0)
+    lam, th, sg = 0.2, 0.5, np.array([1.0, 2.0, 0.5])
+    sd = [lam / 1, lam / 2, th * lam * sg[0] / (1 * sg[1]), th * lam * sg[0] / (2 * sg[2])]
+    chk("Q13b prior sd (own l1, own l2, y2 l1, y3 l2) in eq 1", sd, [0.2, 0.1, 0.05, 0.1], 3)
+    rng = np.random.default_rng(2026)
+    q, T, burn = 3, 60, 50
+    Bt = np.array([[0.9, 0.1, 0.0], [0.0, 0.6, 0.2], [0.2, 0.0, 0.4]])      # y_t = Bt y_{t-1} + u_t
+    Su = np.array([[1.0, 0.3, 0.0], [0.3, 1.0, 0.2], [0.0, 0.2, 1.0]])
+    u = rng.multivariate_normal(np.zeros(q), Su, T + 1 + burn)
+    y = np.zeros((T + 1 + burn, q))
+    for t in range(1, len(y)):
+        y[t] = Bt @ y[t - 1] + u[t]
+    y = y[burn:]
+    Y, X = y[1:], y[:-1]                                   # Y = X B + U with B = Bt' (column j = equation j)
+    s2 = np.array([np.sum((Y[:, j] - X[:, j] * (X[:, j] @ Y[:, j]) / (X[:, j] @ X[:, j])) ** 2) / (T - 1)
+                   for j in range(q)])
+    Bols = np.linalg.solve(X.T @ X, X.T @ Y)
+    chk("Q13d s_j^2", s2, [0.779, 1.266, 1.213], 3)
+    chk("Q13d B_ols (rows = regressors y1,y2,y3 lag 1)", Bols,
+        [[0.838, -0.107, 0.183], [0.086, 0.727, -0.11], [0.144, 0.268, 0.432]], 3)
+    B0, nu0, S0 = np.eye(q), q + 2, np.diag(s2)
+
+    def post(lam):
+        O0i = np.diag(s2 / lam ** 2)
+        O1 = np.linalg.inv(O0i + X.T @ X)
+        B1 = O1 @ (O0i @ B0 + X.T @ Y)
+        S1 = S0 + Y.T @ Y + B0.T @ O0i @ B0 - B1.T @ np.linalg.inv(O1) @ B1
+        return O0i, O1, B1, S1
+
+    O0i, O1, B1, S1 = post(0.2)
+    nu1 = nu0 + T
+    Xd = np.diag(np.sqrt(s2) / 0.2)                         # dummy observations: Yd = Xd B0, Xd = Omega0^{-1/2}
+    Xs, Ys = np.vstack([Xd, X]), np.vstack([Xd @ B0, Y])
+    Bd = np.linalg.solve(Xs.T @ Xs, Xs.T @ Ys)
+    Ed = Ys - Xs @ Bd
+    chk("Q13d dummy-obs B and S equal NIW posterior", [np.abs(Bd - B1).max(), np.abs(S0 + Ed.T @ Ed - S1).max()], [0, 0], 8)
+    W = O1 @ O0i
+    chk("Q13c B1 = W B0 + (I-W) Bols", np.abs(W @ B0 + (np.eye(q) - W) @ Bols - B1).max(), 0, 8)
+    chk("Q13d B1 lambda=0.2", B1, [[0.866, -0.082, 0.118], [0.073, 0.776, -0.1], [0.098, 0.182, 0.598]], 3)
+    chk("Q13d post sd B lambda=0.2", np.sqrt(np.outer(np.diag(O1), np.diag(S1)) / (nu1 - q - 1)),
+        [[0.059, 0.075, 0.075], [0.062, 0.08, 0.08], [0.082, 0.106, 0.105]], 3)
+    chk("Q13d E(Sigma|y) lambda=0.2", S1 / (nu1 - q - 1),
+        [[0.733, 0.078, 0.089], [0.078, 1.212, 0.252], [0.089, 0.252, 1.202]], 3)
+    rows = []
+    for lam in (0.01, 0.1, 0.2, 0.5, 1.0, 10.0):
+        B1 = post(lam)[2]
+        rows.append([B1[0, 0], B1[1, 0], np.linalg.norm(B1 - B0), np.linalg.norm(B1 - Bols), np.linalg.norm(B1 - Bt.T)])
+    chk("Q13d lambda table [b11, b21, |B1-I|, |B1-Bols|, |B1-Btrue|]", rows,
+        [[0.997, 0.001, 0.007, 0.756, 0.782], [0.906, 0.048, 0.318, 0.457, 0.509], [0.866, 0.073, 0.555, 0.213, 0.324],
+         [0.844, 0.084, 0.718, 0.045, 0.264], [0.84, 0.086, 0.751, 0.012, 0.264], [0.838, 0.086, 0.762, 0.0, 0.265]], 3)
+    chk("Q13d |Bols-Btrue|", np.linalg.norm(Bols - Bt.T), 0.265, 3)
+    # (e) same estimator in a q = 20 system with T = 60: OLS has 20 coefficients per equation
+    q, T = 20, 60
+    Bt = 0.7 * np.eye(q) + rng.normal(scale=0.05, size=(q, q)) * (1 - np.eye(q))
+    y = np.zeros((T + 1 + burn, q))
+    u = rng.normal(size=(T + 1 + burn, q))
+    for t in range(1, len(y)):
+        y[t] = Bt @ y[t - 1] + u[t]
+    y = y[burn:]
+    Y, X = y[1:], y[:-1]
+    s2 = np.array([np.sum((Y[:, j] - X[:, j] * (X[:, j] @ Y[:, j]) / (X[:, j] @ X[:, j])) ** 2) / (T - 1)
+                   for j in range(q)])
+    B0 = np.eye(q)
+    err = [np.linalg.norm(np.linalg.solve(X.T @ X, X.T @ Y) - Bt.T)]
+    for lam in (0.05, 0.1, 0.2, 0.5, 1.0):
+        O0i = np.diag(s2 / lam ** 2)
+        err.append(np.linalg.norm(np.linalg.solve(O0i + X.T @ X, O0i @ B0 + X.T @ Y) - Bt.T))
+    chk("Q13e q=20 |B-Btrue| [OLS, lambda=.05,.1,.2,.5,1]", err, [3.227, 1.393, 1.187, 1.675, 2.744, 3.087], 3)
+    chk("Q13e |I-Btrue|", np.linalg.norm(B0 - Bt.T), 1.673, 3)
+
+
+def o_favar():
+    """Q14: principal-component factors from a simulated N = 50 panel; FAVAR vs AR vs 51-variable regression (seed 2027)."""
+    rng = np.random.default_rng(2027)
+    N, T, T0, k, burn = 50, 240, 180, 2, 50
+    A = np.array([[0.8, 0.1], [0.0, 0.5]])
+    w = rng.normal(size=(T + burn, k))
+    uy = rng.normal(scale=0.5, size=T + burn)
+    F, y = np.zeros((T + burn, k)), np.zeros(T + burn)
+    for t in range(1, T + burn):
+        F[t] = A @ F[t - 1] + w[t]
+        y[t] = 0.3 * y[t - 1] + 0.5 * F[t - 1, 0] + 0.4 * F[t - 1, 1] + uy[t]
+    F, y = F[burn:], y[burn:]
+    Lam = rng.normal(size=(N, k))
+    Xp = F @ Lam.T + rng.normal(size=(T, N))
+    Z = (Xp - Xp[:T0].mean(0)) / Xp[:T0].std(0, ddof=1)    # standardised with training moments only
+    ev, V = np.linalg.eigh(np.corrcoef(Z[:T0].T))
+    ev, V = ev[::-1], V[:, ::-1]
+    chk("Q14b eigenvalue shares 1-3", ev[:3] / N, [0.481, 0.269, 0.021], 3)
+    P = Z @ V[:, :k]                                       # PCs for all t with training loadings
+    G = np.column_stack([np.ones(T0), P[:T0]])
+    r2 = [1 - np.sum((F[:T0, i] - G @ np.linalg.lstsq(G, F[:T0, i], rcond=None)[0]) ** 2)
+          / np.sum((F[:T0, i] - F[:T0, i].mean()) ** 2) for i in range(k)]
+    chk("Q14b R2 of true factors on PCs", r2, [0.991, 0.983], 3)
+
+    def rmsfe(R):
+        """Row t-1 of R predicts y[t]; coefficients from t <= T0-1, forecasts for t = T0..T-1."""
+        Xr = np.column_stack([np.ones(T - 1), R[:-1]])
+        b = np.linalg.lstsq(Xr[:T0 - 1], y[1:T0], rcond=None)[0]
+        return np.sqrt(np.mean((y[T0:] - Xr[T0 - 1:] @ b) ** 2))
+
+    rm = [rmsfe(y[:, None]), rmsfe(np.column_stack([y, P])), rmsfe(np.column_stack([y, F])),
+          rmsfe(np.column_stack([y, Xp]))]
+    chk("Q14c RMSFE [AR(1), FAVAR, true F, 51-var]", rm, [0.743, 0.52, 0.512, 0.651], 3)
+
+
+def kf_tvp(y, q, s2=1.0, a0=0.0, P0=1.0, delta=None):
+    """Kalman filter for y_t = phi_t y_{t-1} + e_t, phi_t = phi_{t-1} + eta_t (Var eta = q, or discount delta).
+
+    Returns filtered means a_{t|t} for t = 1..T-1 and the prediction-error log-likelihood."""
+    a, P, ll = a0, P0, 0.0
+    af = np.empty(len(y) - 1)
+    for t in range(1, len(y)):
+        x = y[t - 1]
+        Pp = P / delta if delta else P + q
+        Fv = x * x * Pp + s2
+        v = y[t] - x * a
+        K = Pp * x / Fv
+        a, P = a + K * v, Pp * (1 - K * x)
+        ll -= 0.5 * (LOG2PI + np.log(Fv) + v * v / Fv)
+        af[t - 1] = a
+    return af, ll
+
+
+def o_tvp():
+    """Q15: TVP-AR(1) with a break in phi (0.2 -> 0.8 at t = 151), Kalman filter for several q (seed 2028)."""
+    chk("Q15a TVP-VAR(2), q=3: states, Q elements", [3 * (3 * 2 + 1), 21 * 22 // 2], [21, 231], 0)
+    rng = np.random.default_rng(2028)
+    T = 300
+    phi = np.where(np.arange(T + 1) <= 150, 0.2, 0.8)
+    y = np.zeros(T + 1)
+    e = rng.normal(size=T + 1)
+    for t in range(1, T + 1):
+        y[t] = phi[t] * y[t - 1] + e[t]
+    af, _ = kf_tvp(y, 0.0, P0=1e8)
+    chk("Q15b q=0 diffuse = OLS", af[-1] - (y[1:] @ y[:-1]) / (y[:-1] @ y[:-1]), 0, 6)
+    rows = []
+    for q in (0.0, 1e-4, 1e-3, 1e-2, 1e-1):
+        af, ll = kf_tvp(y, q)
+        rows.append([ll, af[149], af[174], af[299], np.sqrt(np.mean((af - phi[1:]) ** 2))])
+    af, ll = kf_tvp(y, 0.0, delta=0.97)
+    rows.append([ll, af[149], af[174], af[299], np.sqrt(np.mean((af - phi[1:]) ** 2))])
+    chk("Q15c table [loglik, a150, a175, a300, RMSE]", rows,
+        [[-465.09, 0.098, 0.312, 0.587, 0.241], [-455.551, 0.087, 0.414, 0.648, 0.184], [-448.159, 0.068, 0.615, 0.57, 0.151],
+         [-452.284, 0.114, 0.651, 0.469, 0.192], [-472.84, 0.287, 0.479, 0.615, 0.333], [-447.665, 0.069, 0.617, 0.618, 0.145]], 3)
+    r = optimize.minimize_scalar(lambda lq: -kf_tvp(y, np.exp(lq))[1], bounds=(-14, 0), method="bounded")
+    chk("Q15c MLE q, loglik", [np.exp(r.x), -r.fun], [0.0015, -447.9482], 4, slack=1)
+
+
+def o_fsv():
+    """Q16: one-factor SV covariance, implied correlations, parameter counts; simulation (seed 2029)."""
+    beta, s2 = np.array([1.0, 0.8, 0.6]), np.full(3, 0.5)
+
+    def rho(H, i, j):
+        return beta[i] * beta[j] * H / np.sqrt((beta[i] ** 2 * H + s2[i]) * (beta[j] ** 2 * H + s2[j]))
+
+    chk("Q16b rho12 at H = 0.25, 1, 4", [rho(H, 0, 1) for H in (0.25, 1.0, 4.0)], [0.284, 0.612, 0.862], 3)
+
+    def counts(p, k):
+        return [p * (p + 1) // 2, p * k - k * (k - 1) // 2 + 3 * p + 2 * k, 3 * p + 2, 3 * p + 2 + p * (p - 1) // 2,
+                p * (p + 1) // 2 + 2 * p * p]
+
+    chk("Q16c counts p=6,k=2 [Omega, FSV, DCC, DCC+Qbar, BEKK]", counts(6, 2), [21, 33, 20, 35, 93], 0)
+    chk("Q16c counts p=50,k=3", counts(50, 3), [1275, 303, 152, 1377, 6275], 0)
+    rng = np.random.default_rng(2029)
+    T, ph, se_ = 1000, 0.98, 0.2
+    h = np.empty(T)
+    h[0] = rng.normal(scale=se_ / np.sqrt(1 - ph ** 2))
+    eta = rng.normal(size=T)
+    for t in range(1, T):
+        h[t] = ph * h[t - 1] + se_ * eta[t]
+    H = np.exp(h)
+    Yf = np.outer(np.sqrt(H) * rng.normal(size=T), beta) + np.sqrt(s2) * rng.normal(size=(T, 3))
+    r12 = rho(H, 0, 1)
+    chk("Q16d implied rho12 [min, median, max]", [r12.min(), np.median(r12), r12.max()], [0.073, 0.585, 0.966], 3)
+    hi = H > np.median(H)
+    cc = [np.corrcoef(Yf[m, 0], Yf[m, 1])[0, 1] for m in (~hi, hi, np.ones(T, bool))]
+    chk("Q16d sample corr y1,y2 [low H, high H, all]", cc, [0.299, 0.831, 0.71], 3)
+
+
 if __name__ == "__main__":
     only = sys.argv[sys.argv.index("--only") + 1].split(",") if "--only" in sys.argv else None
-    for f in (e81, e82, e85, e87, e97, e10_ibm, e10_ge, g104):
+    for f in (e81, e82, e85, e87, e97, e10_ibm, e10_ge, g104, o_bvar, o_favar, o_tvp, o_fsv):
         if only and f.__name__ not in only:
             continue
         f()

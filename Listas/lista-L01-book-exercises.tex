@@ -1,5 +1,6 @@
 % =============================================================================
-% L01 (Class 1, Review of basic ingredients) --- book exercises, verbatim statements + solutions.
+% L01 (Class 1, Review of basic ingredients) --- book exercises, verbatim statements + solutions,
+% plus one original exercise (p-hacking, \origem{} line instead of \fonte{}).
 % Built from the MPE exam template (lista-exam.tex). One source, two outputs:
 %   \solucoesfalse  -> blank list (space to work)
 %   \solucoestrue   -> answer key (same file)
@@ -60,6 +61,10 @@
   \textbf{Question \thequestao.}~#1\par}
 % Source line that opens every book statement
 \newcommand{\fonte}[1]{\par\noindent{\small\textbf{Source:} #1}\par\smallskip}
+% Origin line that opens every original (non-book) exercise, styled like \fonte
+\newcommand{\origem}[1]{\par\noindent{\small\textbf{Origin:} #1}\par\smallskip}
+% What a statement refers to outside itself (earlier problem, equation, data set), placed after it
+\newenvironment{refmat}{\par\smallskip\noindent\small\textbf{Referenced material.}\ }{\par\smallskip}
 % Notation list that opens every solution (estilo-avaliacao §4, "Equations, notation and layout").
 \newenvironment{notacao}{\par\smallskip\noindent\textbf{Notation.}\begin{itemize}[leftmargin=1.4em,topsep=1pt,itemsep=0pt]\small}{\end{itemize}}
 \allowdisplaybreaks
@@ -85,9 +90,13 @@
 \end{center}
 \vspace{2pt}
 
-{\footnotesize\noindent\textbf{Instructions.} Every question is a textbook exercise from the
+{\footnotesize\noindent\textbf{Instructions.} Questions 1--17 are textbook exercises from the
 \emph{Practice} list of Class~1 in \texttt{Map/class-plan.md}, reproduced verbatim from the book PDF
-(statements from Portuguese-language books stay in Portuguese). Show every step. Computer exercises
+(statements from Portuguese-language books stay in Portuguese); each opens with its source line
+(printed page, with the PDF page in brackets), and anything the statement refers to is summarised
+in a \emph{Referenced material} block right after it. Question~18 is an original exercise on
+p-hacking and reproducibility (a Class~1 goal with no exercise in the books), marked
+\emph{Origin}. Show every step. Computer exercises
 are solved in Python; the script \texttt{Listas/L01-book-exercises-check.py} reproduces and asserts
 every number printed in the solutions. Book abbreviations follow the class plan: T = Tsay, W =
 Wooldridge, G = Greenberg, I = ISLP, B = Bolfarine \& Sandoval, MS = Morettin \& Singer.\par}
@@ -97,8 +106,10 @@ Wooldridge, G = Greenberg, I = ISLP, B = Bolfarine \& Sandoval, MS = Morettin \&
 
 \questao{T 2.2 --- AR(2) moments and forecasts.}
 \fonte{Tsay, R.~S. (2010), \textit{Analysis of Financial Time Series}, 3rd ed., Wiley, Chapter~2
-Exercises, Exercise~2.2, p.~104 --- reproduced verbatim. (Header of the exercise set: ``If not
-specifically specified, use 5\% significance level to draw conclusions in the exercises.'')}
+(\textit{Linear Time Series Analysis and Its Applications}), Exercises, Exercise~2.2, printed
+p.~104 [PDF p.~131]; answer not given in the book; reproduced verbatim. (Header of the exercise
+set: ``If not specifically specified, use 5\% significance level to draw conclusions in the
+exercises.'')}
 
 2.2. Suppose that the daily log return of a security follows the model
 \[ r_t = 0.01 + 0.2 r_{t-2} + a_t , \]
@@ -229,7 +240,9 @@ standard deviation $0.1414$ is only slightly below the unconditional $0.1443$.}
 
 \questao{W 11.C8 --- AR(1) for unemployment (computer exercise).}
 \fonte{Wooldridge, J.~M. (2016), \textit{Introductory Econometrics: A Modern Approach}, 6th ed.,
-Cengage, Chapter~11, Computer Exercise C8, p.~370 --- reproduced verbatim.}
+Cengage, Chapter~11 (\textit{Further Issues in Using OLS with Time Series Data}), Computer
+Exercise~C8, printed p.~370 [PDF p.~394]; answer not given in the book (Appendix~F answers only the
+in-text Questions); reproduced verbatim.}
 
 C8 Use the data in PHILLIPS for this exercise.
 \begin{enumerate}[label=(\roman*),leftmargin=2.4em]
@@ -243,6 +256,20 @@ or worse than in the model from part (i)?
 \item Use the method from Section 6-4 to construct a 95\% prediction interval for the 2004
 unemployment rate. Is the 2004 unemployment rate in the interval?
 \end{enumerate}
+\begin{refmat}
+\emph{Data.} PHILLIPS (Wooldridge's data files; also used in Example~11.5) is annual U.S.\ data for
+1948--2003 with $unem_t$, the civilian unemployment rate (percent), and $inf_t$, the CPI inflation
+rate (percent); the last observation is 2003, with $unem_{2003}=6.0$ and $inf_{2003}=2.3$.
+\emph{Actual 2004 rate} (the part (i) lookup): $5.5$ percent, the BLS annual average reported in the
+\textit{Economic Report of the President}.
+\emph{Section 6-4} (printed pp.~186--189 [PDF pp.~210--213]): to get the prediction
+$\hat y_0=\hat\beta_0+\hat\beta_1c_1+\dots+\hat\beta_kc_k$ and its standard error, regress $y$ on
+$(x_j-c_j)$, $j=1,\dots,k$; the intercept is $\hat y_0$ and its standard error is
+$\operatorname{se}(\hat y_0)$. The prediction error $\hat e_0=y^0-\hat y_0$ has
+$\operatorname{se}(\hat e_0)=\{[\operatorname{se}(\hat y_0)]^2+\hat\sigma^2\}^{1/2}$ (eq.~(6.36), p.~189
+[PDF p.~213]), and the 95\% prediction interval is $\hat y_0\pm t_{.025}\cdot\operatorname{se}(\hat e_0)$
+(eq.~(6.37)), with $t_{.025}$ the 97.5th percentile of the $t_{n-k-1}$ distribution.
+\end{refmat}
 \resolespaco
 \begin{sol}
 \solhead
@@ -379,7 +406,9 @@ would use many out-of-sample years.}
 
 \questao{W 12.1 --- OLS standard errors under AR(1) errors.}
 \fonte{Wooldridge, J.~M. (2016), \textit{Introductory Econometrics: A Modern Approach}, 6th ed.,
-Cengage, Chapter~12, Problem~1, p.~396 --- reproduced verbatim.}
+Cengage, Chapter~12 (\textit{Serial Correlation and Heteroskedasticity in Time Series
+Regressions}), Problem~1, printed p.~396 [PDF p.~420]; answer not given in the book (Appendix~F
+answers only the in-text Questions); reproduced verbatim.}
 
 1 When the errors in a regression model have AR(1) serial correlation, why do the OLS standard
 errors tend to underestimate the sampling variation in the $\hat\beta_j$? Is it always true that the
@@ -456,7 +485,9 @@ with a run of large $x$, which tilts the fitted slope more than independent erro
 
 \questao{G 2.2 --- gamma--Poisson conjugacy.}
 \fonte{Greenberg, E. (2008), \textit{Introduction to Bayesian Econometrics}, 1st ed., Cambridge
-University Press, §2.5 Exercises, Exercise~2.2, p.~19 --- reproduced verbatim.}
+University Press, Chapter~2 (\textit{Basic Concepts of Probability and Inference}), §2.5
+Exercises, Exercise~2.2, printed p.~19 [PDF p.~34]; answer not given in the book; reproduced
+verbatim.}
 
 2.2 The Poisson distribution has probability mass function
 \[ p(y_i\mid\theta)=\frac{\theta^{y_i}e^{-\theta}}{y_i!},\qquad \theta>0,\ y_i=0,1,\dots, \]
@@ -469,6 +500,11 @@ Poisson distribution.
 distribution and the MLE.
 \item What happens to the weight on the prior mean as $n$ becomes large?
 \end{enumerate}
+\begin{refmat}
+Greenberg's gamma $G(\alpha,\beta)$ (App.~A, §A.1.7, printed p.~184 [PDF p.~199]) has shape $\alpha$
+and rate $\beta$: $f(x\mid\alpha,\beta)=\frac{\beta^\alpha}{\Gamma(\alpha)}x^{\alpha-1}e^{-\beta x}$,
+$x\ge0$, with $\E(x)=\alpha/\beta$ and $\Var(x)=\alpha/\beta^2$.
+\end{refmat}
 \resolespaco
 \begin{sol}
 \solhead
@@ -546,20 +582,8 @@ moves the estimate only from $3.098$ to $3.036$.}
 
 \questao{G 7.3 --- Gibbs sampler for the coal-mining switch point (computer exercise).}
 \fonte{Greenberg, E. (2008), \textit{Introduction to Bayesian Econometrics}, 1st ed., Cambridge
-University Press, §7.5 Exercises, Exercise~7.3, p.~106 --- reproduced verbatim. Equations (7.3) and
-(7.4), to which the exercise refers, are reproduced verbatim from §7.1.1, pp.~93--94.}
-
-\emph{Equations referred to (Greenberg 2008, pp.~93--94):}
-\[
-p(y_i)=\begin{cases}\dfrac{e^{-\theta_1}\theta_1^{y_i}}{y_i!}, & \text{for } i=1,\dots,k,\\[8pt]
-\dfrac{e^{-\theta_2}\theta_2^{y_i}}{y_i!}, & \text{for } i=k+1,\dots,n,\end{cases}\tag{7.3}
-\]
-``where $y_i=0,1,\dots,$ and the switch point $k$ is unknown. The specification is completed by
-assigning the conditionally conjugate priors,
-\[
-\theta_1\sim G(\alpha_{10},\beta_{10}),\quad \theta_2\sim G(\alpha_{20},\beta_{20}),\quad
-\pi(k=j)=1/n,\quad j=1,\dots,n.\text{''}\tag{7.4}
-\]
+University Press, Chapter~7 (\textit{Simulation by MCMC Methods}), §7.5 Exercises, Exercise~7.3,
+printed p.~106 [PDF p.~121]; answer not given in the book; reproduced verbatim.}
 
 7.3 Construct a Gibbs algorithm to analyze the Poisson model with unknown switch point. Given the
 specification in Equations (7.3) and (7.4), show that
@@ -583,6 +607,42 @@ present historical material that might shed light on when changes in parameters 
 example, changes in government regulation, technology, or the location of mines might be expected
 to affect the probability of a disaster. A more general version of the model permits multiple
 switch points if necessary.)
+\begin{refmat}
+\emph{Equations (7.3)--(7.4)} (§7.1.1, printed pp.~93--94 [PDF pp.~108--109], quoted verbatim):
+\[
+p(y_i)=\begin{cases}\dfrac{e^{-\theta_1}\theta_1^{y_i}}{y_i!}, & \text{for } i=1,\dots,k,\\[8pt]
+\dfrac{e^{-\theta_2}\theta_2^{y_i}}{y_i!}, & \text{for } i=k+1,\dots,n,\end{cases}\tag{7.3}
+\]
+``where $y_i=0,1,\dots,$ and the switch point $k$ is unknown. The specification is completed by
+assigning the conditionally conjugate priors,
+\[
+\theta_1\sim G(\alpha_{10},\beta_{10}),\quad \theta_2\sim G(\alpha_{20},\beta_{20}),\quad
+\pi(k=j)=1/n,\quad j=1,\dots,n.\text{''}\tag{7.4}
+\]
+$G(a,b)$ is the gamma with shape $a$ and rate $b$ (App.~A, §A.1.7, p.~184 [PDF p.~199]).
+\emph{Data} (not in the book; Carlin, Gelfand \& Smith 1992, from Jarrett 1979): annual numbers of
+British coal-mining disasters, 1851--1962, $n=112$ years, $\sum_iy_i=191$:
+\begin{center}\footnotesize\setlength{\tabcolsep}{4pt}
+\begin{tabular}{l*{10}{c}}
+\toprule
+Years & +0 & +1 & +2 & +3 & +4 & +5 & +6 & +7 & +8 & +9\\
+\midrule
+1851--1860 & 4 & 5 & 4 & 1 & 0 & 4 & 3 & 4 & 0 & 6 \\
+1861--1870 & 3 & 3 & 4 & 0 & 2 & 6 & 3 & 3 & 5 & 4 \\
+1871--1880 & 5 & 3 & 1 & 4 & 4 & 1 & 5 & 5 & 3 & 4 \\
+1881--1890 & 2 & 5 & 2 & 2 & 3 & 4 & 2 & 1 & 3 & 2 \\
+1891--1900 & 2 & 1 & 1 & 1 & 1 & 3 & 0 & 0 & 1 & 0 \\
+1901--1910 & 1 & 1 & 0 & 0 & 3 & 1 & 0 & 3 & 2 & 2 \\
+1911--1920 & 0 & 1 & 1 & 1 & 0 & 1 & 0 & 1 & 0 & 0 \\
+1921--1930 & 0 & 2 & 1 & 0 & 0 & 0 & 1 & 1 & 0 & 2 \\
+1931--1940 & 3 & 3 & 1 & 1 & 2 & 1 & 1 & 1 & 1 & 2 \\
+1941--1950 & 4 & 2 & 0 & 0 & 0 & 1 & 4 & 0 & 0 & 0 \\
+1951--1960 & 1 & 0 & 0 & 0 & 0 & 0 & 1 & 0 & 0 & 1 \\
+1961--1962 & 0 & 1 &   &   &   &   &   &   &   &   \\
+\bottomrule
+\end{tabular}
+\end{center}
+\end{refmat}
 \resolespaco
 \begin{sol}
 \solhead
@@ -751,8 +811,9 @@ likelihood also peaks at 1891).}
 
 \questao{I 5.2 --- probability that an observation is in a bootstrap sample.}
 \fonte{James, G., Witten, D., Hastie, T., Tibshirani, R. and Taylor, J. (2023), \textit{An
-Introduction to Statistical Learning with Applications in Python}, Springer, §5.4 Exercises
-(Conceptual), Exercise~2, pp.~224--225 --- reproduced verbatim (the margin index entry
+Introduction to Statistical Learning with Applications in Python}, 1st ed., Springer, Chapter~5
+(\textit{Resampling Methods}), §5.4 Exercises (Conceptual), Exercise~2, printed pp.~224--225
+[PDF pp.~232--233]; answer not given in the book; reproduced verbatim (the margin index entry
 ``\texttt{np.empty()}'' is omitted).}
 
 2. We will now derive the probability that a given observation is part of a bootstrap sample.
@@ -861,8 +922,9 @@ validation set.}
 
 \questao{I 5.9 --- bootstrap standard errors for Boston \texttt{medv} (computer exercise).}
 \fonte{James, G., Witten, D., Hastie, T., Tibshirani, R. and Taylor, J. (2023), \textit{An
-Introduction to Statistical Learning with Applications in Python}, Springer, §5.4 Exercises
-(Applied), Exercise~9, pp.~227--228 --- reproduced verbatim (the margin index entry
+Introduction to Statistical Learning with Applications in Python}, 1st ed., Springer, Chapter~5
+(\textit{Resampling Methods}), §5.4 Exercises (Applied), Exercise~9, printed pp.~227--228
+[PDF pp.~235--236]; answer not given in the book; reproduced verbatim (the margin index entry
 ``\texttt{np.percentile()}'' is omitted).}
 
 9. We will now consider the \texttt{Boston} housing data set, from the \texttt{ISLP} library.
@@ -889,6 +951,14 @@ Boston census tracts. Call this quantity $\hat\mu_{0.1}$. (You can use the \text
 function.)
 \item Use the bootstrap to estimate the standard error of $\hat\mu_{0.1}$. Comment on your findings.
 \end{enumerate}
+\begin{refmat}
+\emph{Data.} \texttt{Boston} (ISLP library; introduced in the Ch.~3 lab, §3.6.2, printed p.~117
+[PDF p.~126]): 506 Boston neighbourhoods (census tracts); \texttt{medv} is the median value of
+owner-occupied homes, in thousands of US dollars. Copy used here: \texttt{Listas/data/Boston.csv}.
+\emph{Two standard error rule (3.9)} (§3.1.2, printed p.~75 [PDF p.~84]): an approximate 95\%
+confidence interval is $\hat\beta_1\pm2\cdot\mathrm{SE}(\hat\beta_1)$, valid when the $n$ observations
+are uncorrelated; applied here with $\hat\mu$ in place of $\hat\beta_1$.
+\end{refmat}
 \resolespaco
 \begin{sol}
 \solhead
@@ -975,15 +1045,17 @@ also show that tail quantiles are noisier than central ones.}
 \bloco{5}{Bolfarine \& Sandoval, \textit{Introdução à Inferência Estatística}}{B 1.4, 1.9, 1.12 $\to$ 2.2, 2.4, 2.10 $\to$ 3.6, 3.13, 3.17}
 
 \questao{B 1.4 --- MSE of $S^2$ and $\hat\sigma^2$.}
-\fonte{Bolfarine, H. and Sandoval, M.~C. (2010), \textit{Introdução à Inferência Estatística},
-§1.4 Exercícios, Exercício~1.4, p.~13 --- reproduced verbatim. The expressions it refers to are
-reproduced verbatim from Exemplo~1.3.6, p.~9.}
+\fonte{Bolfarine, H. and Sandoval, M.~C. (2010), \textit{Introdução à Inferência Estatística}
+(edition not stated in the PDF on disk), Capítulo~1 (\textit{Elementos Básicos}), §1.4 Exercícios,
+Exercício~1.4, printed p.~13 [PDF p.~19]; answer not given in the book; reproduced verbatim.}
 
 \begin{otherlanguage}{brazil}
 \textbf{1.4.} Verifique a validade das expressões (1.3.10) e (1.3.11).
-
-\smallskip
-\emph{Expressões referidas (Exemplo 1.3.6, p.~9):} ``Sejam $X_1,\dots,X_n$ uma amostra aleatória da
+\end{otherlanguage}
+\begin{refmat}
+Expressions (1.3.10)--(1.3.11), quoted verbatim from Exemplo~1.3.6, printed p.~9 [PDF p.~15]:
+\begin{otherlanguage}{brazil}
+``Sejam $X_1,\dots,X_n$ uma amostra aleatória da
 variável aleatória $X\sim N(\mu,\sigma^2)$. Conforme visto no Exemplo 1.3.3, $\hat\sigma^2$ é um
 estimador viciado para $\sigma^2$. De (1.3.3) segue que
 \[ S^2=\frac{n}{n-1}\hat\sigma^2=\frac1{n-1}\sum_{i=1}^n(X_i-\overline X)^2 \]
@@ -992,6 +1064,8 @@ estimador viciado para $\sigma^2$. De (1.3.3) segue que
 e que
 \[ EQM[\hat\sigma^2]=\frac{2\sigma^4}{(n-1)}\left[1-\frac{(3n-1)}{2n^2}\right].\text{''} \tag{1.3.11}\]
 \end{otherlanguage}
+Here $\hat\sigma^2=\frac1n\sum_i(X_i-\overline X)^2$ (Exemplo~1.3.3) and $EQM$ is the mean squared error.
+\end{refmat}
 \resolespaco
 \begin{sol}
 \solhead
@@ -1050,8 +1124,9 @@ the biased MLE wins on MSE. Unbiasedness is one criterion among several, not a g
 \end{sol}
 
 \questao{B 1.9 --- Bernoulli: unbiased $X$ versus the constant $1/2$.}
-\fonte{Bolfarine, H. and Sandoval, M.~C. (2010), \textit{Introdução à Inferência Estatística},
-§1.4 Exercícios, Exercício~1.9, p.~14 --- reproduced verbatim.}
+\fonte{Bolfarine, H. and Sandoval, M.~C. (2010), \textit{Introdução à Inferência Estatística}
+(edition not stated in the PDF on disk), Capítulo~1 (\textit{Elementos Básicos}), §1.4 Exercícios,
+Exercício~1.9, printed p.~14 [PDF p.~20]; answer not given in the book; reproduced verbatim.}
 
 \begin{otherlanguage}{brazil}
 \textbf{1.9.} Seja $X$ uma única variável aleatória com distribuição de Bernoulli com parâmetro
@@ -1114,8 +1189,9 @@ them; this is why the theory restricts the class (unbiased estimators) before lo
 \end{sol}
 
 \questao{B 1.12 --- $U(0,\theta)$: $c_1\overline X$ versus $c_2X_{(n)}$.}
-\fonte{Bolfarine, H. and Sandoval, M.~C. (2010), \textit{Introdução à Inferência Estatística},
-§1.4 Exercícios, Exercício~1.12, p.~14 --- reproduced verbatim.}
+\fonte{Bolfarine, H. and Sandoval, M.~C. (2010), \textit{Introdução à Inferência Estatística}
+(edition not stated in the PDF on disk), Capítulo~1 (\textit{Elementos Básicos}), §1.4 Exercícios,
+Exercício~1.12, printed p.~14 [PDF p.~20]; answer not given in the book; reproduced verbatim.}
 
 \begin{otherlanguage}{brazil}
 \textbf{1.12.} Sejam $X_1,\dots,X_n$ uma amostra aleatória de tamanho $n$ da distribuição de uma
@@ -1183,8 +1259,10 @@ problems (Cramér--Rao does not apply).}
 \end{sol}
 
 \questao{B 2.2 --- Binomial$(2,\theta)$: Cramér--Rao bound and an efficient estimator.}
-\fonte{Bolfarine, H. and Sandoval, M.~C. (2010), \textit{Introdução à Inferência Estatística},
-§2.6 Exercícios, Exercício~2.2, p.~32 --- reproduced verbatim.}
+\fonte{Bolfarine, H. and Sandoval, M.~C. (2010), \textit{Introdução à Inferência Estatística}
+(edition not stated in the PDF on disk), Capítulo~2 (\textit{Estimadores Eficientes e Estatísticas
+Suficientes}), §2.6 Exercícios, Exercício~2.2, printed p.~32 [PDF p.~38]; answer not given in the
+book; reproduced verbatim.}
 
 \begin{otherlanguage}{brazil}
 \textbf{2.2.} Sejam $X_1,\dots,X_n$ uma amostra aleatória da variável aleatória
@@ -1252,8 +1330,10 @@ $x$, which is the condition for the bound to be attained.}
 \end{sol}
 
 \questao{B 2.4 --- $X_1+2X_2$ is not sufficient for a Poisson mean.}
-\fonte{Bolfarine, H. and Sandoval, M.~C. (2010), \textit{Introdução à Inferência Estatística},
-§2.6 Exercícios, Exercício~2.4, p.~32 --- reproduced verbatim.}
+\fonte{Bolfarine, H. and Sandoval, M.~C. (2010), \textit{Introdução à Inferência Estatística}
+(edition not stated in the PDF on disk), Capítulo~2 (\textit{Estimadores Eficientes e Estatísticas
+Suficientes}), §2.6 Exercícios, Exercício~2.4, printed p.~32 [PDF p.~38]; answer not given in the
+book; reproduced verbatim.}
 
 \begin{otherlanguage}{brazil}
 \textbf{2.4.} Sejam $X_1,X_2$ uma amostra aleatória da variável aleatória $X\sim\mathit{Poisson}(\theta)$.
@@ -1300,8 +1380,10 @@ still carries information about $\theta$.}
 \end{sol}
 
 \questao{B 2.10 --- ENVVUM of $\theta(1-\theta)$ for Bernoulli data.}
-\fonte{Bolfarine, H. and Sandoval, M.~C. (2010), \textit{Introdução à Inferência Estatística},
-§2.6 Exercícios, Exercício~2.10, p.~33 --- reproduced verbatim.}
+\fonte{Bolfarine, H. and Sandoval, M.~C. (2010), \textit{Introdução à Inferência Estatística}
+(edition not stated in the PDF on disk), Capítulo~2 (\textit{Estimadores Eficientes e Estatísticas
+Suficientes}), §2.6 Exercícios, Exercício~2.10, printed p.~33 [PDF p.~39]; answer not given in the
+book; reproduced verbatim.}
 
 \begin{otherlanguage}{brazil}
 \textbf{2.10.} Sejam $X_1,\dots,X_n$ uma amostra aleatória da variável aleatória.
@@ -1355,25 +1437,28 @@ the factor $(n-1)/n$, the same correction as $\hat\sigma^2$ versus $S^2$ in B~1.
 \end{sol}
 
 \questao{B 3.6 --- MLE of $\mu^2$ versus the unbiased $\overline X^2-1/n$.}
-\fonte{Bolfarine, H. and Sandoval, M.~C. (2010), \textit{Introdução à Inferência Estatística},
-§3.8 Exercícios, Exercício~3.6, p.~53 --- reproduced verbatim. Exercise 2.9, to which it refers, is
-reproduced verbatim from §2.6, p.~33.}
+\fonte{Bolfarine, H. and Sandoval, M.~C. (2010), \textit{Introdução à Inferência Estatística}
+(edition not stated in the PDF on disk), Capítulo~3 (\textit{Métodos de Estimação}), §3.8
+Exercícios, Exercício~3.6, printed p.~53 [PDF p.~59]; answer not given in the book; reproduced
+verbatim.}
 
 \begin{otherlanguage}{brazil}
 \textbf{3.6.} Encontre o estimador de máxima verossimilhança de $\theta^2$ no Exercício 2.9 e compare
 seu erro quadrático médio com o do estimador eficiente $\hat\gamma$ dado no Exercício 2.9, (i).
-
-\smallskip
-\emph{Exercício referido (p.~33):} \textbf{2.9.} Sejam $X_1,\dots,X_n$ uma amostra aleatória da
+\end{otherlanguage}
+\begin{refmat}
+Exercise~2.9 (§2.6 Exercícios, printed p.~33 [PDF p.~39]), quoted verbatim; it is short, so it is
+given whole:
+\begin{otherlanguage}{brazil}
+\textbf{2.9.} Sejam $X_1,\dots,X_n$ uma amostra aleatória da
 variável aleatória $X\sim N(\mu,1)$.\\
 (i) Mostre que o estimador $\hat\gamma=\overline X^2-1/n$ é não viciado para $g(\mu)=\mu^2$.\\
 (ii) Existe ENVVUM para $\mu^2$?\\
 (iii) Encontre o limite inferior da variância dos estimadores não viciados de $g(\mu)=\mu^2$ e
 verifique se $\hat\gamma$ é eficiente.
 \end{otherlanguage}
-
-\noindent{\small\emph{Note:} the parameter of Exercise 2.9 is $\mu$; the ``$\theta^2$'' of 3.6 is read as
-$\mu^2$.}
+\emph{Note:} the parameter of Exercise 2.9 is $\mu$; the ``$\theta^2$'' of 3.6 is read as $\mu^2$.
+\end{refmat}
 \resolespaco
 \begin{sol}
 \solhead
@@ -1431,8 +1516,10 @@ $\max\{\hat\gamma,0\}$ would lower the MSE further.)}
 \end{sol}
 
 \questao{B 3.13 --- MLE of $P[X>1]$ for exponential data and its large-sample distribution.}
-\fonte{Bolfarine, H. and Sandoval, M.~C. (2010), \textit{Introdução à Inferência Estatística},
-§3.8 Exercícios, Exercício~3.13, p.~54 --- reproduced verbatim.}
+\fonte{Bolfarine, H. and Sandoval, M.~C. (2010), \textit{Introdução à Inferência Estatística}
+(edition not stated in the PDF on disk), Capítulo~3 (\textit{Métodos de Estimação}), §3.8
+Exercícios, Exercício~3.13, printed p.~54 [PDF p.~60]; answer not given in the book; reproduced
+verbatim.}
 
 \begin{otherlanguage}{brazil}
 \textbf{3.13.} Sejam $X_1,\dots,X_n$ uma amostra aleatória da variável aleatória $X$ com distribuição
@@ -1487,23 +1574,28 @@ than \eqref{q15:asy}: using the exponential model buys precision if the model is
 \end{sol}
 
 \questao{B 3.17 --- consistency of the estimators in five examples.}
-\fonte{Bolfarine, H. and Sandoval, M.~C. (2010), \textit{Introdução à Inferência Estatística},
-§3.8 Exercícios, Exercício~3.17, p.~55 --- reproduced verbatim. The list of the examples' estimators
-below the statement is a summary (not verbatim) of pp.~37, 43, 44 and 51.}
+\fonte{Bolfarine, H. and Sandoval, M.~C. (2010), \textit{Introdução à Inferência Estatística}
+(edition not stated in the PDF on disk), Capítulo~3 (\textit{Métodos de Estimação}), §3.8
+Exercícios, Exercício~3.17, printed p.~55 [PDF p.~61]; answer not given in the book; reproduced
+verbatim.}
 
 \begin{otherlanguage}{brazil}
 \textbf{3.17.} Verifique se os estimadores obtidos nos Exemplos 3.1.2, 3.1.3, 3.2.1, 3.2.3 e 3.6.2
 são consistentes.
 \end{otherlanguage}
-
-\smallskip
-\noindent{\small\emph{Estimators in the examples (summary):} 3.1.2, Bernoulli$(\theta)$:
-$\hat\theta=\overline X$; 3.1.3, $U(0,\theta)$: $\hat\theta=X_{(n)}$; 3.2.1, Bernoulli$(\theta)$:
-$g(\hat\theta)=\overline X(1-\overline X)$ for $\theta(1-\theta)$; 3.2.3, $Exp(\theta)$ with density
-$\theta e^{-\theta x}$: $g(\hat\theta)=e^{-1/\overline X}$ for $P_\theta[X>1]=e^{-\theta}$; 3.6.2,
-gamma$(\alpha,\beta)$ with density $\beta^\alpha x^{\alpha-1}e^{-\beta x}/\Gamma(\alpha)$, method of
-moments: $\hat\alpha=\overline X^2/\hat\sigma^2$, $\hat\beta=\overline X/\hat\sigma^2$,
-$\hat\sigma^2=\sum_i(X_i-\overline X)^2/n$.}
+\begin{refmat}
+The estimators of the five examples (summary, not verbatim):
+Exemplo~3.1.2 (printed p.~37 [PDF p.~43]), Bernoulli$(\theta)$: $\hat\theta=\overline X$;
+Exemplo~3.1.3 (p.~37 [PDF p.~43]), $U(0,\theta)$: $\hat\theta=X_{(n)}$;
+Exemplo~3.2.1 (p.~43 [PDF p.~49]), Bernoulli$(\theta)$: $g(\hat\theta)=\overline X(1-\overline X)$ for
+$\theta(1-\theta)$;
+Exemplo~3.2.3 (p.~44 [PDF p.~50]), $Exp(\theta)$ with density $\theta e^{-\theta x}$:
+$g(\hat\theta)=e^{-1/\overline X}$ for $P_\theta[X>1]=e^{-\theta}$;
+Exemplo~3.6.2 (p.~51 [PDF p.~57]), gamma$(\alpha,\beta)$ with density
+$\beta^\alpha x^{\alpha-1}e^{-\beta x}/\Gamma(\alpha)$, method of moments:
+$\hat\alpha=\overline X^2/\hat\sigma^2$, $\hat\beta=\overline X/\hat\sigma^2$,
+$\hat\sigma^2=\sum_i(X_i-\overline X)^2/n$.
+\end{refmat}
 \resolespaco
 \begin{sol}
 \solhead
@@ -1578,19 +1670,22 @@ continuously from them follows.}
 
 \questao{MS 6.15 --- decomposition of the total sum of squares.}
 \fonte{Morettin, P.~A. and Singer, J.~M. (2021), \textit{Estatística e Ciência de Dados} (versão
-preliminar, abril 2021), §6.7 Exercícios, Exercício~15, p.~240 --- reproduced verbatim. The
-definitions it uses are reproduced verbatim from §6.2, p.~185.}
+preliminar, abril 2021), Capítulo~6 (\textit{Análise de Regressão}), §6.7 Exercícios,
+Exercício~15, printed p.~240 [PDF p.~250]; answer not given in the book; reproduced verbatim.}
 
 \begin{otherlanguage}{brazil}
 \textbf{15)} Mostre que $SQTot=SQRes+SQReg$.
-
-\smallskip
-\emph{Definições (§6.2, p.~185):} ``[\dots] em que a \textbf{soma de quadrados total} é
+\end{otherlanguage}
+\begin{refmat}
+Definitions from §6.2, printed p.~185 [PDF p.~195], quoted verbatim:
+\begin{otherlanguage}{brazil}
+``[\dots] em que a \textbf{soma de quadrados total} é
 $SQTot=\sum_{i=1}^n(y_i-\overline y)^2$, a \textbf{soma de quadrados dos resíduos} é
 $SQRes=\sum_{i=1}^n(y_i-\widehat y_i)^2$ e a \textbf{soma de quadrados da regressão} é
 $SQReg=\sum_{i=1}^n(\widehat y_i-\overline y)^2$.'' (Model: $y_i=\alpha+\beta x_i+e_i$, with
 $\widehat y_i=\widehat\alpha+\widehat\beta x_i$ fitted by least squares.)
 \end{otherlanguage}
+\end{refmat}
 \resolespaco
 \begin{sol}
 \solhead
@@ -1640,6 +1735,215 @@ verifies it numerically on simulated data.)
 $\widehat{\mathbf y}-\overline y\mathbf 1$; the decomposition is Pythagoras' theorem in $\mathbb R^n$.
 It is what makes $R^2=SQReg/SQTot$ a share between 0 and 1.}
 \refbib{Morettin \& Singer (2021), §6.2 (pp.~184--185) and Figura 6.34 with the result on p.~227.}
+\end{sol}
+
+% =============================================================================
+\bloco{7}{Original exercise}{p-hacking and reproducibility}
+
+\questao{Original --- p-hacking: multiple testing, specification search and replication.}
+\origem{original exercise on p-hacking and reproducibility, built on the Class~1 slides
+\texttt{part1-p-hacking.pdf}, slides 4--6 (PDF pp.~4--6: the teaching-method example,
+$1-(0.95)^{32}\approx0.81$, the Bonferroni threshold $0.05/32$), and
+\texttt{p\_hacking\_slides-economics.pdf}, slides 3, 5--6 and 10 (PDF pp.~3, 5--6, 10: uniform
+p-values under $H_0$, the replication crisis, multiple-testing corrections), both in
+\texttt{Aula/class-01/materials/}. Not a book exercise; solved in the answer key of this list.}
+
+A researcher asks whether a new teaching method raises test scores (the example of the Class~1
+p-hacking slides). The true effect is zero. Every test is at the nominal level $\alpha=0.05$.
+\begin{enumerate}[label=(\alph*),leftmargin=2.4em]
+\item The researcher runs $k$ independent tests, each of a true null hypothesis, and reports a
+finding if at least one has $p<\alpha$. Show that the family-wise error rate (the probability of at
+least one false rejection) is $\mathrm{FWER}(k)=1-(1-\alpha)^k$. Compute it for $k=1,5,24,32$, and find
+the smallest $k$ for which a spurious finding is more likely than not.
+\item Using that the p-value of a true null hypothesis is $U(0,1)$, show that the Bonferroni rule
+(reject $H_{0j}$ if $p_j\le\alpha/k$) keeps $\mathrm{FWER}\le\alpha$ whatever the dependence between
+the $k$ tests. For $k=32$, give the Bonferroni threshold, the FWER it gives when the tests are
+independent, and the Šidák threshold $1-(1-\alpha)^{1/k}$.
+\item Five specifications give the p-values $0.004$, $0.011$, $0.019$, $0.030$, $0.041$. Which null
+hypotheses are rejected (i) with no correction, (ii) by Bonferroni, (iii) by Holm's step-down rule
+at FWER $5\%$? (Holm: order the p-values $p_{(1)}\le\dots\le p_{(m)}$, find the first $j$ with
+$p_{(j)}>\alpha/(m-j+1)$, and reject $H_{(1)},\dots,H_{(j-1)}$.) Give the Holm-adjusted p-values
+$\tilde p_{(j)}=\max_{i\le j}\min\{1,(m-i+1)\,p_{(i)}\}$.
+\item \emph{Simulation of a specification search.} There are $n=30$ students, the first 15 treated
+($D_i=1$) and the other 15 controls ($D_i=0$). Draw $g_i\sim N(0,1)$ (standardised GPA),
+$a_i\sim N(0,1)$ (ability) and the scores at weeks $w=4,6,8$ as $y_{iw}=0.5\,g_i+a_i+e_{iw}$,
+$e_{iw}\sim N(0,1)$, all independent: the method has no effect. The researcher estimates $\tau$ in the
+OLS regression of $y_w$ on $(1,D)$ or on $(1,D,g)$ and tests $H_0:\tau=0$ with the usual $t$
+statistic, choosing among 24 specifications: week (4, 6, 8) $\times$ sample (all students, or drop
+those with $|y_{iw}-\bar y_w|>2s_w$) $\times$ covariate (none, $g$) $\times$ test (two-sided, or
+one-sided against $\tau>0$). With $R=10{,}000$ data sets (NumPy \texttt{default\_rng(2026)}), estimate
+the rejection rate of one pre-specified specification (week 4, all students, no covariate,
+two-sided); the probability that at least one of the 24 specifications has $p<0.05$; the same
+probability with the 12 two-sided specifications only; and the probability that at least one has
+$p<0.05/24$. Compare the results with (a) and (b) and explain the differences.
+\item \emph{Reproducibility.} (i) For each simulated data set of (d) in which the search found
+$p<0.05$, draw a fresh, independent data set and run only the specification that had the smallest
+p-value. What share of these replications has $p<0.05$? Explain the value analytically.
+(ii) Suppose a share $\pi=0.10$ of the hypotheses a field tests are true, tests of true hypotheses
+have power $0.80$, and a finding is published when $p<0.05$. Compute the share of published findings
+that are true (the positive predictive value, PPV) when the size of each published test is the
+nominal $0.05$, and when it is the size of the search in (d) (keep the power at $0.80$). For each
+case, compute the expected share of published findings that a fresh, pre-registered test (size
+$0.05$, power $0.80$) confirms.
+\end{enumerate}
+\resolespaco
+\begin{sol}
+\solhead
+\begin{notacao}
+\item $\alpha=0.05$: nominal level; $k$ (or $m$): number of tests; $p_j$: p-value of test $j$;
+  $H_{0j}$: its null hypothesis; $A_j=\{p_j\le c\}$: test $j$ rejects at threshold $c$.
+\item $\mathrm{FWER}=P(\text{at least one true }H_{0j}\text{ rejected})$; $p_{(1)}\le\dots\le p_{(m)}$:
+  ordered p-values; $\tilde p_{(j)}$: Holm-adjusted p-value.
+\item Simulation: $D_i$ treatment dummy, $g_i$ standardised GPA, $a_i$ ability, $y_{iw}$ score at week
+  $w$; $\tau$: treatment coefficient (true value 0); $R=10{,}000$ replications, Monte Carlo standard
+  error $\sqrt{\hat q(1-\hat q)/R}$ for an estimated probability $\hat q$.
+\item $\pi$: share of true hypotheses; $1-\beta=0.80$: power; $\alpha^*$: size of the published test;
+  PPV: share of published findings that are true.
+\end{notacao}
+
+\passo{(a) FWER of independent tests}{Under a true null, $P(p_j<\alpha)=\alpha$, so each test misses with
+probability $1-\alpha$. By independence,}
+\begin{equation}\label{q18:fwer}
+\mathrm{FWER}(k)=1-P\Big(\bigcap_{j=1}^kA_j^c\Big)=1-\prod_{j=1}^k(1-\alpha)=1-(1-\alpha)^k .
+\end{equation}
+Substituting into \eqref{q18:fwer}:
+\begin{align*}
+\mathrm{FWER}(1)&=0.05, & \mathrm{FWER}(5)&=1-(0.95)^5=0.2262,\\
+\mathrm{FWER}(24)&=1-(0.95)^{24}=0.7080, & \mathrm{FWER}(32)&=1-(0.95)^{32}=0.8063 ,
+\end{align*}
+the last being the slides' $\approx0.81$. Setting $\mathrm{FWER}(k)\ge0.5$ in \eqref{q18:fwer}:
+\begin{equation}\label{q18:kmin}
+(0.95)^k\le0.5\;\Longleftrightarrow\;k\ge\frac{\log0.5}{\log0.95}=13.51 ,
+\end{equation}
+so $k=14$: $\mathrm{FWER}(13)=0.4867$ and $\mathrm{FWER}(14)=0.5123$.
+
+\passo{(b) Bonferroni}{Boole's inequality, $P(\bigcup_jA_j)\le\sum_jP(A_j)$, needs no assumption on the
+dependence. With threshold $c=\alpha/k$ and $p_j\sim U(0,1)$ under $H_{0j}$:}
+\begin{equation}\label{q18:bonf}
+\mathrm{FWER}=P\Big(\bigcup_{j=1}^k\{p_j\le\alpha/k\}\Big)\le\sum_{j=1}^kP(p_j\le\alpha/k)=k\cdot\frac{\alpha}{k}=\alpha .
+\end{equation}
+For $k=32$ the threshold is $0.05/32=0.0015625$ (the slides' $0.0016$). Under independence,
+\eqref{q18:fwer} with $\alpha/k$ in place of $\alpha$ gives
+\[
+1-(1-0.0015625)^{32}=0.048808\le0.05 ,
+\]
+so the bound is nearly tight. The Šidák threshold solves $1-(1-c)^{k}=\alpha$:
+\begin{equation}\label{q18:sidak}
+c=1-(1-\alpha)^{1/k}=1-(0.95)^{1/32}=0.0016016 ,
+\end{equation}
+only slightly above Bonferroni's.
+
+\passo{(c) Three rules}{(i) No correction: all five p-values are below $0.05$, so all five are
+rejected. (ii) Bonferroni with $m=5$: threshold $0.05/5=0.01$; only $p_{(1)}=0.004$ is below it, one
+rejection. (iii) Holm compares $p_{(j)}$ with $\alpha/(m-j+1)$:}
+\begin{center}\small
+\begin{tabular}{cccccc}
+\toprule
+$j$ & 1 & 2 & 3 & 4 & 5\\
+\midrule
+$p_{(j)}$ & 0.004 & 0.011 & 0.019 & 0.030 & 0.041\\
+$\alpha/(m-j+1)$ & 0.0100 & 0.0125 & 0.0167 & 0.0250 & 0.0500\\
+$p_{(j)}\le\alpha/(m-j+1)$? & yes & yes & no & --- & ---\\
+$\tilde p_{(j)}$ & 0.020 & 0.044 & 0.057 & 0.060 & 0.060\\
+\bottomrule
+\end{tabular}
+\end{center}
+The first failure is at $j=3$ ($0.019>0.0167$), so Holm rejects $H_{(1)}$ and $H_{(2)}$: two rejections.
+The adjusted p-values give the same answer (reject when $\tilde p_{(j)}\le0.05$); e.g.\
+$\tilde p_{(2)}=\max\{5(0.004),\,4(0.011)\}=\max\{0.020,0.044\}=0.044$ and
+$\tilde p_{(3)}=\max\{0.044,\,3(0.019)\}=0.057$. Holm also controls the FWER at $\alpha$ under any
+dependence and never rejects less than Bonferroni, since its first threshold is Bonferroni's and the
+later ones are larger.
+
+\passo{(d) Simulation results}{With $R=10{,}000$ data sets (Monte Carlo standard errors in brackets):}
+\begin{center}\small
+\begin{tabular}{lcc}
+\toprule
+Rule & Simulated rate & Formula under independence\\
+\midrule
+One pre-specified specification, $p<0.05$ & 0.0496 (0.0022) & 0.05\\
+Best of 24 specifications, $p<0.05$ & 0.3080 (0.0046) & $1-(0.95)^{24}=0.7080$\\
+Best of 12 two-sided specifications, $p<0.05$ & 0.2254 (0.0042) & $1-(0.95)^{12}=0.4596$\\
+Best of 24, Bonferroni $p<0.05/24=0.002083$ & 0.0176 (0.0013) & 0.0488\\
+\bottomrule
+\end{tabular}
+\end{center}
+The pre-specified test has the right size. Searching over 24 specifications multiplies the false
+positive rate by about six, to $0.308$. That is far below the $0.708$ of \eqref{q18:fwer}, because the
+24 tests are strongly dependent: they use the same 30 students, the three weekly scores share $g_i$
+and $a_i$ (their correlation is $(0.25+1)/(0.25+1+1)=0.5556$), the outlier rule drops few students,
+and a one-sided rejection ($t>1.70$) includes every two-sided rejection with $t>0$. Positive dependence
+also makes Bonferroni conservative: $0.0176$, well below the bound $0.05$ of \eqref{q18:bonf}. Among
+the winning specifications, $61.5\%$ are one-sided tests: switching the direction of the test after
+seeing the sign of $\hat\tau$ is the cheapest fork.
+
+\passo{(e)(i) Replication of a false positive}{The search succeeded in 3{,}080 of the 10{,}000 data
+sets. Re-running each chosen specification on a fresh data set gives $p<0.05$ in a share $0.0529$ of
+cases (Monte Carlo standard error $0.0040$). Analytically, the fresh data are independent of the
+search, which only fixed \emph{which} specification to run; for a fixed specification the $p$-value of
+a true null is $U(0,1)$, so}
+\begin{equation}\label{q18:rep}
+P(p^{\text{new}}<0.05\mid\text{search succeeded})=P(p^{\text{new}}<0.05)=0.05 .
+\end{equation}
+The simulated $0.0529$ is within one standard error of \eqref{q18:rep}. A false positive replicates
+only as often as any test of a true null rejects.
+
+\passo{(e)(ii) PPV and expected replication}{Among published findings, true ones arrive at rate
+$\pi(1-\beta)$ and false ones at rate $(1-\pi)\alpha^*$, so}
+\begin{equation}\label{q18:ppv}
+\mathrm{PPV}=\frac{\pi(1-\beta)}{\pi(1-\beta)+(1-\pi)\alpha^*}.
+\end{equation}
+A fresh test confirms a true finding with probability $0.80$ and a false one with probability $0.05$
+(by \eqref{q18:rep}), so the expected replication share is
+\begin{equation}\label{q18:reprate}
+\text{Rep}=\mathrm{PPV}\cdot0.80+(1-\mathrm{PPV})\cdot0.05 .
+\end{equation}
+Nominal size, $\alpha^*=0.05$, in \eqref{q18:ppv} and \eqref{q18:reprate}:
+\begin{align*}
+\mathrm{PPV}&=\frac{0.10(0.80)}{0.10(0.80)+0.90(0.05)}=\frac{0.08}{0.08+0.045}=0.64,\\
+\text{Rep}&=0.64(0.80)+0.36(0.05)=0.512+0.018=0.530 .
+\end{align*}
+Size of the search, $\alpha^*=0.308$ from (d):
+\begin{align*}
+\mathrm{PPV}&=\frac{0.08}{0.08+0.90(0.308)}=\frac{0.08}{0.08+0.2772}=0.2240,\\
+\text{Rep}&=0.2240(0.80)+0.7760(0.05)=0.1792+0.0388=0.2180 .
+\end{align*}
+With honest testing about half of the published findings would replicate; with the search, about one
+in five, and fewer than a quarter of published findings would be true.
+
+\passo{Python}{Core of the simulation (complete code with assertions in the check script):}
+{\small
+\begin{verbatim}
+def tstats(Y, g):                     # 12 (t, df) pairs: week x outlier rule x covariate
+    out = []
+    for w in range(3):
+        y = Y[:, w]
+        for drop in (False, True):
+            keep = np.ones(30, bool)
+            if drop:
+                keep = np.abs(y - y.mean()) <= 2 * y.std(ddof=1)
+            for cov in (False, True):
+                X = np.column_stack([one, D, g] if cov else [one, D])[keep]
+                XtXi = np.linalg.inv(X.T @ X); b = XtXi @ X.T @ y[keep]
+                e = y[keep] - X @ b; df = keep.sum() - X.shape[1]
+                out.append((b[1] / np.sqrt(e @ e / df * XtXi[1, 1]), df))
+    return out
+# p-values: two-sided 2*t.sf(|t|, df) and one-sided t.sf(t, df) -> 24 per data set
+# single 0.0496, best of 24 0.3080, two-sided only 0.2254,
+# Bonferroni 0.0176, replication 0.0529
+\end{verbatim}
+}
+
+\intuicao{A p-value is calibrated for one test chosen before seeing the data. Each fork in the
+analysis (week, sample, covariates, direction) is another draw at the 5\% lottery, and reporting the
+best draw turns a 5\% error rate into roughly 30\% here, and up to 81\% with 32 independent forks.
+The cure is to fix the specification in advance (pre-registration), or to correct for the forks
+actually explored (Bonferroni, Holm), or to report all of them (multiverse analysis). The replication
+calculation shows why the replication crisis follows: a field that publishes searched results fills
+its journals with findings that a clean re-test confirms only about one time in five.}
+\refbib{Class~1 slides \texttt{part1-p-hacking.pdf} (pp.~4--6) and \texttt{p\_hacking\_slides-economics.pdf}
+(pp.~3--6, 10); the general multiple-testing treatment (Bonferroni, Holm) is ISLP (2023), Ch.~13,
+outside the course map.}
 \end{sol}
 
 \end{document}

@@ -2,7 +2,9 @@
 
 Reproduces and asserts every number printed in the answer key: the arithmetic on the MHE
 tables, the Wooldridge computer exercises (CARD, KIELMC) and the KIELMC regressions behind
-Wooldridge Problem 13.2, plus numerical checks of the Greenberg Ch. 11 derivations.
+Wooldridge Problem 13.2, numerical checks of the Greenberg Ch. 11 derivations, the attenuation
+factor of Wooldridge Problem 9.7 (with a seeded simulation), and the two original exercises
+(DAG / collider bias simulation, Simpson's-paradox table). Simulations use fixed seeds.
 Run from the project root or from Listas/:  python Listas/L05-book-exercises-check.py
 Fails with AssertionError naming the first mismatch. Data: Aula/class-05-06/materials/card.csv
 (CARD) and Listas/data/kielmc.csv (KIELMC, from the `wooldridge` package; see data/README.md).
@@ -308,5 +310,88 @@ diffs = [logker(bb) - post.logpdf(bb) for bb in rng.normal(size=(4, p))]
 chk("step 11.2 normal kernel (spread)", max(diffs) - min(diffs), 0.0, 1e-9)
 diffs = [mvn.logpdf([y, s]) - stats.norm.logpdf(s, mu, phi) for s in (-1.5, -0.2, 0.3, 1.9)]
 chk("step 11.3 s* | y kernel (spread)", max(diffs) - min(diffs), 0.0, 1e-9)
+
+
+def ols(y, *xs):
+    """OLS slopes of y on a constant and the columns xs (constant dropped from the result)."""
+    Xm = np.column_stack([np.ones(len(y)), *xs])
+    return np.linalg.lstsq(Xm, y, rcond=None)[0][1:]
+
+
+# ---------------------------------------------------------------- W 9.7 (attenuation, m measures)
+print("== Q16 W 9.7 (CEV with m measures): analytic factor and simulation")
+lam = lambda m, s2x=1.0, s2e=1.0: s2x / (s2x + s2e / m)   # plim(b1)/beta1
+for m, printed in [(1, 0.5), (2, 0.6667), (4, 0.8), (10, 0.9091)]:
+    chk(f"lambda_m, m={m}", lam(m), printed, 5e-5)
+rng = np.random.default_rng(97)
+nn, b0_, b1_ = 200_000, 1.0, 1.0
+xs_ = rng.normal(0, 1, nn)
+yv = b0_ + b1_ * xs_ + rng.normal(0, 1, nn)
+zs = xs_[:, None] + rng.normal(0, 1, (nn, 10))             # 10 measures z_h = x* + e_h, var(e_h) = 1
+for m, printed in [(1, 0.5010), (2, 0.6673), (4, 0.8007), (10, 0.9112)]:
+    bm = ols(yv, zs[:, :m].mean(1))[0]
+    chk(f"simulated b1, m={m} (vs lambda_m)", bm, lam(m), 1e-2)
+    chk(f"simulated b1, m={m} (printed)", bm, printed, 5e-5)
+
+# ---------------------------------------------------------------- original: DAG, d-separation, collider bias
+print("== Q17 DAG: population coefficients and simulation (seed 17)")
+rng = np.random.default_rng(17)
+nn = 200_000
+Z, W_ = rng.normal(size=nn), rng.normal(size=nn)
+Xd = 0.8 * Z + 0.5 * W_ + rng.normal(size=nn)
+M_ = 1.0 * Xd + rng.normal(size=nn)
+Yd = 0.5 * M_ + 1.0 * Z + rng.normal(size=nn)
+Cd = Xd + Yd + rng.normal(size=nn)
+Dd = Cd + rng.normal(size=nn)
+chk("Var(X)", 0.8**2 + 0.5**2 + 1, 1.89, 1e-12)
+chk("Cov(X,Y)", 0.5 * 1.89 + 0.8, 1.745, 1e-12)
+for name, got, pop, printed in [
+    ("Y~X", ols(Yd, Xd)[0], 1.745 / 1.89, 0.9210),
+    ("Y~X+Z", ols(Yd, Xd, Z)[0], 0.5, 0.4979),
+    ("Y~X+Z+W", ols(Yd, Xd, Z, W_)[0], 0.5, 0.4974),
+    ("Y~X+Z+M", ols(Yd, Xd, Z, M_)[0], 0.0, -0.0032),
+    ("Y~X+Z+C", ols(Yd, Xd, Z, Cd)[0], -1 / 3, -0.3342),
+    ("Y~X+Z+D", ols(Yd, Xd, Z, Dd)[0], -1 / 13, -0.0792),
+    ("Z~W (independent)", ols(Z, W_)[0], 0.0, -0.0017),
+    ("Z~W+X (X a collider)", ols(Z, W_, Xd)[0], -10 / 41, -0.2428),
+]:
+    chk(f"{name}: sim vs population", got, pop, 1e-2)
+    chk(f"{name}: sim (printed)", got, printed, 5e-5)
+chk("1.745/1.89", 1.745 / 1.89, 0.92328, 5e-6)
+chk("0.8/1.89 (back-door bias)", 0.8 / 1.89, 0.42328, 5e-6)
+chk("s = 1.25/2.25", 1.25 / 2.25, 0.55556, 5e-6)
+chk("0.5-1.5*5/9", 0.5 - 1.5 * 5 / 9, -1 / 3, 1e-12)
+chk("s' = 1.25/3.25", 1.25 / 3.25, 0.38462, 5e-6)
+chk("0.5-1.5*5/13", 0.5 - 1.5 * 5 / 13, -1 / 13, 1e-12)
+chk("-0.5*0.8/1.64", -0.5 * 0.8 / 1.64, -10 / 41, 1e-12)
+chk("-1/13", -1 / 13, -0.07692, 5e-6)
+chk("-10/41", -10 / 41, -0.24390, 5e-6)
+
+# ---------------------------------------------------------------- original: Simpson's paradox
+print("== Q18 Simpson's paradox (2x2x2 table)")
+# rows: stratum (mild, severe); [recovered, total] for T=1 and T=0
+tab = {"mild": {1: (180, 200), 0: (510, 600)}, "severe": {1: (240, 400), 0: (100, 200)}}
+p = {(s, t): tab[s][t][0] / tab[s][t][1] for s in tab for t in (0, 1)}
+chk("mild T=1", p["mild", 1], 0.90, 1e-12)
+chk("mild T=0", p["mild", 0], 0.85, 1e-12)
+chk("severe T=1", p["severe", 1], 0.60, 1e-12)
+chk("severe T=0", p["severe", 0], 0.50, 1e-12)
+agg = {t: sum(tab[s][t][0] for s in tab) / sum(tab[s][t][1] for s in tab) for t in (0, 1)}
+chk("aggregate T=1 (420/600)", agg[1], 0.70, 1e-12)
+chk("aggregate T=0 (610/800)", agg[0], 0.7625, 1e-12)
+chk("aggregate difference", agg[1] - agg[0], -0.0625, 1e-12)
+chk("P(severe|T=1)", 400 / 600, 2 / 3, 1e-12)
+chk("P(severe|T=0)", 200 / 800, 0.25, 1e-12)
+wts = {s: sum(tab[s][t][1] for t in (0, 1)) / 1400 for s in tab}
+chk("P(mild)", wts["mild"], 4 / 7, 1e-12)
+std = {t: sum(wts[s] * p[s, t] for s in tab) for t in (0, 1)}
+chk("standardized T=1 (5.4/7)", std[1], 0.771429, 5e-7)
+chk("standardized T=0 (4.9/7)", std[0], 0.700000, 5e-7)
+chk("adjusted difference (1/14)", std[1] - std[0], 0.071429, 5e-7)
+# decomposition of the aggregate gap: within-stratum effect at T=1 mix + composition of controls
+chk("effect at treated mix (ATT)", (1 / 3) * 0.05 + (2 / 3) * 0.10, 0.083333, 5e-7)
+chk("T=0 rate at treated mix", (1 / 3) * 0.85 + (2 / 3) * 0.50, 0.616667, 5e-7)
+chk("composition term", (1 / 3) * 0.85 + (2 / 3) * 0.50 - 0.7625, -0.145833, 5e-7)
+chk("ATT + composition", 0.083333 + -0.145833, -0.0625, 1e-6)
 
 print("\nALL CHECKS PASSED")
