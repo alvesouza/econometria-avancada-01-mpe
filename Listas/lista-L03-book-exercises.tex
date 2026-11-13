@@ -11,6 +11,8 @@
 % Book questions: \fonte{} (book, chapter, exercise, printed page [PDF page], answer flag) + verbatim
 % statement; whatever the statement refers to goes in a `contexto' block, printed "Referenced material".
 % Original exercises (gap topics, authorised by the user 2026-11-12): \origem{} line, never \fonte{}.
+% Block 6 (2026-11-13): remaining Classes 3+4 gap topics, book first (Greenberg, then Koop-Poirier-Tobias,
+% outside the bibliography), originals only where no book on disk has an exercise.
 % =============================================================================
 \documentclass[11pt,a4paper]{article}
 \usepackage[utf8]{inputenc}
@@ -105,7 +107,11 @@ none of the four books prints answers. When an exercise refers to an equation, t
 exercise elsewhere in the book, a \emph{Referenced material} block right after the statement gives it
 (verbatim excerpt or short summary, with page). Block~5 holds two \emph{original} exercises on syllabus
 topics that no book on disk covers (sparsity priors; Hamiltonian Monte Carlo), marked
-\emph{Origin} instead of \emph{Source}. Show every step. Computational items are solved in Python
+\emph{Origin} instead of \emph{Source}. Block~6 (Questions 29--34) fills the remaining Classes 3+4 gaps:
+Greenberg 3.5--3.6 (loss functions), two exercises from Koop, Poirier and Tobias (2007), an exercise book
+outside the course bibliography that prints worked solutions (hierarchical Gaussian model; posterior model
+probabilities), and three originals built on the class pages (hierarchical Beta--Binomial; sequential
+updating; the four-prior normal example). Show every step. Computational items are solved in Python
 (NumPy/SciPy only, fixed seeds); every number printed in the solutions is reproduced and asserted by
 \texttt{Listas/L03-book-exercises-check.py}. Greenberg's gamma $G(\alpha,\beta)$ and Bolfarine's
 $Gama(\alpha,\beta)$ both use the rate form $\beta^\alpha\theta^{\alpha-1}e^{-\beta\theta}/\Gamma(\alpha)$,
@@ -1788,6 +1794,441 @@ For the same 40{,}000 evaluations of the target (or its gradient), HMC delivers 
 \passo{(e) the rerun with $\varepsilon=0.15$, $L=30$}{The trajectory length is $\varepsilon L=4.5$, almost exactly half the period of the slow oscillator, $\pi s=\pi\sqrt{1.95}=4.39$. Every trajectory carries $\theta$ to nearly $-\theta$ along the long axis: the lag-1 autocorrelation of $\theta_1$ is $-0.901$. Alternating signs make the ESS of $\theta_1$ exceed the number of draws ($35{,}992>5{,}000$), but $\theta_1^2$ barely moves between iterations: its ESS is $15$, and the sample variance of $\theta_1$ is $1.189$ against the true $1$. The same chain looks superb for one function and useless for another.}
 \intuicao{HMC turns the gradient into long, coherent moves that the Metropolis step almost always accepts, because the leapfrog integrator nearly conserves energy as long as $\varepsilon$ stays below the stability bound of the narrowest direction. Its weak spot is the choice of $\varepsilon$ and $L$: a fixed trajectory length can resonate with the target, as the rerun shows. Stan's NUTS sampler, which runs the class examples, tunes $\varepsilon$ during warm-up and picks the trajectory length on the fly (stopping when the path starts to turn back), which removes both choices.}
 \refbib{Class code \texttt{exemplos-1-2-3-R-STAN.txt}; Neal (2011), \textit{Handbook of MCMC}, ch.~5; Greenberg \S7.2.1 and \S7.3 (random-walk MH, autocorrelation and n.s.e.); Question~12 (random-walk MH tuning).}
+\end{sol}
+
+% =============================================================================
+\bloco{6}{Classes 3+4 gap topics (added 2026-11-13)}{book exercises first, then originals \,\textbullet\, 6 questions}
+
+{\footnotesize\noindent Five topics of Classes 3+4 had no exercise in Blocks 1--5. Each was searched first in the four
+syllabus books, then in the other books on disk. Greenberg has the loss-function exercises (Question~29). Koop, Poirier
+and Tobias, \textit{Bayesian Econometric Methods} (2007), an exercise book outside the course bibliography, has the
+Gaussian hierarchical model (Question~30) and posterior model probabilities (Question~31); it prints a worked solution
+after every exercise. No book on disk has a hierarchical Beta--Binomial exercise, a trial-by-trial Bernoulli or
+discrete-prior updating exercise, or the four-prior normal example of the class site, so Questions~32--34 are
+originals built on the class pages.\par}
+
+% -----------------------------------------------------------------------------
+\questao{Greenberg 3.5 and 3.6 --- Bayes estimators under absolute-value and zero--one loss.}
+\fonte{Greenberg, E. (2007), \textit{Introduction to Bayesian Econometrics}, 1st ed., Cambridge University Press, Ch.~3 (``Posterior Distributions and Inference''), Exercises~3.5 and~3.6, printed pp.~39--40 [PDF pp.~54--55]; answers not given in the book --- reproduced verbatim.}
+\begin{enunciado}
+\textbf{3.5} Show that the median of the posterior distribution minimizes loss under the absolute value loss function.
+
+\smallskip
+\textbf{3.6} The zero--one loss function is defined as
+\[
+L_3(\hat\theta,\theta)=1(|\hat\theta-\theta|>b),
+\]
+where $1(A)$ is the indicator function that equals 1 if $A$ is true and 0 otherwise. Verify that $\hat\theta$ goes to the mode of $\pi(\theta|y)$ as $b\to0$.
+\end{enunciado}
+\begin{contexto}{Greenberg \S3.2.1 ``Point Estimates'', printed pp.~29--30 [PDF pp.~44--45], summarised}
+A loss function $L(\hat\theta,\theta)$ is the loss incurred when the true value is $\theta$ and the estimate is $\hat\theta$. Greenberg's examples are the absolute value loss $L_1(\hat\theta,\theta)=|\hat\theta-\theta|$, the quadratic loss $L_2(\hat\theta,\theta)=(\hat\theta-\theta)^2$ and a bilinear loss, which the section also calls $L_3$ (Exercise~3.6 reuses that label for the zero--one loss). The Bayes estimator is the $\hat\theta$ that minimises the expected loss over the posterior, $E[L(\hat\theta,\theta)]=\int L(\hat\theta,\theta)\,\pi(\theta|y)\,d\theta$. Under quadratic loss this gives $\hat\theta=E(\theta|y)$, the posterior mean.
+\end{contexto}
+\resolespaco
+\begin{sol}
+\begin{notacao}
+\item $\pi(\theta|y)$: posterior density of the scalar $\theta$, assumed continuous; $F(t)=\int_{-\infty}^t\pi(\theta|y)\,d\theta$ its c.d.f.
+\item $\rho(t)=E[L(t,\theta)\,|\,y]$: posterior expected loss of the estimate $t$; $b>0$: half-width of the zero--one ``hit'' window.
+\item Illustration: Gamma$(\alpha,\beta)$ in the rate form of the instructions, density $\beta^\alpha\theta^{\alpha-1}e^{-\beta\theta}/\Gamma(\alpha)$.
+\end{notacao}
+\passo{3.5: split the integral at $t$}{For the absolute value loss,
+\begin{align}
+\rho_1(t)&=\int_{-\infty}^{t}(t-\theta)\,\pi(\theta|y)\,d\theta+\int_{t}^{\infty}(\theta-t)\,\pi(\theta|y)\,d\theta.\label{g356:r1}
+\end{align}
+Differentiate with Leibniz's rule. The boundary terms vanish because each integrand is zero at $\theta=t$:
+\begin{align}
+\rho_1'(t)&=\int_{-\infty}^{t}\pi(\theta|y)\,d\theta-\int_{t}^{\infty}\pi(\theta|y)\,d\theta=F(t)-\{1-F(t)\}=2F(t)-1.\label{g356:d1}
+\end{align}
+Setting \eqref{g356:d1} to zero gives $F(\hat\theta)=1/2$: $\hat\theta$ is the posterior median. Moreover $\rho_1''(t)=2\pi(t|y)\ge0$, so $\rho_1$ is convex and the stationary point is a minimum.}
+\passo{3.5: without derivatives}{Convexity alone settles it. $\rho_1$ is convex because $|t-\theta|$ is convex in $t$ for every $\theta$. By \eqref{g356:d1} its slope is negative while $F(t)<1/2$ and positive once $F(t)>1/2$. Hence any $t$ with $F(t)=1/2$ minimises $\rho_1$; if $F$ is flat at $1/2$, every point of that flat stretch does.}
+\passo{3.6: expected zero--one loss}{The loss is 1 outside the window $[\hat\theta-b,\hat\theta+b]$ and 0 inside, so
+\begin{align}
+\rho_3(t)&=P(|\theta-t|>b\,|\,y)=1-\big[F(t+b)-F(t-b)\big].\label{g356:r3}
+\end{align}
+Minimising \eqref{g356:r3} means choosing the window of width $2b$ with the largest posterior probability. The first-order condition is
+\begin{align}
+\rho_3'(t)&=-\pi(t+b|y)+\pi(t-b|y)=0\quad\Longleftrightarrow\quad\pi(\hat\theta_b+b|y)=\pi(\hat\theta_b-b|y):\label{g356:foc}
+\end{align}
+the two ends of the best window have equal posterior density.}
+\passo{3.6: the limit $b\to0$}{Assume $\pi(\cdot|y)$ is twice continuously differentiable, with a unique global mode $\theta^\ast$ where $\pi'(\theta^\ast|y)=0$ and $\pi''(\theta^\ast|y)<0$. By the mean value theorem, \eqref{g356:foc} gives $\pi'(\xi_b|y)=0$ for some $\xi_b$ in $(\hat\theta_b-b,\hat\theta_b+b)$. Also, by Taylor's theorem,
+\begin{align}
+F(t+b)-F(t-b)&=2b\,\pi(t|y)+O(b^3),\label{g356:taylor}
+\end{align}
+uniformly in $t$ on compacts, so maximising the window probability amounts, as $b\to0$, to maximising $\pi(t|y)$. Hence $\hat\theta_b\to\theta^\ast$ (and $\xi_b\to\theta^\ast$ with it): the Bayes estimator under zero--one loss tends to the posterior \emph{mode}.}
+\passo{illustration (ours): one skewed posterior, three estimators}{Take the exponential--gamma model of the class slides (\texttt{notas-bayesianas-slides.pdf}, pp.~4--5): $x_i|\theta\sim\text{Exp}(\theta)$, prior Gamma$(2,4)$, and three lifetimes $x=(0.5,\,1.2,\,2.3)$. The posterior is Gamma$(2+3,\ 4+4)=\text{Gamma}(5,8)$, with
+\begin{align}
+E(\theta|x)&=\tfrac58=0.625,\qquad\text{median}=0.5839,\qquad\text{mode}=\tfrac{\alpha-1}{\beta}=\tfrac48=0.5.\label{g356:three}
+\end{align}
+Expected absolute loss $\rho_1$: $0.2169$ at the median, $0.2193$ at the mean, $0.2276$ at the mode; a grid search finds the minimiser at the median (function \texttt{g35\_g36}). For the zero--one loss, \eqref{g356:foc} has a closed form for the gamma: $\{(t+b)/(t-b)\}^{\alpha-1}e^{-2b\beta}=1$, so with $r=e^{2b\beta/(\alpha-1)}$,
+\begin{align}
+\hat\theta_b&=b\,\frac{r+1}{r-1}\ \xrightarrow[b\to0]{}\ \frac{\alpha-1}{\beta},\label{g356:cf}
+\end{align}
+since $r-1\approx2b\beta/(\alpha-1)$. Numerically:
+\begin{center}\small
+\begin{tabular}{lcccc}
+\toprule
+$b$ & $0.2$ & $0.1$ & $0.05$ & $0.01$\\
+\midrule
+$\hat\theta_b$ & $0.5264$ & $0.5066$ & $0.5017$ & $0.50007$\\
+$P(|\theta-\hat\theta_b|\le b\,|\,x)$ & $0.5647$ & $0.3045$ & $0.1553$ & $0.0313$\\
+\bottomrule
+\end{tabular}
+\end{center}
+The window centre slides from $0.53$ to the mode $0.5$ as $b$ shrinks.}
+\intuicao{Quadratic loss punishes large errors heavily, so it pulls the estimate towards the long right tail (the mean, $0.625$). Absolute loss weighs all errors linearly and only counts how much mass lies on each side (the median, $0.584$). Zero--one loss only rewards being within $b$, so it picks the highest-density spot (the mode, $0.5$). For a symmetric unimodal posterior the three coincide; for a skewed one they are ordered mode $<$ median $<$ mean, as here. This is the summary table on p.~12 of the class slides.}
+\refbib{Greenberg \S3.2.1, pp.~29--30; class slides \texttt{notas-bayesianas-slides.pdf}, pp.~6--12 (loss functions; median under absolute loss, MAP under 0--1 loss); Koop, Poirier and Tobias (2007), Exercises~3.2--3.3 (asymmetric linear and all-or-nothing loss).}
+\end{sol}
+
+% -----------------------------------------------------------------------------
+\questao{Koop, Poirier and Tobias 12.2 --- the Gaussian hierarchical model and partial pooling.}
+\fonte{Koop, G., Poirier, D. J. and Tobias, J. L. (2007), \textit{Bayesian Econometric Methods} (Econometric Exercises~7), 1st ed., Cambridge University Press, Ch.~12 (``Hierarchical models''), Exercise~12.2, printed p.~171 [PDF p.~195]; outside the course bibliography; a worked solution follows the exercise in the book (printed pp.~171--172) --- reproduced verbatim.}
+\begin{enunciado}
+\textbf{Exercise 12.2 (Hierarchical modeling with longitudinal data)} Consider the following longitudinal data model:
+\begin{align*}
+y_{it}&=\alpha_i+\epsilon_{it},\qquad\epsilon_{it}\overset{\text{iid}}{\sim}N(0,\sigma_\epsilon^2), &&(12.6)\\
+\alpha_i&\overset{\text{iid}}{\sim}N(\alpha,\sigma_\alpha^2), &&(12.7)
+\end{align*}
+where $y_{it}$ refers to the outcomes for individual (or more generally, group) $i$ at time $t$ and $\alpha_i$ is a person-specific random effect. We assume $i=1,2,\ldots,N$ and $t=1,2,\ldots,T$ (i.e., a balanced panel).
+\begin{enumerate}[label=(\alph*),leftmargin=2em]
+\item Comment on how the presence of the random effects accounts for correlation patterns within individuals over time.
+\item Derive the conditional posterior distribution $p(\alpha_i|\alpha,\sigma_\epsilon^2,\sigma_\alpha^2,y)$.
+\item Obtain the mean of the conditional posterior distribution in (b). Comment on its relationship to a shrinkage estimator [see, e.g., Poirier (1995), Chapter 6]. How does the mean change as $T$ and $\sigma_\epsilon^2/\sigma_\alpha^2$ change?
+\end{enumerate}
+\end{enunciado}
+\resolespaco
+\begin{sol}
+\begin{notacao}
+\item $y_{it}$: outcome of group $i$ at time $t$; $\bar y_i=T^{-1}\sum_ty_{it}$; $\alpha_i$: group effect; $\alpha$, $\sigma_\alpha^2$: mean and variance of the population of group effects; $\sigma_\epsilon^2$: within-group noise variance.
+\item $u_i=\alpha_i-\alpha\sim N(0,\sigma_\alpha^2)$; $w=T/(T+\sigma_\epsilon^2/\sigma_\alpha^2)\in(0,1)$: the shrinkage weight.
+\end{notacao}
+\passo{(a) correlation within a group}{Substitute $\alpha_i=\alpha+u_i$ into (12.6): $y_{it}=\alpha+u_i+\epsilon_{it}$. All $\epsilon$'s and $u$'s are independent, so for $t\ne s$ and $i\ne j$
+\begin{align}
+\operatorname{Cov}(y_{it},y_{is})&=\operatorname{Var}(u_i)=\sigma_\alpha^2,\qquad\operatorname{Cov}(y_{it},y_{js})=0,\label{k122:cov}\\
+\operatorname{Corr}(y_{it},y_{is})&=\frac{\sigma_\alpha^2}{\sigma_\alpha^2+\sigma_\epsilon^2}.\label{k122:icc}
+\end{align}
+The shared $u_i$ makes every pair of observations of the same group equally correlated (an exchangeable, ``random-effects'' pattern), whatever their distance in time; different groups are uncorrelated. Conditional on $\alpha_i$ the $y_{it}$ are independent; the correlation comes only from integrating $\alpha_i$ out.}
+\passo{(b) conditional posterior}{Given $(\alpha,\sigma_\epsilon^2,\sigma_\alpha^2)$, $\alpha_i$ enters only (12.7) and the $T$ observations of group $i$. Using $\sum_t(y_{it}-\alpha_i)^2=\sum_t(y_{it}-\bar y_i)^2+T(\bar y_i-\alpha_i)^2$ and dropping factors free of $\alpha_i$:
+\begin{align}
+p(\alpha_i|\alpha,\sigma_\epsilon^2,\sigma_\alpha^2,y)&\propto\exp\Big[-\frac{(\alpha_i-\alpha)^2}{2\sigma_\alpha^2}\Big]\exp\Big[-\frac{T(\bar y_i-\alpha_i)^2}{2\sigma_\epsilon^2}\Big].\label{k122:kern}
+\end{align}
+This is a normal prior times a normal likelihood in $\alpha_i$, so precisions add and the mean is precision-weighted (Question~3, with $\bar y_i$ playing the role of a single observation of variance $\sigma_\epsilon^2/T$):
+\begin{align}
+\alpha_i|\alpha,\sigma_\epsilon^2,\sigma_\alpha^2,y&\sim N\big(\bar\alpha_i,\ D\big),\qquad D=\Big(\frac{T}{\sigma_\epsilon^2}+\frac1{\sigma_\alpha^2}\Big)^{-1}=\frac{\sigma_\epsilon^2\sigma_\alpha^2}{T\sigma_\alpha^2+\sigma_\epsilon^2},\label{k122:post}\\
+\bar\alpha_i&=D\Big(\frac{T\bar y_i}{\sigma_\epsilon^2}+\frac{\alpha}{\sigma_\alpha^2}\Big).\label{k122:mean0}
+\end{align}
+The groups are independent given the hyperparameters, so the $N$ posteriors \eqref{k122:post} are independent too.}
+\passo{(c) the mean as a shrinkage estimator}{Multiply out \eqref{k122:mean0} with $D$ from \eqref{k122:post}:
+\begin{align}
+\bar\alpha_i&=\frac{T\sigma_\alpha^2}{T\sigma_\alpha^2+\sigma_\epsilon^2}\,\bar y_i+\frac{\sigma_\epsilon^2}{T\sigma_\alpha^2+\sigma_\epsilon^2}\,\alpha=w\,\bar y_i+(1-w)\,\alpha,\qquad w=\frac{T}{T+\sigma_\epsilon^2/\sigma_\alpha^2}.\label{k122:shrink}
+\end{align}
+The group mean $\bar y_i$ (no pooling) is shrunk towards the population mean $\alpha$ (complete pooling) by the factor $1-w$. This is the shrinkage, or partial-pooling, estimator. Comparative statics: $w$ increases with $T$ and $w\to1$ as $T\to\infty$, so a group with many observations keeps its own mean. $w$ decreases with $\sigma_\epsilon^2/\sigma_\alpha^2$: noisy data or similar groups mean more borrowing, and $w\to0$ (complete pooling) as $\sigma_\epsilon^2/\sigma_\alpha^2\to\infty$. As $\sigma_\epsilon^2/\sigma_\alpha^2\to0$, $w\to1$ (no pooling). Note also $D=w\,\sigma_\epsilon^2/T$: the posterior variance is the sampling variance of $\bar y_i$ scaled down by $w$.}
+\passo{numerical illustration (ours; function \texttt{kpt122}, seed 122)}{Take $\alpha=10$, $\sigma_\alpha^2=1$, $\sigma_\epsilon^2=4$, $T=5$. Then $w=5/9=0.5556$, $D=4/9=0.4444$ against $\sigma_\epsilon^2/T=0.8$ for $\bar y_i$, and \eqref{k122:icc} gives $0.2$. Simulating $N=20{,}000$ groups: the sample correlation of $(y_{i1},y_{i2})$ is $0.2065$; the mean squared error of $\bar y_i$ around the true $\alpha_i$ is $0.8054$; that of $\bar\alpha_i$ is $0.4449$, close to $D$. With hyperparameters known, partial pooling cuts the estimation error almost in half here.}
+\intuicao{Each group's own data say ``$\alpha_i\approx\bar y_i$, give or take $\sigma_\epsilon/\sqrt T$''. The population says ``$\alpha_i\approx\alpha$, give or take $\sigma_\alpha$''. The posterior mean weights the two by their precisions. In practice $\alpha$, $\sigma_\alpha^2$ and $\sigma_\epsilon^2$ are unknown: a Gibbs sampler cycles through \eqref{k122:post} and the conditionals of the hyperparameters (Koop--Poirier--Tobias 12.3--12.4; the class page \texttt{hierarchical-gaussian-linear-model.html} does it for random intercepts and slopes), and the uncertainty about $w$ then propagates into the estimates.}
+\refbib{Koop, Poirier and Tobias (2007), Exercises~12.1--12.4 and 4.5 (empirical Bayes); Greenberg \S4.6 (hierarchical models, p.~52); class page \texttt{hierarchical-gaussian-linear-model.html}, \S5.6 (``Borrowing strength and shrinkage'').}
+\end{sol}
+
+% -----------------------------------------------------------------------------
+\questao{Koop, Poirier and Tobias 6.7 --- posterior model probabilities from marginal likelihoods.}
+\fonte{Koop, G., Poirier, D. J. and Tobias, J. L. (2007), \textit{Bayesian Econometric Methods} (Econometric Exercises~7), 1st ed., Cambridge University Press, Ch.~6 (``Hypothesis testing''), Exercise~6.7, printed p.~68 [PDF p.~92]; outside the course bibliography; a worked solution follows the exercise in the book --- reproduced verbatim.}
+\begin{enunciado}
+\textbf{Exercise 6.7 (Relationship among posterior probabilities under different prior probabilities)} Consider $J$ hypotheses $H_j:\theta_j\in\Theta_j$ $(j=1,2,\ldots,J)$. Define
+\[
+m_j(y)=\frac{p_j(y|H_j)}{\sum_{i=1}^Jp_i(y|H_i)}.\qquad(6.69)
+\]
+Show that $m_j(y)$ $(j=1,2,\ldots,J)$ are all that are required to summarize the data to compute posterior probabilities for \emph{any} set of given prior probabilities.
+\end{enunciado}
+\begin{contexto}{Koop, Poirier and Tobias, Ch.~6 introduction, printed pp.~59--61 [PDF pp.~83--85], summarised; written there for $J=2$, ``extensions to cases involving more than two hypotheses are straightforward''}
+Prior probabilities $\underline\pi_j=\Pr(H_j)>0$, $\sum_j\underline\pi_j=1$ (6.3). Under $H_j$, with prior $p(\theta|H_j)$, the marginal likelihood is $p(y|H_j)=\int_{\Theta_j}L(\theta)\,dP(\theta|H_j)=E_{\theta|H_j}[L(\theta)]$ (6.5). By Bayes' theorem the posterior probability is $\overline\pi_j=\Pr(H_j|y)=\underline\pi_j\,p(y|H_j)/p(y)$ (6.6), with $p(y)=\sum_j\underline\pi_j\,p(y|H_j)$ (6.7). The Bayes factor of $H_2$ against $H_1$ is $B_{21}=p(y|H_2)/p(y|H_1)$ (6.19), and posterior odds equal prior odds times the Bayes factor (6.18).
+\end{contexto}
+\resolespaco
+\begin{sol}
+\begin{notacao}
+\item $p_j(y|H_j)$: marginal likelihood of hypothesis (model) $H_j$; $B_{ij}=p_i(y|H_i)/p_j(y|H_j)$: Bayes factor of $H_i$ against $H_j$.
+\item $\underline\pi_j$, $\overline\pi_j$: prior and posterior probabilities of $H_j$; $m_j(y)$ as in (6.69), so $m_j>0$ and $\sum_jm_j=1$.
+\end{notacao}
+\passo{posterior probabilities}{By (6.6)--(6.7) for $J$ hypotheses,
+\begin{align}
+\overline\pi_j&=\frac{\underline\pi_j\,p_j(y|H_j)}{\sum_{i=1}^J\underline\pi_i\,p_i(y|H_i)}.\label{k67:post}
+\end{align}
+Divide numerator and denominator by $S=\sum_{i=1}^Jp_i(y|H_i)>0$, which is a function of the data only:
+\begin{align}
+\overline\pi_j&=\frac{\underline\pi_j\,m_j(y)}{\sum_{i=1}^J\underline\pi_i\,m_i(y)},\qquad j=1,\ldots,J.\label{k67:m}
+\end{align}
+For any prior vector $(\underline\pi_1,\ldots,\underline\pi_J)$, \eqref{k67:m} needs the data only through $m_1(y),\ldots,m_J(y)$. These $J$ numbers (really $J-1$, since they sum to one) are therefore sufficient for every reader's posterior model probabilities.}
+\passo{the same in Bayes factors}{Divide \eqref{k67:post} through by $\underline\pi_j\,p_j(y|H_j)$:
+\begin{align}
+\overline\pi_j&=\Big[\sum_{i=1}^J\frac{\underline\pi_i}{\underline\pi_j}\,B_{ij}\Big]^{-1},\qquad B_{ij}=\frac{p_i(y|H_i)}{p_j(y|H_j)}=\frac{m_i(y)}{m_j(y)}.\label{k67:B}
+\end{align}
+So the data enter only through ratios of marginal likelihoods, and those ratios are ratios of the $m$'s. Two further readings: $m_j(y)$ is itself the posterior probability of $H_j$ under equal prior probabilities $\underline\pi_j=1/J$ (put them in \eqref{k67:m}); and for $J=2$, \eqref{k67:B} is $\overline\pi_1=[1+(\underline\pi_2/\underline\pi_1)B_{21}]^{-1}$, eq.~(6.20) of the book.}
+\passo{numerical illustration (ours; function \texttt{kpt67})}{Take Greenberg's coin example behind Table~3.2 (Question~6, Referenced material): Michaela and Lila toss $m=10$ times each. Add a third model to the two of Table~3.2: $M_1$, a common $\theta\sim U(0,1)$; $M_2$, separate $\theta_1,\theta_2\sim U(0,1)$, as in (3.5); $M_3$, both coins fair ($\theta_1=\theta_2=1/2$). The marginal likelihoods are
+\begin{align}
+p(y|M_1)&=\frac{\Gamma(s+1)\Gamma(2m-s+1)}{\Gamma(2m+2)},\quad p(y|M_2)=\prod_{j=1}^2\frac{\Gamma(s_j+1)\Gamma(m-s_j+1)}{\Gamma(m+2)},\quad p(y|M_3)=2^{-2m},\label{k67:coin}
+\end{align}
+with $s_j$ the heads of each girl and $s=s_1+s_2$. The script reproduces every $m=10$ entry of Table~3.2 ($\log_{10}B_{12}$) and checks $p(y|M_1)$, $p(y|M_2)$ by quadrature. The $m_j(y)$:
+\begin{center}\small
+\begin{tabular}{ccrccc}
+\toprule
+Michaela & Lila & $\log_{10}B_{12}$ (Table 3.2) & $m_1(y)$ & $m_2(y)$ & $m_3(y)$\\
+\midrule
+0.1 & 0.9 & $-2.506$ & 0.0031 & 0.9856 & 0.0114\\
+0.2 & 0.8 & $-1.200$ & 0.0487 & 0.7711 & 0.1802\\
+0.3 & 0.7 & $-0.348$ & 0.1444 & 0.3215 & 0.5342\\
+0.4 & 0.6 & $0.138$ & 0.1843 & 0.1340 & 0.6818\\
+0.5 & 0.5 & $0.297$ & 0.1921 & 0.0970 & 0.7109\\
+\bottomrule
+\end{tabular}
+\end{center}
+For the 0.3/0.7 row, \eqref{k67:m} turns the same three numbers into posterior probabilities for other priors: with $\underline\pi=(1/4,1/4,1/2)$ (a reader who half-believes in fair coins) $\overline\pi=(0.0941,\,0.2095,\,0.6964)$; with $\underline\pi=(0.45,0.45,0.1)$, $\overline\pi=(0.2470,\,0.5499,\,0.2031)$. No new integration is needed. With $m=100$ and a 0.4/0.6 split, $m(y)=(0.0459,\,0.4338,\,0.5203)$.}
+\intuicao{The marginal likelihood is the average of the likelihood over the prior, so models that spread their prior over parameter values the data rule out pay an automatic Occam penalty. Here the zero-parameter fair-coin model $M_3$ beats both uniform-prior models unless the two proportions are far from $1/2$ or from each other. Reporting the $m_j(y)$ (or the Bayes factors) rather than posterior probabilities lets each reader plug in their own prior via \eqref{k67:m}; prediction then averages over models with weights $\overline\pi_j$ (Greenberg \S3.2.4, model averaging).}
+\refbib{Koop, Poirier and Tobias (2007), Ch.~6, pp.~59--61; Greenberg \S3.2.4 (marginal likelihood, Bayes factor, posterior odds, Table~3.2), pp.~33--38; Question~6 (Greenberg 3.8).}
+\end{sol}
+
+% -----------------------------------------------------------------------------
+\questao{Original --- hierarchical Beta--Binomial model: deaths after heart attack in 13 hospitals.}
+\origem{original exercise on the hierarchical Beta--Binomial model (partial pooling), built on \path{Aula/class-03-04/materials/hierarchical-beta-binomial.html}, \S\S1--8 (the 2015 New York State heart-attack data for 13 Manhattan hospitals, taken there from J. Albert's \textit{Bayesian hierarchical modeling} chapter; the Stan model with $\mu\sim U(0,1)$ and $p(\eta)\propto n_1/(n_1+\eta)^2$, $n_1=10$; its posterior quantiles of $\mu$, $\eta$ and the population s.d.). No book on disk has a hierarchical Beta--Binomial exercise; the hierarchical exercises of Koop, Poirier and Tobias Ch.~12 are all normal linear (Question~30). Written for this list; no book gives it or its answer.}
+\begin{enunciado}
+Heart-attack cases $n_i$ and resulting deaths $y_i$ in 13 Manhattan hospitals (New York State Department of Health, 2015):
+\begin{center}\footnotesize\setlength{\tabcolsep}{4pt}
+\begin{tabular}{rlrr@{\quad}rlrr}
+\toprule
+$i$ & hospital & $n_i$ & $y_i$ & $i$ & hospital & $n_i$ & $y_i$\\
+\midrule
+1 & Bellevue Hospital Center & 129 & 4 & 8 & Mount Sinai St.\ Luke's & 293 & 19\\
+2 & Harlem Hospital Center & 35 & 1 & 9 & NYU Hospitals Center & 241 & 15\\
+3 & Lenox Hill Hospital & 228 & 18 & 10 & NYP -- Allen Hospital & 105 & 13\\
+4 & Metropolitan Hospital Center & 84 & 7 & 11 & NYP -- Columbia Presbyterian & 353 & 25\\
+5 & Mount Sinai Beth Israel & 291 & 24 & 12 & NYP -- New York Weill Cornell & 250 & 11\\
+6 & Mount Sinai Hospital & 270 & 16 & 13 & NYP/Lower Manhattan Hospital & 41 & 4\\
+7 & Mount Sinai Roosevelt & 46 & 6 & & & &\\
+\bottomrule
+\end{tabular}
+\end{center}
+Model: $y_i|p_i\sim\text{Bin}(n_i,p_i)$, independent; $p_i|\mu,\eta\sim\text{Beta}(\mu\eta,(1-\mu)\eta)$, independent; $\mu\sim U(0,1)$ independent of $\eta$, with $p(\eta)=n_1/(n_1+\eta)^2$, $\eta>0$, $n_1=10$. Here $\mu$ is the mean of the population of death rates and $\eta$ a precision (prior sample size).
+\begin{enumerate}[label=\textbf{(\alph*)},leftmargin=2em]
+\item Show that, given $(\mu,\eta)$, the $p_i$ are independent a posteriori with $p_i|y,\mu,\eta\sim\text{Beta}(y_i+\mu\eta,\ n_i-y_i+(1-\mu)\eta)$. Write $E(p_i|y,\mu,\eta)=\lambda_i\hat p_i+(1-\lambda_i)\mu$, with $\hat p_i=y_i/n_i$, and find $\lambda_i$. Interpret the limits $\eta\to0$ and $\eta\to\infty$.
+\item Integrate the $p_i$ out to get $p(y|\mu,\eta)$. Show that $p(\eta)$ is a proper prior with median $n_1$. Show that the posterior density of $\eta$ decays like $\eta^{-2}$, so that $E(\eta|y)=\infty$ although its median exists.
+\item On a grid for $(\mu,\phi)$, $\phi=\log\eta$, compute the posterior median and 90\% equal-tailed interval of $\mu$, of $\eta$ and of the population standard deviation $\sqrt{\mu(1-\mu)/(\eta+1)}$, and $P(\eta>1000|y)$. Compare with the Stan output of the class page.
+\item Compute $E(p_i|y)$, $\operatorname{sd}(p_i|y)$ and $E(\lambda_i|y)$ for each hospital, and compare with $\hat p_i$ and the pooled proportion $\sum_iy_i/\sum_in_i$. Which hospitals move most, and why?
+\end{enumerate}
+\end{enunciado}
+\resolespaco
+\begin{sol}
+\begin{notacao}
+\item $\hat p_i=y_i/n_i$: raw death rate; $a=\mu\eta$, $b=(1-\mu)\eta$: Beta parameters, so $E(p_i|\mu,\eta)=\mu$ and $\operatorname{Var}(p_i|\mu,\eta)=\mu(1-\mu)/(\eta+1)$.
+\item $B(\cdot,\cdot)$: beta function; $\phi=\log\eta$; $\lambda_i=n_i/(n_i+\eta)$: weight on hospital $i$'s own data.
+\end{notacao}
+\passo{(a) conditional posterior of $p_i$}{Given $(\mu,\eta)$ the joint density factorises over hospitals, and for each $i$
+\begin{align}
+p(p_i|y,\mu,\eta)&\propto p_i^{y_i}(1-p_i)^{n_i-y_i}\cdot p_i^{\mu\eta-1}(1-p_i)^{(1-\mu)\eta-1}=p_i^{y_i+\mu\eta-1}(1-p_i)^{n_i-y_i+(1-\mu)\eta-1},\label{o3:cond}
+\end{align}
+the Beta$(y_i+\mu\eta,\,n_i-y_i+(1-\mu)\eta)$ kernel (Beta--Bernoulli conjugacy, as in Question~33). Its mean is
+\begin{align}
+E(p_i|y,\mu,\eta)&=\frac{y_i+\mu\eta}{n_i+\eta}=\frac{n_i}{n_i+\eta}\,\hat p_i+\frac{\eta}{n_i+\eta}\,\mu,\qquad\lambda_i=\frac{n_i}{n_i+\eta}.\label{o3:shrink}
+\end{align}
+As $\eta\to0$, $\lambda_i\to1$: no pooling, each hospital keeps $\hat p_i$. As $\eta\to\infty$ the Beta collapses on $\mu$, $\lambda_i\to0$: complete pooling, every $p_i=\mu$. In between, small hospitals (small $n_i$) get small $\lambda_i$ and borrow most. This is the same structure as Question~30, eq.~\eqref{k122:shrink}, with $\eta$ in the role of $\sigma_\epsilon^2/\sigma_\alpha^2$.}
+\passo{(b) the marginal likelihood}{Integrating \eqref{o3:cond}'s unnormalised joint over $p_i\in(0,1)$ with the beta integral:
+\begin{align}
+p(y|\mu,\eta)&=\prod_{i=1}^{13}\binom{n_i}{y_i}\frac{B\big(y_i+\mu\eta,\ n_i-y_i+(1-\mu)\eta\big)}{B\big(\mu\eta,\ (1-\mu)\eta\big)},\label{o3:bb}\\
+p(\mu,\phi|y)&\propto p(y|\mu,e^\phi)\,\frac{n_1e^\phi}{(n_1+e^\phi)^2},\qquad0<\mu<1,\ \phi\in\mathbb R,\label{o3:post}
+\end{align}
+a product of beta-binomial p.m.f.s; the factor $e^\phi$ in \eqref{o3:post} is the Jacobian of $\eta=e^\phi$. The prior is proper, with c.d.f.
+\begin{align}
+\int_0^\eta\frac{n_1}{(n_1+u)^2}\,du&=1-\frac{n_1}{n_1+\eta}=\frac{\eta}{n_1+\eta}\ \xrightarrow[\eta\to\infty]{}\ 1,\label{o3:cdf}
+\end{align}
+which equals $1/2$ at $\eta=n_1=10$.}
+\passo{(b) the tail of $\eta|y$}{As $\eta\to\infty$ with $\mu$ fixed, each Beta in \eqref{o3:cond} concentrates at $\mu$, so the beta-binomial in \eqref{o3:bb} tends to the binomial: $p(y|\mu,\eta)\to\prod_i\binom{n_i}{y_i}\mu^{y_i}(1-\mu)^{n_i-y_i}>0$. The likelihood therefore tends to a positive constant in $\eta$, and the posterior inherits the prior's tail, $p(\eta|y)\approx c\,n_1/\eta^2$ for large $\eta$, with $c>0$. Then $\int^\infty\eta\cdot\eta^{-2}d\eta$ diverges: $E(\eta|y)=\infty$. Medians and quantiles are finite. The data cannot rule out ``all hospitals are identical'' ($\eta=\infty$); they can only say how much prior mass stays out there.}
+\passo{(c) grid posterior (function \texttt{orig\_hbb})}{The grid has 800 values of $\mu\in[0.0005,0.25]$ and 1{,}600 values of $\phi\in[-4,24]$; the mass beyond $\phi=20$ is $2.8\times10^{-7}$, and halving both grid sizes changes nothing at the printed precision.
+\begin{center}\small
+\begin{tabular}{lccc@{\qquad}c}
+\toprule
+& 5\% & median & 95\% & class page (Stan): 5\%, 50\%, 95\%\\
+\midrule
+$\mu$ & 0.0599 & 0.0715 & 0.0875 & 0.0595, 0.0715, 0.0874\\
+$\eta$ & 50.1 & 229.9 & 2{,}750 & 49.2, 225.7, 2{,}234\\
+$\sqrt{\mu(1-\mu)/(\eta+1)}$ & 0.0048 & 0.0169 & 0.0376 & 0.0054, 0.0170, 0.0381\\
+\bottomrule
+\end{tabular}
+\end{center}
+$E(\mu|y)=0.0723$ and $P(\eta>1000|y)=0.136$. The $\mu$ quantiles agree with Stan to within $0.0005$. The upper quantile of $\eta$ does not: it lives in the $\eta^{-2}$ tail, which 20{,}000 MCMC draws pin down poorly. Stan's printed ``mean $555.72$, sd $1008$'' for $\eta$ estimates a quantity that is infinite.}
+\passo{(d) partial pooling (pooled proportion $163/2366=0.0689$)}{$E(p_i|y)=E\big[(y_i+\mu\eta)/(n_i+\eta)\,\big|\,y\big]$ and $E(\lambda_i|y)$ by the same grid:
+\begin{center}\small
+\begin{tabular}{rrrcccc}
+\toprule
+$i$ & $n_i$ & $y_i$ & $\hat p_i$ & $E(p_i|y)$ & $\operatorname{sd}(p_i|y)$ & $E(\lambda_i|y)$\\
+\midrule
+1 & 129 & 4 & 0.0310 & 0.0566 & 0.0146 & 0.37\\
+2 & 35 & 1 & 0.0286 & 0.0649 & 0.0178 & 0.16\\
+3 & 228 & 18 & 0.0789 & 0.0749 & 0.0130 & 0.48\\
+4 & 84 & 7 & 0.0833 & 0.0750 & 0.0169 & 0.29\\
+5 & 291 & 24 & 0.0825 & 0.0771 & 0.0124 & 0.53\\
+6 & 270 & 16 & 0.0593 & 0.0650 & 0.0114 & 0.51\\
+7 & 46 & 6 & 0.1304 & 0.0833 & 0.0222 & 0.20\\
+8 & 293 & 19 & 0.0648 & 0.0678 & 0.0112 & 0.53\\
+9 & 241 & 15 & 0.0622 & 0.0668 & 0.0118 & 0.49\\
+10 & 105 & 13 & 0.1238 & 0.0887 & 0.0207 & 0.33\\
+11 & 353 & 25 & 0.0708 & 0.0709 & 0.0108 & 0.56\\
+12 & 250 & 11 & 0.0440 & 0.0577 & 0.0121 & 0.50\\
+13 & 41 & 4 & 0.0976 & 0.0765 & 0.0198 & 0.18\\
+\bottomrule
+\end{tabular}
+\end{center}
+The raw rates span $0.1019$ (from $0.0286$ to $0.1304$); the posterior means span only $0.0321$. The biggest moves are the small hospitals with extreme rates: Mount Sinai Roosevelt ($n=46$) goes from $13.0\%$ to $8.3\%$, Harlem ($n=35$) from $2.9\%$ to $6.5\%$, with $E(\lambda_i|y)\approx0.16$--$0.20$, so about 80\% of the estimate comes from the population. The largest hospital, Columbia Presbyterian ($n=353$, $\lambda\approx0.56$), stays at $7.1\%$, already near $\mu$. Shrinkage also reorders: Allen ($n=105$, $12.4\%$) overtakes Roosevelt as the highest estimate ($8.9\%$ against $8.3\%$), and Harlem, the lowest raw rate, ends above Bellevue ($5.7\%$) and Weill Cornell ($5.8\%$), whose low rates rest on more cases.}
+\intuicao{A death rate of $6/46$ is weak evidence of a bad hospital: with $p=0.07$, six or more deaths out of 46 happen about one time in ten. The hierarchical model learns from all 13 hospitals how much true rates differ (the population s.d.\ is about $1.7$ percentage points). It then discounts each raw rate by the noise its sample size implies. That is ``borrowing strength'' (\S8 of the class page).}
+\refbib{Class page \texttt{hierarchical-beta-binomial.html}; Question~30 (the Gaussian analogue); Question~33 (Beta--Bernoulli conjugacy); Koop, Poirier and Tobias (2007), Exercise~7.1 (the beta-binomial predictive).}
+\end{sol}
+
+% -----------------------------------------------------------------------------
+\questao{Original --- sequential learning from Bernoulli trials: uniform prior and a discrete prior.}
+\origem{original exercise on sequential Bayesian updating with Bernoulli data, built on \path{Aula/class-03-04/materials/sequential-bayes-bernoulli-uniform-trials.html}, \S1 (Beta--Binomial with a uniform prior: $\alpha_n=1+s_n$, $\beta_n=1+n-s_n$, sequential posterior mean, mode and 2.5/50/97.5\% quantiles) and \path{bernoulli-trials-discrete-prior.html}, \S1 ($\theta\in\{0.3,0.5,0.8\}$ with prior $(0.4,0.5,0.1)$, posterior probabilities after each trial). The nearest book exercises do not cover it: Greenberg 3.4 (Question~4) updates a Poisson--gamma model in two batches; Koop, Poirier and Tobias 8.3 updates binomial and negative-binomial data under Jeffreys' priors to show order dependence. Written for this list; no book gives it or its answer.}
+\begin{enunciado}
+Ten Bernoulli$(\theta)$ trials are observed in this order: $x_{1:10}=(0,1,1,1,0,1,1,1,1,1)$. Let $s_n=\sum_{i\le n}x_i$.
+\begin{enumerate}[label=\textbf{(\alph*)},leftmargin=2em]
+\item Prior $\theta\sim U(0,1)$. Show that updating one trial at a time, with the posterior after $x_{1:n-1}$ as the prior for $x_n$, gives $\theta|x_{1:n}\sim\text{Beta}(1+s_n,\,1+n-s_n)$, the same as one batch update, for any order of the trials. Give the posterior mean and mode and the predictive probability $P(x_{n+1}=1|x_{1:n})$.
+\item Tabulate, for $n=1,\ldots,10$, the posterior parameters, the mean and the 95\% equal-tailed interval. Compute $P(\theta>0.5|x_{1:10})$.
+\item Prior on three points: $\Pr(\theta=0.3)=0.4$, $\Pr(\theta=0.5)=0.5$, $\Pr(\theta=0.8)=0.1$. Write the one-trial update and show that the posterior after $n$ trials depends on the data only through $(n,s_n)$. Compute the posterior probabilities after each trial and $P(x_{11}=1|x_{1:10})$. Compare with (b).
+\item Suppose the data come from $\theta_0=0.65$, which the discrete prior of (c) excludes. Show that the posterior log-odds of $\theta=0.8$ against $\theta=0.5$ is $\log(0.1/0.5)+s_n\log1.6+(n-s_n)\log0.4$. Deduce which support point the posterior concentrates on as $n\to\infty$, and relate the answer to the Kullback--Leibler divergence $\text{KL}(\theta_0\|\theta)=\theta_0\log(\theta_0/\theta)+(1-\theta_0)\log\{(1-\theta_0)/(1-\theta)\}$. Check by simulating 5{,}000 trials (NumPy seed 2026).
+\end{enumerate}
+\end{enunciado}
+\resolespaco
+\begin{sol}
+\begin{notacao}
+\item $x_i\in\{0,1\}$: trial $i$; $s_n$: successes in the first $n$ trials; $(\alpha_n,\beta_n)$: posterior Beta parameters after $n$ trials, $(\alpha_0,\beta_0)=(1,1)$.
+\item $\pi_n(\theta_k)=\Pr(\theta=\theta_k|x_{1:n})$ for the support points $\theta_k\in\{0.3,0.5,0.8\}$; $\pi_0=(0.4,0.5,0.1)$.
+\end{notacao}
+\passo{(a) one step}{If $\theta|x_{1:n-1}\sim\text{Beta}(\alpha_{n-1},\beta_{n-1})$, then
+\begin{align}
+p(\theta|x_{1:n})&\propto\theta^{\alpha_{n-1}-1}(1-\theta)^{\beta_{n-1}-1}\cdot\theta^{x_n}(1-\theta)^{1-x_n},\qquad\alpha_n=\alpha_{n-1}+x_n,\ \ \beta_n=\beta_{n-1}+1-x_n,\label{o4:step}
+\end{align}
+because $x_n$ is independent of $x_{1:n-1}$ given $\theta$, so the likelihood of the new trial is all that multiplies the old posterior. Iterating from $(1,1)$, $\alpha_n=1+s_n$ and $\beta_n=1+n-s_n$. This is the batch posterior $\propto\theta^{s_n}(1-\theta)^{n-s_n}$. Sums do not depend on the order of the trials, so neither does the posterior; the script also runs the trials in reverse and gets Beta$(9,3)$.}
+\passo{(a) summaries and predictive}{From the Beta$(\alpha_n,\beta_n)$ moments:
+\begin{align}
+E(\theta|x_{1:n})&=\frac{1+s_n}{2+n},\qquad\text{mode}=\frac{\alpha_n-1}{\alpha_n+\beta_n-2}=\frac{s_n}{n}=\hat\theta_{\text{MLE}},\label{o4:mm}\\
+P(x_{n+1}=1|x_{1:n})&=\int_0^1\theta\,p(\theta|x_{1:n})\,d\theta=E(\theta|x_{1:n})=\frac{1+s_n}{2+n}\label{o4:pred}
+\end{align}
+(Laplace's rule of succession). The mode equals the MLE because the uniform prior is flat (Question~29: the zero--one-loss estimate).}
+\passo{(b) the sequence (function \texttt{orig\_seq})}{$\alpha_n,\beta_n$ from \eqref{o4:step}; quantiles of Beta$(\alpha_n,\beta_n)$:
+\begin{center}\small
+\begin{tabular}{rcccccc@{\qquad}ccc}
+\toprule
+& & & & \multicolumn{2}{c}{95\% interval} & & \multicolumn{3}{c}{discrete prior, part (c)}\\
+\cmidrule(lr){5-6}\cmidrule(lr){8-10}
+$n$ & $x_n$ & $(\alpha_n,\beta_n)$ & mean & lower & upper & & $\pi_n(0.3)$ & $\pi_n(0.5)$ & $\pi_n(0.8)$\\
+\midrule
+1 & 0 & (1, 2) & 0.3333 & 0.0126 & 0.8419 & & 0.5091 & 0.4545 & 0.0364\\
+2 & 1 & (2, 2) & 0.5000 & 0.0943 & 0.9057 & & 0.3733 & 0.5556 & 0.0711\\
+3 & 1 & (3, 2) & 0.6000 & 0.1941 & 0.9324 & & 0.2507 & 0.6219 & 0.1274\\
+4 & 1 & (4, 2) & 0.6667 & 0.2836 & 0.9473 & & 0.1541 & 0.6371 & 0.2088\\
+5 & 0 & (4, 3) & 0.5714 & 0.2228 & 0.8819 & & 0.2304 & 0.6804 & 0.0892\\
+6 & 1 & (5, 3) & 0.6250 & 0.2904 & 0.9010 & & 0.1438 & 0.7078 & 0.1484\\
+7 & 1 & (6, 3) & 0.6667 & 0.3491 & 0.9148 & & 0.0837 & 0.6861 & 0.2302\\
+8 & 1 & (7, 3) & 0.7000 & 0.3999 & 0.9251 & & 0.0454 & 0.6211 & 0.3335\\
+9 & 1 & (8, 3) & 0.7273 & 0.4439 & 0.9333 & & 0.0231 & 0.5255 & 0.4514\\
+10 & 1 & (9, 3) & 0.7500 & 0.4822 & 0.9398 & & 0.0110 & 0.4165 & 0.5725\\
+\bottomrule
+\end{tabular}
+\end{center}
+After ten trials $P(\theta>0.5|x_{1:10})=1-I_{0.5}(9,3)=0.9673$, although the 95\% interval still contains $0.5$ (just: the lower end is $0.4822$). The interval narrows slowly, roughly like $1/\sqrt n$.}
+\passo{(c) discrete prior}{With $\theta$ on three points, Bayes' theorem is a finite sum:
+\begin{align}
+\pi_n(\theta_k)&=\frac{\pi_{n-1}(\theta_k)\,\theta_k^{x_n}(1-\theta_k)^{1-x_n}}{\sum_{l}\pi_{n-1}(\theta_l)\,\theta_l^{x_n}(1-\theta_l)^{1-x_n}}.\label{o4:disc}
+\end{align}
+Iterating \eqref{o4:disc} from $\pi_0$, the denominators cancel in the ratio and
+\begin{align}
+\pi_n(\theta_k)&=\frac{\pi_0(\theta_k)\,\theta_k^{s_n}(1-\theta_k)^{n-s_n}}{\sum_l\pi_0(\theta_l)\,\theta_l^{s_n}(1-\theta_l)^{n-s_n}},\label{o4:batch}
+\end{align}
+a function of $(n,s_n)$ only. The right-hand columns of the table above come from \eqref{o4:disc}, and \eqref{o4:batch} returns the same last row. After the first failure, $0.3$ gains, from $0.4$ to $0.5091$; eight successes in the next nine trials then move mass to $0.5$ and finally to $0.8$, whose prior was only $0.1$. The predictive is $P(x_{11}=1|x_{1:10})=\sum_k\pi_{10}(\theta_k)\theta_k=0.6696$, against $0.75$ in (b). The discrete prior forbids values between $0.5$ and $0.8$, and still gives $0.5$ weight $0.4165$.}
+\passo{(d) a support that excludes the truth}{From \eqref{o4:batch} the denominators cancel in the ratio of two support points:
+\begin{align}
+\log\frac{\pi_n(0.8)}{\pi_n(0.5)}&=\log\frac{0.1}{0.5}+s_n\log\frac{0.8}{0.5}+(n-s_n)\log\frac{0.2}{0.5}=\log0.2+n\Big[\frac{s_n}{n}\log1.6+\Big(1-\frac{s_n}{n}\Big)\log0.4\Big].\label{o4:lo}
+\end{align}
+By the law of large numbers $s_n/n\to\theta_0$, so the bracket tends to $\theta_0\log1.6+(1-\theta_0)\log0.4=\text{KL}(\theta_0\|0.5)-\text{KL}(\theta_0\|0.8)$. The log-odds drift to $+\infty$ when this is positive, that is when $\theta_0>\log2.5/\log4=0.6610$, and to $-\infty$ otherwise. In general the posterior piles up on the support point closest to $\theta_0$ in Kullback--Leibler divergence. For $\theta_0=0.65$: $\text{KL}=0.2600$, $0.0457$, $0.0609$ for $0.3$, $0.5$, $0.8$. So the limit is $\theta=0.5$, even though $0.65$ is equally far from $0.5$ and $0.8$ in absolute terms. The drift is only $0.0609-0.0457=0.0152$ per trial, so convergence is slow. In the simulated sequence:
+\begin{center}\small
+\begin{tabular}{rcccccc}
+\toprule
+$n$ & 10 & 50 & 200 & 1{,}000 & 5{,}000\\
+\midrule
+$s_n/n$ & 0.700 & 0.700 & 0.670 & 0.627 & 0.648\\
+$\pi_n(0.5)$ & 0.7117 & 0.2504 & 0.2899 & 1.0000 & 1.0000\\
+$\pi_n(0.8)$ & 0.2445 & 0.7496 & 0.7101 & $7\times10^{-22}$ & $1\times10^{-41}$\\
+\bottomrule
+\end{tabular}
+\end{center}
+While the running proportion sits above $0.661$, the posterior leans to $0.8$; this last happens at $n=328$. Once the proportion settles near $0.65$, the posterior locks onto $0.5$.}
+\intuicao{Sequential and batch updating agree because yesterday's posterior is today's prior and conditionally independent data multiply the likelihood. The continuous prior lets the posterior centre anywhere and narrow like $1/\sqrt n$. A discrete prior can only redistribute mass among the points it allows: given enough data it always becomes certain, but certain of the allowed value nearest the truth in the KL sense. A false certainty is the price of a support that misses the truth.}
+\refbib{Class pages \path{sequential-bayes-bernoulli-uniform-trials.html} and \path{bernoulli-trials-discrete-prior.html}; Greenberg \S3.1.3 and Exercise~3.4 (Question~4); Koop, Poirier and Tobias (2007), Exercises~1.4 and~2.1 (predictive probability and conjugate Bernoulli analysis).}
+\end{sol}
+
+% -----------------------------------------------------------------------------
+\questao{Original --- one normal observation, four priors (the physicists A--D example).}
+\origem{original exercise on the normal model under four priors, built on \path{Aula/class-03-04/materials/fisicos-ABCD.html}, \S\S1--5 (model $x|\theta\sim N(\theta,40^2)$ with $x=850$; priors A--D and their hyperparameters; SIR with $M=10^6$ draws from $U(600,1000)$; the table of posterior means, medians, $\Pr(\theta<x|x)$ and 5\% quantiles). The page's formula for prior D lists $N(\mu_A,\sigma_A^2)$ twice; its code mixes the priors A, B and C, as below. No book on disk has this exercise; the nearest are Koop, Poirier and Tobias (2007), Exercises~2.13(b) (mixtures of conjugate priors) and 3.10 (a non-conjugate prior for a normal mean). Written for this list; no book gives it or its answer.}
+\begin{enunciado}
+One observation $x=850$ is made of $x|\theta\sim N(\theta,\sigma^2)$, $\sigma=40$. Four researchers hold the priors
+\[
+\text{A: }N(900,20^2);\quad\text{B: }N(800,80^2);\quad\text{C: }t_5(900,240);\quad\text{D: }\tfrac13\,\text{A}+\tfrac13\,\text{B}+\tfrac13\,\text{C},
+\]
+where $t_\nu(\mu,s^2)$ has density $s^{-1}f_\nu\big((\theta-\mu)/s\big)$, $f_\nu$ the standard Student-$t$ density, so prior C has location 900 and scale $\sqrt{240}$.
+\begin{enumerate}[label=\textbf{(\alph*)},leftmargin=2em]
+\item Find the posteriors under A and B in closed form, with mean, standard deviation, $\Pr(\theta<x|x)$ and 5\% quantile.
+\item Show that prior C has the same mean and variance as prior A. Compute the same summaries under C by one-dimensional numerical integration and compare with A.
+\item Show that under D the posterior is a mixture of the three component posteriors, with weights proportional to $\frac13m_k(x)$, where $m_k(x)=\int N(x;\theta,\sigma^2)\,p_k(\theta)\,d\theta$. Give $m_{\text{A}}$ and $m_{\text{B}}$ in closed form, compute the weights and the summaries under D.
+\item Reproduce the class page's sampling importance resampling (SIR): $10^6$ draws from $U(600,1000)$ (NumPy seed 125532), weights proportional to likelihood $\times$ prior, resampling with replacement. Why is this proposal acceptable here?
+\item Robustness: compute $E(\theta|x)$ under A, C and D for $x\in\{850,750,650\}$, and explain the pattern.
+\end{enumerate}
+\end{enunciado}
+\resolespaco
+\begin{sol}
+\begin{notacao}
+\item $x$: the observation; $\sigma^2=1600$: its known variance; $(\mu_k,\sigma_k^2)$: prior mean and variance of the normal priors A, B; $\nu=5$, $s_C^2=240$: degrees of freedom and squared scale of prior C.
+\item $m_k(x)$: marginal likelihood (prior predictive density of $x$) under prior $k$; $w_k$: posterior weight of component $k$ in prior D.
+\end{notacao}
+\passo{(a) conjugate priors A and B}{Precisions add and the mean is precision-weighted (Question~3 with $n=1$):
+\begin{align}
+\theta|x&\sim N(\mu_1,\sigma_1^2),\qquad\sigma_1^2=\Big(\frac1{\sigma_k^2}+\frac1{\sigma^2}\Big)^{-1},\qquad\mu_1=\sigma_1^2\Big(\frac{\mu_k}{\sigma_k^2}+\frac{x}{\sigma^2}\Big).\label{o5:conj}
+\end{align}
+A: $\sigma_1^2=(1/400+1/1600)^{-1}=320$, $\sigma_1=17.89$, $\mu_1=320(2.25+0.53125)=890.00$. B: $\sigma_1^2=(1/6400+1/1600)^{-1}=1280$, $\sigma_1=35.78$, $\mu_1=1280(0.125+0.53125)=840.00$. Hence
+\begin{align}
+\text{A: }\Pr(\theta<850|x)&=\Phi\Big(\frac{850-890}{17.89}\Big)=\Phi(-2.236)=0.0127,\quad q_{0.05}=890-1.645(17.89)=860.58;\label{o5:A}\\
+\text{B: }\Pr(\theta<850|x)&=\Phi\Big(\frac{850-840}{35.78}\Big)=\Phi(0.280)=0.6101,\quad q_{0.05}=840-1.645(35.78)=781.15.\label{o5:B}
+\end{align}
+The confident physicist A ($\sigma_A=20$) puts weight $0.8$ on her prior mean and moves only to 890. B ($\sigma_B=80$) puts weight $0.8$ on the data and lands at 840.}
+\passo{(b) prior C}{The $t_\nu$ variance is $s^2\nu/(\nu-2)$, so $\operatorname{Var}_C(\theta)=240\cdot5/3=400=\sigma_A^2$, and the mean is $900=\mu_A$: C is A with heavier tails. The posterior $p(\theta|x)\propto N(x;\theta,\sigma^2)\,s_C^{-1}f_5((\theta-900)/s_C)$ has no closed form. By the trapezoid rule on $220{,}001$ points of $[300,1400]$ (function \texttt{orig\_phys}): mean $891.12$, s.d.\ $17.70$, median $892.41$, $\Pr(\theta<x|x)=0.0216$, $q_{0.05}=860.31$. At $x=850$ the observation sits $2.2$ prior s.d.\ from 900. The $t$ prior is close to the normal there, so C behaves like A, slightly more confident (s.d.\ $17.70$ against $17.89$) because the $t_5$ is more peaked at its centre.}
+\passo{(c) the mixture prior D}{With $p_D=\sum_k\frac13p_k$,
+\begin{align}
+p_D(\theta|x)&=\frac{\sum_k\frac13p_k(\theta)N(x;\theta,\sigma^2)}{\sum_l\frac13m_l(x)}=\sum_kw_k\,p_k(\theta|x),\qquad w_k=\frac{\frac13m_k(x)}{\sum_l\frac13m_l(x)},\label{o5:mix}
+\end{align}
+because $p_k(\theta)N(x;\theta,\sigma^2)=m_k(x)\,p_k(\theta|x)$ by Bayes' theorem. For the normal priors $x=\theta+e$ with independent normals, so $m_k(x)=N(x;\mu_k,\sigma_k^2+\sigma^2)$:
+\begin{align}
+m_{\text{A}}&=N(850;900,2000)=0.004775,\qquad m_{\text{B}}=N(850;800,8000)=0.003815,\label{o5:mk}
+\end{align}
+and by quadrature $m_{\text{C}}=0.004730$. Then $w=(0.3585,\,0.2864,\,0.3551)$. Summaries under D: mean $876.08$ ($=\sum_kw_k\,E_k(\theta|x)$, checked), s.d.\ $33.40$, median $884.30$, $\Pr(\theta<x|x)=0.1870$, $q_{0.05}=806.40$. The weights are posterior model probabilities, as in Question~31: D lets the data arbitrate between the three physicists.}
+\passo{(d) SIR (seed 125532)}{Draw $\theta^{(j)}\sim U(600,1000)$, $j=1,\ldots,10^6$, set $\omega_j\propto N(x;\theta^{(j)},\sigma^2)\,p_k(\theta^{(j)})$ (the uniform density is constant and cancels), and resample $10^6$ draws with probabilities $\omega_j$:
+\begin{center}\small
+\begin{tabular}{lcccc@{\qquad}c}
+\toprule
+prior & mean & median & $\Pr(\theta<x|x)$ & $q_{0.05}$ & class page (R): mean, median, $\Pr$, $q_{0.05}$\\
+\midrule
+A & 890.00 & 890.00 & 0.0125 & 860.65 & 890.06, 890.10, 0.01, 860.52\\
+B & 839.93 & 839.90 & 0.6106 & 781.24 & 840.02, 840.09, 0.61, 781.18\\
+C & 891.14 & 892.42 & 0.0217 & 860.31 & 891.16, 892.45, 0.02, 860.30\\
+D & 876.03 & 884.21 & 0.1870 & 806.24 & 876.15, 884.35, 0.19, 806.53\\
+\bottomrule
+\end{tabular}
+\end{center}
+Both runs agree with the exact values of (a)--(c) to Monte Carlo error. The uniform proposal works because every posterior here has essentially all its mass inside $(600,1000)$: B's, the widest, is $N(840,35.8^2)$, and 600 lies $6.7$ s.d.\ below its mean. The proposal must cover the posterior's support; a narrower proposal would cut off part of the posterior and give wrong answers with no warning.}
+\passo{(e) robustness}{\par
+\begin{center}\small
+\begin{tabular}{rcccc}
+\toprule
+$x$ & A (normal) & C ($t_5$) & D (mixture) & weight of B in D\\
+\midrule
+850 & 890.00 & 891.12 & 876.08 & 0.2864\\
+750 & 870.00 & 850.85 & 761.85 & 0.9814\\
+650 & 850.00 & 698.82 & 680.01 & 0.9997\\
+\bottomrule
+\end{tabular}
+\end{center}
+Under A the posterior mean is $0.8\cdot900+0.2x$, linear in $x$: however far the data, A keeps 80\% of its prior mean, and at $x=650$ it reports 850, five data s.d.\ from the observation. Under C the observation and the prior conflict, and the heavy-tailed prior gives way: the posterior mean tracks $x$ ($698.82$ at $x=650$). For large $|x-900|$ the $t$ prior is almost flat compared with the likelihood. Under D the weights do the work: at $x=650$ the data have almost ruled out components A and C ($w_{\text{B}}=0.9997$), and the posterior is essentially B's, mean $1280(800/6400+650/1600)=680$.}
+\intuicao{With one observation and a confident prior, the prior's tails decide what happens when data and prior disagree. A normal prior never lets go: the posterior stays a fixed compromise. A Student-$t$ prior gives way in a conflict and lets the data speak. A mixture prior hedges across researchers and lets the marginal likelihood pick the one whose prior predicted the data best. This is why robust analyses use heavy-tailed or mixture priors.}
+\refbib{Class page \texttt{fisicos-ABCD.html}; Question~3 (Greenberg 3.3: the normal--normal update); Question~31 (posterior model probabilities); Koop, Poirier and Tobias (2007), Exercises~2.3 and~2.13(b).}
 \end{sol}
 
 \end{document}

@@ -90,13 +90,14 @@
 
 {\footnotesize\noindent\textbf{Instructions.} These are the \emph{Practice} items of Class 8 in
 \texttt{Map/class-plan.md} (T 2.1--2.6; W 18.C13; T 3.3, 3.4, 3.6, 3.11, 3.12, 3.14; W 12.4), grouped by
-book, plus Tsay 12.4 (stochastic volatility) and one original exercise on Bayesian GARCH (Block 4). Every book
+book, plus Tsay 12.4 (stochastic volatility) and one original exercise on Bayesian GARCH (Block 4), and
+Tsay 3.13 and 3.9 (GARCH-M, EGARCH, TGARCH) with one original exercise on Student-$t$ SV (Block 5). Every book
 question opens with a source line, and the statement is reproduced verbatim from the book PDF; a
 \emph{Referenced material} paragraph after a statement summarizes what it refers to (data file, model,
-earlier exercise). The original exercise opens with an \emph{Origin} line instead.
+earlier exercise). The original exercises open with an \emph{Origin} line instead.
 Data exercises use Tsay's data files (FTS 3e web page, retrieved from the Internet Archive) and the
 \texttt{wooldridge} package; see \texttt{Listas/data/README.md}. They are solved in Python
-(\texttt{statsmodels}; GARCH-type models by conditional maximum likelihood, and the MCMC samplers of Block 4,
+(\texttt{statsmodels}; GARCH-type models by conditional maximum likelihood, and the MCMC samplers of Blocks 4--5,
 written in NumPy/SciPy with fixed seeds);
 \texttt{Listas/L08-book-exercises-check.py} reproduces and asserts every number in the solutions. Tests
 use the 5\% level unless the statement says otherwise. Show your steps.\par}
@@ -1458,6 +1459,361 @@ interval for $p$ also stays below 1 here, but only because $\hat p$ is $2.2$ sta
 $\alpha_0/(1-p)$ is poorly determined: a tiny change in $p$ moves it a lot. The posterior shows this
 directly as a long right tail, which a symmetric Wald interval hides.}
 \refbib{Class slides \texttt{bayes-garch.pdf} (H.~F.~Lopes, ``Bayesian GARCH modeling'', 2015), pp.~14--21; Ardia and Hoogerheide (2010), \textit{The R Journal} 2, 41--47; Tsay (2010) \S3.5 (pp.~131--133, GARCH(1,1), $E(a_t^2)=\alpha_0/(1-\alpha_1-\beta_1)$) and \S12.1--12.4 (pp.~614--623, MCMC, Gibbs sampling, Metropolis--Hastings).}
+\end{sol}
+
+% =============================================================================
+\bloco{5}{GARCH variants and Student-$t$ stochastic volatility}{T Ch.~3 and class site \,\textbullet\, Questions 17--19}
+
+% ---------------------------------------------------------------- Q17
+\questao{Tsay, Exercise 3.13 (GM daily simple returns: GARCH-M and EGARCH, leverage effect).}
+\fonte{Tsay (2010), \textit{Analysis of Financial Time Series}, 3rd ed., Chapter 3, Exercise 3.13, printed
+pp.~170--171 [PDF pp.~197--198]; answer not given in the book; reproduced verbatim.}
+
+\noindent\textbf{3.13.} Again, consider the daily simple returns of GM stock in the file \texttt{d-gmsp9908.txt}.
+\begin{enumerate}[label=(\alph*)]
+\item Find an adequate GARCH-M model for the series. Write down the fitted model.
+\item Find an adequate EGARCH model for the series. Is the ``leverage'' effect significant at the 5\% level?
+\end{enumerate}
+\begin{refmat}
+The file is described in Exercise 3.11 (Question 10): columns \texttt{date}, \texttt{gm}, \texttt{sp}; 2,515
+daily simple returns from 1999-01-04 to 2008-12-31; GM is \texttt{gm}. GARCH(1,1)-M (Tsay \S3.7, printed p.~142
+[PDF p.~169], Eq.~(3.23)): $r_t=\mu+c\sigma_t^2+a_t$, $a_t=\sigma_t\epsilon_t$,
+$\sigma_t^2=\alpha_0+\alpha_1a_{t-1}^2+\beta_1\sigma_{t-1}^2$; $c$ is the risk-premium parameter (variants with $c\sigma_t$
+or $c\ln\sigma_t^2$ are also listed there). EGARCH in the form used by S-Plus (Tsay \S3.8.1, printed p.~144
+[PDF p.~171], Eq.~(3.28)), order (1,1):
+$\ln\sigma_t^2=\alpha_0+\alpha_1\dfrac{|a_{t-1}|+\gamma_1a_{t-1}}{\sigma_{t-1}}+\beta_1\ln\sigma_{t-1}^2$; a positive
+shock adds $\alpha_1(1+\gamma_1)|\epsilon_{t-1}|$ to $\ln\sigma_t^2$ and a negative one $\alpha_1(1-\gamma_1)|\epsilon_{t-1}|$,
+so $\gamma_1$ is the leverage parameter, expected negative. Standardized Student-$t$ innovations: Tsay Eq.~(3.7),
+printed p.~121 [PDF p.~148], as in Question 8.
+\end{refmat}
+\resolespaco
+\begin{sol}
+\begin{notacao}
+\item $r_t=100R_t$: GM daily simple return in percent (as for the S\&P in Question 11), $T=2515$.
+\item $a_t$: shock; $\sigma_t^2$: conditional variance; $\epsilon_t=a_t/\sigma_t$: standardized shock, here Student-$t$ with $\nu$ degrees of freedom, scaled to variance 1.
+\item GARCH-M: $\mu$, $c$ (risk premium), $\alpha_0,\alpha_1,\beta_1$. EGARCH: $\alpha_0,\alpha_1,\beta_1$ and the leverage parameter $\gamma_1$.
+\end{notacao}
+\noindent\textit{Code} (\texttt{vgarch\_fit} in the check script: conditional MLE, start-up as in \texttt{garch\_fit};
+EGARCH starts with $\epsilon_0=0$):
+\begingroup\footnotesize
+\begin{verbatim}
+r  = 100*d.gm.values
+gm = {dist: vgarch_fit(r, "garchm", dist) for dist in ["norm", "ged", "t"]}   # (a)
+ge = {dist: vgarch_fit(r, "egarch", dist) for dist in ["norm", "ged", "t"]}   # (b)
+\end{verbatim}
+\endgroup
+
+\passo{(a) specification}{As in Question 10, $Q(10)=30.44$ ($p=0.0007$) on $r_t$, but the standardized
+residuals of a constant-mean model are white, so no AR term is needed. The model is}
+\begin{equation}\label{q313:m} r_t=\mu+c\,\sigma_t^2+a_t,\qquad a_t=\sigma_t\epsilon_t,\qquad \sigma_t^2=\alpha_0+\alpha_1a_{t-1}^2+\beta_1\sigma_{t-1}^2 . \end{equation}
+\passo{(a) innovation distribution}{Log-likelihoods of \eqref{q313:m}: normal $-5852.29$, GED $-5747.51$,
+Student-$t$ $-5726.07$. GED and $t$ have the same number of parameters, and $t$ is higher by $21.4$; both
+beat the normal by more than 100. We keep the Student-$t$.}
+\noindent\textit{Key output (Student-$t$):}
+\begingroup\footnotesize
+\begin{verbatim}
+mu 0.0293 (0.0525)  c -0.0118 (0.0078)  alpha0 0.0357 (0.0191)  alpha1 0.0671 (0.0115)
+beta1 0.9337 (0.0113)  nu 5.1114 (0.5062)   logL -5726.07
+std. resid: Q(10) = 12.75 (p 0.238), Q(20) = 26.75 (p 0.142)
+squared:    Q(10) = 1.91 (p 0.997),  Q(20) = 9.02 (p 0.983)
+\end{verbatim}
+\endgroup
+Substituting into \eqref{q313:m}:
+\begin{equation}\label{q313:mfit} r_t=0.0293-0.0118\,\sigma_t^2+a_t,\qquad \sigma_t^2=0.0357+0.0671\,a_{t-1}^2+0.9337\,\sigma_{t-1}^2,\qquad \epsilon_t\sim t^*_{5.11}, \end{equation}
+where $t^*_\nu$ is the standardized Student-$t$. The Ljung--Box tests on $\tilde a_t$ and $\tilde a_t^2$ do not
+reject, so \eqref{q313:mfit} is adequate. The risk premium is not significant:
+\begin{align*}
+t &= \frac{\hat c}{\text{s.e.}(\hat c)}\\
+&= \frac{-0.0118}{0.0078}\\
+&= -1.50 ,
+\end{align*}
+with $|t|<1.96$. The point estimate even has the ``wrong'' sign (more risk, lower mean): over 1999--2008, GM's
+most volatile days came with its collapse, so volatility in the mean does not act as a premium here.
+The estimate $\hat\nu=5.11$ is $(5.111-4)/0.506=2.20$ standard errors above 4, so the fourth moment of $\epsilon_t$
+is finite, but barely.
+
+\passo{(b) EGARCH(1,1)}{Same constant mean; Eq.~(3.28) with order (1,1):}
+\begin{equation}\label{q313:e} r_t=\mu+a_t,\qquad a_t=\sigma_t\epsilon_t,\qquad \ln\sigma_t^2=\alpha_0+\alpha_1\big(|\epsilon_{t-1}|+\gamma_1\epsilon_{t-1}\big)+\beta_1\ln\sigma_{t-1}^2 . \end{equation}
+Log-likelihoods: normal $-5840.33$, GED $-5740.93$, Student-$t$ $-5720.54$; the $t$ is again best, and each
+EGARCH beats the GARCH-M with the same innovation distribution and the same number of parameters.
+\noindent\textit{Key output (Student-$t$):}
+\begingroup\footnotesize
+\begin{verbatim}
+mu -0.0490 (0.0378)  alpha0 -0.0795 (0.0139)  alpha1 0.1177 (0.0201)  gamma1 -0.3389 (0.1062)
+beta1 0.9965 (0.0026)  nu 5.1797 (0.5165)   logL -5720.54
+std. resid: Q(10) = 12.03 (p 0.283), Q(20) = 26.72 (p 0.143)
+squared:    Q(10) = 1.89 (p 0.997),  Q(20) = 10.90 (p 0.949)
+\end{verbatim}
+\endgroup
+\begin{equation}\label{q313:efit} r_t=-0.0490+a_t,\qquad \ln\sigma_t^2=-0.0795+0.1177\big(|\epsilon_{t-1}|-0.3389\,\epsilon_{t-1}\big)+0.9965\ln\sigma_{t-1}^2,\qquad \epsilon_t\sim t^*_{5.18}. \end{equation}
+The residual checks pass, so \eqref{q313:efit} is adequate. The leverage test, $H_0\!:\gamma_1=0$ against
+$H_a\!:\gamma_1\neq0$, is
+\begin{align*}
+t &= \frac{\hat\gamma_1}{\text{s.e.}(\hat\gamma_1)}\\
+&= \frac{-0.3389}{0.1062}\\
+&= -3.19 ,
+\end{align*}
+so $|t|>1.96$: the leverage effect is significant at 5\% (with normal or GED innovations, $t=-5.33$ and $-3.79$).
+Its size: a negative shock adds $\hat\alpha_1(1-\hat\gamma_1)=0.1576$ per unit of $|\epsilon_{t-1}|$ to $\ln\sigma_t^2$,
+a positive one only $\hat\alpha_1(1+\hat\gamma_1)=0.0778$. For $\epsilon_{t-1}=\pm2$, with everything else equal,
+\begin{align*}
+\frac{\sigma_t^2(\epsilon_{t-1}=-2)}{\sigma_t^2(\epsilon_{t-1}=+2)} &= \exp\{\hat\alpha_1[2(1-\hat\gamma_1)-2(1+\hat\gamma_1)]\}=\exp(-4\hat\alpha_1\hat\gamma_1)\\
+&= \exp[-4(0.1177)(-0.3389)]\\
+&= 1.173 ,
+\end{align*}
+so a 2-s.d.\ fall raises tomorrow's variance about 17\% more than a 2-s.d.\ rise.
+\intuicao{The GARCH-M term asks whether the \emph{level} of risk is priced in the mean; for one stock's daily
+returns it is not (the mean is tiny next to the noise). EGARCH asks whether the \emph{sign} of the shock matters
+for risk; it does, as for most stocks: bad news raises volatility more than good news of the same size.
+EGARCH needs no positivity constraints because it models $\ln\sigma_t^2$, and $\hat\beta_1=0.9965$ shows the same
+near-unit persistence as the GARCH fits of Questions 10 and 16.}
+\refbib{Tsay (2010) \S3.7 (p.~142, GARCH-M, Eq.~(3.23)), \S3.8 (pp.~143--144, EGARCH, Eqs.~(3.24)--(3.28)), \S3.4.3 (p.~121, Student-$t$ innovations, Eq.~(3.7)).}
+\end{sol}
+
+% ---------------------------------------------------------------- Q18
+\questao{Tsay, Exercise 3.9 (GM monthly log returns: TGARCH model, leverage, volatility forecasts).}
+\fonte{Tsay (2010), \textit{Analysis of Financial Time Series}, 3rd ed., Chapter 3, Exercise 3.9, printed
+p.~170 [PDF p.~197]; answer not given in the book; reproduced verbatim.}
+
+\noindent\textbf{3.9.} Consider the monthly log returns of GM stock in \texttt{m-gmsp5008.txt}. Build an adequate
+TGARCH model for the series. Write down the fitted model and test for the significance of the leverage effect.
+Obtain 1-step- to 6-steps-ahead volatility forecasts.
+\begin{refmat}
+Data file \texttt{m-gmsp5008.txt} (FTS 3e data page, downloaded on 2026-11-13 from Tsay's current faculty page,
+\texttt{.../ruey-s-tsay/teaching/fts3/}; copy in \texttt{Listas/data/L08-m-gmsp5008.txt}), described in Exercise 3.8
+(printed p.~169 [PDF p.~196]) as the dates and monthly simple returns of General Motors stock and the S\&P 500
+index from 1950 to 2008: columns \texttt{date} (yyyymmdd), \texttt{gm}, \texttt{sp}; 708 months, 1950:01 to 2008:12.
+TGARCH($m,s$) (Tsay \S3.9, printed p.~149 [PDF p.~176], Eq.~(3.34)):
+$\sigma_t^2=\alpha_0+\sum_{i=1}^{s}(\alpha_i+\gamma_iN_{t-i})a_{t-i}^2+\sum_{j=1}^{m}\beta_j\sigma_{t-j}^2$, with $N_{t-i}=1$ if
+$a_{t-i}<0$ and $0$ otherwise, and $\alpha_i,\gamma_i,\beta_j\ge0$; a negative shock has impact $(\alpha_i+\gamma_i)a_{t-i}^2$,
+so $\gamma_i>0$ is the leverage effect (also called the GJR model).
+\end{refmat}
+\resolespaco
+\begin{sol}
+\begin{notacao}
+\item $r_t=100\ln(1+R_t)$: GM monthly log return in percent, $T=708$ (1950:01--2008:12); last month $T$ = 2008:12.
+\item $a_t=r_t-\mu$; $\sigma_t^2$: conditional variance; $N_{t-1}=1$ if $a_{t-1}<0$; $(\alpha_0,\alpha_1,\gamma_1,\beta_1)$: TGARCH(1,1) coefficients; $\nu$: Student-$t$ degrees of freedom.
+\item $\sigma_T^2(\ell)$: $\ell$-step variance forecast at origin $T$; volatility $=\sigma_T(\ell)$.
+\end{notacao}
+\noindent\textit{Code:}
+\begingroup\footnotesize
+\begin{verbatim}
+d  = pd.read_csv("Listas/data/L08-m-gmsp5008.txt", sep=r"\s+")
+r  = 100*np.log1p(d.gm.values)
+tg = vgarch_fit(r, "tgarch", "t");  g0 = vgarch_fit(r, "garch", "t")   # gamma1 free / gamma1 = 0
+\end{verbatim}
+\endgroup
+\noindent\textit{Data:} mean $0.411$, s.d.\ $8.104$; $r_T=-49.32$ (December 2008).
+
+\passo{identification}{$Q(12)=23.06$ ($p=0.027$) and $Q(24)=32.35$ ($p=0.119$) on $r_t$: weak serial
+correlation, which disappears in the standardized residuals below, so the mean is a constant. $Q(12)=290.6$ on
+$(r_t-\bar r)^2$: strong ARCH effects. With normal innovations the TGARCH(1,1) has $\ell=-2386.84$ and
+standardized residuals with kurtosis $4.08$; Student-$t$ innovations raise $\ell$ to $-2379.03$,
+$LR=15.61>\chi^2_{1,0.95}=3.84$, so we use them. The model is}
+\begin{equation}\label{q39:m} r_t=\mu+a_t,\qquad a_t=\sigma_t\epsilon_t,\qquad \sigma_t^2=\alpha_0+(\alpha_1+\gamma_1N_{t-1})a_{t-1}^2+\beta_1\sigma_{t-1}^2,\qquad \epsilon_t\sim t^*_\nu . \end{equation}
+\noindent\textit{Key output:}
+\begingroup\footnotesize
+\begin{verbatim}
+mu 0.7425 (0.2401)  alpha0 1.6798 (0.8912)  alpha1 0.0477 (0.0278)  gamma1 0.1030 (0.0471)
+beta1 0.8786 (0.0345)  nu 9.5764 (2.9478)   logL -2379.03
+std. resid: Q(12) = 15.43 (p 0.219), Q(24) = 26.10 (p 0.348)
+squared:    Q(12) = 11.47 (p 0.489), Q(24) = 20.86 (p 0.647)
+\end{verbatim}
+\endgroup
+\passo{fitted model}{Substituting into \eqref{q39:m}:}
+\begin{equation}\label{q39:fit} r_t=0.7425+a_t,\qquad \sigma_t^2=1.6798+(0.0477+0.1030\,N_{t-1})\,a_{t-1}^2+0.8786\,\sigma_{t-1}^2,\qquad \epsilon_t\sim t^*_{9.58}. \end{equation}
+The Ljung--Box tests on $\tilde a_t$ and $\tilde a_t^2$ do not reject, so \eqref{q39:fit} is adequate.
+\passo{leverage test}{$H_0\!:\gamma_1=0$ against $H_a\!:\gamma_1>0$. The Wald statistic is}
+\begin{align*}
+t &= \frac{\hat\gamma_1}{\text{s.e.}(\hat\gamma_1)}\\
+&= \frac{0.1030}{0.0471}\\
+&= 2.19 > 1.96 .
+\end{align*}
+The likelihood ratio against the symmetric GARCH(1,1)-$t$ ($\gamma_1=0$, $\ell=-2381.93$) is
+\begin{align*}
+LR &= 2\,[\ell(\text{TGARCH})-\ell(\text{GARCH})]\\
+&= 2\,[-2379.03-(-2381.93)]\\
+&= 5.80>3.84 .
+\end{align*}
+Both reject at 5\%: the leverage effect is significant. A negative shock enters with weight
+$0.0477+0.1030=0.1507$, three times the $0.0477$ of a positive shock.
+
+\passo{forecast recursion}{Since $\epsilon_t$ is symmetric, $E(N_{t}a_{t}^2\mid F_{t-1})=\tfrac12\sigma_t^2$, so for $\ell\ge2$}
+\begin{equation}\label{q39:rec} \sigma_T^2(\ell)=\alpha_0+\big(\alpha_1+\tfrac12\gamma_1+\beta_1\big)\,\sigma_T^2(\ell-1),\qquad \alpha_1+\tfrac12\gamma_1+\beta_1=0.9779 , \end{equation}
+and the long-run variance is $\alpha_0/(1-0.9779)=75.85$ (s.d.\ $8.71\%$, near the sample $8.10\%$).
+\passo{1-step forecast}{At $T$ (2008:12), $a_T=-50.059594<0$, so $N_T=1$, and $\sigma_T^2=670.470718$. With six
+decimals, $\alpha_0=1.679824$, $\alpha_1=0.047740$, $\gamma_1=0.102980$, $\beta_1=0.878623$:}
+\begin{align}
+\sigma_T^2(1) &= \alpha_0+(\alpha_1+\gamma_1)a_T^2+\beta_1\sigma_T^2 \label{q39:f1}\\
+&= 1.679824+0.150720\,(50.059594)^2+0.878623\,(670.470718) \notag\\
+&= 1.679824+377.6987+589.0910 \notag\\
+&= 968.47 . \notag
+\end{align}
+\passo{multi-step forecasts}{From \eqref{q39:rec} (computed from the unrounded estimates):}
+\begin{center}\small
+\begin{tabular}{lcccccc}
+\toprule
+Step $\ell$ & 1 & 2 & 3 & 4 & 5 & 6\\
+\midrule
+Variance $\sigma_T^2(\ell)$ & 968.47 & 948.70 & 929.37 & 910.47 & 891.99 & 873.91\\
+Volatility $\sigma_T(\ell)$ (\%) & 31.12 & 30.80 & 30.49 & 30.17 & 29.87 & 29.56\\
+\bottomrule
+\end{tabular}
+\end{center}
+\intuicao{December 2008 was GM's worst month ($-49\%$) and a negative shock, so the leverage term triples its
+weight: the 1-step volatility forecast is $31\%$ a month, more than three times the long-run $8.7\%$. With
+persistence $0.978$ the forecast decays by about $2\%$ of the gap per month, so six months later it is still near $30\%$.}
+\refbib{Tsay (2010) \S3.9 (pp.~149--150, TGARCH, Eq.~(3.34)), \S3.5 (pp.~132--133, GARCH forecasts), \S3.4.3 (p.~121, Student-$t$ innovations).}
+\end{sol}
+
+% ---------------------------------------------------------------- Q19
+\questao{Original: Student-$t$ stochastic volatility, scale mixtures and a Gibbs sampler on simulated data.}
+\origem{original exercise on Student-$t$ stochastic volatility, built on the class site page
+\texttt{sp500-gaussian-}\allowbreak\texttt{student-SV-models.html} (in \texttt{Aula/class-08/materials/}), sections 3--4 (Gaussian versus Student-$t$, i.i.d.\ Student-$t$ model)
+and 5--5.2 (SV model, the SV/SVt/SVl/SVtl family of \texttt{stochvol}, default priors); sampler of Question 15.
+No book exercise on Student-$t$ SV was found in Tsay (2010) Ch.~12 or in the other books on disk (Prado,
+Ferreira and West 2021, Ch.~7 problems; Koop, Poirier and Tobias 2007, Ch.~15, where the scale mixture appears
+only for regression errors; both are outside the course bibliography). Not from a book.}
+
+\noindent Consider the Student-$t$ SV model (SVt of the class page)
+\[ y_t=e^{h_t/2}\varepsilon_t,\qquad \varepsilon_t\overset{iid}{\sim}t_\nu,\qquad h_t=\mu+\phi(h_{t-1}-\mu)+\sigma\eta_t,\qquad \eta_t\overset{iid}{\sim}N(0,1), \]
+with $\varepsilon_t$ and $\eta_s$ independent, $|\phi|<1$, and $t_\nu$ the Student-$t$ with location 0 and scale 1.
+\begin{enumerate}[label=(\alph*)]
+\item Show that if $z_t\sim N(0,1)$ and $\lambda_t\sim IG(\nu/2,\nu/2)$ are independent, then $\sqrt{\lambda_t}\,z_t\sim t_\nu$.
+Use it to write the SVt model with an extra latent variable $\lambda_t$, and give $\operatorname{Var}(\varepsilon_t)$ and the kurtosis of $\varepsilon_t$.
+\item Show that the kurtosis of $y_t$ is $3\exp(\sigma_h^2)\,\frac{\nu-2}{\nu-4}$ for $\nu>4$, with
+$\sigma_h^2=\sigma^2/(1-\phi^2)$. Explain how a Gaussian SV model fitted to Student-$t$ data must use $(\phi,\sigma)$ to produce
+the large returns, and what you expect it to get wrong.
+\item Derive the full conditionals of $\lambda_t$ and of $\nu$, and explain why, given $\lambda_{1:T}$, the $h_{1:T}$ step
+of the Gaussian SV sampler of Question 15 can be reused unchanged.
+\item Simulate $T=2000$ observations with $\mu=0$, $\phi=0.97$, $\sigma=0.15$, $\nu=5$ (NumPy seed 808). Fit the
+Gaussian SV model and the SVt model by Gibbs sampling (2,000 burn-in, 10,000 kept sweeps, seed 2022), with priors
+$(\mu(1-\phi),\phi)'\sim N[(0,0.9)',\operatorname{diag}(1,0.25)]$ truncated to $|\phi|<1$, $\sigma^2\sim IG(2.5,0.025)$,
+$h_1\sim N(\ln s_y^2,10)$ and, for SVt, $\nu\sim\text{Exp}(0.1)$ (the \texttt{stochvol} default) on the grid
+$\{2.10,2.15,\dots,60\}$. Compare the posteriors of $(\mu,\phi,\sigma,\nu)$ with the true values, the errors of the
+estimated log-volatility paths, and what each model does with the largest standardized shock.
+\end{enumerate}
+\begin{refmat}
+Class page, \S4: for the S\&P 500 daily log returns of May 2017 to May 2022, an i.i.d.\ Student-$t$
+fitted by a grid search has $\hat\nu=2$ and scale $0.0059$, against $\hat\sigma=0.0127$ for the i.i.d.\ Gaussian.
+\S5: $y_t=e^{h_t/2}\varepsilon_t$, $h_{t+1}=\mu+\phi(h_t-\mu)+\sigma u_t$, $\operatorname{cor}(\varepsilon_t,u_t)=\rho$;
+\S5.1: SV has $\varepsilon_t\sim N(0,1)$ and $\rho=0$; SVt has $\varepsilon_t\sim t_\nu(0,1)$, $\rho=0$, $\nu$ unknown
+(fitted there with R's \texttt{stochvol::svtsample}); \S5.2: \texttt{stochvol} priors $\mu\sim N(0,100^2)$,
+$(\phi+1)/2\sim\text{Beta}(5,1.5)$, $\sigma^2\sim\text{Gamma}(1/2,1/2)$, $\nu\sim\text{Exp}(0.1)$. Question 15 (Tsay 12.4):
+the Gaussian SV Gibbs sampler, whose $h$ step uses the Kim--Shephard--Chib mixture for $\ln\epsilon_t^2$ and a
+banded Cholesky draw of the whole path. $IG(a,b)$ has density $\propto x^{-a-1}e^{-b/x}$, mean $b/(a-1)$.
+\end{refmat}
+\resolespaco
+\begin{sol}
+\begin{notacao}
+\item $y_t$: return (zero mean); $h_t$: log variance; $\mu,\phi,\sigma$: mean, persistence and volatility of $h_t$; $\sigma_h^2=\sigma^2/(1-\phi^2)$: variance of $h_t$.
+\item $\lambda_t$: latent scale (mixing) variable; $z_t\sim N(0,1)$; $\nu$: degrees of freedom; $\kappa(x)=E(x^4)/[E(x^2)]^2$: kurtosis.
+\item $S_1=\sum_t\ln\lambda_t$, $S_2=\sum_t\lambda_t^{-1}$; $\hat h_t$: posterior mean of $h_t$.
+\end{notacao}
+
+\passo{(a) scale mixture}{Given $\lambda$, $x=\sqrt\lambda z\sim N(0,\lambda)$. Integrating $\lambda$ out against the
+$IG(\nu/2,\nu/2)$ density,}
+\begin{align*}
+f(x) &= \int_0^\infty \frac{1}{\sqrt{2\pi\lambda}}e^{-x^2/(2\lambda)}\;\frac{(\nu/2)^{\nu/2}}{\Gamma(\nu/2)}\lambda^{-\nu/2-1}e^{-\nu/(2\lambda)}\,d\lambda\\
+&= \frac{(\nu/2)^{\nu/2}}{\sqrt{2\pi}\,\Gamma(\nu/2)}\int_0^\infty \lambda^{-(\nu+1)/2-1}\exp\!\Big\{-\frac{\nu+x^2}{2\lambda}\Big\}\,d\lambda\\
+&= \frac{(\nu/2)^{\nu/2}}{\sqrt{2\pi}\,\Gamma(\nu/2)}\cdot\frac{\Gamma\big(\frac{\nu+1}{2}\big)}{\big(\frac{\nu+x^2}{2}\big)^{(\nu+1)/2}}\\
+&= \frac{\Gamma\big(\frac{\nu+1}{2}\big)}{\Gamma\big(\frac{\nu}{2}\big)\sqrt{\nu\pi}}\Big(1+\frac{x^2}{\nu}\Big)^{-(\nu+1)/2},
+\end{align*}
+the $t_\nu$ density (the third line is the $IG$ integral $\int\lambda^{-a-1}e^{-b/\lambda}d\lambda=\Gamma(a)/b^a$). The
+check script confirms it by Monte Carlo (quantiles of $\sqrt{5/\chi^2_5}\,z$ against the exact $t_5$ quantiles).
+So the SVt model is a Gaussian SV model with one more latent layer:
+\begin{equation}\label{svt:mix} y_t=e^{h_t/2}\sqrt{\lambda_t}\,z_t,\qquad \lambda_t\overset{iid}{\sim}IG(\nu/2,\nu/2),\qquad h_t=\mu+\phi(h_{t-1}-\mu)+\sigma\eta_t . \end{equation}
+Moments: $E(\lambda)=\frac{\nu}{\nu-2}$ and $E(\lambda^2)=\frac{\nu^2}{(\nu-2)(\nu-4)}$, so
+$\operatorname{Var}(\varepsilon_t)=E(\lambda)E(z^2)=\frac{\nu}{\nu-2}$ ($\nu>2$) and
+\[ \kappa(\varepsilon_t)=\frac{3E(\lambda^2)}{[E(\lambda)]^2}=3\,\frac{\nu-2}{\nu-4}\qquad(\nu>4). \]
+
+\passo{(b) kurtosis of $y_t$}{By independence of $h_t$ and $\varepsilon_t$, and since $h_t\sim N(\mu,\sigma_h^2)$
+gives $E(e^{kh_t})=e^{k\mu+k^2\sigma_h^2/2}$,}
+\begin{align*}
+\kappa(y_t) &= \frac{E(e^{2h_t})\,E(\varepsilon_t^4)}{[E(e^{h_t})]^2\,[E(\varepsilon_t^2)]^2}\\
+&= \frac{e^{2\mu+2\sigma_h^2}}{e^{2\mu+\sigma_h^2}}\cdot\kappa(\varepsilon_t)\\
+&= 3\exp(\sigma_h^2)\,\frac{\nu-2}{\nu-4}.
+\end{align*}
+The two sources of fat tails multiply: $\exp(\sigma_h^2)$ comes from the persistent volatility process, and
+$(\nu-2)/(\nu-4)$ from transitory one-day shocks. A Gaussian SV model has only the first. To produce an isolated
+huge return it must make $h_t$ jump for that day and fall back at once, which requires a large $\sigma$
+(volatility of volatility) and a smaller $\phi$ (fast decay). So we expect Gaussian SV to overstate $\sigma$,
+understate $\phi$, and give noisier, spikier volatility paths.
+
+\passo{(c) full conditionals}{From \eqref{svt:mix}, $\lambda_t$ enters only through $y_t$ and its prior:}
+\begin{align*}
+p(\lambda_t\mid y_t,h_t,\nu) &\propto \lambda_t^{-1/2}\exp\!\Big\{-\frac{y_t^2e^{-h_t}}{2\lambda_t}\Big\}\cdot\lambda_t^{-\nu/2-1}\exp\!\Big\{-\frac{\nu}{2\lambda_t}\Big\}\\
+&= \lambda_t^{-(\nu+1)/2-1}\exp\!\Big\{-\frac{\nu+y_t^2e^{-h_t}}{2\lambda_t}\Big\},
+\end{align*}
+so $\lambda_t\mid\cdot\sim IG\big(\tfrac{\nu+1}{2},\ \tfrac{\nu+y_t^2e^{-h_t}}{2}\big)$, independently over $t$: a large
+standardized return $y_t^2e^{-h_t}$ makes $\lambda_t$ large. For $\nu$, only the prior and the $\lambda$'s matter:
+\[ p(\nu\mid\lambda_{1:T})\propto e^{-0.1\nu}\prod_{t=1}^T\frac{(\nu/2)^{\nu/2}}{\Gamma(\nu/2)}\lambda_t^{-\nu/2-1}e^{-\nu/(2\lambda_t)}
+\ \Rightarrow\ \ln p=T\Big[\tfrac{\nu}{2}\ln\tfrac{\nu}{2}-\ln\Gamma\big(\tfrac{\nu}{2}\big)\Big]-\Big(\tfrac{\nu}{2}+1\Big)S_1-\tfrac{\nu}{2}S_2-0.1\nu+\text{const}, \]
+which is not a standard density, so it is evaluated on the grid and sampled by griddy Gibbs (Tsay \S12.4.3, printed p.~623 [PDF p.~650]).
+Given $\lambda_{1:T}$, $y_t^\dagger=y_t/\sqrt{\lambda_t}=e^{h_t/2}z_t$ follows exactly the Gaussian SV model, so
+$\ln y_t^{\dagger2}=h_t+\ln z_t^2$ is the linear state-space model of Question 15: the KSC mixture indicators,
+the banded-Cholesky draw of $h_{1:T}$, and the conjugate draws of $(\mu(1-\phi),\phi)$ and $\sigma^2$ are
+unchanged, with $y_t^2$ replaced by $y_t^2/\lambda_t$. One SVt sweep is: indicators, $h_{1:T}$,
+$(\mu(1-\phi),\phi)$, $\sigma^2$, $\lambda_{1:T}$, $\nu$. Gaussian SV is the same sampler with $\lambda_t\equiv1$.
+\noindent\textit{Code} (\texttt{svt\_gibbs} in the check script; a new function because \texttt{sv\_gibbs} of
+Question 15 has a mean $\mu$ for the returns, Tsay's priors and no $\lambda$, $\nu$ steps):
+\begingroup\footnotesize
+\begin{verbatim}
+lam = (nu + y**2*np.exp(-h))/2 / rng.gamma((nu+1)/2, size=T)       # lambda_t | . ~ IG
+g   = NU_GRID/2; S1, S2 = np.log(lam).sum(), (1/lam).sum()
+lk  = T*(g*np.log(g) - gammaln(g)) - (g+1)*S1 - g*S2 - 0.1*NU_GRID  # log p(nu | lambda)
+\end{verbatim}
+\endgroup
+
+\passo{(d) simulated data}{The true $\sigma_h^2=0.15^2/(1-0.97^2)=0.3807$ and $\kappa(\varepsilon_t)=3(3)/1=9$, so}
+\begin{align*}
+\kappa(y_t) &= 3\exp(\sigma_h^2)\,\frac{\nu-2}{\nu-4}\\
+&= 3\exp(0.3807)\,\frac{3}{1}\\
+&= 13.17 .
+\end{align*}
+The sample kurtosis is $33.83$: with $\nu=5$ the eighth moment of $y_t$ is infinite, so the sample kurtosis
+is very noisy and only shows that the tails are heavy.
+
+\passo{(d) posteriors}{(true values in the first column)}
+\begin{center}\small
+\begin{tabular}{lc cccc cccc}
+\toprule
+ & & \multicolumn{4}{c}{Gaussian SV} & \multicolumn{4}{c}{Student-$t$ SV}\\
+\cmidrule(lr){3-6}\cmidrule(lr){7-10}
+ & True & Mean & s.d. & 2.5\% & 97.5\% & Mean & s.d. & 2.5\% & 97.5\%\\
+\midrule
+$\mu$ & 0 & 0.419 & 0.093 & 0.239 & 0.607 & 0.166 & 0.144 & $-0.116$ & 0.451\\
+$\phi$ & 0.97 & 0.904 & 0.031 & 0.829 & 0.953 & 0.972 & 0.010 & 0.948 & 0.988\\
+$\sigma$ & 0.15 & 0.341 & 0.060 & 0.232 & 0.474 & 0.147 & 0.028 & 0.100 & 0.210\\
+$\nu$ & 5 & --- & --- & --- & --- & 6.207 & 1.048 & 4.650 & 8.500\\
+\bottomrule
+\end{tabular}
+\end{center}
+\begin{itemize}[leftmargin=1.4em]
+\item \textit{Gaussian SV} behaves as predicted in (b): $\sigma$ is more than twice its true value and the true
+$\phi=0.97$ lies outside its 95\% interval. The half-life of a volatility shock, $\ln0.5/\ln\phi$, is 6.9 days
+instead of the true 22.8. $\mu$ is biased up ($0.42$, interval excludes 0), because the outliers raise the average log variance.
+\item \textit{Student-$t$ SV} recovers all three volatility parameters (true values inside the intervals,
+half-life 24.4 days), and the posterior of $\nu$ (mean 6.2) covers the true 5 and stays far from the Gaussian limit:
+$\Pr(\nu<10\mid y)=0.992$.
+\item \textit{Volatility paths.} The root-mean-square error of $\hat h_t$ against the true $h_t$ is
+$0.549$ for Gaussian SV and $0.345$ for SVt.
+\item \textit{The largest standardized shock} ($t=1925$, $y_t=23.41$, true $e^{h_t/2}=2.29$, true $\lambda_t=10.44$):
+Gaussian SV puts $\hat h_t=3.43$ (true $1.66$), a volatility spike. SVt keeps $\hat h_t=1.40$ and explains the day
+through $E(\lambda_t\mid y)=30.61$: it reads the return as a one-day tail event, not a change of regime.
+\end{itemize}
+\passo{(d) implied kurtosis}{Plugging the posterior means into (b): Gaussian SV has
+$\sigma_h^2=0.341^2/(1-0.904^2)=0.636$ and $\kappa=3e^{0.636}=5.67$; SVt has $\sigma_h^2=0.147^2/(1-0.972^2)=0.391$
+and $\kappa=3e^{0.391}(6.207-2)/(6.207-4)=8.45$. Even with a doubled $\sigma$, Gaussian SV cannot reach the
+tail thickness of the data; most of it has to come from $\nu$.}
+\intuicao{Heavy tails and stochastic volatility are two ways to make returns fat-tailed, one transitory and
+one persistent. If the model has only the persistent channel, every outlier is read as a volatility shock, so
+the volatility looks more erratic and less persistent than it is, and the volatility forecasts after an
+outlier are too high. The latent $\lambda_t$ gives each day its own scale, and the data decide through $\nu$ how
+much of the tail mass is transitory.}
+\refbib{Class page \texttt{sp500-gaussian-student-SV-models.html} (H.~F.~Lopes, 2022), \S\S3--5.2; Tsay (2010)
+\S12.4.3 (p.~623, griddy Gibbs), \S12.7.1 (pp.~637--643, univariate SV); Kim, Shephard and Chib (1998);
+Kastner (2016), \textit{Journal of Statistical Software} 69(5) (\texttt{stochvol}, cited on the class page).}
 \end{sol}
 
 \end{document}

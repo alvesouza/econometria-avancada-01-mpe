@@ -5,7 +5,8 @@ prints VAR / VMA / cointegration / factor-model / multivariate-volatility estima
 This script recomputes each one from the raw data in Listas/data/ and aborts on the
 first mismatch (AssertionError naming the quantity). Questions 13-16 are original exercises
 (large BVAR, FAVAR, TVP-AR Kalman filter, factor SV) on simulated data with fixed seeds
-2026-2029: o_bvar, o_favar, o_tvp, o_fsv.
+2026-2029: o_bvar, o_favar, o_tvp, o_fsv. Block 6: o_svar (Q17, original non-recursive SVAR, seed 2030),
+h115 (Q18 = Hamilton 11.5, FEVD), k164 (Q19 = Koop-Poirier-Tobias 16.4, SSVS, seeds 2031-2034).
 
 Usage:  python Listas/L09-book-exercises-check.py            # recompute + assert
         python Listas/L09-book-exercises-check.py --print    # also print every value
@@ -979,9 +980,182 @@ def o_fsv():
     chk("Q16d sample corr y1,y2 [low H, high H, all]", cc, [0.299, 0.831, 0.71], 3)
 
 
+def a0_rank(pat, A0):
+    """Rank of d vech(A0'A0) / d theta' at A0, theta = the free (pattern True) elements of A0 (rank condition)."""
+    th0, k = A0[pat], pat.sum()
+    J = np.empty((pat.shape[0] * (pat.shape[0] + 1) // 2, k))
+    for i in range(k):
+        cols = []
+        for s in (1.0, -1.0):
+            th = th0.copy()
+            th[i] += s * 1e-6
+            A = np.zeros(pat.shape)
+            A[pat] = th
+            cols.append(vech(A.T @ A))
+        J[:, i] = (cols[0] - cols[1]) / 2e-6
+    return np.linalg.matrix_rank(J, tol=1e-6)
+
+
+def vech(M):
+    return M[np.tril_indices(M.shape[0])]
+
+
+def a0_p1(S):
+    """Q17: A0 (rows MP, PS, Inf; columns dlogPc, dlogY, R) from Sigma under the non-recursive zero pattern,
+    own-variable elements positive. PS row = e2'/sd(e_Y); MP row orthogonal to e_Y; Inf row orthogonal to both."""
+    d = 1 / np.sqrt(S[1, 1])
+    r = np.array([-S[2, 1], 0.0, S[0, 1]])
+    r = r / np.sqrt(r @ S @ r) * np.sign(S[0, 1])
+    g = np.linalg.svd(np.vstack([S @ r, S[:, 1]]))[2][-1]
+    g = g / np.sqrt(g @ S @ g)
+    return np.vstack([r, [0.0, d, 0.0], g * np.sign(g[0])])
+
+
+def o_svar():
+    """Q17: non-recursive SVAR: order condition counts, Jacobian rank condition, two observationally equivalent
+    A0 under a cyclic pattern, and A0 / structural IRFs recovered from a simulated SVAR(1) (seed 2030)."""
+    chk("Q17a q(q-1)/2 for q = 3, 5, 6", [q * (q - 1) // 2 for q in (3, 5, 6)], [3, 10, 15], 0)
+    il1 = np.array([[1, 1, 0, 1, 1], [0, 1, 0, 1, 1], [0, 0, 1, 1, 1], [0, 0, 1, 1, 1], [0, 0, 0, 0, 1]])
+    il2 = np.array([[1, 1, 1, 1, 1, 1], [0, 1, 1, 0, 0, 0], [0, 1, 1, 1, 1, 0], [0, 0, 0, 1, 0, 0],
+                    [0, 0, 0, 1, 1, 0], [0, 0, 0, 1, 1, 1]])
+    chk("Q17b zeros [slide p32, Illustration 1, Illustration 2]", [2, (il1 == 0).sum(), (il2 == 0).sum()], [2, 11, 18], 0)
+    P1 = np.array([[1, 0, 1], [0, 1, 0], [1, 1, 1]], bool)
+    P2 = np.array([[1, 1, 0], [0, 1, 1], [1, 0, 1]], bool)
+    P3 = np.array([[1, 1, 0], [1, 1, 0], [0, 1, 1]], bool)
+    A0 = np.array([[-0.5, 0.0, 2.0], [0.0, 1.5, 0.0], [1.2, -0.6, 0.8]])
+    A0c = np.array([[1.0, 0.5, 0.0], [0.0, 1.0, 0.5], [0.5, 0.0, 1.0]])
+    A0d = np.array([[1.0, 0.5, 0.0], [0.6, 1.0, 0.0], [0.0, 0.4, 1.0]])
+    chk("Q17c Jacobian rank [P1, P2 cyclic, P3]", [a0_rank(P1, A0), a0_rank(P2, A0c), a0_rank(P3, A0d)], [6, 6, 5], 0)
+    A0c2 = np.array([[0.5, 1.0, 0.0], [0.0, 0.5, 1.0], [1.0, 0.0, 0.5]])
+    chk("Q17c cyclic: A0'A0 equal for both solutions", np.abs(A0c.T @ A0c - A0c2.T @ A0c2).max(), 0, 10)
+    chk("Q17c cyclic: A0'A0", vech(A0c.T @ A0c), [1.25, 0.5, 1.25, 0.5, 0.5, 1.25], 2)
+    sols = []
+    for k in range(40):   # every solution of vech(A0'A0) = vech(Sigma^-1) under P2, own elements > 0
+        x0 = np.random.default_rng(k).normal(size=6) * 1.5
+        r = optimize.least_squares(lambda th: vech(_fill(P2, th).T @ _fill(P2, th) - A0c.T @ A0c), x0,
+                                   xtol=1e-14, ftol=1e-14, gtol=1e-14)
+        if r.cost < 1e-20:
+            A = _fill(P2, r.x)
+            A = A * np.sign(np.diag(A))[:, None]
+            if not any(np.allclose(A, s, atol=1e-6) for s in sols):
+                sols.append(A)
+    sols.sort(key=lambda A: -A[0, 0])
+    chk("Q17c cyclic: number of solutions with positive diagonal", len(sols), 2, 0)
+    chk("Q17c cyclic: second solution", sols[1], A0c2, 6)
+    chk("Q17c P1 closed form at the true Sigma", a0_p1(np.linalg.inv(A0.T @ A0)), A0, 10)
+    B1 = np.array([[0.5, 0.1, 0.0], [0.1, 0.6, -0.1], [0.2, 0.1, 0.7]])
+    iA0 = np.linalg.inv(A0)
+    chk("Q17d Sigma (true)", vech(iA0 @ iA0.T), [0.673, 0.190, 0.444, 0.026, 0.048, 0.221], 3)
+    rng = np.random.default_rng(2030)
+    T, burn = 500, 100
+    u = rng.normal(size=(T + burn, 3))
+    y = np.zeros((T + burn, 3))
+    for t in range(1, T + burn):
+        y[t] = B1 @ y[t - 1] + iA0 @ u[t]
+    y = y[burn:]
+    res = VAR(y).fit(1, trend="c")
+    U = res.resid
+    S = U.T @ U / len(U)
+    Bh = res.coefs[0]
+    chk("Q17d B1 hat", Bh, [[0.455, 0.125, 0.035], [0.111, 0.688, -0.061], [0.224, 0.082, 0.702]], 3)
+    chk("Q17d Sigma hat (ML)", vech(S), [0.667, 0.200, 0.480, 0.030, 0.047, 0.220], 3)
+    A0h = a0_p1(S)
+    chk("Q17d A0 hat", A0h, [[-0.480, 0, 2.030], [0, 1.443, 0], [1.218, -0.581, 0.732]], 3)
+    chk("Q17d A0hat'A0hat = Sigma hat^-1", np.abs(A0h.T @ A0h - np.linalg.inv(S)).max(), 0, 10)
+    iA0h = np.linalg.inv(A0h)
+    irf = [[np.linalg.matrix_power(M, s) @ iA[:, 0] for s in (0, 1, 4)] for M, iA in ((B1, iA0), (Bh, iA0h))]
+    chk("Q17d MP-shock IRF true, s = 0, 1, 4", irf[0],
+        [[-0.286, 0, 0.429], [-0.143, -0.071, 0.243], [-0.031, -0.054, 0.033]], 3)
+    chk("Q17d MP-shock IRF estimated, s = 0, 1, 4", irf[1],
+        [[-0.259, 0, 0.431], [-0.103, -0.055, 0.245], [-0.015, -0.048, 0.050]], 3)
+
+
+def _fill(pat, th):
+    A = np.zeros(pat.shape)
+    A[pat] = th
+    return A
+
+
+def h115():
+    """Q18 = Hamilton 11.5: bivariate VAR(1), stationarity, Psi_s, two-step FEVD of variable 1 (and its limit)."""
+    Phi, om = np.array([[0.3, 0.8], [0.9, 0.4]]), np.array([1.0, 2.0])
+    chk("Q18a eigenvalues of Phi", np.sort(np.linalg.eigvals(Phi).real), [-0.5, 1.2], 6)
+    chk("Q18b Psi_2", Phi @ Phi, [[0.81, 0.56], [0.63, 0.88]], 6)
+
+    def fe(h):   # contributions [variable, shock] to the h-step MSE; Omega diagonal, so no orthogonalization
+        return sum(np.linalg.matrix_power(Phi, s) ** 2 * om for s in range(h))
+
+    c = fe(2)
+    chk("Q18c h=2 contributions to MSE of y1 [eps1, eps2], MSE", [c[0, 0], c[0, 1], c[0].sum()], [1.09, 1.28, 2.37], 6)
+    chk("Q18c h=2 share of eps1 in y1, y2", c[:, 0] / c.sum(1), [0.460, 0.259], 3)
+    chk("Q18c MSE of y2 at h=2", c[1].sum(), 3.13, 6)
+    chk("Q18c share of eps1 in y1 at h = 10, 50", [fe(h)[0, 0] / fe(h)[0].sum() for h in (10, 50)], [0.341, 0.333], 3)
+
+
+def k164():
+    """Q19 = Koop-Poirier-Tobias 16.4: SSVS Gibbs sampler on generated data (seed 2031): the book's
+    hyperparameters from two starting points, the slides' semi-automatic prior, and exact inclusion
+    probabilities by enumerating the 32 models with sigma^2 fixed at its OLS value."""
+    R = np.array([[1, .4, .4, 0, .6], [.4, 1, .7, 0, .3], [.4, .7, 1, 0, .3], [0, 0, 0, 1, 0], [.6, .3, .3, 0, 1]])
+    rng = np.random.default_rng(2031)
+    N, K = 1000, 5
+    x = rng.multivariate_normal(np.zeros(K), R, size=N)
+    y = 2 + .25 * x[:, 0] - .4 * x[:, 1] + .6 * x[:, 2] + .2 * rng.normal(size=N)
+    X = np.column_stack([np.ones(N), x])
+    XtX, Xty, yty = X.T @ X, X.T @ y, y @ y
+    bols = np.linalg.solve(XtX, Xty)
+    s2 = (yty - bols @ Xty) / (N - K - 1)
+    se_ = np.sqrt(s2 * np.diag(np.linalg.inv(XtX)))
+    chk("Q19b OLS", bols, [1.995, 0.255, -0.392, 0.598, 0.006, 0.012], 3)
+    chk("Q19b OLS s.e. of slopes, s", list(se_[1:]) + [np.sqrt(s2)], [0.008, 0.009, 0.009, 0.006, 0.008, 0.191], 3)
+    V0, a, b, p = 100.0, 3.0, 1.0, 0.5
+
+    def gibbs(t0, t1, g, seed, n=10000, burn=200):
+        rg, s2_, g = np.random.default_rng(seed), s2, np.array(g)
+        kb, kg = np.zeros(K + 1), np.zeros(K)
+        for it in range(n):
+            D = np.linalg.inv(XtX / s2_ + np.diag(1 / np.concatenate([[V0], np.where(g == 1, t1, t0)])))
+            beta = D @ Xty / s2_ + np.linalg.cholesky(D) @ rg.normal(size=K + 1)          # (Q19.1)
+            ssr = yty - 2 * beta @ Xty + beta @ XtX @ beta
+            s2_ = 1 / rg.gamma(N / 2 + a, 1 / (1 / b + 0.5 * ssr))                          # (Q19.2)
+            l10 = (np.log(p / (1 - p)) - 0.5 * np.log(t1 / t0) - 0.5 * beta[1:] ** 2 * (1 / t1 - 1 / t0))
+            g = (rg.uniform(size=K) < 1 / (1 + np.exp(-l10))).astype(int)                  # (Q19.3)
+            if it >= burn:
+                kb += beta
+                kg += g
+        return kb / (n - burn), kg / (n - burn)
+
+    def exact(t0, t1):   # P(gamma_j = 1 | y, sigma^2 = s2), all 2^5 models, y ~ N(0, s2 I + X V X')
+        lp, inc = [], []
+        for m in range(2 ** K):
+            g = np.array([(m >> j) & 1 for j in range(K)])
+            V = np.concatenate([[V0], np.where(g == 1, t1, t0)])
+            P = np.diag(1 / V) + XtX / s2
+            _, ld = np.linalg.slogdet(P)
+            q = yty / s2 - (Xty / s2) @ np.linalg.solve(P, Xty / s2)
+            lp.append(-0.5 * (ld + np.log(V).sum() + q) + g.sum() * np.log(p) + (K - g.sum()) * np.log(1 - p))
+            inc.append(g)
+        w = np.exp(np.array(lp) - max(lp))
+        return (w / w.sum()) @ np.array(inc)
+
+    t0b, t1b = 1e-7, 9.0
+    mb, mg = gibbs(t0b, t1b, np.ones(K, int), 2032)
+    chk("Q19b book prior, start gamma=1: E(beta|y)", mb, [1.995, 0.261, -0.391, 0.598, 0.000, 0.000], 3)
+    chk("Q19b book prior, start gamma=1: E(gamma|y)", mg, [1, 1, 1, 0.006, 0.001], 3, slack=1)
+    mb, mg = gibbs(t0b, t1b, np.zeros(K, int), 2033)
+    chk("Q19b book prior, start gamma=0: E(beta|y)", mb, [1.995, 0.251, -0.328, 0.557, 0.000, 0.000], 3, slack=1)
+    chk("Q19b book prior, start gamma=0: E(gamma|y)", mg, [1, 0.839, 1, 0.000, 0.001], 3, slack=1)
+    chk("Q19b book prior: exact P(gamma_j=1|y)", exact(t0b, t1b), [1, 1, 1, 0.003, 0.009], 3)
+    t0s, t1s = (0.1 * se_[1:]) ** 2, (10 * se_[1:]) ** 2
+    mb, mg = gibbs(t0s, t1s, np.zeros(K, int), 2034)
+    chk("Q19c semi-automatic, start gamma=0: E(beta|y)", mb, [1.995, 0.257, -0.383, 0.590, 0.001, 0.004], 3, slack=1)
+    chk("Q19c semi-automatic, start gamma=0: E(gamma|y)", mg, [1, 1, 1, 0.12, 0.31], 2, slack=1)
+    chk("Q19c semi-automatic: exact P(gamma_j=1|y)", exact(t0s, t1s), [1, 1, 1, 0.13, 0.32], 2)
+
+
 if __name__ == "__main__":
     only = sys.argv[sys.argv.index("--only") + 1].split(",") if "--only" in sys.argv else None
-    for f in (e81, e82, e85, e87, e97, e10_ibm, e10_ge, g104, o_bvar, o_favar, o_tvp, o_fsv):
+    for f in (e81, e82, e85, e87, e97, e10_ibm, e10_ge, g104, o_bvar, o_favar, o_tvp, o_fsv, o_svar, h115, k164):
         if only and f.__name__ not in only:
             continue
         f()

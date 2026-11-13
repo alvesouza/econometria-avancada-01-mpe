@@ -7,9 +7,11 @@ decimal), so a change in data, seed or library that moves a printed digit aborts
 Data: Wooldridge PHILLIPS via the ``wooldridge`` package (pip install wooldridge);
 ISLP Boston from Listas/data/Boston.csv (provenance in Listas/data/README.md); coal-mining
 disasters 1851-1962 typed below (Jarrett 1979, verified in .agent/notes/coal-mining-data.md).
-Q18 (original p-hacking exercise) simulates its own data (seed 2026; about 20 s).
-Stochastic results (Gibbs sampler, bootstrap, Q18 search) use fixed NumPy seeds and are asserted at the
-printed precision; another NumPy version may change the random stream and fail those lines.
+Q19-Q21, Q23-Q24 simulate their own data; Q23 also checks Listas/data/L01-I68-lasso-cv.dat, the
+cross-validation curve the list plots. Lasso fits use an exact LARS-lasso path in NumPy (scikit-learn
+is not installed).
+Stochastic results (Gibbs sampler, bootstraps, simulations) use fixed NumPy seeds and are asserted at
+the printed precision; another NumPy version may change the random stream and fail those lines.
 """
 from pathlib import Path
 
@@ -17,7 +19,8 @@ import numpy as np
 import pandas as pd
 import statsmodels.api as sm
 import wooldridge
-from scipy import special, stats
+from scipy import integrate, special, stats
+from statsmodels.stats.multitest import multipletests
 
 HERE = Path(__file__).resolve().parent
 N_OK = 0
@@ -252,79 +255,341 @@ sqreg = np.sum((fit.fittedvalues - yy.mean()) ** 2)
 assert abs(sqtot - sqres - sqreg) < 1e-9
 assert abs(np.sum(fit.resid)) < 1e-9 and abs(np.sum(fit.resid * fit.fittedvalues)) < 1e-9
 
-# ---------------------------------------------------------------- Q18 original: p-hacking (FWER, Bonferroni, Holm, search)
+# ---------------------------------------------------------------- Q18 ISLP 13.1 (FWER of m true nulls)
 alpha = 0.05
-for kk_, pr in [(1, "0.05"), (5, "0.2262"), (24, "0.7080"), (32, "0.8063"), (12, "0.4596"),
-                (13, "0.4867"), (14, "0.5123")]:
-    ok(1 - (1 - alpha) ** kk_, pr)
-ok(np.log(0.5) / np.log(0.95), "13.51")
-assert int(np.ceil(np.log(0.5) / np.log(0.95))) == 14
-ok(alpha / 32, "0.0015625"); ok(1 - (1 - alpha / 32) ** 32, "0.048808"); ok(1 - (1 - alpha) ** (1 / 32), "0.0016016")
-ok(alpha / 24, "0.002083"); ok(1 - (1 - alpha / 24) ** 24, "0.0488")
-pv = np.array([0.004, 0.011, 0.019, 0.030, 0.041]); m = len(pv)
-holm_thr = alpha / (m - np.arange(m))
-for v, pr in zip(holm_thr, ["0.0100", "0.0125", "0.0167", "0.0250", "0.0500"]):
+ok(10 * alpha, "0.5"); ok(1 - (1 - alpha) ** 2, "0.0975"); ok(2 * alpha, "0.10")
+z_a = stats.norm.ppf(1 - alpha)
+ok(z_a, "1.6449")
+
+
+def fwer_two_onesided(rho):
+    """1 - P(Z1 <= z_a, Z2 <= z_a) for a standard bivariate normal with correlation rho (quadrature)."""
+    if abs(rho) < 1e-12:
+        both = stats.norm.cdf(z_a) ** 2
+    else:
+        both = integrate.quad(lambda u: stats.norm.pdf(u) * stats.norm.cdf((z_a - rho * u) / np.sqrt(1 - rho**2)),
+                              -np.inf, z_a, epsabs=1e-13, epsrel=1e-12)[0]
+    return 1 - both
+
+
+for rho, pr in [(0.9, "0.0681"), (0.5, "0.0878"), (0.0, "0.0975"), (-0.5, "0.0999"), (-0.9, "0.1000")]:
+    ok(fwer_two_onesided(rho), pr)
+
+# ---------------------------------------------------------------- Q19 ISLP 13.8 (fund managers, cherry-picking)
+rng = np.random.default_rng(1)          # the book's code
+n_f, m_f = 20, 100
+Xf = rng.normal(size=(n_f, m_f))
+tt = stats.ttest_1samp(Xf, 0)
+pf = tt.pvalue
+assert list(np.histogram(pf, bins=10, range=(0, 1))[0]) == [11, 12, 12, 13, 9, 14, 5, 5, 12, 7]
+ok(98 / 10, "9.8"); ok(stats.chi2.sf(9.8, 9), "0.367")
+ps = np.sort(pf)
+for v, pr in zip(ps[:5], ["0.0008", "0.0096", "0.0229", "0.0355", "0.0503"]):
     ok(v, pr)
-passed = pv <= holm_thr
-assert (pv < alpha).sum() == 5 and (pv <= alpha / m).sum() == 1
-assert np.argmin(passed) == 2                                  # first failure at j = 3 -> 2 rejections
-holm_adj = np.maximum.accumulate(np.minimum(1, (m - np.arange(m)) * pv))
-for v, pr in zip(holm_adj, ["0.020", "0.044", "0.057", "0.060", "0.060"]):
+assert (pf < 0.05).sum() == 4
+for meth in ["bonferroni", "holm", "fdr_bh"]:
+    assert multipletests(pf, 0.05, method=meth)[0].sum() == 0
+ok(0.05 / 100, "0.0005")
+for j, pr in [(1, "0.0005"), (2, "0.0010"), (3, "0.0015"), (4, "0.0020")]:
+    ok(0.05 * j / 100, pr)
+assert ps[4] >= 0.05 * 5 / 100 and all(ps[j] >= 0.05 * (j + 1) / 100 for j in range(100))
+assert pf.argmin() + 1 == 15
+ok(tt.statistic[pf.argmin()], "-3.98")
+best = np.argsort(-Xf.mean(0))[:10]
+assert list(best + 1) == [28, 45, 81, 21, 12, 10, 9, 57, 68, 16]
+ok(Xf.mean(0)[best[0]], "0.487"); ok(Xf.mean(0)[best[-1]], "0.288")
+pbs = np.sort(pf[best])
+for v, pr in zip(pbs[:4], ["0.0096", "0.0355", "0.0755", "0.0780"]):
     ok(v, pr)
-ok(1.25 / 2.25, "0.5556")                                      # corr of weekly scores
-
-one, D = np.ones(30), np.r_[np.ones(15), np.zeros(15)]
-
-
-def draw_school(rng):
-    """One data set of the Q18 design: scores (30 x 3 weeks) and standardised GPA; no treatment effect."""
-    g = rng.normal(size=30)
-    ability = rng.normal(size=30)
-    return 0.5 * g[:, None] + ability[:, None] + rng.normal(size=(30, 3)), g
-
-
-def tstats(Y, g):
-    """t statistics and df for tau in the 12 regressions week x outlier rule x covariate (order fixed)."""
-    out = []
-    for w in range(3):
-        y = Y[:, w]
-        for drop in (False, True):
-            keep = np.abs(y - y.mean()) <= 2 * y.std(ddof=1) if drop else np.ones(30, bool)
-            for cov in (False, True):
-                X = np.column_stack([one, D, g] if cov else [one, D])[keep]
-                XtXi = np.linalg.inv(X.T @ X)
-                b = XtXi @ X.T @ y[keep]
-                e = y[keep] - X @ b
-                df = keep.sum() - X.shape[1]
-                out.append((b[1] / np.sqrt(e @ e / df * XtXi[1, 1]), df))
-    return np.array(out)
-
-
-def pvals(td):
-    """24 p-values per data set: for each regression, two-sided then one-sided (H1: tau > 0)."""
-    t, df = td[..., 0], td[..., 1]
-    return np.stack([2 * stats.t.sf(np.abs(t), df), stats.t.sf(t, df)], -1).reshape(*t.shape[:-1], -1)
-
-
+for meth in ["bonferroni", "holm", "fdr_bh"]:
+    assert multipletests(pf[best], 0.05, method=meth)[0].sum() == 0
+assert all(pbs[j] >= 0.05 * (j + 1) / 10 for j in range(10))
+# (f) the whole experiment repeated 10,000 times
 rng = np.random.default_rng(2026)
 R = 10000
-P = pvals(np.array([tstats(*draw_school(rng)) for _ in range(R)]))
-minp = P.min(1)
-q_single, q_search = np.mean(P[:, 0] < alpha), np.mean(minp < alpha)
-q_two, q_bonf = np.mean(P[:, 0::2].min(1) < alpha), np.mean(minp < alpha / 24)
-for q, pr, se_pr in [(q_single, "0.0496", "0.0022"), (q_search, "0.3080", "0.0046"),
-                     (q_two, "0.2254", "0.0042"), (q_bonf, "0.0176", "0.0013")]:
-    ok(q, pr); ok(np.sqrt(q * (1 - q) / R), se_pr)
-succ = np.flatnonzero(minp < alpha)
-best = P[succ].argmin(1)
-ok(len(succ), "3080"); ok(np.mean(best % 2 == 1), "0.615")    # odd columns = one-sided tests
-rep = np.array([pvals(tstats(*draw_school(rng)))[j] for j in best])   # fresh data, chosen spec only
-q_rep = np.mean(rep < alpha)
-ok(q_rep, "0.0529"); ok(np.sqrt(q_rep * (1 - q_rep) / len(succ)), "0.0040")
-for size, ppv_pr, fp_pr, rep_pr, a_pr, b_pr in [(0.05, "0.64", "0.045", "0.530", "0.512", "0.018"),
-                                                (round(q_search, 3), "0.2240", "0.2772", "0.2180", "0.1792", "0.0388")]:
-    ppv = 0.10 * 0.80 / (0.10 * 0.80 + 0.90 * size)
-    ok(0.90 * size, fp_pr); ok(ppv, ppv_pr)
-    ok(ppv * 0.80, a_pr); ok((1 - ppv) * 0.05, b_pr); ok(ppv * 0.80 + (1 - ppv) * 0.05, rep_pr)
+hit_all = hit_holm = hit_bh = 0
+for _ in range(10):
+    Xr = rng.normal(size=(R // 10, n_f, m_f))
+    mu_r = Xr.mean(1)
+    pr_ = 2 * stats.t.sf(np.abs(mu_r / (Xr.std(1, ddof=1) / np.sqrt(n_f))), n_f - 1)
+    hit_all += np.sum(pr_.min(1) <= 0.05 / m_f)
+    top = np.sort(np.take_along_axis(pr_, np.argsort(-mu_r, 1)[:, :10], 1), 1)
+    hit_holm += np.sum(top[:, 0] <= 0.05 / 10)
+    hit_bh += np.sum((top <= 0.05 * np.arange(1, 11) / 10).any(1))
+ok(hit_all / R, "0.0538"); ok(np.sqrt(hit_all / R * (1 - hit_all / R) / R), "0.0023")
+ok(hit_holm / R, "0.2251"); ok(hit_bh / R, "0.2527")
+
+# ---------------------------------------------------------------- Q20 original: four U(0, theta) estimators
+for nn in range(1, 60):          # ranking of (c), in units of theta^2
+    m1, m2, m3, m4 = (1 + 3 * nn) / (12 * nn), 2 / ((nn + 1) * (nn + 2)), 1 / (3 * nn), 1 / (nn * (nn + 2))
+    if nn == 1:
+        assert np.allclose([m1, m2, m3, m4], 1 / 3)
+    elif nn == 2:
+        assert np.isclose(m2, m3) and m4 < m2 < m1 and np.isclose(m4, 1 / 8) and np.isclose(m1, 7 / 24)
+    else:
+        assert m4 < m2 < m3 < m1
+th, nn = 3.0, 10
+c5 = (nn + 2) / (nn + 1)
+E_th = [th / 2, nn * th / (nn + 1), th, th, c5 * nn * th / (nn + 1)]
+V_x = nn * th**2 / ((nn + 1) ** 2 * (nn + 2))
+SD_th = [np.sqrt(th**2 / (12 * nn)), np.sqrt(V_x), np.sqrt(th**2 / (3 * nn)), np.sqrt(th**2 / (nn * (nn + 2))), c5 * np.sqrt(V_x)]
+MSE_th = [(1 + 3 * nn) * th**2 / (12 * nn), 2 * th**2 / ((nn + 1) * (nn + 2)), th**2 / (3 * nn), th**2 / (nn * (nn + 2)), th**2 / (nn + 1) ** 2]
+assert np.allclose(MSE_th, [SD_th[k] ** 2 + (E_th[k] - th) ** 2 for k in range(5)])
+ok(nn * (nn + 2) / (nn + 1) ** 2, "0.9917"); ok(MSE_th[0] / MSE_th[3], "31")
+rng = np.random.default_rng(2026)
+xu = rng.uniform(0, th, size=(100000, nn))
+est = np.column_stack([xu.mean(1), xu.max(1), 2 * xu.mean(1), 1.1 * xu.max(1), 12 / 11 * xu.max(1)])
+tab = [("1.499", "1.500", "0.274", "0.274", "2.3281", "2.3250"), ("2.728", "2.727", "0.249", "0.249", "0.1360", "0.1364"),
+       ("2.998", "3.000", "0.548", "0.548", "0.3006", "0.3000"), ("3.001", "3.000", "0.274", "0.274", "0.0749", "0.0750"),
+       ("2.976", "2.975", "0.271", "0.272", "0.0742", "0.0744")]
+for k, (em, et, sm, st, mm, mt) in enumerate(tab):
+    ok(est[:, k].mean(), em); ok(E_th[k], et); ok(est[:, k].std(ddof=1), sm); ok(SD_th[k], st)
+    ok(((est[:, k] - th) ** 2).mean(), mm); ok(MSE_th[k], mt)
+
+# ---------------------------------------------------------------- Q21 original: parametric bootstrap, failure for the max
+for nn, pr in [(10, "0.6513"), (50, "0.6358"), (100, "0.6340")]:
+    ok(1 - (1 - 1 / nn) ** nn, pr)
+ok(1 - np.exp(-1), "0.6321")
+nn, B, cc = 50, 10000, 51 / 50
+rng = np.random.default_rng(2026)
+xs50 = rng.uniform(0, 3, size=nn)
+xmax = xs50.max(); t4 = cc * xmax
+ok(xmax, "2.9009"); ok(t4, "2.9589")
+xb = xs50[rng.integers(0, nn, size=(B, nn))]
+ok(np.mean(xb.max(1) == xmax), "0.6405"); ok((cc * xb.max(1)).std(ddof=1), "0.0586")
+xpb = rng.uniform(0, t4, size=(B, nn))
+ok((cc * xpb.max(1)).std(ddof=1), "0.0583")
+ok(t4 / np.sqrt(nn * (nn + 2)), "0.0580"); ok(3 / np.sqrt(nn * (nn + 2)), "0.0588")
+ok(0.068 / 0.274, "0.25")
+ok(1 - (nn / (nn + 1)) ** nn, "0.6285")
+rng = np.random.default_rng(7)
+cover = 0
+for _ in range(1000):
+    xr = rng.uniform(0, 3, size=nn)
+    lo, hi = np.percentile(cc * xr[rng.integers(0, nn, size=(1000, nn))].max(1), [2.5, 97.5])
+    cover += lo <= 3 <= hi
+ok(cover / 1000, "0.617"); ok(np.sqrt(cover / 1000 * (1 - cover / 1000) / 1000), "0.015")
+qhi, qlo = 0.975 ** (1 / nn), 0.025 ** (1 / nn)
+ok(qhi, "0.99949"); ok(qlo, "0.92888")
+ok(xmax / qhi, "2.9024"); ok(xmax / qlo, "3.1230")
+assert abs(stats.beta.cdf(qhi, nn, 1) - stats.beta.cdf(qlo, nn, 1) - 0.95) < 1e-12
+
+# ---------------------------------------------------------------- Q22 Bolfarine 6.11 (+ coal-mining change point)
+
+
+def lr_two_poisson(sx, nx, sy, ny):
+    """-2 log lambda for H0: theta1 = theta2 with two Poisson samples (sums sx, sy; sizes nx, ny)."""
+    t0_ = (sx + sy) / (nx + ny)
+    return 2 * (sx * np.log(sx / nx / t0_) + sy * np.log(sy / ny / t0_))
+
+
+ok(3.8 / 5, "0.76"); ok(4.8 / 8, "0.6"); ok(8.6 / 13, "0.6615")
+G_lit = lr_two_poisson(3.8, 5, 4.8, 8)
+ok(G_lit, "0.1172"); ok(stats.chi2.sf(G_lit, 1), "0.7321"); ok(stats.chi2.ppf(0.95, 1), "3.841")
+ok(57.4 / 13, "4.4154")
+G_mean = lr_two_poisson(19.0, 5, 38.4, 8)
+ok(G_mean, "0.7108"); ok(stats.chi2.sf(G_mean, 1), "0.3992")
+ok(y.var(ddof=1) / y.mean(), "1.5916")
+disp = (n - 1) * y.var(ddof=1) / y.mean()
+ok(disp, "176.66"); ok(stats.chi2.sf(disp, n - 1), "0.00007")
+G_k = np.array([lr_two_poisson(cs[k - 1], k, S - cs[k - 1], n - k) for k in range(1, n)])
+kbest = int(G_k.argmax()) + 1
+assert (kbest, 1850 + kbest, cs[kbest - 1], S - cs[kbest - 1]) == (41, 1891, 127, 64)
+ok(127 / 41, "3.0976"); ok(64 / 71, "0.9014"); ok(G_k.max(), "69.99"); ok(G_k.max(), "70.0")
+rng = np.random.default_rng(2026)
+yb = rng.poisson(S / n, size=(10000, n))
+cb = np.cumsum(yb, 1)
+kk_ = np.arange(1, n)
+Sb = cb[:, -1:]
+with np.errstate(divide="ignore", invalid="ignore"):
+    part = (np.where(cb[:, :-1] > 0, cb[:, :-1] * np.log(cb[:, :-1] / kk_), 0)
+            + np.where(Sb - cb[:, :-1] > 0, (Sb - cb[:, :-1]) * np.log((Sb - cb[:, :-1]) / (n - kk_)), 0))
+sup_G = 2 * (part.max(1) - Sb[:, 0] * np.log(Sb[:, 0] / n))
+ok(np.quantile(sup_G, 0.95), "9.58"); assert sup_G.max() < G_k.max()
+
+# ---------------------------------------------------------------- Q23 ISLP 6.8 (stepwise selection and lasso)
+rng = np.random.default_rng(2026)
+X68 = rng.normal(size=100)
+eps68 = rng.normal(size=100)
+P68 = np.column_stack([X68**k for k in range(1, 11)])
+Y68 = 1 + 2 * X68 - 3 * X68**2 + 0.5 * X68**3 + eps68
+Y7 = 1 + 0.5 * X68**7 + eps68
+
+
+def ols_sub(yv, cols):
+    """OLS of yv on an intercept and the powers in cols (0-based); returns (RSS, coefficients)."""
+    A = np.column_stack([np.ones(100)] + [P68[:, j] for j in cols])
+    coef = np.linalg.lstsq(A, yv, rcond=None)[0]
+    r = yv - A @ coef
+    return r @ r, coef
+
+
+def stepwise(yv, direction):
+    """Forward or backward stepwise path M_0..M_10 (lists of 0-based columns), each step minimising RSS."""
+    if direction == "forward":
+        cur, path = [], [[]]
+        for _ in range(10):
+            cur = cur + [min((j for j in range(10) if j not in cur), key=lambda j: ols_sub(yv, cur + [j])[0])]
+            path.append(cur)
+        return path
+    cur, path = list(range(10)), [list(range(10))]
+    for _ in range(10):
+        drop = min(cur, key=lambda j: ols_sub(yv, [k for k in cur if k != j])[0])
+        cur = [k for k in cur if k != drop]
+        path.append(cur)
+    return path[::-1]
+
+
+def crit(yv, path):
+    """C_p, BIC and adjusted R^2 (ISLP (6.2)-(6.4)) along a path, sigma^2 from the full model."""
+    s2 = ols_sub(yv, range(10))[0] / (100 - 11)
+    tss = np.sum((yv - yv.mean()) ** 2)
+    out = []
+    for cols in path:
+        rss_, d = ols_sub(yv, cols)[0], len(cols)
+        out.append(((rss_ + 2 * d * s2) / 100, (rss_ + np.log(100) * d * s2) / 100,
+                    1 - rss_ / (100 - d - 1) / (tss / 99)))
+    return s2, np.array(out)
+
+
+s2_68, cf = crit(Y68, fw := stepwise(Y68, "forward"))
+ok(s2_68, "1.4537")
+assert [fw[d][-1] + 1 for d in range(1, 11)] == [2, 3, 1, 5, 6, 9, 8, 10, 7, 4]
+for v, pr in zip(cf[:, 0], ["16.4365", "11.2013", "2.6443", "1.4131", "1.4403", "1.4552", "1.4841", "1.5058",
+                            "1.5326", "1.5557", "1.5846"]):
+    ok(v, pr)
+assert cf[:, 0].argmin() == cf[:, 1].argmin() == cf[:, 2].argmax() == 3
+coef = dict(zip([0] + [j + 1 for j in fw[3]], ols_sub(Y68, fw[3])[1]))
+for k, pr in [(0, "1.1236"), (1, "1.7927"), (2, "-3.0366"), (3, "0.5396")]:
+    ok(coef[k], pr)
+_, cb_ = crit(Y68, bw := stepwise(Y68, "backward"))
+assert [sorted(set(bw[d]) - set(bw[d - 1]))[0] + 1 for d in range(1, 11)] == [2, 1, 5, 7, 9, 8, 10, 6, 4, 3]
+for v, pr in zip(cb_[:, 0], ["16.4365", "11.2013", "2.6493", "1.6376", "1.4870", "1.4863", "1.5016", "1.4983",
+                             "1.5267", "1.5555", "1.5846"]):
+    ok(v, pr)
+assert cb_[:, 0].argmin() == 5 and cb_[:, 1].argmin() == 4 and cb_[:, 2].argmax() == 7
+assert sorted(j + 1 for j in bw[4]) == [1, 2, 5, 7]
+coefb = dict(zip([0] + [j + 1 for j in bw[5]], ols_sub(Y68, bw[5])[1]))
+for k, pr in [(0, "1.1115"), (1, "2.0411"), (2, "-3.0175"), (5, "0.2763"), (7, "-0.0475"), (9, "0.0025")]:
+    ok(coefb[k], pr)
+
+
+def lasso_path(Z, yc):
+    """Exact lasso path for (1/2n)||yc - Z b||^2 + lam ||b||_1 by LARS with the lasso modification.
+
+    Z: standardised predictors (n x p); yc: centred response. Returns the knots lam_0 > ... >= 0
+    and the coefficient vectors at the knots; the path is linear in lam between knots.
+    """
+    nz, p = Z.shape
+    beta = np.zeros(p)
+    c = Z.T @ yc
+    lam = np.abs(c).max()
+    act = [int(np.abs(c).argmax())]
+    lams, betas = [lam / nz], [beta.copy()]
+    while lam > 1e-12:
+        d = np.linalg.solve(Z[:, act].T @ Z[:, act], np.sign(c[act]))
+        a = Z.T @ (Z[:, act] @ d)
+        gam, event = lam, None
+        for j in set(range(p)) - set(act):
+            for g in ((lam - c[j]) / (1 - a[j]), (lam + c[j]) / (1 + a[j])):
+                if 1e-14 < g < gam:
+                    gam, event = g, ("add", j)
+        for i, j in enumerate(act):
+            g = -beta[j] / d[i]
+            if 1e-14 < g < gam:
+                gam, event = g, ("drop", j)
+        beta[act] += gam * d
+        lam -= gam
+        c = Z.T @ (yc - Z @ beta)
+        lams.append(max(lam, 0) / nz); betas.append(beta.copy())
+        if event is None:
+            break
+        if event[0] == "add":
+            act.append(event[1])
+        else:
+            act.remove(event[1]); beta[event[1]] = 0.0
+    return np.array(lams), np.array(betas)
+
+
+def beta_at(lams, betas, lam):
+    """Lasso coefficients at penalty lam, interpolated linearly between path knots."""
+    if lam >= lams[0]:
+        return np.zeros(betas.shape[1])
+    k = np.searchsorted(-lams, -lam)
+    w = (lams[k - 1] - lam) / (lams[k - 1] - lams[k])
+    return betas[k - 1] + w * (betas[k] - betas[k - 1])
+
+
+def lasso_cv(yv):
+    """10-fold CV over 60 log-spaced lambdas; returns grid, CV curve, chosen index, coefficients."""
+    mP, sP = P68.mean(0), P68.std(0)
+    Z = (P68 - mP) / sP
+    yc = yv - yv.mean()
+    lams = np.abs(Z.T @ yc).max() / 100 * np.logspace(0, -4, 60)
+    folds = np.random.default_rng(2026).permutation(100) % 10
+    cvv = np.zeros(60)
+    for k in range(10):
+        tr, te = folds != k, folds == k
+        m_, s_ = P68[tr].mean(0), P68[tr].std(0)
+        kl, kb = lasso_path((P68[tr] - m_) / s_, yv[tr] - yv[tr].mean())
+        for i, lam in enumerate(lams):
+            cvv[i] += np.sum((yv[te] - yv[tr].mean() - ((P68[te] - m_) / s_) @ beta_at(kl, kb, lam)) ** 2) / 100
+    i = int(cvv.argmin())
+    kl, kb = lasso_path(Z, yc)
+    bz = beta_at(kl, kb, lams[i])
+    g = Z.T @ (yc - Z @ bz) / 100                     # KKT: |g_j| <= lam, = lam*sign(b_j) when b_j != 0
+    assert np.all(np.abs(g) <= lams[i] + 1e-9) and np.allclose(g[bz != 0], lams[i] * np.sign(bz[bz != 0]))
+    borig = bz / sP
+    return lams, cvv, i, borig, yv.mean() - borig @ mP
+
+
+lams68, cv68, i68, b68, b0_68 = lasso_cv(Y68)
+ok(lams68[i68], "0.02122"); ok(cv68[i68], "1.4272")
+assert list(np.flatnonzero(b68) + 1) == [1, 2, 3]
+for v, pr in zip([b0_68, *b68[:3]], ["1.0865", "1.8037", "-2.9897", "0.5213"]):
+    ok(v, pr)
+cv_file = HERE / "data" / "L01-I68-lasso-cv.dat"
+cv_text = "lam cv\n" + "".join(f"{l:.6g} {v:.6g}\n" for l, v in zip(lams68, cv68))
+assert cv_file.read_text() == cv_text, f"{cv_file} is stale; regenerate it from lasso_cv(Y68)"
+assert cv68.max() < 40                                    # the dashed marker spans [0, 40]
+assert cv68[lams68 < 0.0011].min() > 14 and lams68[lams68 < 0.0011].max() > 0.00109
+fw7 = stepwise(Y7, "forward")
+_, c7 = crit(Y7, fw7)
+assert fw7[1] == [6] and c7[:, 0].argmin() == 1
+ok(c7[1, 0], "1.3727")
+for v, pr in zip(ols_sub(Y7, [6])[1], ["1.1020", "0.5000"]):
+    ok(v, pr)
+lams7, cv7, i7, b7, b0_7 = lasso_cv(Y7)
+ok(lams7[i7], "0.02958"); ok(cv7[i7], "1.4737")
+assert list(np.flatnonzero(b7) + 1) == [1, 6, 7]
+for v, pr in zip([b0_7, b7[0], b7[5], b7[6]], ["1.1002", "-0.0712", "0.0009", "0.4997"]):
+    ok(v, pr)
+
+# ---------------------------------------------------------------- Q24 Wooldridge 11.4 (random walk vs stable AR(1))
+ok(np.sqrt(1000 / 1100), "0.9535"); ok(np.sqrt(10 / 15), "0.8165")
+rng = np.random.default_rng(2026)
+walks = rng.normal(size=(100000, 15)).cumsum(1)
+ok(np.corrcoef(walks[:, 9], walks[:, 14])[0, 1], "0.8160"); ok(walks[:, 9].var(), "9.97")
+rho = 0.9
+v10, v15 = (1 - rho**20) / (1 - rho**2), (1 - rho**30) / (1 - rho**2)
+ok(1 / (1 - rho**2), "5.2632"); ok(v10, "4.6233"); ok(v15, "5.0400")
+ok(rho**5 * np.sqrt(v10 / v15), "0.5655"); ok(rho**5, "0.5905")
+
+# ---------------------------------------------------------------- Q25 Tsay 8.5 (seasonal VAR, numerical illustration)
+phi0 = np.array([1.0, 0.5])
+P4 = np.array([[0.6, 0.2], [0.1, 0.5]])
+Sig = np.array([[1.0, 0.3], [0.3, 0.5]])
+assert np.allclose(sorted(np.linalg.eigvals(P4).real), [0.4, 0.7])
+ok(np.linalg.det(P4), "0.28"); ok(np.trace(P4), "1.1")
+mu = np.linalg.solve(np.eye(2) - P4, phi0)
+G0 = np.linalg.solve(np.eye(4) - np.kron(P4, P4), Sig.ravel("F")).reshape(2, 2, order="F")
+assert np.allclose(G0, P4 @ G0 @ P4.T + Sig)
+assert np.allclose(G0, sum(np.linalg.matrix_power(P4, j) @ Sig @ np.linalg.matrix_power(P4, j).T for j in range(200)))
+for v, pr in zip(mu, ["3.3333", "1.6667"]):
+    ok(v, pr)
+for v, pr in zip(G0.ravel(), ["1.8830", "0.7232", "0.7232", "0.7882"]):
+    ok(v, pr)
+for v, pr in zip((P4 @ G0).ravel(), ["1.2744", "0.5916", "0.5499", "0.4664"]):
+    ok(v, pr)
 
 print(f"All {N_OK} printed values reproduced.")

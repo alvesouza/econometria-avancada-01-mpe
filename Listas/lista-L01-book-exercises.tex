@@ -1,6 +1,6 @@
 % =============================================================================
 % L01 (Class 1, Review of basic ingredients) --- book exercises, verbatim statements + solutions,
-% plus one original exercise (p-hacking, \origem{} line instead of \fonte{}).
+% plus two original exercises (\origem{} line instead of \fonte{}), Questions 20-21.
 % Built from the MPE exam template (lista-exam.tex). One source, two outputs:
 %   \solucoesfalse  -> blank list (space to work)
 %   \solucoestrue   -> answer key (same file)
@@ -94,9 +94,11 @@
 \emph{Practice} list of Class~1 in \texttt{Map/class-plan.md}, reproduced verbatim from the book PDF
 (statements from Portuguese-language books stay in Portuguese); each opens with its source line
 (printed page, with the PDF page in brackets), and anything the statement refers to is summarised
-in a \emph{Referenced material} block right after it. Question~18 is an original exercise on
-p-hacking and reproducibility (a Class~1 goal with no exercise in the books), marked
-\emph{Origin}. Show every step. Computer exercises
+in a \emph{Referenced material} block right after it. Questions 18--25 (added 2026-11-13) cover the
+remaining Class~1 goals: p-hacking through ISLP Ch.~13 (outside the course's syllabus map), then the
+four $U(0,\theta)$ estimators and the parametric bootstrap (Questions 20--21, original exercises marked
+\emph{Origin}, since no book on disk has one), the Poisson LR test, variable selection, the unit root and
+the VAR(1). Show every step. Computer exercises
 are solved in Python; the script \texttt{Listas/L01-book-exercises-check.py} reproduces and asserts
 every number printed in the solutions. Book abbreviations follow the class plan: T = Tsay, W =
 Wooldridge, G = Greenberg, I = ISLP, B = Bolfarine \& Sandoval, MS = Morettin \& Singer.\par}
@@ -1738,212 +1740,967 @@ It is what makes $R^2=SQReg/SQTot$ a share between 0 and 1.}
 \end{sol}
 
 % =============================================================================
-\bloco{7}{Original exercise}{p-hacking and reproducibility}
+\bloco{7}{James, Witten, Hastie, Tibshirani \& Taylor, \textit{ISLP}, Ch.~13}{I 13.1; I 13.8 (p-hacking)}
 
-\questao{Original --- p-hacking: multiple testing, specification search and replication.}
-\origem{original exercise on p-hacking and reproducibility, built on the Class~1 slides
-\texttt{part1-p-hacking.pdf}, slides 4--6 (PDF pp.~4--6: the teaching-method example,
-$1-(0.95)^{32}\approx0.81$, the Bonferroni threshold $0.05/32$), and
-\texttt{p\_hacking\_slides-economics.pdf}, slides 3, 5--6 and 10 (PDF pp.~3, 5--6, 10: uniform
-p-values under $H_0$, the replication crisis, multiple-testing corrections), both in
-\texttt{Aula/class-01/materials/}. Not a book exercise; solved in the answer key of this list.}
+\questao{I 13.1 --- family-wise error rate of $m$ true null hypotheses.}
+\fonte{James, G., Witten, D., Hastie, T., Tibshirani, R. and Taylor, J. (2023), \textit{An
+Introduction to Statistical Learning with Applications in Python}, 1st ed., Springer, Chapter~13
+(\textit{Multiple Testing}), §13.7 Exercises (Conceptual), Exercise~1, printed p.~593 [PDF p.~599];
+answer not given in the book; reproduced verbatim. ISLP Ch.~13 is outside the course's syllabus map
+(\texttt{rules/09\_course\_program.md}); used for the p-hacking topic of Class~1.}
 
-A researcher asks whether a new teaching method raises test scores (the example of the Class~1
-p-hacking slides). The true effect is zero. Every test is at the nominal level $\alpha=0.05$.
+1. Suppose we test $m$ null hypotheses, all of which are true. We control the Type I error for each
+null hypothesis at level $\alpha$. For each sub-problem, justify your answer.
 \begin{enumerate}[label=(\alph*),leftmargin=2.4em]
-\item The researcher runs $k$ independent tests, each of a true null hypothesis, and reports a
-finding if at least one has $p<\alpha$. Show that the family-wise error rate (the probability of at
-least one false rejection) is $\mathrm{FWER}(k)=1-(1-\alpha)^k$. Compute it for $k=1,5,24,32$, and find
-the smallest $k$ for which a spurious finding is more likely than not.
-\item Using that the p-value of a true null hypothesis is $U(0,1)$, show that the Bonferroni rule
-(reject $H_{0j}$ if $p_j\le\alpha/k$) keeps $\mathrm{FWER}\le\alpha$ whatever the dependence between
-the $k$ tests. For $k=32$, give the Bonferroni threshold, the FWER it gives when the tests are
-independent, and the Šidák threshold $1-(1-\alpha)^{1/k}$.
-\item Five specifications give the p-values $0.004$, $0.011$, $0.019$, $0.030$, $0.041$. Which null
-hypotheses are rejected (i) with no correction, (ii) by Bonferroni, (iii) by Holm's step-down rule
-at FWER $5\%$? (Holm: order the p-values $p_{(1)}\le\dots\le p_{(m)}$, find the first $j$ with
-$p_{(j)}>\alpha/(m-j+1)$, and reject $H_{(1)},\dots,H_{(j-1)}$.) Give the Holm-adjusted p-values
-$\tilde p_{(j)}=\max_{i\le j}\min\{1,(m-i+1)\,p_{(i)}\}$.
-\item \emph{Simulation of a specification search.} There are $n=30$ students, the first 15 treated
-($D_i=1$) and the other 15 controls ($D_i=0$). Draw $g_i\sim N(0,1)$ (standardised GPA),
-$a_i\sim N(0,1)$ (ability) and the scores at weeks $w=4,6,8$ as $y_{iw}=0.5\,g_i+a_i+e_{iw}$,
-$e_{iw}\sim N(0,1)$, all independent: the method has no effect. The researcher estimates $\tau$ in the
-OLS regression of $y_w$ on $(1,D)$ or on $(1,D,g)$ and tests $H_0:\tau=0$ with the usual $t$
-statistic, choosing among 24 specifications: week (4, 6, 8) $\times$ sample (all students, or drop
-those with $|y_{iw}-\bar y_w|>2s_w$) $\times$ covariate (none, $g$) $\times$ test (two-sided, or
-one-sided against $\tau>0$). With $R=10{,}000$ data sets (NumPy \texttt{default\_rng(2026)}), estimate
-the rejection rate of one pre-specified specification (week 4, all students, no covariate,
-two-sided); the probability that at least one of the 24 specifications has $p<0.05$; the same
-probability with the 12 two-sided specifications only; and the probability that at least one has
-$p<0.05/24$. Compare the results with (a) and (b) and explain the differences.
-\item \emph{Reproducibility.} (i) For each simulated data set of (d) in which the search found
-$p<0.05$, draw a fresh, independent data set and run only the specification that had the smallest
-p-value. What share of these replications has $p<0.05$? Explain the value analytically.
-(ii) Suppose a share $\pi=0.10$ of the hypotheses a field tests are true, tests of true hypotheses
-have power $0.80$, and a finding is published when $p<0.05$. Compute the share of published findings
-that are true (the positive predictive value, PPV) when the size of each published test is the
-nominal $0.05$, and when it is the size of the search in (d) (keep the power at $0.80$). For each
-case, compute the expected share of published findings that a fresh, pre-registered test (size
-$0.05$, power $0.80$) confirms.
+\item In total, how many Type I errors do we expect to make?
+\item Suppose that the $m$ tests that we perform are independent. What is the family-wise error rate
+associated with these $m$ tests?\\
+\textit{Hint: If two events $A$ and $B$ are independent, then $\Pr(A\cap B)=\Pr(A)\Pr(B)$.}
+\item Suppose that $m=2$, and that the p-values for the two tests are positively correlated, so that
+if one is small then the other will tend to be small as well, and if one is large then the other will
+tend to be large. How does the family-wise error rate associated with these $m=2$ tests qualitatively
+compare to the answer in (b) with $m=2$?\\
+\textit{Hint: First, suppose that the two p-values are perfectly correlated.}
+\item Suppose again that $m=2$, but that now the p-values for the two tests are negatively
+correlated, so that if one is large then the other will tend to be small. How does the family-wise
+error rate associated with these $m=2$ tests qualitatively compare to the answer in (b) with $m=2$?\\
+\textit{Hint: First, suppose that whenever one p-value is less than $\alpha$, then the other will be
+greater than $\alpha$. In other words, we can never reject both null hypotheses.}
+\end{enumerate}
+\begin{refmat}
+\emph{Family-wise error rate} (§13.3.1, (13.3), printed p.~565 [PDF p.~571]): with $V$ the number
+of Type I errors (false rejections) among the $m$ tests, $\mathrm{FWER}=\Pr(V\ge1)$.
+\end{refmat}
+\resolespaco
+\begin{sol}
+\solhead
+\begin{notacao}
+\item $H_{01},\dots,H_{0m}$: true null hypotheses; $p_j$: p-value of test $j$, $U(0,1)$ under
+  $H_{0j}$; $A_j=\{p_j\le\alpha\}$: Type I error on test $j$, $\Pr(A_j)=\alpha$.
+\item $V=\sum_jA_j$ (indicators): number of Type I errors; $\mathrm{FWER}=\Pr(V\ge1)$.
+\item Illustration: one-sided $z$-tests, $p_j=1-\Phi(Z_j)$, $(Z_1,Z_2)$ standard bivariate normal with
+  correlation $\rho$; $z_\alpha=\Phi^{-1}(1-\alpha)$.
+\end{notacao}
+
+\passo{(a) Expected number of Type I errors}{Each $A_j$ is a Bernoulli($\alpha$) indicator, and the
+expectation of a sum is the sum of the expectations whatever the dependence:}
+\begin{equation}\label{q18:EV}
+\E(V)=\sum_{j=1}^m\Pr(A_j)=m\alpha .
+\end{equation}
+For example $m=10$, $\alpha=0.05$ gives $\E(V)=0.5$.
+
+\passo{(b) Independent tests}{$V=0$ means no test rejects. By independence,}
+\begin{equation}\label{q18:fwer}
+\mathrm{FWER}=1-\Pr\Big(\bigcap_{j=1}^mA_j^c\Big)=1-\prod_{j=1}^m(1-\alpha)=1-(1-\alpha)^m ,
+\end{equation}
+ISLP's (13.5). With $m=2$, $\alpha=0.05$: $1-(0.95)^2=0.0975$.
+
+\passo{(c) Positive correlation}{If $p_1=p_2$ (perfect correlation), the two tests reject together,
+so $\mathrm{FWER}=\Pr(A_1)=\alpha$, below \eqref{q18:fwer}. In general, by inclusion--exclusion,}
+\begin{equation}\label{q18:incl}
+\mathrm{FWER}=\Pr(A_1\cup A_2)=2\alpha-\Pr(A_1\cap A_2).
+\end{equation}
+Independence gives $\Pr(A_1\cap A_2)=\alpha^2$. Positive dependence makes joint rejection more
+likely, $\Pr(A_1\cap A_2)>\alpha^2$, so the FWER lies between $\alpha$ and $1-(1-\alpha)^2$: smaller
+than in (b).
+
+\passo{(d) Negative correlation}{Negative dependence makes joint rejection less likely,
+$\Pr(A_1\cap A_2)<\alpha^2$, so by \eqref{q18:incl} the FWER exceeds $1-(1-\alpha)^2$. In the extreme
+of the hint, $\Pr(A_1\cap A_2)=0$ and}
+\[
+\mathrm{FWER}=2\alpha=0.10 ,
+\]
+the Bonferroni bound $\Pr(A_1)+\Pr(A_2)$, which no dependence can exceed.
+
+\passo{Numerical illustration}{For the one-sided $z$-tests of the notation,
+$\mathrm{FWER}(\rho)=1-\Pr(Z_1\le z_\alpha,Z_2\le z_\alpha)$ with $z_{0.05}=1.6449$ (bivariate normal
+probability by numerical integration, check script):}
+\begin{center}\small
+\begin{tabular}{lccccc}
+\toprule
+$\rho$ & $0.9$ & $0.5$ & $0$ & $-0.5$ & $-0.9$\\
+\midrule
+FWER & 0.0681 & 0.0878 & 0.0975 & 0.0999 & 0.1000\\
+\bottomrule
+\end{tabular}
+\end{center}
+The FWER rises from near $\alpha$ toward $2\alpha$ as the correlation goes from $+1$ to $-1$.
+
+\intuicao{The FWER is the probability of the union of the rejection events. Overlapping events
+(positively dependent tests, such as the specifications of one data set in a specification search)
+make the union smaller than under independence; disjoint events make it as large as it can be, the
+sum $m\alpha$. Bonferroni's $\alpha/m$ guards against that worst case and is therefore conservative
+whenever the tests are positively dependent.}
+\refbib{ISLP (2023), §13.3.1--13.3.2, (13.3)--(13.6) (pp.~565--568); Class~1 slides
+\texttt{part1-p-hacking.pdf} (pp.~4--6).}
+\end{sol}
+
+\questao{I 13.8 --- 100 fund managers with no skill: FWER, FDR and cherry-picking (computer exercise).}
+\fonte{James, G., Witten, D., Hastie, T., Tibshirani, R. and Taylor, J. (2023), \textit{An
+Introduction to Statistical Learning with Applications in Python}, 1st ed., Springer, Chapter~13
+(\textit{Multiple Testing}), §13.7 Exercises (Applied), Exercise~8, printed pp.~595--596
+[PDF pp.~601--602]; answer not given in the book; reproduced verbatim. ISLP Ch.~13 is outside the
+course's syllabus map (\texttt{rules/09\_course\_program.md}); used for the p-hacking topic of
+Class~1.}
+
+8. In this problem, we will simulate data from $m=100$ fund managers.
+{\small
+\begin{verbatim}
+rng = np.random.default_rng(1)
+n, m = 20, 100
+X = rng.normal(size=(n, m))
+\end{verbatim}
+}
+These data represent each fund manager's percentage returns for each of $n=20$ months. We wish to
+test the null hypothesis that each fund manager's percentage returns have population mean equal to
+zero. Notice that we simulated the data in such a way that each fund manager's percentage returns do
+have population mean zero; in other words, all $m$ null hypotheses are true.
+\begin{enumerate}[label=(\alph*),leftmargin=2.4em]
+\item Conduct a one-sample $t$-test for each fund manager, and plot a histogram of the p-values
+obtained.
+\item If we control Type I error for each null hypothesis at level $\alpha=0.05$, then how many null
+hypotheses do we reject?
+\item If we control the FWER at level 0.05, then how many null hypotheses do we reject?
+\item If we control the FDR at level 0.05, then how many null hypotheses do we reject?
+\item Now suppose we ``cherry-pick'' the 10 fund managers who perform the best in our data. If we
+control the FWER for just these 10 fund managers at level 0.05, then how many null hypotheses do we
+reject? If we control the FDR for just these 10 fund managers at level 0.05, then how many null
+hypotheses do we reject?
+\item Explain why the analysis in (e) is misleading.\\
+\textit{Hint: The standard approaches for controlling the FWER and FDR assume that all tested null
+hypotheses are adjusted for multiplicity, and that no ``cherry-picking'' of the smallest p-values has
+occurred. What goes wrong if we cherry-pick?}
+\end{enumerate}
+\begin{refmat}
+Procedures of ISLP Ch.~13 the exercise uses (summarised). \emph{Bonferroni} (§13.3.2, (13.6),
+printed pp.~567--568 [PDF pp.~573--574]): reject $H_{0j}$ if $p_j\le\alpha/m$; then
+$\mathrm{FWER}\le m\cdot\alpha/m=\alpha$ under any dependence. \emph{Holm's step-down procedure}
+(Algorithm~13.1, (13.7), printed p.~569 [PDF p.~575]): order $p_{(1)}\le\dots\le p_{(m)}$, let
+$L=\min\{j:p_{(j)}>\alpha/(m+1-j)\}$, and reject every $H_{0j}$ with $p_j<p_{(L)}$; it controls the
+FWER at $\alpha$ and rejects at least as many hypotheses as Bonferroni. \emph{False discovery rate}
+(§13.4.1, (13.9), printed p.~574 [PDF p.~580]): $\mathrm{FDR}=\E(V/R)$, $R$ the number of rejections
+($V/R=0$ when $R=0$). \emph{Benjamini--Hochberg procedure} (Algorithm~13.2, (13.10), printed p.~575
+[PDF p.~581]): let $L=\max\{j:p_{(j)}<qj/m\}$ and reject every $H_{0j}$ with $p_j\le p_{(L)}$; it
+controls the FDR at level $q$ (for independent p-values).
+\end{refmat}
+\resolespaco
+\begin{sol}
+\solhead
+\begin{notacao}
+\item $x_{ij}$: return of manager $j$ in month $i$, $i=1,\dots,20$, $j=1,\dots,100$, i.i.d.\ $N(0,1)$;
+  $\bar x_j$, $s_j$: sample mean and standard deviation of manager $j$.
+\item $t_j=\bar x_j/(s_j/\sqrt{20})$: one-sample $t$ statistic, $t_{19}$ under $H_{0j}:\mu_j=0$;
+  $p_j=2\Pr(t_{19}>|t_j|)$: two-sided p-value; $p_{(1)}\le\dots\le p_{(m)}$: ordered p-values.
+\item $V$, $R$: numbers of false and total rejections (here every rejection is false, $V=R$).
+\end{notacao}
+
+\passo{(a) Tests and histogram}{\texttt{scipy.stats.ttest\_1samp(X, 0)} tests the 100 columns at
+once. Counts of the 100 p-values in ten bins of width $0.1$:}
+\begin{center}\footnotesize\setlength{\tabcolsep}{2.6pt}
+\begin{tabular}{lcccccccccc}
+\toprule
+bin & $[0,.1)$ & $[.1,.2)$ & $[.2,.3)$ & $[.3,.4)$ & $[.4,.5)$ & $[.5,.6)$ & $[.6,.7)$ & $[.7,.8)$ & $[.8,.9)$ & $[.9,1]$\\
+\midrule
+count & 11 & 12 & 12 & 13 & 9 & 14 & 5 & 5 & 12 & 7\\
+\bottomrule
+\end{tabular}
+\end{center}
+\begin{center}
+\begin{tikzpicture}
+\begin{axis}[ybar interval,width=0.62\linewidth,height=4.2cm,xmin=0,xmax=1,ymin=0,ymax=16,
+  xlabel={p-value},ylabel={count},xtick={0,0.2,0.4,0.6,0.8,1},
+  xticklabel style={/pgf/number format/fixed},grid=major]
+\addplot[fill=blue!25,draw=blue!55!black] coordinates {(0,11) (0.1,12) (0.2,12) (0.3,13) (0.4,9)
+  (0.5,14) (0.6,5) (0.7,5) (0.8,12) (0.9,7) (1,7)};
+\draw[dashed] (axis cs:0,10) -- (axis cs:1,10);
+\end{axis}
+\end{tikzpicture}
+\end{center}
+Under the 100 true nulls the p-values are i.i.d.\ $U(0,1)$, so each bin expects $10$ (dashed line). The
+Pearson statistic $\sum(o-10)^2/10=98/10=9.8$ on 9 degrees of freedom (p-value $0.367$) shows no
+departure from uniformity.
+
+\passo{(b) No correction}{The four smallest p-values are $0.0008$, $0.0096$, $0.0229$, $0.0355$; the
+fifth is $0.0503$. So 4 null hypotheses are rejected at $\alpha=0.05$, all of them false positives,
+close to the $m\alpha=5$ expected from \eqref{q18:EV}.}
+
+\passo{(c) FWER at 0.05}{Bonferroni rejects when $p_j\le0.05/100=0.0005$; the smallest p-value is
+$p_{(1)}=0.0008>0.0005$, so no rejection. Holm's first comparison is the same,
+$p_{(1)}=0.0008>0.05/100$, so $L=1$ and Holm rejects nothing either: \textbf{0 rejections}.}
+
+\passo{(d) FDR at 0.05}{Benjamini--Hochberg compares $p_{(j)}$ with $0.05\,j/100$:
+$0.0008>0.0005$, $0.0096>0.0010$, $0.0229>0.0015$, $0.0355>0.0020$, and every later $p_{(j)}\ge0.0503$
+exceeds $0.05\,j/100\le0.05$. No $j$ satisfies the inequality, so \textbf{0 rejections}.}
+
+\passo{(e) Cherry-picking}{Taking ``best'' as the 10 largest sample means (managers 28, 45, 81, 21, 12,
+10, 9, 57, 68, 16, means from $0.487$ down to $0.288$), their ordered p-values start
+$0.0096,\ 0.0355,\ 0.0755,\ 0.0780$. With $m=10$: Bonferroni and Holm need $p_{(1)}\le0.005$, and
+$0.0096>0.005$, so \textbf{0 rejections}; Benjamini--Hochberg needs some $p_{(j)}<0.05\,j/10$, and
+$0.0096>0.005$, $0.0355>0.010$, $0.0755>0.015$, \dots, so \textbf{0 rejections}. (The manager with the
+smallest p-value overall, $0.0008$, is manager 15 with $t=-3.98$: the worst performer, not among the
+best 10.) With this seed nothing survives even the cherry-picked correction, but the procedure is
+still invalid, as (f) shows.}
+
+\passo{(f) Why (e) is misleading}{Selecting the 10 managers \emph{because} their returns are the
+highest uses the data to choose which hypotheses to test. The selected p-values are the smallest of
+the 100, not a sample of 10 uniform p-values, so dividing $\alpha$ by 10 instead of 100 undercorrects:
+the multiplicity that matters is the 100 managers looked at. Repeating the whole experiment 10{,}000
+times (NumPy \texttt{default\_rng(2026)}, all nulls true):}
+\begin{center}\small
+\begin{tabular}{lc}
+\toprule
+Procedure & $\Pr(\text{at least one rejection})$\\
+\midrule
+Bonferroni/Holm on all 100 managers, $\alpha=0.05$ & 0.0538\\
+Cherry-pick the best 10, then Bonferroni/Holm with $m=10$ & 0.2251\\
+Cherry-pick the best 10, then Benjamini--Hochberg with $m=10$, $q=0.05$ & 0.2527\\
+\bottomrule
+\end{tabular}
+\end{center}
+(Bonferroni and Holm reject at least one hypothesis in exactly the same event, $p_{(1)}\le\alpha/m$.
+With every null true, $V=R$, so the FDR equals the FWER.) The honest correction keeps the error rate
+at the nominal 5\% (Monte Carlo standard error $0.0023$); after cherry-picking, the ``controlled''
+FWER and FDR are about 23\% and 25\%, four to five times the level claimed.
+
+\passo{Python}{Core of the computation (complete code with assertions in the check script):}
+{\small
+\begin{verbatim}
+from statsmodels.stats.multitest import multipletests
+p = stats.ttest_1samp(X, 0).pvalue                    # (a)
+(p < 0.05).sum()                                      # (b) 4
+multipletests(p, 0.05, method="holm")[0].sum()        # (c) 0 (also "bonferroni")
+multipletests(p, 0.05, method="fdr_bh")[0].sum()      # (d) 0
+best = np.argsort(-X.mean(0))[:10]                    # (e) cherry-picked managers
+multipletests(p[best], 0.05, method="holm")[0].sum()  #     0 (and 0 with "fdr_bh")
+\end{verbatim}
+}
+
+\intuicao{This is p-hacking in its plainest form: look at many results, keep the best-looking ones,
+then apply statistics designed for results chosen in advance. A multiple-testing correction protects
+only the family it is applied to; selecting the family after seeing the data shrinks the correction
+and brings the inflation back. The Class~1 specification search is the same mechanism with forks
+in the analysis in place of fund managers.}
+\refbib{ISLP (2023), §13.3.2 (Bonferroni, Holm, pp.~567--569), §13.4 (FDR, Benjamini--Hochberg,
+pp.~573--577), Lab §13.6 (pp.~583--590); Class~1 slides \texttt{p\_hacking\_slides-economics.pdf}
+(pp.~3--6, 10).}
+\end{sol}
+
+% =============================================================================
+\bloco{8}{Remaining Class~1 goals}{originals (a), (b); B 6.11; I 6.8; W 11.4; T 8.5}
+
+\questao{Original --- the four $U(0,\theta)$ estimators compared by MSE.}\label{q:four}
+\origem{original exercise on comparing the four $U(0,\theta)$ estimators by mean squared error,
+built on the Class~1 deck \texttt{comparing-estimators-MSE-slides.pdf}, slides 2--7, 9 and 12 (PDF
+pp.~2--9, 11, 14: the four estimators, their means and variances, the MSE ranking for $n\ge3$, the
+Monte Carlo design $\theta=3$, $n=10$) and the handwritten notes
+\texttt{Class1-comparing-estimators-MSE.pdf} (PDF pp.~1--3), both in
+\texttt{Aula/class-01/materials/}. No book on disk compares the four estimators in one exercise
+(Bolfarine \& Sandoval Exercise~1.12, Question~10, covers the two unbiased ones). Not a book exercise;
+solved in the answer key of this list.}
+
+Let $x_1,\dots,x_n$ be i.i.d.\ $U(0,\theta)$, $\theta>0$, with order statistics
+$x_{(1)}\le\dots\le x_{(n)}$, and consider
+\[
+\hat\theta_1=\bar x,\qquad \hat\theta_2=x_{(n)},\qquad \hat\theta_3=2\bar x,\qquad
+\hat\theta_4=\frac{n+1}{n}\,x_{(n)} .
+\]
+\begin{enumerate}[label=(\alph*),leftmargin=2.4em]
+\item Show that $x_{(n)}/\theta\sim\mathrm{Beta}(n,1)$, and derive the mean and the variance of each
+of the four estimators.
+\item Derive the four mean squared errors, and show that
+$\mathrm{MSE}(\hat\theta_1)=\theta^2(1+3n)/(12n)$ and
+$\mathrm{MSE}(\hat\theta_2)=2\theta^2/[(n+1)(n+2)]$.
+\item Rank the four estimators by MSE for every $n\ge1$, stating the ties.
+\item Among all estimators of the form $c\,x_{(n)}$, $c>0$, find the one with the smallest MSE. Is it
+unbiased? Compare its MSE with that of $\hat\theta_4$.
+\item Monte Carlo: with $\theta=3$, $n=10$ and $N=100{,}000$ samples (NumPy
+\texttt{default\_rng(2026)}), estimate the mean, the standard deviation and the MSE of each estimator
+(and of the estimator of (d)), and compare them with the theory.
 \end{enumerate}
 \resolespaco
 \begin{sol}
 \solhead
 \begin{notacao}
-\item $\alpha=0.05$: nominal level; $k$ (or $m$): number of tests; $p_j$: p-value of test $j$;
-  $H_{0j}$: its null hypothesis; $A_j=\{p_j\le c\}$: test $j$ rejects at threshold $c$.
-\item $\mathrm{FWER}=P(\text{at least one true }H_{0j}\text{ rejected})$; $p_{(1)}\le\dots\le p_{(m)}$:
-  ordered p-values; $\tilde p_{(j)}$: Holm-adjusted p-value.
-\item Simulation: $D_i$ treatment dummy, $g_i$ standardised GPA, $a_i$ ability, $y_{iw}$ score at week
-  $w$; $\tau$: treatment coefficient (true value 0); $R=10{,}000$ replications, Monte Carlo standard
-  error $\sqrt{\hat q(1-\hat q)/R}$ for an estimated probability $\hat q$.
-\item $\pi$: share of true hypotheses; $1-\beta=0.80$: power; $\alpha^*$: size of the published test;
-  PPV: share of published findings that are true.
+\item $x_i$ i.i.d.\ $U(0,\theta)$: $\E x_i=\theta/2$, $\Var x_i=\theta^2/12$; $\bar x$: sample mean;
+  $x_{(n)}=\max_ix_i$.
+\item $\mathrm{MSE}(\hat\theta)=\E[(\hat\theta-\theta)^2]=\Var(\hat\theta)+[\E(\hat\theta)-\theta]^2$ (variance
+  plus squared bias).
+\item $N$: Monte Carlo replications; $\hat\theta_k^{(j)}$: estimator $k$ on sample $j$.
 \end{notacao}
 
-\passo{(a) FWER of independent tests}{Under a true null, $P(p_j<\alpha)=\alpha$, so each test misses with
-probability $1-\alpha$. By independence,}
-\begin{equation}\label{q18:fwer}
-\mathrm{FWER}(k)=1-P\Big(\bigcap_{j=1}^kA_j^c\Big)=1-\prod_{j=1}^k(1-\alpha)=1-(1-\alpha)^k .
+\passo{(a) Distribution of the maximum}{$x_{(n)}\le x$ iff every $x_i\le x$, so for $0\le x\le\theta$}
+\begin{equation}\label{q20:cdf}
+\Pr(x_{(n)}\le x)=\Big(\frac x\theta\Big)^n,\qquad\text{so}\qquad
+\Pr\Big(\frac{x_{(n)}}\theta\le u\Big)=u^n,\quad 0\le u\le1,
 \end{equation}
-Substituting into \eqref{q18:fwer}:
-\begin{align*}
-\mathrm{FWER}(1)&=0.05, & \mathrm{FWER}(5)&=1-(0.95)^5=0.2262,\\
-\mathrm{FWER}(24)&=1-(0.95)^{24}=0.7080, & \mathrm{FWER}(32)&=1-(0.95)^{32}=0.8063 ,
-\end{align*}
-the last being the slides' $\approx0.81$. Setting $\mathrm{FWER}(k)\ge0.5$ in \eqref{q18:fwer}:
-\begin{equation}\label{q18:kmin}
-(0.95)^k\le0.5\;\Longleftrightarrow\;k\ge\frac{\log0.5}{\log0.95}=13.51 ,
+the CDF of $\mathrm{Beta}(n,1)$ (density $nu^{n-1}$). Its moments are $\E(U^r)=n/(n+r)$, so
+\begin{equation}\label{q20:mom}
+\E(x_{(n)})=\frac{n\theta}{n+1},\qquad
+\Var(x_{(n)})=\frac{n\theta^2}{n+2}-\frac{n^2\theta^2}{(n+1)^2}=\frac{n\theta^2}{(n+1)^2(n+2)} .
 \end{equation}
-so $k=14$: $\mathrm{FWER}(13)=0.4867$ and $\mathrm{FWER}(14)=0.5123$.
-
-\passo{(b) Bonferroni}{Boole's inequality, $P(\bigcup_jA_j)\le\sum_jP(A_j)$, needs no assumption on the
-dependence. With threshold $c=\alpha/k$ and $p_j\sim U(0,1)$ under $H_{0j}$:}
-\begin{equation}\label{q18:bonf}
-\mathrm{FWER}=P\Big(\bigcup_{j=1}^k\{p_j\le\alpha/k\}\Big)\le\sum_{j=1}^kP(p_j\le\alpha/k)=k\cdot\frac{\alpha}{k}=\alpha .
-\end{equation}
-For $k=32$ the threshold is $0.05/32=0.0015625$ (the slides' $0.0016$). Under independence,
-\eqref{q18:fwer} with $\alpha/k$ in place of $\alpha$ gives
-\[
-1-(1-0.0015625)^{32}=0.048808\le0.05 ,
-\]
-so the bound is nearly tight. The Šidák threshold solves $1-(1-c)^{k}=\alpha$:
-\begin{equation}\label{q18:sidak}
-c=1-(1-\alpha)^{1/k}=1-(0.95)^{1/32}=0.0016016 ,
-\end{equation}
-only slightly above Bonferroni's.
-
-\passo{(c) Three rules}{(i) No correction: all five p-values are below $0.05$, so all five are
-rejected. (ii) Bonferroni with $m=5$: threshold $0.05/5=0.01$; only $p_{(1)}=0.004$ is below it, one
-rejection. (iii) Holm compares $p_{(j)}$ with $\alpha/(m-j+1)$:}
+With $\E\bar x=\theta/2$ and $\Var\bar x=\theta^2/(12n)$, and scaling by the constants $2$ and $(n+1)/n$:
 \begin{center}\small
-\begin{tabular}{cccccc}
+\begin{tabular}{lcccc}
 \toprule
-$j$ & 1 & 2 & 3 & 4 & 5\\
+& $\hat\theta_1=\bar x$ & $\hat\theta_2=x_{(n)}$ & $\hat\theta_3=2\bar x$ & $\hat\theta_4=\frac{n+1}nx_{(n)}$\\
 \midrule
-$p_{(j)}$ & 0.004 & 0.011 & 0.019 & 0.030 & 0.041\\
-$\alpha/(m-j+1)$ & 0.0100 & 0.0125 & 0.0167 & 0.0250 & 0.0500\\
-$p_{(j)}\le\alpha/(m-j+1)$? & yes & yes & no & --- & ---\\
-$\tilde p_{(j)}$ & 0.020 & 0.044 & 0.057 & 0.060 & 0.060\\
+$\E(\hat\theta)$ & $\theta/2$ & $n\theta/(n+1)$ & $\theta$ & $\theta$\\
+$\Var(\hat\theta)$ & $\theta^2/(12n)$ & $n\theta^2/[(n+1)^2(n+2)]$ & $\theta^2/(3n)$ & $\theta^2/[n(n+2)]$\\
 \bottomrule
 \end{tabular}
 \end{center}
-The first failure is at $j=3$ ($0.019>0.0167$), so Holm rejects $H_{(1)}$ and $H_{(2)}$: two rejections.
-The adjusted p-values give the same answer (reject when $\tilde p_{(j)}\le0.05$); e.g.\
-$\tilde p_{(2)}=\max\{5(0.004),\,4(0.011)\}=\max\{0.020,0.044\}=0.044$ and
-$\tilde p_{(3)}=\max\{0.044,\,3(0.019)\}=0.057$. Holm also controls the FWER at $\alpha$ under any
-dependence and never rejects less than Bonferroni, since its first threshold is Bonferroni's and the
-later ones are larger.
+$\hat\theta_3$ and $\hat\theta_4$ are the unbiased versions of $\hat\theta_1$ and $\hat\theta_2$.
 
-\passo{(d) Simulation results}{With $R=10{,}000$ data sets (Monte Carlo standard errors in brackets):}
+\passo{(b) Mean squared errors}{For the unbiased pair, $\mathrm{MSE}=\Var$:
+$\mathrm{MSE}(\hat\theta_3)=\theta^2/(3n)$, $\mathrm{MSE}(\hat\theta_4)=\theta^2/[n(n+2)]$. For $\hat\theta_1$
+the bias is $-\theta/2$:}
+\begin{equation}\label{q20:m1}
+\mathrm{MSE}(\hat\theta_1)=\frac{\theta^2}{12n}+\frac{\theta^2}{4}=\frac{\theta^2(1+3n)}{12n}.
+\end{equation}
+For $\hat\theta_2$ the bias is $n\theta/(n+1)-\theta=-\theta/(n+1)$:
+\begin{equation}\label{q20:m2}
+\mathrm{MSE}(\hat\theta_2)=\frac{n\theta^2}{(n+1)^2(n+2)}+\frac{\theta^2}{(n+1)^2}
+=\frac{\theta^2\,[n+(n+2)]}{(n+1)^2(n+2)}=\frac{2\theta^2}{(n+1)(n+2)} .
+\end{equation}
+
+\passo{(c) Ranking}{All four MSEs are $\theta^2$ times a function of $n$, so the ranking does not
+depend on $\theta$. Comparing pairs:}
+\begin{align*}
+\mathrm{MSE}(\hat\theta_4)<\mathrm{MSE}(\hat\theta_2)&\iff\frac1{n(n+2)}<\frac2{(n+1)(n+2)}\iff n+1<2n\iff n>1,\\
+\mathrm{MSE}(\hat\theta_2)<\mathrm{MSE}(\hat\theta_3)&\iff6n<(n+1)(n+2)\iff(n-1)(n-2)>0\iff n>2,\\
+\mathrm{MSE}(\hat\theta_3)<\mathrm{MSE}(\hat\theta_1)&\iff4<1+3n\iff n>1 .
+\end{align*}
+Hence: for $n\ge3$, $\mathrm{MSE}(\hat\theta_4)<\mathrm{MSE}(\hat\theta_2)<\mathrm{MSE}(\hat\theta_3)<\mathrm{MSE}(\hat\theta_1)$;
+for $n=2$, $\mathrm{MSE}(\hat\theta_4)=\theta^2/8<\mathrm{MSE}(\hat\theta_2)=\mathrm{MSE}(\hat\theta_3)=\theta^2/6<\mathrm{MSE}(\hat\theta_1)=7\theta^2/24$;
+for $n=1$ all four equal $\theta^2/3$ ($\hat\theta_1=\hat\theta_2=x_1$ and $\hat\theta_3=\hat\theta_4=2x_1$).
+The $x_{(n)}$-based MSEs fall like $1/n^2$, the $\bar x$-based like $1/n$, and
+$\mathrm{MSE}(\hat\theta_1)\to\theta^2/4$ does not vanish at all.
+
+\passo{(d) Best multiple of the maximum}{By \eqref{q20:mom},
+$\E(x_{(n)}^2)=n\theta^2/(n+2)$, so}
+\begin{equation}\label{q20:mc}
+\mathrm{MSE}(c\,x_{(n)})=c^2\frac{n\theta^2}{n+2}-2c\,\frac{n\theta^2}{n+1}+\theta^2 .
+\end{equation}
+Setting the derivative in $c$ to zero, $2c\,n/(n+2)-2n/(n+1)=0$:
+\begin{equation}\label{q20:cstar}
+c^*=\frac{n+2}{n+1},\qquad
+\mathrm{MSE}(c^*x_{(n)})=\theta^2\Big[1-\frac{n(n+2)}{(n+1)^2}\Big]=\frac{\theta^2}{(n+1)^2} .
+\end{equation}
+$\E(c^*x_{(n)})=\theta\,n(n+2)/(n+1)^2<\theta$: it is biased downwards. Its MSE relative to
+$\hat\theta_4$ is $n(n+2)/(n+1)^2<1$, e.g.\ $120/121=0.9917$ at $n=10$: accepting a small bias buys a
+small variance reduction, so even the unbiased winner $\hat\theta_4$ is not the MSE-optimal multiple
+of $x_{(n)}$.
+
+\passo{(e) Monte Carlo}{Theory at $\theta=3$, $n=10$ against $N=100{,}000$ simulated samples
+($\hat\theta_5=c^*x_{(n)}$, $c^*=12/11$):}
 \begin{center}\small
-\begin{tabular}{lcc}
+\begin{tabular}{lcccccc}
 \toprule
-Rule & Simulated rate & Formula under independence\\
+& \multicolumn{2}{c}{$\E(\hat\theta)$} & \multicolumn{2}{c}{$\mathrm{SD}(\hat\theta)$} & \multicolumn{2}{c}{$\mathrm{MSE}(\hat\theta)$}\\
+\cmidrule(lr){2-3}\cmidrule(lr){4-5}\cmidrule(lr){6-7}
+& MC & theory & MC & theory & MC & theory\\
 \midrule
-One pre-specified specification, $p<0.05$ & 0.0496 (0.0022) & 0.05\\
-Best of 24 specifications, $p<0.05$ & 0.3080 (0.0046) & $1-(0.95)^{24}=0.7080$\\
-Best of 12 two-sided specifications, $p<0.05$ & 0.2254 (0.0042) & $1-(0.95)^{12}=0.4596$\\
-Best of 24, Bonferroni $p<0.05/24=0.002083$ & 0.0176 (0.0013) & 0.0488\\
+$\hat\theta_1=\bar x$ & 1.499 & 1.500 & 0.274 & 0.274 & 2.3281 & 2.3250\\
+$\hat\theta_2=x_{(n)}$ & 2.728 & 2.727 & 0.249 & 0.249 & 0.1360 & 0.1364\\
+$\hat\theta_3=2\bar x$ & 2.998 & 3.000 & 0.548 & 0.548 & 0.3006 & 0.3000\\
+$\hat\theta_4=\frac{11}{10}x_{(n)}$ & 3.001 & 3.000 & 0.274 & 0.274 & 0.0749 & 0.0750\\
+$\hat\theta_5=\frac{12}{11}x_{(n)}$ & 2.976 & 2.975 & 0.271 & 0.272 & 0.0742 & 0.0744\\
 \bottomrule
 \end{tabular}
 \end{center}
-The pre-specified test has the right size. Searching over 24 specifications multiplies the false
-positive rate by about six, to $0.308$. That is far below the $0.708$ of \eqref{q18:fwer}, because the
-24 tests are strongly dependent: they use the same 30 students, the three weekly scores share $g_i$
-and $a_i$ (their correlation is $(0.25+1)/(0.25+1+1)=0.5556$), the outlier rule drops few students,
-and a one-sided rejection ($t>1.70$) includes every two-sided rejection with $t>0$. Positive dependence
-also makes Bonferroni conservative: $0.0176$, well below the bound $0.05$ of \eqref{q18:bonf}. Among
-the winning specifications, $61.5\%$ are one-sided tests: switching the direction of the test after
-seeing the sign of $\hat\tau$ is the cheapest fork.
-
-\passo{(e)(i) Replication of a false positive}{The search succeeded in 3{,}080 of the 10{,}000 data
-sets. Re-running each chosen specification on a fresh data set gives $p<0.05$ in a share $0.0529$ of
-cases (Monte Carlo standard error $0.0040$). Analytically, the fresh data are independent of the
-search, which only fixed \emph{which} specification to run; for a fixed specification the $p$-value of
-a true null is $U(0,1)$, so}
-\begin{equation}\label{q18:rep}
-P(p^{\text{new}}<0.05\mid\text{search succeeded})=P(p^{\text{new}}<0.05)=0.05 .
-\end{equation}
-The simulated $0.0529$ is within one standard error of \eqref{q18:rep}. A false positive replicates
-only as often as any test of a true null rejects.
-
-\passo{(e)(ii) PPV and expected replication}{Among published findings, true ones arrive at rate
-$\pi(1-\beta)$ and false ones at rate $(1-\pi)\alpha^*$, so}
-\begin{equation}\label{q18:ppv}
-\mathrm{PPV}=\frac{\pi(1-\beta)}{\pi(1-\beta)+(1-\pi)\alpha^*}.
-\end{equation}
-A fresh test confirms a true finding with probability $0.80$ and a false one with probability $0.05$
-(by \eqref{q18:rep}), so the expected replication share is
-\begin{equation}\label{q18:reprate}
-\text{Rep}=\mathrm{PPV}\cdot0.80+(1-\mathrm{PPV})\cdot0.05 .
-\end{equation}
-Nominal size, $\alpha^*=0.05$, in \eqref{q18:ppv} and \eqref{q18:reprate}:
-\begin{align*}
-\mathrm{PPV}&=\frac{0.10(0.80)}{0.10(0.80)+0.90(0.05)}=\frac{0.08}{0.08+0.045}=0.64,\\
-\text{Rep}&=0.64(0.80)+0.36(0.05)=0.512+0.018=0.530 .
-\end{align*}
-Size of the search, $\alpha^*=0.308$ from (d):
-\begin{align*}
-\mathrm{PPV}&=\frac{0.08}{0.08+0.90(0.308)}=\frac{0.08}{0.08+0.2772}=0.2240,\\
-\text{Rep}&=0.2240(0.80)+0.7760(0.05)=0.1792+0.0388=0.2180 .
-\end{align*}
-With honest testing about half of the published findings would replicate; with the search, about one
-in five, and fewer than a quarter of published findings would be true.
-
-\passo{Python}{Core of the simulation (complete code with assertions in the check script):}
+Every Monte Carlo value is within simulation error of the theory, and the ranking
+$\hat\theta_4<\hat\theta_2<\hat\theta_3<\hat\theta_1$ of (c) is reproduced. At $n=10$, $12n=n(n+2)=120$, so
+$\hat\theta_1$ and $\hat\theta_4$ have the same standard deviation $0.274$; but $\hat\theta_1$ is centred at
+$1.5$, and its MSE is 31 times larger.
 {\small
 \begin{verbatim}
-def tstats(Y, g):                     # 12 (t, df) pairs: week x outlier rule x covariate
-    out = []
-    for w in range(3):
-        y = Y[:, w]
-        for drop in (False, True):
-            keep = np.ones(30, bool)
-            if drop:
-                keep = np.abs(y - y.mean()) <= 2 * y.std(ddof=1)
-            for cov in (False, True):
-                X = np.column_stack([one, D, g] if cov else [one, D])[keep]
-                XtXi = np.linalg.inv(X.T @ X); b = XtXi @ X.T @ y[keep]
-                e = y[keep] - X @ b; df = keep.sum() - X.shape[1]
-                out.append((b[1] / np.sqrt(e @ e / df * XtXi[1, 1]), df))
-    return out
-# p-values: two-sided 2*t.sf(|t|, df) and one-sided t.sf(t, df) -> 24 per data set
-# single 0.0496, best of 24 0.3080, two-sided only 0.2254,
-# Bonferroni 0.0176, replication 0.0529
+rng = np.random.default_rng(2026)
+x = rng.uniform(0, 3, size=(100000, 10))
+est = np.column_stack([x.mean(1), x.max(1), 2*x.mean(1), 1.1*x.max(1), 12/11*x.max(1)])
+est.mean(0), est.std(0, ddof=1), ((est - 3)**2).mean(0)
 \end{verbatim}
 }
 
-\intuicao{A p-value is calibrated for one test chosen before seeing the data. Each fork in the
-analysis (week, sample, covariates, direction) is another draw at the 5\% lottery, and reporting the
-best draw turns a 5\% error rate into roughly 30\% here, and up to 81\% with 32 independent forks.
-The cure is to fix the specification in advance (pre-registration), or to correct for the forks
-actually explored (Bonferroni, Holm), or to report all of them (multiverse analysis). The replication
-calculation shows why the replication crisis follows: a field that publishes searched results fills
-its journals with findings that a clean re-test confirms only about one time in five.}
-\refbib{Class~1 slides \texttt{part1-p-hacking.pdf} (pp.~4--6) and \texttt{p\_hacking\_slides-economics.pdf}
-(pp.~3--6, 10); the general multiple-testing treatment (Bonferroni, Holm) is ISLP (2023), Ch.~13,
-outside the course map.}
+\intuicao{MSE trades variance against squared bias, so unbiasedness is not the criterion: $2\bar x$
+removes the bias of $\bar x$ but doubles its standard deviation, and the MSE-best multiple of
+$x_{(n)}$ is slightly biased. What makes the $x_{(n)}$ family win is information: $x_{(n)}$ is
+sufficient for $\theta$ and sits just below the edge of the support, which is the parameter, so its
+error shrinks like $1/n$ in standard deviation instead of $1/\sqrt n$.}
+\refbib{Class~1 deck \texttt{comparing-estimators-MSE-slides.pdf}, slides 2--12; Bolfarine \&
+Sandoval (2010), Exemplo~1.3.8 and (1.3.14)--(1.3.15) (p.~11); Question~10 of this list.}
+\end{sol}
+
+\questao{Original --- parametric bootstrap, and why the nonparametric bootstrap fails for the maximum.}
+\origem{original exercise on the parametric bootstrap and the failure of the nonparametric bootstrap
+for the sample maximum, built on the Class~1 deck \texttt{comparing-estimators-MSE-slides.pdf}, slides
+13--19 (PDF pp.~15--21: bootstrap standard errors of the four estimators, the point mass
+$1-(1-1/n)^n\to0.632$ at $x_{(n)}$, the parametric bootstrap from $U(0,\hat\theta_4)$), in
+\texttt{Aula/class-01/materials/}. No book on disk has an exercise on either point (ISLP §5.2 and
+Exercises 5.2 and 5.9, Questions 6--7, cover only the nonparametric bootstrap). Not a book exercise;
+solved in the answer key of this list.}
+
+Let $x_1,\dots,x_n$ be i.i.d.\ $U(0,\theta)$, $x_{(n)}=\max_ix_i$ and
+$\hat\theta_4=\frac{n+1}{n}x_{(n)}$, as in Question~\ref{q:four}. A nonparametric bootstrap sample
+$x_1^*,\dots,x_n^*$ is drawn with replacement from $\{x_1,\dots,x_n\}$; a parametric bootstrap sample is
+drawn i.i.d.\ from $U(0,\hat\theta_4)$. In both cases $x^*_{(n)}$ is its maximum and
+$\hat\theta_4^*=\frac{n+1}{n}x^*_{(n)}$.
+\begin{enumerate}[label=(\alph*),leftmargin=2.4em]
+\item Show that under nonparametric resampling $\Pr^*(x^*_{(n)}=x_{(n)})=1-(1-1/n)^n$. Evaluate it for
+$n=10,50,100$ and find its limit.
+\item Show that $n(\theta-x_{(n)})/\theta$ converges in distribution to an Exponential(1) variable.
+Using (a), explain why the nonparametric bootstrap distribution of $n(x_{(n)}-x^*_{(n)})/x_{(n)}$
+cannot converge to the same limit: the nonparametric bootstrap is inconsistent for the maximum.
+\item Show that under parametric resampling $x^*_{(n)}/\hat\theta_4\sim\mathrm{Beta}(n,1)$ exactly, and
+deduce the parametric bootstrap standard deviation of $\hat\theta_4^*$ in closed form.
+\item One sample of $n=50$ draws from $U(0,3)$ (NumPy \texttt{default\_rng(2026)}: the 50 data, then
+the nonparametric and then the parametric resamples from the same generator). With $B=10{,}000$
+resamples each, compute $x_{(n)}$, $\hat\theta_4$, the share of nonparametric resamples with
+$x^*_{(n)}=x_{(n)}$, both bootstrap standard deviations of $\hat\theta_4^*$, and compare them with the
+closed form of (c) and the true standard deviation at $\theta=3$.
+\item Show that the 95\% nonparametric percentile interval for $\theta$ (the 2.5\% and 97.5\% quantiles
+of $\hat\theta_4^*$) covers $\theta$ with probability at most $1-[n/(n+1)]^n$; evaluate the bound for
+$n=50$ and check it with $1{,}000$ simulated samples of $B=1{,}000$ resamples
+(\texttt{default\_rng(7)}). Then use (c) to build an exact 95\% interval from the pivot
+$x_{(n)}/\theta$, and compute it for the sample of (d).
+\end{enumerate}
+\resolespaco
+\begin{sol}
+\solhead
+\begin{notacao}
+\item $\Pr^*$, $\E^*$, $\mathrm{SD}^*$: probability, mean and standard deviation under resampling, given
+  the observed sample.
+\item $c=(n+1)/n$, so $\hat\theta_4=c\,x_{(n)}$ and $\hat\theta_4^*=c\,x^*_{(n)}$; $B$: number of resamples.
+\item $q_\gamma=\gamma^{1/n}$: $\gamma$-quantile of $\mathrm{Beta}(n,1)$ (from its CDF $u^n$).
+\end{notacao}
+
+\passo{(a) The atom at the observed maximum}{$x^*_{(n)}=x_{(n)}$ iff the observation equal to
+$x_{(n)}$ is drawn at least once. Each of the $n$ independent draws misses it with probability
+$1-1/n$, so}
+\begin{equation}\label{q21:atom}
+\Pr{}^*(x^*_{(n)}=x_{(n)})=1-\Big(1-\frac1n\Big)^n\;\xrightarrow[n\to\infty]{}\;1-e^{-1}=0.6321 .
+\end{equation}
+For $n=10$, $50$, $100$: $0.6513$, $0.6358$, $0.6340$ (the complement of ISLP Exercise 5.2,
+Question~6).
+
+\passo{(b) True limit versus bootstrap limit}{For $u\ge0$ and $n>u$, by \eqref{q20:cdf},}
+\begin{equation}\label{q21:exp}
+\Pr\Big(\frac{n(\theta-x_{(n)})}{\theta}>u\Big)=\Pr\Big(x_{(n)}<\theta\big(1-\tfrac un\big)\Big)
+=\Big(1-\frac un\Big)^n\;\longrightarrow\;e^{-u},
+\end{equation}
+the survival function of Exponential(1), a continuous law with $\Pr(=0)=0$. The bootstrap analogue
+replaces $\theta$ by $x_{(n)}$ and $x_{(n)}$ by $x^*_{(n)}$; by \eqref{q21:atom}
+\[
+\Pr{}^*\Big(\frac{n(x_{(n)}-x^*_{(n)})}{x_{(n)}}=0\Big)=1-\Big(1-\frac1n\Big)^n\to0.632
+\]
+for every sample. A sequence of distributions with an atom of mass $0.632$ at zero cannot converge to
+a continuous limit, so the bootstrap distribution does not approximate the sampling distribution, however
+large $n$ is. The smooth-functional argument behind the bootstrap fails because $x_{(n)}$ depends on
+the extreme tail of the data, which the empirical distribution reproduces only through the observed
+points.
+
+\passo{(c) Parametric bootstrap}{Given the data, the $x_i^*$ are i.i.d.\ $U(0,\hat\theta_4)$, so
+\eqref{q20:cdf} applies with $\hat\theta_4$ in place of $\theta$: $x^*_{(n)}/\hat\theta_4\sim\mathrm{Beta}(n,1)$,
+exactly the law of $x_{(n)}/\theta$. Using \eqref{q20:mom},}
+\begin{equation}\label{q21:sdpar}
+\mathrm{SD}^*(\hat\theta_4^*)=c\,\hat\theta_4\sqrt{\frac{n}{(n+1)^2(n+2)}}=\frac{\hat\theta_4}{\sqrt{n(n+2)}} ,
+\end{equation}
+the true standard deviation $\theta/\sqrt{n(n+2)}$ with $\theta$ replaced by $\hat\theta_4$ (the plug-in
+estimate). No simulation is needed; with simulation, $\mathrm{SD}^*$ converges to \eqref{q21:sdpar} as
+$B\to\infty$.
+
+\passo{(d) One sample, $n=50$}{The data give $x_{(n)}=2.9009$ and $\hat\theta_4=(51/50)(2.9009)=2.9589$.
+With $B=10{,}000$:}
+\begin{center}\small
+\begin{tabular}{lc}
+\toprule
+Quantity & value\\
+\midrule
+share of nonparametric resamples with $x^*_{(n)}=x_{(n)}$ & 0.6405 \quad (theory \eqref{q21:atom}: 0.6358)\\
+nonparametric $\mathrm{SD}^*(\hat\theta_4^*)$ & 0.0586\\
+parametric $\mathrm{SD}^*(\hat\theta_4^*)$ & 0.0583\\
+closed form \eqref{q21:sdpar}, $2.9589/\sqrt{50\cdot52}$ & 0.0580\\
+true SD at $\theta=3$, $3/\sqrt{2600}$ & 0.0588\\
+\bottomrule
+\end{tabular}
+\end{center}
+Here the nonparametric standard deviation happens to be close to the truth, but the distribution it
+comes from is wrong: 64\% of its mass sits on one point, $\hat\theta_4^*=\hat\theta_4$, while the true
+sampling distribution is continuous. (The deck's slide~19 shows the same with $n=10$, where the
+nonparametric SD, $0.068$, is a quarter of the true $0.274$.) The parametric value agrees with the
+closed form to within Monte Carlo error.
+
+\passo{(e) Coverage of the percentile interval}{Every resample satisfies $x^*_{(n)}\le x_{(n)}$, so
+$\hat\theta_4^*\le\hat\theta_4$ and the interval's upper limit is at most $\hat\theta_4$. It can cover $\theta$
+only if $\theta\le\hat\theta_4$, i.e.\ $x_{(n)}\ge n\theta/(n+1)$; by \eqref{q20:cdf}}
+\begin{equation}\label{q21:bound}
+\Pr(\text{cover})\le\Pr\Big(x_{(n)}\ge\frac{n\theta}{n+1}\Big)=1-\Big(\frac n{n+1}\Big)^n\;\to\;1-e^{-1}.
+\end{equation}
+For $n=50$ the bound is $1-(50/51)^{50}=0.6285$, far below the nominal 0.95. The simulation gives a
+coverage of $0.617$ (Monte Carlo standard error $0.015$), consistent with the bound.
+
+\emph{Exact interval from the pivot.} By (a) of Question~\ref{q:four} and (c), $x_{(n)}/\theta\sim
+\mathrm{Beta}(n,1)$ whatever $\theta$, so $\Pr(q_{0.025}\le x_{(n)}/\theta\le q_{0.975})=0.95$. Solving for
+$\theta$:
+\begin{equation}\label{q21:exact}
+\Big[\frac{x_{(n)}}{0.975^{1/n}},\ \frac{x_{(n)}}{0.025^{1/n}}\Big]
+\end{equation}
+has coverage exactly 0.95. For the sample of (d): $0.975^{1/50}=0.99949$ and $0.025^{1/50}=0.92888$,
+giving $[2.9024,\ 3.1230]$, which contains $\theta=3$. The parametric bootstrap is what supplies this
+pivot when no table is at hand: the simulated $x^*_{(n)}/\hat\theta_4$ have exactly the law of
+$x_{(n)}/\theta$.
+
+\passo{Python}{(Complete code with assertions in the check script.)}
+{\small
+\begin{verbatim}
+rng = np.random.default_rng(2026)
+x = rng.uniform(0, 3, size=50); c = 51/50; t4 = c*x.max()
+xs = x[rng.integers(0, 50, size=(10000, 50))]          # nonparametric
+np.mean(xs.max(1) == x.max()), (c*xs.max(1)).std(ddof=1)
+xp = rng.uniform(0, t4, size=(10000, 50))              # parametric
+(c*xp.max(1)).std(ddof=1), t4/np.sqrt(50*52)
+\end{verbatim}
+}
+
+\intuicao{The nonparametric bootstrap treats the sample as the population, so it can never produce a
+value larger than the largest observation, and it reproduces that observation in about 63\% of the
+resamples. For smooth statistics such as $\bar x$ this does not matter; for the maximum, whose
+behaviour is governed by the unseen edge of the support, it does. The parametric bootstrap uses the
+model to generate values beyond $x_{(n)}$, and here it even returns the exact sampling distribution
+of the pivot.}
+\refbib{Class~1 deck \texttt{comparing-estimators-MSE-slides.pdf}, slides 13--19; ISLP (2023), §5.2
+(pp.~212--215); Questions 6, 7 and \ref{q:four} of this list.}
+\end{sol}
+
+\questao{B 6.11 --- generalised likelihood-ratio test of two Poisson rates.}
+\fonte{Bolfarine, H. and Sandoval, M.~C. (2010), \textit{Introdução à Inferência Estatística}
+(edition not stated in the PDF on disk), Capítulo~6 (\textit{Testes de Hipóteses}), §6.7 Exercícios,
+Exercício~6.11, printed p.~116 [PDF p.~122]; answer not given in the book; reproduced verbatim. Used
+for the frequentist Poisson change point of Class~1 (a change at a known date splits the counts into
+two independent Poisson samples).}
+
+\begin{otherlanguage}{brazil}
+\textbf{6.11.} Sejam $X_1,\dots,X_n$ uma amostra aleatória da variável aleatória
+$X\sim Poisson(\theta_1)$ e sejam $Y_1,\dots,Y_m$ uma amostra aleatória da variável aleatória
+$Y\sim Poisson(\theta_2)$ sendo as amostras independentes.\\
+i) Encontre o teste da RVG(aproximado) para testar $H_0:\theta_1=\theta_2$ versus
+$H_1:\theta_1\neq\theta_2$.\\
+ii) Sendo $n=5$, $\sum x_i=3{,}8$; $m=8$; $\sum y_i=4{,}8$, qual a sua conclusão a um nível de
+significância de 5\%?
+\end{otherlanguage}
+\begin{refmat}
+\emph{TRVG} (§6.5, (6.5.1), printed p.~103 [PDF p.~109]): the generalised likelihood-ratio test
+rejects $H_0:\theta\in\Theta_0$ when
+$\lambda(\mathbf x)=\sup_{\Theta_0}L(\theta;\mathbf x)/\sup_{\Theta}L(\theta;\mathbf x)\le c$.
+\emph{Teorema 6.5.1} (printed p.~108 [PDF p.~114]): under regularity conditions and $H_0$,
+$-2\log\lambda(\mathbf X)$ converges in distribution to a $\chi^2$ whose degrees of freedom are the number
+of free parameters in $\Theta$ minus the number in $\Theta_0$; the ``approximate'' test rejects when
+$-2\log\lambda$ exceeds the $\chi^2$ critical value. The book works the same two-sample test for
+Bernoulli data in Exemplo~6.5.8 (printed pp.~110--111 [PDF pp.~116--117]), with $c=3{,}841$ at 5\%.
+\end{refmat}
+\resolespaco
+\begin{sol}
+\solhead
+\begin{notacao}
+\item $s_x=\sum_ix_i$, $s_y=\sum_iy_i$; $\hat\theta_1=s_x/n$, $\hat\theta_2=s_y/m$: unrestricted MLEs;
+  $\hat\theta=(s_x+s_y)/(n+m)$: MLE under $H_0$.
+\item $\Theta=\{(\theta_1,\theta_2):\theta_1,\theta_2>0\}$ (2 free parameters);
+  $\Theta_0=\{\theta_1=\theta_2=\theta>0\}$ (1 free parameter); $G=-2\log\lambda$.
+\end{notacao}
+
+\passo{Likelihood}{By independence of the two samples,}
+\begin{equation}\label{q22:lik}
+L(\theta_1,\theta_2)=\frac{\theta_1^{s_x}e^{-n\theta_1}\,\theta_2^{s_y}e^{-m\theta_2}}{\prod_ix_i!\,\prod_iy_i!} .
+\end{equation}
+Maximising each factor of \eqref{q22:lik} separately gives $\hat\theta_1=\bar x$, $\hat\theta_2=\bar y$
+(Bolfarine's Exemplo~3.2.5). Under $H_0$, $L=\theta^{s_x+s_y}e^{-(n+m)\theta}/(\cdots)$ is a single Poisson
+likelihood with $n+m$ observations, maximised at $\hat\theta=(s_x+s_y)/(n+m)$.
+
+\passo{(i) The statistic}{The factorials cancel in the ratio:}
+\[
+\lambda(\mathbf x,\mathbf y)=\frac{\hat\theta^{\,s_x+s_y}e^{-(n+m)\hat\theta}}
+{\hat\theta_1^{s_x}e^{-n\hat\theta_1}\,\hat\theta_2^{s_y}e^{-m\hat\theta_2}} .
+\]
+Since $n\hat\theta_1+m\hat\theta_2=s_x+s_y=(n+m)\hat\theta$, the exponentials cancel too, and
+\begin{equation}\label{q22:G}
+G=-2\log\lambda=2\Big[s_x\log\frac{\hat\theta_1}{\hat\theta}+s_y\log\frac{\hat\theta_2}{\hat\theta}\Big].
+\end{equation}
+By Teorema 6.5.1, $G\approx\chi^2_1$ under $H_0$ ($2-1=1$ degree of freedom), so the approximate test
+of level $\alpha$ rejects $H_0$ when $G\ge\chi^2_{1;1-\alpha}$; at 5\%, $G\ge3{,}841$.
+
+\passo{(ii) The data}{As printed, $\sum x_i=3{,}8$ and $\sum y_i=4{,}8$ cannot be sums of Poisson
+counts (they are not integers), so the values are probably misprinted. \eqref{q22:G} depends on the
+data only through the sums, so we evaluate it as printed:
+$\hat\theta_1=3.8/5=0.76$, $\hat\theta_2=4.8/8=0.6$, $\hat\theta=8.6/13=0.6615$, and}
+\[
+G=2\Big[3.8\log\frac{0.76}{0.6615}+4.8\log\frac{0.6}{0.6615}\Big]=0.1172<3.841,
+\]
+p-value $\Pr(\chi^2_1\ge0.1172)=0.7321$: \textbf{do not reject} $H_0$ at 5\%. Reading the printed values
+as sample means instead ($\bar x=3.8$, $\bar y=4.8$, so $s_x=19$, $s_y=38.4$, $\hat\theta=57.4/13=4.4154$)
+gives $G=0.7108$, p-value $0.3992$: the same conclusion.
+
+\passo{Connection to the coal-mining change point (Class~1)}{With the change year $\tau$ fixed, the
+counts before and after $\tau$ are exactly the two samples of this exercise, and \eqref{q22:G} is the
+LR test of ``no change''. The Class~1 deck \texttt{poisson-with-breakpoint.pdf} (slides 13--19) adds two
+steps. (1) \emph{Overdispersion}: for the 112 annual counts 1851--1962 ($\sum y_t=191$), the
+dispersion ratio is $s^2/\bar y=1.5916$, and $(n-1)s^2/\bar y=176.66$ against $\chi^2_{111}$ has
+p-value $0.00007$: one Poisson rate does not fit. (2) \emph{Profile likelihood over $\tau$}: maximising
+\eqref{q22:G} over the split, it peaks at $\tau=1891$ ($n=41$, $s_x=127$, $\hat\theta_1=3.0976$;
+$m=71$, $s_y=64$, $\hat\theta_2=0.9014$) with $G=69.99$, the deck's $70.0$. Because $\tau$ was chosen
+to maximise $G$, the $\chi^2_1$ reference no longer applies; a parametric bootstrap of the maximised
+statistic under $H_0$ (10{,}000 series of 112 Poisson$(191/112)$ counts, \texttt{default\_rng(2026)})
+puts its 95\% point at $9.58$ instead of $3.84$. The observed $69.99$ exceeds every simulated value,
+so the change is overwhelming either way.}
+
+\intuicao{The LR statistic compares how well one common rate and two separate rates explain the
+counts; with Poisson data it reduces to the sums, and the factorials and exponential terms drop out.
+In the change-point problem the split is unknown, and searching over it is itself a form of multiple
+testing (Block~7): the maximised statistic must be referred to its own, wider, null distribution.}
+\refbib{Bolfarine \& Sandoval (2010), §6.5 ((6.5.1), Teorema~6.5.1, Exemplo~6.5.8; pp.~103--111);
+Class~1 deck \texttt{poisson-with-breakpoint.pdf}, slides 13--19.}
+\end{sol}
+
+\questao{I 6.8 --- forward and backward stepwise selection and the lasso on simulated data (computer exercise).}
+\fonte{James, G., Witten, D., Hastie, T., Tibshirani, R. and Taylor, J. (2023), \textit{An
+Introduction to Statistical Learning with Applications in Python}, 1st ed., Springer, Chapter~6
+(\textit{Linear Model Selection and Regularization}), §6.6 Exercises (Applied), Exercise~8, printed
+p.~286 [PDF p.~294]; answer not given in the book; reproduced verbatim.}
+
+8. In this exercise, we will generate simulated data, and will then use this data to perform forward
+and backward stepwise selection.
+\begin{enumerate}[label=(\alph*),leftmargin=2.4em]
+\item Create a random number generator and use its \texttt{normal()} method to generate a predictor
+$X$ of length $n=100$, as well as a noise vector $\epsilon$ of length $n=100$.
+\item Generate a response vector $Y$ of length $n=100$ according to the model
+\[ Y=\beta_0+\beta_1X+\beta_2X^2+\beta_3X^3+\epsilon, \]
+where $\beta_0$, $\beta_1$, $\beta_2$, and $\beta_3$ are constants of your choice.
+\item Use forward stepwise selection in order to select a model containing the predictors
+$X,X^2,\dots,X^{10}$. What is the model obtained according to $C_p$? Report the coefficients of the
+model obtained.
+\item Repeat (c), using backwards stepwise selection. How does your answer compare to the results in
+(c)?
+\item Now fit a lasso model to the simulated data, again using $X,X^2,\dots,X^{10}$ as predictors.
+Use cross-validation to select the optimal value of $\lambda$. Create plots of the cross-validation
+error as a function of $\lambda$. Report the resulting coefficient estimates, and discuss the results
+obtained.
+\item Now generate a response vector $Y$ according to the model
+\[ Y=\beta_0+\beta_7X^7+\epsilon, \]
+and perform forward stepwise selection and the lasso. Discuss the results obtained.
+\end{enumerate}
+\begin{refmat}
+From ISLP §6.1--6.2 (summarised). \emph{Forward stepwise selection} (Algorithm~6.2, printed p.~233
+[PDF p.~241]): start from the null model $\mathcal M_0$ (intercept only); for $k=0,\dots,p-1$ add to
+$\mathcal M_k$ the predictor that gives the smallest RSS, giving $\mathcal M_{k+1}$; choose among
+$\mathcal M_0,\dots,\mathcal M_p$ by $C_p$, BIC, adjusted $R^2$ or cross-validation. \emph{Backward
+stepwise selection} (Algorithm~6.3, printed p.~235 [PDF p.~243]): start from the full model
+$\mathcal M_p$ and remove, one at a time, the predictor whose removal gives the smallest RSS.
+\emph{$C_p$} ((6.2), printed p.~236 [PDF p.~244]): for a least-squares model with $d$ predictors,
+$C_p=\frac1n(\mathrm{RSS}+2d\hat\sigma^2)$, where $\hat\sigma^2$ estimates the error variance (in
+practice from the full model); BIC ((6.3), p.~237) replaces $2$ by $\log n$; adjusted
+$R^2=1-[\mathrm{RSS}/(n-d-1)]/[\mathrm{TSS}/(n-1)]$ ((6.4), p.~237). \emph{Lasso} ((6.7), printed p.~244
+[PDF p.~252]): minimise $\mathrm{RSS}+\lambda\sum_{j=1}^p|\beta_j|$, with the predictors standardised;
+$\lambda$ is chosen by cross-validation.
+\end{refmat}
+\resolespaco
+\begin{sol}
+\solhead
+\begin{notacao}
+\item $X_i\sim N(0,1)$, $\epsilon_i\sim N(0,1)$, $i=1,\dots,100$, from NumPy \texttt{default\_rng(2026)}
+  ($X$ drawn first, then $\epsilon$); predictors $X^k$, $k=1,\dots,10$; chosen coefficients
+  $(\beta_0,\beta_1,\beta_2,\beta_3)=(1,2,-3,0.5)$ in (b) and $(\beta_0,\beta_7)=(1,0.5)$ in (f), with the
+  same $X$ and $\epsilon$.
+\item $d$: number of predictors besides the intercept; $\hat\sigma^2=\mathrm{RSS}_{\text{full}}/(n-11)$ from
+  the 10-predictor model; $C_p=(\mathrm{RSS}+2d\hat\sigma^2)/n$.
+\item Lasso: objective $\frac1{2n}\lVert y-\bar y-Z\beta\rVert^2+\lambda\lVert\beta\rVert_1$ with $Z$ the predictors
+  standardised to mean 0 and variance 1 (the scaling of \texttt{sklearn}'s \texttt{Lasso}, which is
+  ISLP's (6.7) with $\lambda$ rescaled by $2n$); 60 values of $\lambda$ log-spaced from
+  $\lambda_{\max}=\max_j|Z_j^\top(y-\bar y)|/n$ down to $10^{-4}\lambda_{\max}$; 10-fold cross-validation
+  with folds fixed by \texttt{default\_rng(2026)}.
+\end{notacao}
+
+\passo{(a)--(b) Data}{$X$ and $\epsilon$ as in the notation, and
+$Y=1+2X-3X^2+0.5X^3+\epsilon$. The full model with $X,\dots,X^{10}$ gives $\hat\sigma^2=1.4537$
+(true $\sigma^2=1$; the in-sample estimate is noisy).}
+
+\passo{(c) Forward stepwise}{Order in which the predictors enter, and $C_p$ of each $\mathcal M_d$:}
+\begin{center}\footnotesize\setlength{\tabcolsep}{2.6pt}
+\begin{tabular}{lccccccccccc}
+\toprule
+$d$ & 0 & 1 & 2 & 3 & 4 & 5 & 6 & 7 & 8 & 9 & 10\\
+added & --- & $X^2$ & $X^3$ & $X$ & $X^5$ & $X^6$ & $X^9$ & $X^8$ & $X^{10}$ & $X^7$ & $X^4$\\
+$C_p$ & 16.4365 & 11.2013 & 2.6443 & \textbf{1.4131} & 1.4403 & 1.4552 & 1.4841 & 1.5058 & 1.5326 & 1.5557 & 1.5846\\
+\bottomrule
+\end{tabular}
+\end{center}
+$C_p$ is smallest at $d=3$, the true model $\{X,X^2,X^3\}$ (BIC and adjusted $R^2$ choose it too).
+Its least-squares coefficients:
+\[
+\hat Y=1.1236+1.7927\,X-3.0366\,X^2+0.5396\,X^3 ,
+\]
+close to $(1,2,-3,0.5)$.
+
+\passo{(d) Backward stepwise}{Removing one predictor at a time from the full model (read right to
+left: $X^3$ is removed first, then $X^4$, \dots):}
+\begin{center}\footnotesize\setlength{\tabcolsep}{2.6pt}
+\begin{tabular}{lccccccccccc}
+\toprule
+$d$ & 0 & 1 & 2 & 3 & 4 & 5 & 6 & 7 & 8 & 9 & 10\\
+$\mathcal M_d$ adds & --- & $X^2$ & $X$ & $X^5$ & $X^7$ & $X^9$ & $X^8$ & $X^{10}$ & $X^6$ & $X^4$ & $X^3$\\
+$C_p$ & 16.4365 & 11.2013 & 2.6493 & 1.6376 & 1.4870 & \textbf{1.4863} & 1.5016 & 1.4983 & 1.5267 & 1.5555 & 1.5846\\
+\bottomrule
+\end{tabular}
+\end{center}
+$C_p$ chooses $d=5$, $\{X,X^2,X^5,X^7,X^9\}$:
+\[
+\hat Y=1.1115+2.0411\,X-3.0175\,X^2+0.2763\,X^5-0.0475\,X^7+0.0025\,X^9 .
+\]
+(BIC chooses $\{X,X^2,X^5,X^7\}$, adjusted $R^2$ a 7-predictor model.) Backward selection discards
+$X^3$ at its first step: with $X^5,X^7,X^9$ present, $X^3$ is almost a linear combination of the other
+odd powers (the odd powers of a standard normal are highly correlated), so dropping it costs almost no
+RSS. Once removed it never returns, and the odd higher powers stand in for it. Forward selection
+starts from the strongest single predictor and never meets this problem here. The two greedy paths
+need not agree, and only best subset selection guarantees the best model of each size.
+
+\passo{(e) Lasso}{The 10-fold cross-validation error is smallest at $\lambda=0.02122$ (CV mean squared
+error $1.4272$):}
+\begin{center}
+\begin{tikzpicture}
+\begin{semilogxaxis}[width=0.72\linewidth,height=5cm,xlabel={$\lambda$ (log scale)},
+  ylabel={CV mean squared error},ymin=0,grid=major]
+\addplot[blue!55!black,mark=*,mark size=1pt] table[x=lam,y=cv]{data/L01-I68-lasso-cv.dat};
+\draw[dashed,red!70!black] (axis cs:0.02122,0) -- (axis cs:0.02122,40);
+\end{semilogxaxis}
+\end{tikzpicture}
+\end{center}
+At the chosen $\lambda$ exactly three coefficients are nonzero, those of $X$, $X^2$, $X^3$; on the
+original scale of the predictors,
+\[
+\hat Y=1.0865+1.8037\,X-2.9897\,X^2+0.5213\,X^3 ,
+\]
+and the seven higher powers are set exactly to zero. The lasso recovers the true model, as forward
+selection did, with coefficients slightly shrunk relative to least squares on the same three
+predictors (e.g.\ $X^2$: $-2.9897$ against $-3.0366$). The CV curve is U-shaped and flat near its
+minimum. Large $\lambda$ (few or no predictors) underfits; small $\lambda$ (close to least squares with
+all ten powers) overfits badly, with CV error above 14 for every $\lambda<0.0011$, because high powers
+fitted on 90 points extrapolate wildly to held-out points in the tails of $X$.
+
+\passo{(f) Sparse high-order model}{With $Y=1+0.5X^7+\epsilon$ (same $X$, $\epsilon$), forward selection
+adds $X^7$ first, and $C_p$ is smallest at $d=1$ ($C_p=1.3727$): $\hat Y=1.1020+0.5000\,X^7$. The lasso's
+CV minimum is at $\lambda=0.02958$ (CV error $1.4737$), keeping $X^7$ with coefficient $0.4997$ plus two
+tiny terms, $X$ ($-0.0712$) and $X^6$ ($0.0009$); intercept $1.1002$. Both methods find the single
+relevant power; $X^7$ has such a large variance that its signal dominates, and the lasso's two extra
+coefficients are negligible, the usual price of choosing $\lambda$ by prediction error, which tends to
+keep a few small spurious terms.}
+
+\passo{Python}{Forward stepwise and $C_p$ (complete code, with the exact lasso path computed by the
+LARS--lasso algorithm in NumPy since scikit-learn is not used, in the check script):}
+{\small
+\begin{verbatim}
+P = np.column_stack([X**k for k in range(1, 11)])
+def rss(y, cols):
+    A = np.column_stack([np.ones(100)] + [P[:, j] for j in cols])
+    r = y - A @ np.linalg.lstsq(A, y, rcond=None)[0]; return r @ r
+sig2 = rss(Y, range(10)) / (100 - 11)
+cur, path = [], [[]]
+for _ in range(10):
+    cur = cur + [min(set(range(10)) - set(cur), key=lambda j: rss(Y, cur + [j]))]
+    path.append(cur)
+cp = [(rss(Y, c) + 2 * len(c) * sig2) / 100 for c in path]   # argmin -> [X^2, X^3, X]
+\end{verbatim}
+}
+
+\intuicao{Subset selection searches over models and scores each with a penalty for size ($C_p$, BIC);
+the lasso replaces the discrete search with a continuous penalty that sets coefficients exactly to
+zero. With strongly correlated candidate predictors (powers of the same $X$), greedy searches can take
+different paths and keep stand-ins for a dropped variable, while the lasso, tuned by
+cross-validation, finds the sparse truth here at the cost of mild shrinkage.}
+\refbib{ISLP (2023), §6.1 (Algorithms 6.2--6.3, (6.2)--(6.4), pp.~231--238) and §6.2.2 (lasso,
+pp.~244--251); Class~1 slides \texttt{multiplelinearregression.pdf} (pp.~15--35: $R^2$, $C_p$, AIC,
+BIC, subset and stepwise selection); Wooldridge (2016), §6.3 (pp.~180--186).}
+\end{sol}
+
+\questao{W 11.4 --- correlation of a random walk: the unit-root case of the AR(1).}
+\fonte{Wooldridge, J.~M. (2016), \textit{Introductory Econometrics: A Modern Approach}, 6th ed.,
+Cengage Learning, Chapter~11 (\textit{Further Issues in Using OLS with Time Series Data}), Problems,
+Problem~4, printed p.~366 [PDF p.~390]; answer not given in the book (Appendix~F answers only the
+in-text questions); reproduced verbatim.}
+
+4 Let $\{y_t:t=1,2,\dots\}$ follow a random walk, as in (11.20), with $y_0=0$. Show that
+\[ \mathrm{Corr}(y_t,y_{t+h})=\sqrt{t/(t+h)}\quad\text{for } t\ge1,\ h>0. \]
+\begin{refmat}
+\emph{Equation (11.20)} (§11.3a, printed p.~354 [PDF p.~378]): $y_t=y_{t-1}+e_t$, $t=1,2,\dots$, where
+$\{e_t\}$ is i.i.d.\ with mean zero and variance $\sigma_e^2$ and the initial value $y_0$ is independent of
+$e_t$ for all $t\ge1$; it is the AR(1) model (11.2), $y_t=\rho_1y_{t-1}+e_t$, with $\rho_1=1$ (a unit
+root). The book derives $\Var(y_t)=\sigma_e^2t$ when $y_0$ is nonrandom ((11.21), p.~354).
+\end{refmat}
+\resolespaco
+\begin{sol}
+\solhead
+\begin{notacao}
+\item $e_t$ i.i.d., mean 0, variance $\sigma_e^2$; $y_0=0$; $t\ge1$, $h>0$ integers.
+\item For the comparison: the stable AR(1) $y_t=\rho y_{t-1}+e_t$, $|\rho|<1$, also from $y_0=0$.
+\end{notacao}
+
+\passo{Repeated substitution}{From (11.20) with $y_0=0$,}
+\begin{equation}\label{q24:sum}
+y_t=e_1+e_2+\dots+e_t,\qquad y_{t+h}=y_t+(e_{t+1}+\dots+e_{t+h}) .
+\end{equation}
+
+\passo{Variances}{The $e$'s are uncorrelated with common variance $\sigma_e^2$, so by \eqref{q24:sum}
+$\Var(y_t)=t\sigma_e^2$ and $\Var(y_{t+h})=(t+h)\sigma_e^2$: the variance grows linearly with $t$.}
+
+\passo{Covariance}{The increment $e_{t+1}+\dots+e_{t+h}$ is uncorrelated with $e_1,\dots,e_t$, hence
+with $y_t$. By \eqref{q24:sum},}
+\begin{equation}\label{q24:cov}
+\Cov(y_t,y_{t+h})=\Cov(y_t,y_t)+\Cov(y_t,e_{t+1}+\dots+e_{t+h})=t\sigma_e^2+0=t\sigma_e^2 .
+\end{equation}
+
+\passo{Correlation}{Dividing \eqref{q24:cov} by the product of the standard deviations:}
+\[
+\mathrm{Corr}(y_t,y_{t+h})=\frac{t\sigma_e^2}{\sqrt{t\sigma_e^2}\sqrt{(t+h)\sigma_e^2}}=\sqrt{\frac{t}{t+h}} .
+\]
+It depends on $t$, so the random walk is not covariance stationary. For fixed $h$ it tends to 1 as
+$t\to\infty$: with $h=100$ and $t=1{,}000$ it is $\sqrt{1000/1100}=0.9535$, the book's example on
+p.~355. For $t=10$, $h=5$: $\sqrt{10/15}=0.8165$; a simulation of 100{,}000 random walks with $N(0,1)$
+steps (\texttt{default\_rng(2026)}) gives $0.8160$, and $\Var(y_{10})=9.97$ against $10$.
+
+\passo{Contrast: the stable AR(1) and its equilibrium distribution}{With $|\rho|<1$ and $y_0=0$,
+substitution gives $y_t=\sum_{j=0}^{t-1}\rho^je_{t-j}$, so}
+\begin{equation}\label{q24:ar1}
+\begin{gathered}
+\Var(y_t)=\sigma_e^2\,\frac{1-\rho^{2t}}{1-\rho^2}\;\to\;\frac{\sigma_e^2}{1-\rho^2},\qquad
+\Cov(y_t,y_{t+h})=\rho^h\Var(y_t),\\
+\mathrm{Corr}(y_t,y_{t+h})=\rho^h\sqrt{\frac{\Var(y_t)}{\Var(y_{t+h})}}\;\to\;\rho^h .
+\end{gathered}
+\end{equation}
+With Gaussian shocks $y_t\sim N\big(0,\sigma_e^2(1-\rho^{2t})/(1-\rho^2)\big)$, which converges to the
+\emph{equilibrium (stationary) distribution} $N\big(0,\sigma_e^2/(1-\rho^2)\big)$; a process started from
+that distribution keeps it forever, with $\mathrm{Corr}(y_t,y_{t+h})=\rho^h$ for every $t$. For $\rho=0.9$,
+$\sigma_e=1$: equilibrium variance $1/0.19=5.2632$; at $t=10$, $h=5$ the correlation is
+$0.9^5\sqrt{4.6233/5.0400}=0.5655$, against the limit $0.9^5=0.5905$ and the random walk's $0.8165$.
+At $\rho=1$, \eqref{q24:ar1} has no limit: $\Var(y_t)=t\sigma_e^2\to\infty$, there is no equilibrium
+distribution, and the correlation at any fixed lag tends to 1 instead of decaying.
+
+\intuicao{A stable AR(1) forgets its starting point at rate $\rho^t$, so its variance levels off and
+the dependence between dates $h$ apart dies out geometrically. A unit root never forgets: every
+shock stays in the level forever, the variance grows with $t$, and two observations far apart remain
+highly correlated if both are late in the sample. This is why the usual large-sample OLS theory,
+which needs weak dependence, fails for unit-root series (Class~8 tests for it).}
+\refbib{Wooldridge (2016), §11.1 (AR(1), (11.2)--(11.4), p.~347) and §11.3a ((11.20)--(11.22),
+pp.~354--355); Tsay (2010), §2.4.1 (pp.~38--40) and §2.7 (unit-root nonstationarity, pp.~71--76).}
+\end{sol}
+
+\questao{T 8.5 --- a seasonal bivariate AR(4): VAR(1) algebra in matrix notation.}
+\fonte{Tsay, R.~S. (2010), \textit{Analysis of Financial Time Series}, 3rd ed., Wiley, Chapter~8
+(\textit{Multivariate Time Series Analysis and Its Applications}), Exercises, Exercise~8.5, printed
+p.~463 [PDF p.~490]; answer not given in the book; reproduced verbatim. (The same exercise is also in
+the L09 list, for Class~9; here it is solved as the VAR(1) review of Class~1.)}
+
+8.5. The bivariate AR(4) model $\mathbf x_t-\boldsymbol\Phi_4\mathbf x_{t-4}=\boldsymbol\phi_0+\mathbf a_t$
+is a special seasonal model with periodicity 4, where $\{\mathbf a_t\}$ is a sequence of independent and
+identically distributed normal random vectors with mean zero and covariance matrix $\boldsymbol\Sigma$.
+Such a seasonal model may be useful in studying quarterly earnings of a company. (a) Assume that
+$\mathbf x_t$ is weakly stationary. Derive the mean vector and covariance matrix of $\mathbf x_t$.
+(b) Derive the necessary and sufficient condition of weak stationarity for $\mathbf x_t$. (c) Show that
+$\boldsymbol\Gamma_\ell=\boldsymbol\Phi_4\boldsymbol\Gamma_{\ell-4}$ for $\ell>0$, where $\boldsymbol\Gamma_\ell$
+is the lag-$\ell$ autocovariance matrix of $\mathbf x_t$.
+\begin{refmat}
+Tsay's notation (§8.1--8.2, printed pp.~390--405 [PDF pp.~417--432]): $\boldsymbol\Gamma_\ell=
+\E[(\mathbf x_t-\boldsymbol\mu)(\mathbf x_{t-\ell}-\boldsymbol\mu)']$, with
+$\boldsymbol\Gamma_{-\ell}=\boldsymbol\Gamma_\ell'$; the VAR(1) $\mathbf x_t=\boldsymbol\phi_0+\boldsymbol\Phi\mathbf
+x_{t-1}+\mathbf a_t$ is weakly stationary iff all eigenvalues of $\boldsymbol\Phi$ have modulus less than 1
+(§8.2.2, printed p.~402 [PDF p.~429]), with mean $(\mathbf I-\boldsymbol\Phi)^{-1}\boldsymbol\phi_0$.
+\end{refmat}
+\resolespaco
+\begin{sol}
+\solhead
+\begin{notacao}
+\item $\mathbf x_t$: $2\times1$; $\boldsymbol\phi_0$: $2\times1$ constant; $\boldsymbol\Phi_4$: $2\times2$ with
+  eigenvalues $\lambda_1,\lambda_2$ (possibly complex).
+\item $\mathbf a_t\overset{iid}{\sim}N(\mathbf 0,\boldsymbol\Sigma)$, independent of $\mathbf x_{t-j}$, $j\ge1$.
+\item $\boldsymbol\mu=\E(\mathbf x_t)$; $\tilde{\mathbf x}_t=\mathbf x_t-\boldsymbol\mu$; $\otimes$: Kronecker product;
+  $\mathrm{vec}$: column stacking; $B$: back-shift operator.
+\end{notacao}
+The model is
+\begin{equation}\label{q25:m}
+\mathbf x_t=\boldsymbol\phi_0+\boldsymbol\Phi_4\mathbf x_{t-4}+\mathbf a_t ,
+\end{equation}
+a VAR(1) in the seasonal lag: every result below is the VAR(1) result with $\boldsymbol\Phi_4$ in place
+of $\boldsymbol\Phi$ and lag 4 in place of lag 1.
+
+\passo{(a) Mean}{Taking expectations of \eqref{q25:m}, with $\E(\mathbf x_t)=\E(\mathbf x_{t-4})=\boldsymbol\mu$:}
+\begin{equation}\label{q25:mu}
+\boldsymbol\mu=\boldsymbol\phi_0+\boldsymbol\Phi_4\boldsymbol\mu\quad\Longrightarrow\quad
+\boldsymbol\mu=(\mathbf I-\boldsymbol\Phi_4)^{-1}\boldsymbol\phi_0 ,
+\end{equation}
+the inverse existing because, under (b), 1 is not an eigenvalue of $\boldsymbol\Phi_4$.
+
+\passo{(a) Covariance matrix}{Subtracting \eqref{q25:mu} from \eqref{q25:m}:}
+\begin{equation}\label{q25:dev}
+\tilde{\mathbf x}_t=\boldsymbol\Phi_4\tilde{\mathbf x}_{t-4}+\mathbf a_t .
+\end{equation}
+Multiplying \eqref{q25:dev} by its transpose and taking expectations (the cross terms vanish because
+$\mathbf a_t$ is independent of $\tilde{\mathbf x}_{t-4}$):
+\begin{equation}\label{q25:G0}
+\boldsymbol\Gamma_0=\boldsymbol\Phi_4\boldsymbol\Gamma_0\boldsymbol\Phi_4'+\boldsymbol\Sigma .
+\end{equation}
+Applying $\mathrm{vec}(\mathbf A\mathbf X\mathbf B)=(\mathbf B'\otimes\mathbf A)\mathrm{vec}(\mathbf X)$:
+\begin{equation}\label{q25:vec}
+\mathrm{vec}(\boldsymbol\Gamma_0)=(\mathbf I_4-\boldsymbol\Phi_4\otimes\boldsymbol\Phi_4)^{-1}\mathrm{vec}(\boldsymbol\Sigma),
+\end{equation}
+equivalently $\boldsymbol\Gamma_0=\sum_{j\ge0}\boldsymbol\Phi_4^j\boldsymbol\Sigma(\boldsymbol\Phi_4')^j$ from
+$\tilde{\mathbf x}_t=\sum_{j\ge0}\boldsymbol\Phi_4^j\mathbf a_{t-4j}$.
+
+\passo{(b) Stationarity}{Write \eqref{q25:dev} as $(\mathbf I-\boldsymbol\Phi_4B^4)\tilde{\mathbf x}_t=\mathbf a_t$.
+It is weakly stationary iff every zero of $\det(\mathbf I-\boldsymbol\Phi_4z^4)$ lies outside the unit
+circle. With $w=z^4$, $\det(\mathbf I-\boldsymbol\Phi_4w)=(1-\lambda_1w)(1-\lambda_2w)$ has zeros
+$w_i=1/\lambda_i$, each giving four $z$ with $|z|=|\lambda_i|^{-1/4}$. So $|z|>1$ for all zeros iff}
+\[
+|\lambda_1|<1\quad\text{and}\quad|\lambda_2|<1 :
+\]
+all eigenvalues of $\boldsymbol\Phi_4$ inside the unit circle (for a $2\times2$ matrix:
+$|\det\boldsymbol\Phi_4|<1$ and $|\mathrm{tr}\,\boldsymbol\Phi_4|<1+\det\boldsymbol\Phi_4$), the VAR(1) condition.
+
+\passo{(c) Autocovariances}{For $\ell>0$, postmultiplying \eqref{q25:dev} by $\tilde{\mathbf x}_{t-\ell}'$
+and taking expectations, $\E(\mathbf a_t\tilde{\mathbf x}_{t-\ell}')=\mathbf 0$ because
+$\tilde{\mathbf x}_{t-\ell}$ depends only on shocks dated before $t$, and
+$\E(\tilde{\mathbf x}_{t-4}\tilde{\mathbf x}_{t-\ell}')=\boldsymbol\Gamma_{\ell-4}$ by stationarity (for
+$\ell<4$ this is $\boldsymbol\Gamma_{4-\ell}'$):}
+\[
+\boldsymbol\Gamma_\ell=\boldsymbol\Phi_4\boldsymbol\Gamma_{\ell-4},\qquad\ell>0 .
+\]
+Consequences: $\boldsymbol\Gamma_{4k}=\boldsymbol\Phi_4^k\boldsymbol\Gamma_0$; and
+$\boldsymbol\Gamma_1=\boldsymbol\Phi_4\boldsymbol\Gamma_3'$, $\boldsymbol\Gamma_3=\boldsymbol\Phi_4\boldsymbol\Gamma_1'$ give
+$\boldsymbol\Gamma_1=\boldsymbol\Phi_4\boldsymbol\Gamma_1\boldsymbol\Phi_4'$, whose only solution under (b) is
+$\boldsymbol\Gamma_1=\mathbf 0$ (likewise $\boldsymbol\Gamma_2=\boldsymbol\Gamma_3=\mathbf 0$): only lags that are
+multiples of 4 are correlated.
+
+\passo{Numerical illustration}{Take $\boldsymbol\phi_0=(1,\,0.5)'$,
+$\boldsymbol\Phi_4=\begin{pmatrix}0.6&0.2\\0.1&0.5\end{pmatrix}$,
+$\boldsymbol\Sigma=\begin{pmatrix}1&0.3\\0.3&0.5\end{pmatrix}$. The eigenvalues of $\boldsymbol\Phi_4$ are $0.7$
+and $0.4$ ($\det=0.28$, $\mathrm{tr}=1.1<1.28$): stationary. By \eqref{q25:mu} and \eqref{q25:vec}
+(check script),}
+\[
+\boldsymbol\mu=\begin{pmatrix}3.3333\\1.6667\end{pmatrix},\qquad
+\boldsymbol\Gamma_0=\begin{pmatrix}1.8830&0.7232\\0.7232&0.7882\end{pmatrix},\qquad
+\boldsymbol\Gamma_4=\boldsymbol\Phi_4\boldsymbol\Gamma_0=\begin{pmatrix}1.2744&0.5916\\0.5499&0.4664\end{pmatrix}.
+\]
+($\boldsymbol\Gamma_4$ is not symmetric: $\boldsymbol\Gamma_\ell'=\boldsymbol\Gamma_{-\ell}\neq\boldsymbol\Gamma_\ell$ in general.)
+In Python:
+{\small
+\begin{verbatim}
+mu = np.linalg.solve(np.eye(2) - P4, phi0)
+G0 = np.linalg.solve(np.eye(4) - np.kron(P4, P4),
+                     Sig.ravel("F")).reshape(2, 2, order="F")
+\end{verbatim}
+}
+
+\intuicao{Matrix notation makes the VAR(1) look exactly like the scalar AR(1): mean
+$\phi_0/(1-\phi)$ becomes $(\mathbf I-\boldsymbol\Phi)^{-1}\boldsymbol\phi_0$, variance $\sigma^2/(1-\phi^2)$
+becomes the fixed point of $\boldsymbol\Gamma_0=\boldsymbol\Phi\boldsymbol\Gamma_0\boldsymbol\Phi'+\boldsymbol\Sigma$, and
+$|\phi|<1$ becomes ``all eigenvalues inside the unit circle''. The seasonal model is four interleaved
+VAR(1) processes, one per quarter, that never interact.}
+\refbib{Tsay (2010), §8.2.1--8.2.3 ((8.9)--(8.15), pp.~399--405); Class~1 site script
+\texttt{ar-var-R.txt} (VAR(1) fits).}
 \end{sol}
 
 \end{document}

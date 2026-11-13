@@ -8,15 +8,20 @@ simulation blocks use fixed seeds; their printed values are asserted to the prin
 and against the exact answer within a Monte Carlo tolerance. Prints PASS at the end.
 Questions 27-28 are the list's two original exercises (sparsity priors, seed 2010; Hamiltonian Monte
 Carlo vs random-walk MH, seed 2026): orig_sparse() and orig_hmc().
+Questions 29-34 (Block 6, added 2026-11-13, Classes 3+4 gap topics): Greenberg 3.5-3.6 g35_g36();
+Koop-Poirier-Tobias 12.2 kpt122() (seed 122) and 6.7 kpt67(); originals on the hierarchical
+Beta-Binomial (grid posterior) orig_hbb(), sequential updating orig_seq() (seed 2026) and the
+physicists' four priors orig_phys() (SIR seed 125532).
 Data: Listas/data/babies.data (StatLabs "Birth weight II", see Listas/data/README.md);
-coal-mining counts embedded below (Carlin, Gelfand and Smith 1992, 1851-1962).
+coal-mining counts embedded below (Carlin, Gelfand and Smith 1992, 1851-1962); heart-attack deaths
+of 13 Manhattan hospitals embedded below (class page hierarchical-beta-binomial.html, NYS DOH 2015).
 """
 from math import exp, lgamma, log
 from pathlib import Path
 
 import numpy as np
 from scipy import integrate, stats
-from scipy.special import gammaln, logsumexp
+from scipy.special import betaln, gammaln, logsumexp
 
 DATA = Path(__file__).resolve().parent / "data"
 
@@ -741,8 +746,344 @@ def orig_hmc():
     return eps_max, maxdH, res
 
 
+# ================================================================ Block 6 (2026-11-13): gap topics
+# ---------------------------------------------------------------- Greenberg 3.5 and 3.6
+def g35_g36():
+    """Absolute and zero-one loss on the illustrative Gamma(5, 8) posterior (slides' exponential-gamma
+    model, prior Gamma(2, 4), lifetimes 0.5, 1.2, 2.3): median and mode as minimisers."""
+    x = np.array([0.5, 1.2, 2.3])
+    a, b = 2.0 + x.size, 4.0 + x.sum()
+    post = stats.gamma(a, scale=1 / b)
+    mean, med, mode = post.mean(), post.median(), (a - 1) / b
+    # E|t - theta| = t(2F(t) - 1) - E(theta) + 2 E(theta 1{theta > t}), closed form for the gamma
+    exp_abs = lambda t: t * (2 * post.cdf(t) - 1) - mean + 2 * mean * stats.gamma.sf(t, a + 1, scale=1 / b)
+    num = sum(integrate.quad(lambda th: abs(med - th) * post.pdf(th), lo, hi)[0] for lo, hi in ((0, med), (med, np.inf)))
+    close(exp_abs(med), num, 1e-9, "G3.5 expected absolute loss, closed form vs quadrature")
+    grid = np.linspace(0.3, 1.0, 70_001)
+    t_min = grid[np.argmin(exp_abs(grid))]
+    close(t_min, med, 2e-5, "G3.5 argmin of expected absolute loss = median")
+    print(f"G3.5: Gamma({a:.0f},{b:.0f}) mean={mean:.4f} median={med:.4f} mode={mode:.4f}; "
+          f"E|loss| at median/mean/mode = {exp_abs(med):.4f}/{exp_abs(mean):.4f}/{exp_abs(mode):.4f}")
+    rows = []
+    for bw in (0.2, 0.1, 0.05, 0.01):
+        r = np.exp(2 * bw * b / (a - 1))
+        t_cf = bw * (r + 1) / (r - 1)                  # solves pdf(t+b) = pdf(t-b)
+        g = np.linspace(bw + 1e-6, 1.5, 300_001)
+        cover = post.cdf(g + bw) - post.cdf(g - bw)
+        close(g[np.argmax(cover)], t_cf, 1e-5, f"G3.6 argmax coverage b={bw}")
+        close(post.pdf(t_cf + bw), post.pdf(t_cf - bw), 1e-10, "G3.6 first-order condition")
+        rows.append((bw, t_cf, post.cdf(t_cf + bw) - post.cdf(t_cf - bw)))
+    print("G3.6: " + " ".join(f"b={r[0]}: t={r[1]:.5f} P={r[2]:.4f}" for r in rows))
+    close(mean, 0.625, 1e-12, "G3.5 mean"); close(med, 0.5839, 5e-5, "G3.5 median"); close(mode, 0.5, 1e-12, "mode")
+    for got, e in zip((exp_abs(med), exp_abs(mean), exp_abs(mode)), (0.2169, 0.2193, 0.2276)):
+        close(got, e, 5e-5, "G3.5 expected absolute loss")
+    for (bw, t, p), (et, ep) in zip(rows, ((0.5264, 0.5647), (0.5066, 0.3045), (0.5017, 0.1553), (0.50007, 0.0313))):
+        close(t, et, 5e-5 if bw > 0.01 else 5e-6, f"G3.6 t(b={bw})"); close(p, ep, 5e-5, f"G3.6 P(b={bw})")
+    return rows
+
+
+# ---------------------------------------------------------------- KPT 12.2
+def kpt122(N=20_000, seed=122):
+    """Shrinkage weight and conditional posterior variance of the random effect; Monte Carlo check of
+    the within-individual correlation and of the MSE of ybar_i vs the conditional posterior mean."""
+    s2e, s2a, T, alpha = 4.0, 1.0, 5, 10.0
+    w = T / (T + s2e / s2a)
+    D = s2e * s2a / (T * s2a + s2e)
+    rng = np.random.default_rng(seed)
+    a_i = alpha + np.sqrt(s2a) * rng.standard_normal(N)
+    y = a_i[:, None] + np.sqrt(s2e) * rng.standard_normal((N, T))
+    ybar = y.mean(axis=1)
+    pm = w * ybar + (1 - w) * alpha
+    mse_y, mse_pm = np.mean((ybar - a_i) ** 2), np.mean((pm - a_i) ** 2)
+    corr = np.corrcoef(y[:, 0], y[:, 1])[0, 1]
+    print(f"KPT12.2: w={w:.4f} D={D:.4f} sigma2/T={s2e/T:.4f}; MC (N={N}): MSE(ybar)={mse_y:.4f} "
+          f"MSE(post mean)={mse_pm:.4f} corr(y_i1,y_i2)={corr:.4f} (theory {s2a/(s2a+s2e):.1f})")
+    close(w, 5 / 9, 1e-12, "KPT12.2 w"); close(D, 4 / 9, 1e-12, "KPT12.2 D"); close(D, w * s2e / T, 1e-12, "D = w s2/T")
+    close(mse_y, 0.8054, 5e-5, "KPT12.2 MSE ybar"); close(mse_pm, 0.4449, 5e-5, "KPT12.2 MSE post mean")
+    close(corr, 0.2065, 5e-5, "KPT12.2 corr")
+    close(mse_y, 0.8, 0.03, "MSE ybar vs theory"); close(mse_pm, 4 / 9, 0.02, "MSE pm vs theory")
+    return w, D, mse_y, mse_pm, corr
+
+
+# ---------------------------------------------------------------- KPT 6.7
+def coin_logml(m, s1, s2):
+    """Log marginal likelihoods of Greenberg's coin models (m tosses each, s1 and s2 heads):
+    M1 common theta ~ U(0,1), M2 independent thetas ~ U(0,1) [eq. (3.5)], M3 theta1 = theta2 = 1/2."""
+    l1 = gammaln(s1 + s2 + 1) + gammaln(2 * m - s1 - s2 + 1) - gammaln(2 * m + 2)
+    l2 = gammaln(s1 + 1) + gammaln(m - s1 + 1) + gammaln(s2 + 1) + gammaln(m - s2 + 1) - 2 * gammaln(m + 2)
+    return np.array([l1, l2, 2 * m * log(0.5)])
+
+
+def kpt67():
+    rows = []
+    for p1, logB in ((0.1, -2.506), (0.2, -1.200), (0.3, -0.348), (0.4, 0.138), (0.5, 0.297)):
+        L = coin_logml(10, round(10 * p1), round(10 * (1 - p1)))
+        close((L[0] - L[1]) / log(10), logB, 5e-4, f"KPT6.7 reproduces Table 3.2, m=10, {p1}")
+        rows.append((p1, np.exp(L - logsumexp(L))))
+    # brute-force check of M1 and M2 marginal likelihoods for the 0.3/0.7 row
+    m1 = integrate.quad(lambda t: t ** 10 * (1 - t) ** 10, 0, 1)[0]
+    m2 = integrate.quad(lambda t: t ** 3 * (1 - t) ** 7, 0, 1)[0] * integrate.quad(lambda t: t ** 7 * (1 - t) ** 3, 0, 1)[0]
+    close(log(m1), coin_logml(10, 3, 7)[0], 1e-9, "M1 by quadrature"); close(log(m2), coin_logml(10, 3, 7)[1], 1e-9, "M2 by quadrature")
+    mj = rows[2][1]
+    posts = {}
+    for pri in ((1 / 3, 1 / 3, 1 / 3), (0.25, 0.25, 0.5), (0.45, 0.45, 0.1)):
+        pri = np.array(pri)
+        posts[tuple(pri.round(4))] = pri * mj / (pri @ mj)
+        # (6.70): bar pi_j = [sum_i (pi_i/pi_j) B_ij]^(-1), B_ij = m_i/m_j
+        alt = np.array([1 / np.sum(pri / pri[j] * mj / mj[j]) for j in range(3)])
+        close(np.abs(alt - posts[tuple(pri.round(4))]).max(), 0, 1e-12, "(6.70)")
+    L100 = coin_logml(100, 40, 60)
+    q100 = np.exp(L100 - logsumexp(L100))
+    print("KPT6.7: m=10 rows, m_j(y) = posterior probabilities under equal priors:")
+    for p1, q in rows:
+        print(f"  {p1}/{1-p1:.1f}: " + " ".join(f"{v:.4f}" for v in q))
+    for k, v in posts.items():
+        print(f"  prior {k}: posterior {v.round(4)}")
+    print(f"  m=100, 0.4/0.6: {q100.round(4)}")
+    table = ((0.0031, 0.9856, 0.0114), (0.0487, 0.7711, 0.1802), (0.1444, 0.3215, 0.5342),
+             (0.1843, 0.1340, 0.6818), (0.1921, 0.0970, 0.7109))
+    for (p1, q), t in zip(rows, table):
+        for got, e in zip(q, t):
+            close(got, e, 5e-5, f"KPT6.7 table {p1}")
+    for got, e in zip(posts[(0.25, 0.25, 0.5)], (0.0941, 0.2095, 0.6964)):
+        close(got, e, 5e-5, "KPT6.7 prior (1/4,1/4,1/2)")
+    for got, e in zip(posts[(0.45, 0.45, 0.1)], (0.2470, 0.5499, 0.2031)):
+        close(got, e, 5e-5, "KPT6.7 prior (0.45,0.45,0.1)")
+    for got, e in zip(q100, (0.0459, 0.4338, 0.5203)):
+        close(got, e, 5e-5, "KPT6.7 m=100 row 0.4")
+    return rows, posts, q100
+
+
+# ---------------------------------------------------------------- Original 3: hierarchical Beta-Binomial
+AMI_Y = np.array([4, 1, 18, 7, 24, 16, 6, 19, 15, 13, 25, 11, 4])
+AMI_N = np.array([129, 35, 228, 84, 291, 270, 46, 293, 241, 105, 353, 250, 41])
+
+
+def hbb_grid(nmu, nphi, n1=10.0):
+    """Normalised posterior of (mu, phi = log eta) on a grid: beta-binomial likelihood (the p_i
+    integrated out), mu ~ U(0,1), p(eta) = n1/(n1+eta)^2, Jacobian e^phi."""
+    mu = np.linspace(0.0005, 0.25, nmu)
+    phi = np.linspace(-4.0, 24.0, nphi)
+    M, P = np.meshgrid(mu, phi, indexing="ij")
+    E = np.exp(P)
+    A, B = M * E, (1 - M) * E
+    lp = np.log(n1) + P - 2 * np.log(n1 + E)
+    for yi, ni in zip(AMI_Y, AMI_N):
+        lp += betaln(yi + A, ni - yi + B) - betaln(A, B)
+    w = np.exp(lp - lp.max())
+    return mu, phi, M, E, w / w.sum()
+
+
+def wquant(vals, w, probs):
+    """Quantiles of a function of (mu, phi) under the grid weights w (sorted cumulative weights)."""
+    o = np.argsort(vals.ravel())
+    return np.interp(probs, np.cumsum(w.ravel()[o]), vals.ravel()[o])
+
+
+def mquant(grid, pm, probs):
+    """Quantiles of a grid marginal: cumulative mass assigned to the right edge of each cell."""
+    return np.interp(probs, np.cumsum(pm), grid + (grid[1] - grid[0]) / 2)
+
+
+def orig_hbb():
+    out = {}
+    for nmu, nphi in ((400, 800), (800, 1600)):
+        mu, phi, M, E, w = hbb_grid(nmu, nphi)
+        qs = (0.05, 0.5, 0.95)
+        Ep = np.array([np.sum((yi + M * E) / (ni + E) * w) for yi, ni in zip(AMI_Y, AMI_N)])
+        Elam = np.array([np.sum(ni / (ni + E) * w) for ni in AMI_N])
+        Vp = np.array([np.sum(((yi + M * E) * (ni - yi + (1 - M) * E) / ((ni + E) ** 2 * (ni + E + 1))
+                               + ((yi + M * E) / (ni + E)) ** 2) * w) for yi, ni in zip(AMI_Y, AMI_N)]) - Ep ** 2
+        pphi = w.sum(axis=0)
+        out[nmu] = dict(mu=mquant(mu, w.sum(axis=1), qs), eta=np.exp(mquant(phi, pphi, qs)),
+                        sd=wquant(np.sqrt(M * (1 - M) / (E + 1)), w, qs), Emu=np.sum(M * w),
+                        Pbig=1 - np.interp(log(1000), phi + (phi[1] - phi[0]) / 2, np.cumsum(pphi)),
+                        Ep=Ep, Elam=Elam, sdp=np.sqrt(Vp), tail=pphi[phi > 20].sum())
+    r, r2 = out[800], out[400]
+    for k in ("mu", "sd"):
+        close(np.abs(r[k] - r2[k]).max(), 0, 5e-5, f"HBB grid stable: {k}")
+    close(np.abs(r["eta"] / r2["eta"] - 1).max(), 0, 1e-3, "HBB grid stable: eta")
+    close(np.abs(r["Ep"] - r2["Ep"]).max(), 0, 2e-5, "HBB grid stable: E(p|y)")
+    phat, pool = AMI_Y / AMI_N, AMI_Y.sum() / AMI_N.sum()
+    print(f"Orig HBB: pooled={pool:.4f} ({AMI_Y.sum()}/{AMI_N.sum()}); mu q05/50/95={r['mu'].round(4)} E(mu)={r['Emu']:.4f}; "
+          f"eta={r['eta'].round(1)}; pop sd={r['sd'].round(4)}; P(eta>1000|y)={r['Pbig']:.3f}; mass phi>20={r['tail']:.1e}")
+    print("  phat  " + " ".join(f"{v:.4f}" for v in phat))
+    print("  E(p)  " + " ".join(f"{v:.4f}" for v in r["Ep"]))
+    print("  sd(p) " + " ".join(f"{v:.4f}" for v in r["sdp"]))
+    print("  E(lam)" + " ".join(f"{v:.3f}" for v in r["Elam"]))
+    close(pool, 0.0689, 5e-5, "pooled proportion")
+    for got, e in zip(r["mu"], (0.0599, 0.0715, 0.0875)):
+        close(got, e, 5e-5, "HBB mu quantiles")
+    for got, e in zip(r["eta"], (50.1, 229.9, 2750)):
+        close(got, e, 0.05 if e < 1000 else 0.5, "HBB eta quantiles")
+    for got, e in zip(r["sd"], (0.0048, 0.0169, 0.0376)):
+        close(got, e, 5e-5, "HBB population sd quantiles")
+    close(r["Emu"], 0.0723, 5e-5, "E(mu|y)"); close(r["Pbig"], 0.136, 5e-4, "P(eta > 1000|y)")
+    printed_Ep = (0.0566, 0.0649, 0.0749, 0.0750, 0.0771, 0.0650, 0.0833, 0.0678, 0.0668, 0.0887, 0.0709, 0.0577, 0.0765)
+    printed_sd = (0.0146, 0.0178, 0.0130, 0.0169, 0.0124, 0.0114, 0.0222, 0.0112, 0.0118, 0.0207, 0.0108, 0.0121, 0.0198)
+    printed_lam = (0.37, 0.16, 0.48, 0.29, 0.53, 0.51, 0.20, 0.53, 0.49, 0.33, 0.56, 0.50, 0.18)
+    for i in range(13):
+        close(r["Ep"][i], printed_Ep[i], 5e-5, f"HBB E(p_{i+1})"); close(r["sdp"][i], printed_sd[i], 1e-4, f"HBB sd(p_{i+1})")
+        close(r["Elam"][i], printed_lam[i], 5e-3, f"HBB E(lambda_{i+1})")
+    tail6 = stats.binom.sf(5, 46, 0.07)
+    print(f"  P(Bin(46, 0.07) >= 6) = {tail6:.3f}")
+    close(tail6, 0.100, 5e-4, "six or more deaths of 46 at p = 0.07")
+    close(phat.max() - phat.min(), 0.1019, 5e-5, "spread phat"); close(r["Ep"].max() - r["Ep"].min(), 0.0321, 5e-5, "spread E(p)")
+    return r
+
+
+# ---------------------------------------------------------------- Original 4: sequential updating
+SEQ_X = np.array([0, 1, 1, 1, 0, 1, 1, 1, 1, 1])
+DTH, DPR = np.array([0.3, 0.5, 0.8]), np.array([0.4, 0.5, 0.1])
+
+
+def orig_seq(n_long=5_000, seed=2026):
+    s = np.cumsum(SEQ_X); k = np.arange(1, SEQ_X.size + 1)
+    al, be = 1 + s, 1 + k - s
+    a_, b_ = 1, 1
+    for xi in SEQ_X[::-1]:                              # trial by trial, in reverse order
+        a_, b_ = a_ + xi, b_ + 1 - xi
+    assert (a_, b_) == (al[-1], be[-1]) == (9, 3)
+    mean, lo, hi = al / (al + be), stats.beta.ppf(0.025, al, be), stats.beta.ppf(0.975, al, be)
+    p_gt = stats.beta.sf(0.5, al[-1], be[-1])
+    pp, rows = DPR.copy(), []
+    for xi in SEQ_X:
+        pp = pp * DTH ** xi * (1 - DTH) ** (1 - xi); pp /= pp.sum(); rows.append(pp.copy())
+    rows = np.array(rows)
+    batch = DPR * DTH ** s[-1] * (1 - DTH) ** (10 - s[-1]); batch /= batch.sum()
+    close(np.abs(rows[-1] - batch).max(), 0, 1e-12, "discrete: sequential = batch")
+    pred_u, pred_d = al[-1] / 12, rows[-1] @ DTH
+    print("Orig seq: n  alpha beta  mean   lo     hi     | P(0.3) P(0.5) P(0.8)")
+    for i in range(10):
+        print(f"  {i+1:2d} {al[i]:3d} {be[i]:3d}  {mean[i]:.4f} {lo[i]:.4f} {hi[i]:.4f} | " + " ".join(f"{v:.4f}" for v in rows[i]))
+    print(f"  P(theta>0.5|x)={p_gt:.4f} pred uniform={pred_u:.4f} pred discrete={pred_d:.4f}")
+    t0 = 0.65
+    kl = t0 * np.log(t0 / DTH) + (1 - t0) * np.log((1 - t0) / (1 - DTH))
+    thr = log(2.5) / log(4)
+    rng = np.random.default_rng(seed)
+    xs = rng.binomial(1, t0, n_long)
+    ss, kk = np.cumsum(xs), np.arange(1, n_long + 1)
+    lpost = np.log(DPR) + ss[:, None] * np.log(DTH) + (kk - ss)[:, None] * np.log(1 - DTH)
+    post = np.exp(lpost - logsumexp(lpost, axis=1, keepdims=True))
+    marks = (10, 50, 200, 1000, 5000)
+    print(f"  KL(0.65||theta)={kl.round(4)} threshold={thr:.4f} drift={kl[2]-kl[1]:.4f}")
+    for nn in marks:
+        print(f"  n={nn}: s={ss[nn-1]} s/n={ss[nn-1]/nn:.4f} post={post[nn-1].round(4)}")
+    printed_mean = (0.3333, 0.5, 0.6, 0.6667, 0.5714, 0.625, 0.6667, 0.7, 0.7273, 0.75)
+    printed_lo = (0.0126, 0.0943, 0.1941, 0.2836, 0.2228, 0.2904, 0.3491, 0.3999, 0.4439, 0.4822)
+    printed_hi = (0.8419, 0.9057, 0.9324, 0.9473, 0.8819, 0.9010, 0.9148, 0.9251, 0.9333, 0.9398)
+    printed_d = ((0.5091, 0.4545, 0.0364), (0.3733, 0.5556, 0.0711), (0.2507, 0.6219, 0.1274), (0.1541, 0.6371, 0.2088),
+                 (0.2304, 0.6804, 0.0892), (0.1438, 0.7078, 0.1484), (0.0837, 0.6861, 0.2302), (0.0454, 0.6211, 0.3335),
+                 (0.0231, 0.5255, 0.4514), (0.0110, 0.4165, 0.5725))
+    for i in range(10):
+        close(mean[i], printed_mean[i], 5e-5, "seq mean"); close(lo[i], printed_lo[i], 5e-5, "seq lo")
+        close(hi[i], printed_hi[i], 5e-5, "seq hi")
+        for got, e in zip(rows[i], printed_d[i]):
+            close(got, e, 5e-5, f"seq discrete n={i+1}")
+    close(p_gt, 0.9673, 5e-5, "P(theta>0.5|x)"); close(pred_u, 0.75, 1e-12, "pred uniform"); close(pred_d, 0.6696, 5e-5, "pred discrete")
+    for got, e in zip(kl, (0.2600, 0.0457, 0.0609)):
+        close(got, e, 5e-5, "KL")
+    close(thr, 0.6610, 5e-5, "threshold"); close(kl[2] - kl[1], 0.0152, 5e-5, "drift")
+    long_printed = {10: (7, 0.0437, 0.7117, 0.2445), 50: (35, 0.0, 0.2504, 0.7496), 200: (134, 0.0, 0.2899, 0.7101),
+                    1000: (627, 0.0, 1.0, 0.0), 5000: (3238, 0.0, 1.0, 0.0)}
+    for nn, (sn, *pr) in long_printed.items():
+        assert ss[nn - 1] == sn, (nn, ss[nn - 1])
+        for got, e in zip(post[nn - 1], pr):
+            close(got, e, 5e-5, f"seq long run n={nn}")
+    last = np.nonzero(post[:, 2] > post[:, 1])[0].max() + 1
+    print(f"  P(0.8|x) at n=1000: {post[999, 2]:.1e}; at n=5000: {post[4999, 2]:.1e}; last n with P(0.8) > P(0.5): {last}")
+    assert last == 328, last
+    close(post[999, 2], 7.1e-22, 5e-24, "P(0.8|x) n=1000"); close(post[4999, 2], 1.2e-41, 5e-43, "P(0.8|x) n=5000")
+    return rows, post, ss
+
+
+# ---------------------------------------------------------------- Original 5: physicists A-D
+PHYS = dict(sig=40.0, x=850.0, muA=900.0, sA=20.0, muB=800.0, sB=80.0, muC=900.0, sC=240 ** 0.5, nu=5)
+
+
+def phys_priors():
+    P = PHYS
+    pA = lambda t: stats.norm.pdf(t, P["muA"], P["sA"])
+    pB = lambda t: stats.norm.pdf(t, P["muB"], P["sB"])
+    pC = lambda t: stats.t.pdf((t - P["muC"]) / P["sC"], P["nu"]) / P["sC"]
+    pD = lambda t: (pA(t) + pB(t) + pC(t)) / 3
+    return dict(A=pA, B=pB, C=pC, D=pD)
+
+
+def phys_summary(prior, x, t=np.linspace(300.0, 1400.0, 220_001)):
+    """Posterior summaries of theta|x by the trapezoid rule on a fine grid; m is the marginal likelihood."""
+    f = prior(t) * stats.norm.pdf(x, t, PHYS["sig"])
+    ml = integrate.trapezoid(f, t)
+    f = f / ml
+    c = integrate.cumulative_trapezoid(f, t, initial=0)
+    mean = integrate.trapezoid(t * f, t)
+    return dict(mean=mean, sd=integrate.trapezoid((t - mean) ** 2 * f, t) ** 0.5, med=np.interp(0.5, c, t),
+                plt=np.interp(x, t, c), q05=np.interp(0.05, c, t), m=ml)
+
+
+def orig_phys(M=1_000_000, seed=125532):
+    P, pri = PHYS, phys_priors()
+    close(P["sC"] ** 2 * P["nu"] / (P["nu"] - 2), P["sA"] ** 2, 1e-9, "Var C = Var A")
+    S = {k: phys_summary(p, P["x"]) for k, p in pri.items()}
+    for k, (m0, s0) in (("A", (P["muA"], P["sA"])), ("B", (P["muB"], P["sB"]))):
+        v = 1 / (1 / s0 ** 2 + 1 / P["sig"] ** 2); mm = v * (m0 / s0 ** 2 + P["x"] / P["sig"] ** 2)
+        close(S[k]["mean"], mm, 1e-6, f"phys {k} mean closed form"); close(S[k]["sd"], v ** 0.5, 1e-5, f"phys {k} sd")
+        close(S[k]["m"], stats.norm.pdf(P["x"], m0, (s0 ** 2 + P["sig"] ** 2) ** 0.5), 1e-10, f"phys m_{k} closed form")
+    mk = np.array([S[k]["m"] for k in "ABC"])
+    wts = mk / mk.sum()
+    close(wts @ np.array([S[k]["mean"] for k in "ABC"]), S["D"]["mean"], 1e-6, "D mean = weighted component means")
+    close(mk.mean(), S["D"]["m"], 1e-10, "m_D = average of m_k")
+    rng = np.random.default_rng(seed)
+    th = rng.uniform(600, 1000, M)
+    lik = stats.norm.pdf(P["x"], th, P["sig"])
+    sir = {}
+    for k, p in pri.items():
+        w = lik * p(th); w /= w.sum()
+        d = th[rng.choice(M, M, replace=True, p=w)]
+        sir[k] = (d.mean(), np.median(d), (d < P["x"]).mean(), np.quantile(d, 0.05))
+    rob = {}
+    for x in (850.0, 750.0, 650.0):
+        mA = stats.norm.pdf(x, P["muA"], (P["sA"] ** 2 + P["sig"] ** 2) ** 0.5)
+        mB = stats.norm.pdf(x, P["muB"], (P["sB"] ** 2 + P["sig"] ** 2) ** 0.5)
+        sC = phys_summary(pri["C"], x)
+        ww = np.array([mA, mB, sC["m"]]); ww /= ww.sum()
+        rob[x] = (phys_summary(pri["A"], x)["mean"], sC["mean"], phys_summary(pri["D"], x)["mean"], ww)
+    print("Orig phys: prior  mean    sd     median  P(th<x)  q05     | SIR mean median P q05")
+    for k in "ABCD":
+        s = S[k]
+        print(f"  {k}: {s['mean']:.2f} {s['sd']:.2f} {s['med']:.2f} {s['plt']:.4f} {s['q05']:.2f} | "
+              + " ".join(f"{v:.4f}" if v < 1 else f"{v:.2f}" for v in sir[k]))
+    print(f"  m_A={mk[0]:.6f} m_B={mk[1]:.6f} m_C={mk[2]:.6f}; D weights={wts.round(4)}")
+    for x, (a, c, d, ww) in rob.items():
+        print(f"  x={x:.0f}: E(theta|x) A={a:.2f} C={c:.2f} D={d:.2f}; D weights={ww.round(4)}")
+    printed = dict(A=(890.00, 17.89, 890.00, 0.0127, 860.58), B=(840.00, 35.78, 840.00, 0.6101, 781.15),
+                   C=(891.12, 17.70, 892.41, 0.0216, 860.31), D=(876.08, 33.40, 884.30, 0.1870, 806.40))
+    for k, (me, sd, md, pl, q5) in printed.items():
+        s = S[k]
+        close(s["mean"], me, 0.005, f"phys {k} mean"); close(s["sd"], sd, 0.005, f"phys {k} sd")
+        close(s["med"], md, 0.005, f"phys {k} median"); close(s["plt"], pl, 5e-5, f"phys {k} P(theta<x)")
+        close(s["q05"], q5, 0.005, f"phys {k} q05")
+        close(sir[k][0], me, 0.15, f"phys {k} SIR mean"); close(sir[k][2], pl, 0.003, f"phys {k} SIR P")
+    sir_printed = dict(A=(890.00, 890.00, 0.0125, 860.65), B=(839.93, 839.90, 0.6106, 781.24),
+                       C=(891.14, 892.42, 0.0217, 860.31), D=(876.03, 884.21, 0.1870, 806.24))
+    for k, vals in sir_printed.items():
+        for got, e in zip(sir[k], vals):
+            close(got, e, 5e-5 if e < 1 else 0.005, f"phys {k} SIR printed")
+    for got, e in zip(mk, (0.004775, 0.003815, 0.004730)):
+        close(got, e, 5e-7, "phys m_k")
+    for got, e in zip(wts, (0.3585, 0.2864, 0.3551)):
+        close(got, e, 5e-5, "phys D weights")
+    rob_printed = {850.0: (890.00, 891.12, 876.08), 750.0: (870.00, 850.85, 761.85), 650.0: (850.00, 698.82, 680.01)}
+    for x, vals in rob_printed.items():
+        for got, e in zip(rob[x][:3], vals):
+            close(got, e, 0.005, f"phys robustness x={x}")
+    close(rob[750.0][3][1], 0.9814, 5e-5, "D weight on B at x=750"); close(rob[650.0][3][1], 0.9997, 5e-5, "D weight on B at x=650")
+    return S, sir, rob
+
+
 if __name__ == "__main__":
     g22_g32(); g33(); g38(); g45(); g54(); g62(); g73(); g75(); g78(); g81()
     t121(); t122(); t123(); bolfarine(); ms_b16(); ms_b19(); ms_c5()
     orig_sparse(); orig_hmc()
+    g35_g36(); kpt122(); kpt67(); orig_hbb(); orig_seq(); orig_phys()
     print("PASS")

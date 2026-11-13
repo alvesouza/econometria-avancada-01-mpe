@@ -48,7 +48,19 @@ and `Listas/data/README.md` updated; `Map/exercises-index.md` already listed the
 Correction: ISLP (2023) Ch. 13 has multiple-testing exercises (FWER, Bonferroni, Holm), so the
 p-hacking topic was not book-less; the original stays and cites ISLP Ch. 13.
 
-## Gaps reported by the unit agents (not yet decided by the user)
+## Round 2 — 2026-11-13 (user: book first, then originals; replace the p-hacking original by ISLP 13)
+
+Done: L01 25 questions (I 13.1, 13.8 replace the original; B 6.11, I 6.8, W 11.4, T 8.5; originals
+U(0,θ) estimators and bootstrap for the max); L03 34 (G 3.5–3.6, KPT 12.2, 6.7; originals hierarchical
+Beta–Binomial, sequential updating, physicists A–D); L05 20 (MHE Table 7.2.1; original MLDA RDD);
+L07 19 (W 8.C12; KPT 12.2 + original part (d) nutrition data); L08 19 (T 3.13, 3.9; original t-SV);
+L09 19 (Hamilton 11.5, KPT 16.4; original non-recursive SVAR). L02 unchanged (20). Books outside the
+course bibliography (KPT, Hamilton) and syllabus-map exceptions (ISLP Ch. 13, MHE Ch. 7) are flagged
+in each source line. Also on 2026-11-13: 7 hard conceptual quizzes
+`Simulados/quiz-LNN-conceptual-hard-2026-11-13.md` (validator PASS); HW2 solution notebooks now
+quote each item's statement right before its solution. Still uncovered: numerical TVP-VAR with SV.
+
+## Gaps reported by the unit agents in round 1 (resolved in round 2 above)
 
 - L01: four U(0,θ) estimators; parametric bootstrap and the failure for the maximum; frequentist
   Poisson change point (profile likelihood, LR); variable selection; AR(1) unit root; VAR(1).

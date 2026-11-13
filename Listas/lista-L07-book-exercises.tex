@@ -39,7 +39,7 @@
 \solucoesfalse                 % <<<< \solucoestrue for the ANSWER KEY; \solucoesfalse for the LIST
 
 \newcommand{\disciplina}{Econometria Avançada --- MPE (Insper)}
-\newcommand{\listatema}{\textit{L07 --- Class 7: GLS, AR and Student-$t$ errors, hierarchical models, Tobit and probit (book exercises)}}
+\newcommand{\listatema}{\textit{L07 --- Class 7: WLS/GLS, AR and Student-$t$ errors, hierarchical models, Tobit and probit (book exercises)}}
 \newcommand{\espacoresol}{2.5cm}   % height of the answer space in the blank list
 
 % ====================== MACHINERY ======================
@@ -110,7 +110,11 @@ gives the answer); blocks follow the books in the order the class plan cites the
 ``Referenced material'' paragraph after a statement summarises, with page references, what the
 statement refers to outside itself (an earlier problem, a section's model, an equation, a table).
 Question 17 is an original exercise (no book in the bibliography has one on ordered or multinomial
-probit); its \emph{Origin} line says what it is built on.
+probit); its \emph{Origin} line says what it is built on. Block 5 (round 2) fills the remaining Class 7 gaps:
+Question 18 (WLS/feasible GLS) is from Wooldridge Ch.~8; Question 19 (hierarchical model and partial pooling) is
+Koop, Poirier \& Tobias (2007) Exercise 12.2, a book outside the course bibliography (no syllabus book has an exercise
+on shrinkage toward the grand mean), followed by an added original part (d) on the nutrition-of-pregnant-women
+example of the lecturer's page, data in \texttt{Listas/data/L07-nutrition-pregnant-women.csv}.
 Computer exercises are solved in Python (\texttt{statsmodels}, \texttt{linearmodels}, NumPy/SciPy);
 every number in the answer key is reproduced by \texttt{Listas/L07-book-exercises-check.py}. Data:
 the Wooldridge data sets come from the \texttt{wooldridge} Python package; ``Birth weight II'' is in
@@ -1798,6 +1802,316 @@ ordered and multinomial probit; W §17.1 for partial effects in index models.}
 \item (v) differences and scale, $J(J+1)/2-1$: 1 pt. (vi) the three bivariate cdfs, values, simulation check: 2 pts.
 (vii) \eqref{q17:mnpme} derived and evaluated, effects sum to zero: 2 pts. Reading the sign of a multinomial-probit
 effect from one $\delta_j$: max.\ 1 pt in (vii).
+}
+\end{sol}
+
+% =================================================================================================
+\bloco{5}{Round 2: heteroskedastic errors and partial pooling}{W Ch.~8; Koop, Poirier \& Tobias Ch.~12 (outside the bibliography) + added part}
+
+% ------------------------------------------------------------------------------------------ Q18
+\questao{Wooldridge 8.C12 --- special White test, feasible GLS and robust WLS standard errors.}
+\fonte{Wooldridge, J.\,M. (2016), \textit{Introductory Econometrics: A Modern Approach}, 6th ed., Chapter~8, Computer Exercise C12, printed pp.~272--273 [PDF pp.~296--297]; answer not given in the book; reproduced verbatim.}
+\begin{enunciado}
+\textbf{C12} Use the data in MEAP00 to answer this question.
+\begin{itens}
+\item Estimate the model
+\begin{equation*}
+\var{math4}=\beta_0+\beta_1\var{lunch}+\beta_2\log(\var{enroll})+\beta_3\log(\var{exppp})+u
+\end{equation*}
+by OLS and obtain the usual standard errors and the fully robust standard errors. How do they generally compare?
+\item Apply the special case of the White test for heteroskedasticity. What is the value of the $F$ test? What do you conclude?
+\item Obtain $\hat g_i$ as the fitted values from the regression $\log(\hat u_i^2)$ on $\widehat{\var{math4}}_i$, $\widehat{\var{math4}}{}_i^2$, where $\widehat{\var{math4}}_i$ are the OLS fitted values and the $\hat u_i$ are the OLS residuals. Let $\hat h_i=\exp(\hat g_i)$. Use the $\hat h_i$ to obtain WLS estimates. Are there big differences with the OLS coefficients?
+\item Obtain the standard errors for WLS that allow misspecification of the variance function. Do these differ much from the usual WLS standard errors?
+\item For estimating the effect of spending on $\var{math4}$, does OLS or WLS appear to be more precise?
+\end{itens}
+\refmat The \emph{fully robust} (heteroskedasticity-robust) standard errors are those of §8-2, printed
+pp.~244--247 [PDF pp.~268--271]. The \emph{special case of the White test}, printed p.~253 [PDF p.~277], regresses the
+squared OLS residuals on the fitted values and their squares, eq.~(8.20): ``$\hat u^2=\delta_0+\delta_1\hat y+\delta_2\hat y^2+\text{error}$'',
+and tests $H_0\colon\delta_1=\delta_2=0$ by the $F$ statistic with $(2,n-3)$ degrees of freedom (or $LM=nR^2_{\hat u^2}\sim\chi^2_2$).
+Part (iii) is the feasible GLS procedure of §8-4b (printed pp.~259--260 [PDF pp.~283--284]: regress $\log(\hat u^2)$ on the
+regressors, exponentiate the fitted values to get $\hat h$, run WLS with weights $1/\hat h$) in the variant the book gives on
+printed p.~260, with $\hat y$ and $\hat y^2$ in place of the regressors. WLS standard errors that allow a misspecified
+variance function are the robust standard errors of the transformed (weighted) regression, §8-4c, printed pp.~262--263
+[PDF pp.~286--287]. In the \texttt{wooldridge} Python package the data set is \texttt{meap00\_01}.
+\end{enunciado}
+\resolespaco
+\begin{sol}
+\begin{notacao}
+\item $i=1,\dots,n$, $n=1692$ Michigan elementary schools (2000--01); $\var{math4}_i$: percentage of fourth graders passing the MEAP math test; $\var{lunch}_i$: percentage eligible for free or reduced lunch; $\var{enroll}_i$: enrolment; $\var{exppp}_i$: expenditure per pupil (dollars).
+\item $x_i=(1,\var{lunch}_i,\log\var{enroll}_i,\log\var{exppp}_i)$; $\beta=(\beta_0,\dots,\beta_3)'$; $u_i$: error with $\E(u_i\,|\,x_i)=0$ and $\mathrm{Var}(u_i\,|\,x_i)=\sigma^2h(x_i)$, $h>0$.
+\item $\hat u_i$, $\hat y_i\equiv\widehat{\var{math4}}_i$: OLS residuals and fitted values; $\hat h_i>0$: estimated variance function; WLS: OLS on the data divided by $\sqrt{\hat h_i}$.
+\item Robust standard errors are HC1 (White's estimator with the $n/(n-k-1)$ correction, Stata's \texttt{robust}, as in the book's computations).
+\end{notacao}
+
+\passo{(i) OLS, usual and robust standard errors}{OLS ($R^2=0.3729$):
+\begin{center}\small
+\begin{tabular}{lcccc}
+\toprule
+ & const & $\var{lunch}$ & $\log(\var{enroll})$ & $\log(\var{exppp})$\\
+\midrule
+$\hat\beta_{OLS}$ & 91.932 & $-0.44874$ & $-5.3992$ & 3.5247\\
+usual s.e. & 19.962 & 0.01464 & 0.9404 & 2.0978\\
+robust s.e. & 23.087 & 0.01658 & 1.1312 & 2.3537\\
+\bottomrule
+\end{tabular}
+\end{center}
+Every robust standard error is larger than the usual one, by 12\% to 20\% (e.g.\ $\log(\var{exppp})$: $2.3537/2.0978=1.122$;
+$\log(\var{enroll})$: $1.1312/0.9404=1.203$). The usual formula understates the sampling variability, the pattern
+expected when the error variance rises with regressors that have large leverage. No conclusion about the sign of
+any coefficient changes, but $\hat\beta_3$ is not significant at 10\% with either ($t=3.5247/2.3537=1.498$ robust).}
+
+\passo{(ii) special White test}{Regressing $\hat u_i^2$ on $1$, $\hat y_i$, $\hat y_i^2$ gives
+$\hat u^2=1664.13-28.299\,\hat y+0.11553\,\hat y^2$ with $R^2_{\hat u^2}=0.135805$. With $q=2$ restrictions and
+$n-3=1689$ residual degrees of freedom,
+\begin{align}
+F&=\frac{R^2_{\hat u^2}/2}{(1-R^2_{\hat u^2})/(n-3)}=\frac{0.135805/2}{(1-0.135805)/1689}\nonumber\\
+&=132.71, \label{q18:F}
+\end{align}
+with $p$-value $\approx3\times10^{-54}$ under $F_{2,1689}$ ($LM=1692(0.135805)=229.78$, also $p\approx0$).
+Homoskedasticity is rejected at any conventional level: the error variance changes with the expected pass rate,
+so the usual OLS standard errors in (i) are invalid and WLS can improve efficiency.}
+
+\passo{(iii) feasible GLS}{The regression of $\log(\hat u_i^2)$ on $1$, $\hat y_i$, $\hat y_i^2$ gives
+$\hat g_i=4.2075+0.059637\,\hat y_i-0.00084147\,\hat y_i^2$, and $\hat h_i=\exp(\hat g_i)$ ranges from $12.28$ to $185.53$
+(positive by construction). WLS with weights $1/\hat h_i$:
+\begin{center}\small
+\begin{tabular}{lcccc}
+\toprule
+ & const & $\var{lunch}$ & $\log(\var{enroll})$ & $\log(\var{exppp})$\\
+\midrule
+$\hat\beta_{WLS}$ & 50.478 & $-0.44859$ & $-2.6473$ & 6.4742\\
+usual WLS s.e. & 16.510 & 0.01461 & 0.8359 & 1.6859\\
+robust WLS s.e. & 18.925 & 0.01425 & 1.0546 & 1.8129\\
+\bottomrule
+\end{tabular}
+\end{center}
+The $\var{lunch}$ coefficient is unchanged ($-0.4486$ vs $-0.4487$). The two log coefficients move a lot: the
+enrolment effect is halved ($-5.40\to-2.65$) and the spending effect almost doubles ($3.52\to6.47$; by $\Delta\var{math4}\approx(\beta_3/100)\,\%\Delta\var{exppp}$, a 10\%
+rise in spending raises the pass rate by about $0.35$ points by OLS but $0.65$ points by WLS). The change in
+$\hat\beta_3$, $6.4742-3.5247=2.9495$, is $1.25$ OLS robust standard errors ($2.9495/2.3537=1.253$), so it is
+within sampling error; but differences of this size are the kind that, as the book warns (§8-4c, p.~262), can
+also signal a misspecified conditional mean, since WLS and OLS are both consistent only if $\E(u\,|\,x)=0$.}
+
+\passo{(iv) robust WLS standard errors}{Applying HC1 to the weighted regression (last row of the table) allows
+$\mathrm{Var}(u\,|\,x)\ne\sigma^2\hat h(x)$. They are larger than the usual WLS ones for the constant, $\log(\var{enroll})$
+($1.0546$ vs $0.8359$, $+26\%$) and $\log(\var{exppp})$ ($1.8129$ vs $1.6859$, $+8\%$), and slightly smaller for $\var{lunch}$.
+So the exponential-in-$(\hat y,\hat y^2)$ model removes most but not all of the heteroskedasticity; robust WLS
+standard errors are the ones to report.}
+
+\passo{(v) precision for spending}{Comparing robust standard errors (valid for both estimators):
+$\mathrm{se}(\hat\beta_{3,WLS})=1.8129<2.3537=\mathrm{se}(\hat\beta_{3,OLS})$, a reduction of $1-1.8129/2.3537=23.0\%$.
+WLS is more precise. It also changes the inference: $t_{WLS}=6.4742/1.8129=3.571$, so spending is significant at 1\%,
+while $t_{OLS}=1.498$ is not significant at 10\%.}
+
+\passo{code}{}
+\begin{lstlisting}
+d = wooldridge.data("meap00_01"); X = sm.add_constant(d[["lunch", "lenroll", "lexppp"]]); y = d.math4
+ols = sm.OLS(y, X).fit(); rob = sm.OLS(y, X).fit(cov_type="HC1")
+u, yh = ols.resid, ols.fittedvalues; Z = sm.add_constant(np.column_stack([yh, yh**2]))
+print(sm.OLS(u**2, Z).fit().fvalue)                                   # 132.71
+h = np.exp(sm.OLS(np.log(u**2), Z).fit().fittedvalues)
+wls = sm.WLS(y, X, weights=1/h).fit(); wlsr = sm.WLS(y, X, weights=1/h).fit(cov_type="HC1")
+print(wls.params.lexppp, wls.bse.lexppp, wlsr.bse.lexppp, rob.bse.lexppp)  # 6.4742 1.6859 1.8129 2.3537
+\end{lstlisting}
+\intuicao{Heteroskedasticity does not bias OLS; it makes OLS inefficient and its usual standard errors wrong.
+FGLS down-weights the schools whose outcomes are noisiest and so extracts more information from the same data;
+because the variance model is itself only an approximation, the safe report is WLS with robust standard errors.}
+\refbib{W §8-2 (pp.~244--247), §8-3a (eq.~8.20, p.~253), §8-4b (pp.~259--261), §8-4c (pp.~262--264).}
+\rubrica{
+\item (i) both sets of standard errors and the comparison: 2 pts. (ii) auxiliary regression, $F=132.71$, conclusion: 2 pts.
+\item (iii) $\hat g$, $\hat h$, WLS estimates and the comparison with OLS: 3 pts. Regressing $\log(\hat u^2)$ on the original regressors instead of $(\hat y,\hat y^2)$: max.\ 2 pts in (iii).
+\item (iv) robust WLS standard errors and comparison: 1.5 pts. (v) comparison on robust standard errors and conclusion: 1.5 pts. Comparing the usual WLS s.e.\ with the robust OLS s.e.\ without comment: max.\ 1 pt in (v).
+}
+\end{sol}
+
+% ------------------------------------------------------------------------------------------ Q19
+\questao{Koop, Poirier \& Tobias 12.2 --- random effects and shrinkage; added part: nutrition of pregnant women.}
+\fonte{Koop, G., Poirier, D.\,J. and Tobias, J.\,L. (2007), \textit{Bayesian Econometric Methods}, 1st ed., Chapter~12, Exercise 12.2, printed p.~171 [PDF p.~195]; answer given in the book (printed pp.~171--172 [PDF pp.~195--196]); outside the course bibliography (no exercise in Greenberg Ch.~4 or Ch.~9, Wooldridge Ch.~14 or Morettin \& Singer §6.4 treats shrinkage toward the grand mean); reproduced verbatim (parts (a)--(c)).}
+\origem{part (d) is an original exercise on partial pooling in the nutrition-of-pregnant-women example, built on
+the lecturer's page \url{Aula/class-07/materials/hierarchicalmodel.html} (``Hierarchical Modeling: Individual, pooled and
+combined regressions'', sections 1--4: data of Souza (1999) shown in Gamerman and Lopes (2006), Figure~5.5, p.~161; pooled
+and individual regressions; Gibbs sampler with $(\alpha,\beta)\sim\N(0_2,1000I_2)$ and $\IG(0.001,0.001)$ variance priors)
+and on \url{Aula/class-07/materials/HLM.pdf}, slides 11--13 (individual effects model with hierarchical prior; full
+conditionals). The data are in \texttt{Listas/data/L07-nutrition-pregnant-women.csv}.}
+\begin{enunciado}
+\textbf{Exercise 12.2 (Hierarchical modeling with longitudinal data)} Consider the following longitudinal data model:
+\begin{align}
+y_{it}&=\alpha_i+\epsilon_{it},\quad \epsilon_{it}\overset{\text{iid}}{\sim}N(0,\sigma_\epsilon^2), \tag{12.6}\\
+\alpha_i&\overset{\text{iid}}{\sim}N(\alpha,\sigma_\alpha^2), \tag{12.7}
+\end{align}
+where $y_{it}$ refers to the outcomes for individual (or more generally, group) $i$ at time $t$ and $\alpha_i$ is a
+person-specific random effect. We assume $i=1,2,\dots,N$ and $t=1,2,\dots,T$ (i.e., a balanced panel).
+\begin{enumerate}[label=(\alph*),leftmargin=2.4em,topsep=1pt,itemsep=1pt]
+\item Comment on how the presence of the random effects accounts for correlation patterns within individuals over time.
+\item Derive the conditional posterior distribution $p(\alpha_i|\alpha,\sigma_\epsilon^2,\sigma_\alpha^2,y)$.
+\item Obtain the mean of the conditional posterior distribution in (b). Comment on its relationship to a shrinkage
+estimator [see, e.g., Poirier (1995), Chapter 6]. How does the mean change as $T$ and $\sigma_\epsilon^2/\sigma_\alpha^2$ change?
+\end{enumerate}
+
+\textbf{Added part (original; see the \emph{Origin} line).}
+\begin{enumerate}[label=(\alph*),leftmargin=2.4em,topsep=1pt,itemsep=1pt,start=4]
+\item The file \texttt{L07-nutrition-pregnant-women.csv} has the weight gains $y_{ij}$ (kg) of $I=68$ pregnant women at
+$n_i\in\{5,6,7\}$ visits, $x_{ij}$ being the gestational week of visit $j$ ($n=\sum_in_i=427$). Consider the individual
+effects model with a hierarchical prior on the intercepts,
+\begin{equation*}
+y_{ij}=\alpha_i+\beta x_{ij}+\epsilon_{ij},\quad \epsilon_{ij}\overset{\text{iid}}{\sim}\N(0,\sigma_\epsilon^2),\qquad
+\alpha_i\overset{\text{iid}}{\sim}\N(\alpha,\sigma_\alpha^2).
+\end{equation*}
+\begin{enumerate}[label=(\roman*),leftmargin=2.0em,topsep=1pt,itemsep=1pt]
+\item Fit the pooled regression $y_{ij}=\alpha+\beta x_{ij}+\epsilon_{ij}$ by OLS. Then estimate $(\alpha,\beta,\sigma_\epsilon^2,\sigma_\alpha^2)$
+of the model above by REML (\texttt{statsmodels} \texttt{MixedLM}); report the variance ratio $\sigma_\epsilon^2/\sigma_\alpha^2$, the
+within-woman correlation of part (a), and the weight of part (c) for $n_i=5,6,7$.
+\item Explain why, given $\beta$, the result of part (c) applies to $z_{ij}=y_{ij}-\beta x_{ij}$ with $T$ replaced by $n_i$.
+Plugging in the REML estimates, compute the no-pooling intercept $\bar y_i-\hat\beta\bar x_i$ and the partially pooled one
+for women 1 and 14, and check that the latter equals \texttt{MixedLM}'s prediction $\hat\alpha+\hat a_i$.
+\item Holding $\hat\alpha$ and $\hat\beta$ fixed, compute the standard deviation across the 68 women of the partially pooled
+intercepts, and woman 14's intercept, for $\sigma_\epsilon^2/\sigma_\alpha^2\in\{0,\ \text{REML value},\ 3,\ 30,\ 300\}$. Explain the
+pattern.
+\item Port the lecturer's Gibbs sampler to this model (priors $(\alpha,\beta)\sim\N(0_2,1000I_2)$, $\sigma_\epsilon^2,\sigma_\alpha^2\sim\IG(0.001,0.001)$
+independent): \texttt{rng = np.random.default\_rng(2026)}, initial values $\alpha=0$, $\beta=0.5$, $\sigma_\epsilon^2=\sigma_\alpha^2=4$,
+2{,}000 burn-in and 20{,}000 kept draws, updating $(\alpha_1,\dots,\alpha_I)$, $\alpha$, $\beta$, $\sigma_\epsilon^2$, $\sigma_\alpha^2$ in this order.
+Report the posterior means of $\alpha$, $\beta$, $\sigma_\epsilon^2$, $\sigma_\alpha^2$ and $\sigma_\epsilon^2/\sigma_\alpha^2$, and of $\alpha_1$, and compare them with (i)--(ii).
+\end{enumerate}
+\end{enumerate}
+\end{enunciado}
+\resolespaco
+\begin{sol}
+\begin{notacao}
+\item Parts (a)--(c): $i=1,\dots,N$ individuals, $t=1,\dots,T$ periods; $\alpha_i\in\mathbb{R}$: random effect; $\alpha\in\mathbb{R}$, $\sigma_\alpha^2>0$: its mean and variance; $\sigma_\epsilon^2>0$: error variance; $y_i=(y_{i1},\dots,y_{iT})'$, $\bar y_i=T^{-1}\sum_ty_{it}$; $u_i\equiv\alpha_i-\alpha$.
+\item $r\equiv\sigma_\epsilon^2/\sigma_\alpha^2$: variance ratio; $w\equiv T/(T+r)\in(0,1)$: shrinkage weight; $\rho\equiv\sigma_\alpha^2/(\sigma_\alpha^2+\sigma_\epsilon^2)$: within-individual correlation.
+\item Part (d): $j=1,\dots,n_i$ visits of woman $i=1,\dots,68$; $y_{ij}$: weight gain (kg); $x_{ij}$: gestational week; $\bar y_i$, $\bar x_i$: woman-$i$ means; $\hat a_i$: \texttt{MixedLM} predicted random effect (BLUP); $w_i\equiv n_i/(n_i+r)$.
+\end{notacao}
+
+\passo{(a) within-individual correlation}{Write $\alpha_i=\alpha+u_i$, $u_i\sim\N(0,\sigma_\alpha^2)$, so
+$y_{it}=\alpha+u_i+\epsilon_{it}$ with $u_i$ independent of every $\epsilon$. Then
+\begin{align*}
+\mathrm{Var}(y_{it}\,|\,\alpha,\sigma_\epsilon^2,\sigma_\alpha^2)&=\sigma_\alpha^2+\sigma_\epsilon^2,\\
+\mathrm{Cov}(y_{it},y_{is}\,|\,\alpha,\sigma_\epsilon^2,\sigma_\alpha^2)&=\mathrm{Var}(u_i)=\sigma_\alpha^2\quad(t\ne s),\\
+\mathrm{Cov}(y_{it},y_{js}\,|\,\alpha,\sigma_\epsilon^2,\sigma_\alpha^2)&=0\quad(i\ne j).
+\end{align*}
+Given the $\alpha_i$ the outcomes are independent, but after integrating them out every pair of observations on the
+same individual has correlation $\rho=\sigma_\alpha^2/(\sigma_\alpha^2+\sigma_\epsilon^2)$, whatever the distance $|t-s|$
+(equicorrelation, the random-effects structure of W Ch.~14); observations on different individuals are uncorrelated.
+The shared component $u_i$ is what makes an individual's outcomes move together.}
+
+\passo{(b) conditional posterior}{Given $(\alpha,\sigma_\epsilon^2,\sigma_\alpha^2)$, the $\alpha_i$ are a priori independent and $y_i$
+depends only on $\alpha_i$, so $p(\alpha_i\,|\,\alpha,\sigma_\epsilon^2,\sigma_\alpha^2,y)\propto p(y_i\,|\,\alpha_i,\sigma_\epsilon^2)\,p(\alpha_i\,|\,\alpha,\sigma_\alpha^2)$:
+\begin{align*}
+p(\alpha_i\,|\,\cdot)&\propto\exp\Big\{-\frac{1}{2\sigma_\epsilon^2}\sum_{t=1}^T(y_{it}-\alpha_i)^2-\frac{1}{2\sigma_\alpha^2}(\alpha_i-\alpha)^2\Big\}\\
+&\propto\exp\Big\{-\frac12\Big[\Big(\frac{T}{\sigma_\epsilon^2}+\frac{1}{\sigma_\alpha^2}\Big)\alpha_i^2-2\alpha_i\Big(\frac{\sum_ty_{it}}{\sigma_\epsilon^2}+\frac{\alpha}{\sigma_\alpha^2}\Big)\Big]\Big\},
+\end{align*}
+dropping terms free of $\alpha_i$. This is the kernel of a normal: completing the square,
+\begin{equation}
+\alpha_i\,|\,\alpha,\sigma_\epsilon^2,\sigma_\alpha^2,y\sim\N(Dd,D),\qquad
+D=\Big(\frac{T}{\sigma_\epsilon^2}+\frac{1}{\sigma_\alpha^2}\Big)^{-1}=\frac{\sigma_\epsilon^2\sigma_\alpha^2}{T\sigma_\alpha^2+\sigma_\epsilon^2},\quad
+d=\frac{\sum_ty_{it}}{\sigma_\epsilon^2}+\frac{\alpha}{\sigma_\alpha^2}. \label{q19:post}
+\end{equation}
+(The book obtains the same result from its Exercise 12.1 with $X=\iota_T$, $C_1=\sigma_\epsilon^2I_T$.)}
+
+\passo{(c) posterior mean and shrinkage}{From \eqref{q19:post}, with $\sum_ty_{it}=T\bar y_i$,
+\begin{equation}
+\E(\alpha_i\,|\,\alpha,\sigma_\epsilon^2,\sigma_\alpha^2,y)=\frac{T\sigma_\alpha^2\,\bar y_i+\sigma_\epsilon^2\,\alpha}{T\sigma_\alpha^2+\sigma_\epsilon^2}
+=w\,\bar y_i+(1-w)\,\alpha,\qquad w=\frac{T}{T+\sigma_\epsilon^2/\sigma_\alpha^2}. \label{q19:shrink}
+\end{equation}
+It is a precision-weighted average of the individual's own mean $\bar y_i$ (precision $T/\sigma_\epsilon^2$) and the common
+mean $\alpha$ (precision $1/\sigma_\alpha^2$): a shrinkage estimator that pulls each $\bar y_i$ toward $\alpha$ by the factor
+$1-w=(\sigma_\epsilon^2/T)/(\sigma_\epsilon^2/T+\sigma_\alpha^2)$, the share of the marginal variance of $\bar y_i$ that is noise.
+With $\alpha$, $\sigma_\epsilon^2$, $\sigma_\alpha^2$ replaced by estimates it is the empirical-Bayes (James--Stein type) estimator.
+Comparative statics: $\partial w/\partial T>0$ and $w\to1$ as $T\to\infty$ (the individual's own data dominate: no pooling);
+$\partial w/\partial r<0$, $w\to0$ as $r=\sigma_\epsilon^2/\sigma_\alpha^2\to\infty$ (individuals are alike relative to the noise:
+complete pooling at $\alpha$) and $w\to1$ as $r\to0$. The posterior variance $D=w\sigma_\epsilon^2/T$ is below both $\sigma_\epsilon^2/T$ and
+$\sigma_\alpha^2$: pooling also sharpens the estimate.}
+
+\passo{(d)(i) pooled and REML fits}{Pooled OLS on the $n=427$ observations: $\hat\alpha=-4.5264$ (s.e.\ $0.4868$),
+$\hat\beta=0.47633$ (s.e.\ $0.01897$), $\hat\sigma=3.6115$, as on the lecturer's page. REML for the random-intercept model:
+\begin{equation*}
+\hat\alpha=-4.2191\ (0.4541),\quad \hat\beta=0.46656\ (0.00934),\quad \hat\sigma_\epsilon^2=2.9613,\quad \hat\sigma_\alpha^2=10.1523,
+\end{equation*}
+so
+\begin{align*}
+\hat r&=\frac{2.9613}{10.1523}=0.2917,\qquad \hat\rho=\frac{10.1523}{10.1523+2.9613}=0.7742,\\
+\hat w(5)&=\frac{5}{5+0.2917}=0.9449,\qquad \hat w(6)=\frac{6}{6.2917}=0.9536,\qquad \hat w(7)=\frac{7}{7.2917}=0.9600 .
+\end{align*}
+The intercepts differ much more across women ($\hat\sigma_\alpha=3.19$ kg) than the visit-level noise ($\hat\sigma_\epsilon=1.72$
+kg), so 77\% of the variance of a measurement is between women and each woman's own data get about 95\% of the
+weight. The slope standard error falls from $0.01897$ (pooled) to $0.00934$: removing the between-woman variation
+from the error makes the common slope much more precise.}
+
+\passo{(d)(ii) shrinkage applied to the nutrition data}{Given $\beta$, $z_{ij}=y_{ij}-\beta x_{ij}=\alpha_i+\epsilon_{ij}$
+satisfies (12.6)--(12.7) with $n_i$ observations on woman $i$; the derivation of (b) never used balance, so
+\eqref{q19:shrink} holds with $T\to n_i$ and $\bar z_i=\bar y_i-\beta\bar x_i$. With the REML estimates ($n_1=n_{14}=6$,
+$\hat w=0.953639$):
+\begin{itemize}[leftmargin=1.4em,topsep=1pt,itemsep=0pt]
+\item woman 1: $\bar y_1=8.7333$, $\bar x_1=19.9998$; $\bar z_1=8.7333-0.466556(19.9998)=-0.5977$ and
+$0.953639(-0.5977)+0.046361(-4.2191)=-0.7656$;
+\item woman 14: $\bar y_{14}=14.0333$, $\bar x_{14}=21.3333$; $\bar z_{14}=14.0333-0.466556(21.3333)=4.0801$ and
+$0.953639(4.0801)+0.046361(-4.2191)=3.6954$.
+\end{itemize}
+Woman 14 has the largest no-pooling intercept: it is pulled $0.385$ kg toward $\hat\alpha=-4.2191$. For all 68
+women the formula matches $\hat\alpha+\hat a_i$ from \texttt{MixedLM} to $4\times10^{-14}$: the BLUP of a random intercept is
+exactly the conditional posterior mean \eqref{q19:shrink} at the estimated hyperparameters.}
+
+\passo{(d)(iii) the variance ratio drives the pooling}{With $\hat\alpha$, $\hat\beta$ fixed and $w_i=n_i/(n_i+r)$ ($n_i=6$ for the
+weight column):
+\begin{center}\small
+\begin{tabular}{lccccc}
+\toprule
+$r=\sigma_\epsilon^2/\sigma_\alpha^2$ & 0 & 0.2917 (REML) & 3 & 30 & 300\\
+\midrule
+$w$ at $n_i=6$ & 1 & 0.9536 & 0.6667 & 0.1667 & 0.0196\\
+s.d.\ of the 68 intercepts & 3.2594 & 3.1139 & 2.2047 & 0.5673 & 0.0674\\
+woman 14 & 4.0801 & 3.6954 & 1.3137 & $-2.8359$ & $-4.0564$\\
+\bottomrule
+\end{tabular}
+\end{center}
+At $r=0$ every woman keeps her own intercept (no pooling, the fixed-effects answer); as $r$ grows the weights fall,
+every intercept slides toward $\hat\alpha=-4.2191$, and the cross-sectional spread collapses toward 0 (complete pooling,
+the pooled regression's single intercept). The data choose $r$: here $\hat r=0.29$, so pooling is mild. Women with
+fewer visits are pulled more ($\hat w=0.9449$ at $n_i=5$ vs $0.9600$ at $n_i=7$).}
+
+\passo{(d)(iv) Gibbs sampler}{The full conditionals (HLM slides 11--13, specialised): $\alpha_i\,|\,\cdot$ is
+\eqref{q19:post} with $T\to n_i$ and $y_{it}\to y_{ij}-\beta x_{ij}$;
+$\alpha\,|\,\cdot\sim\N\big(V\textstyle\sum_i\alpha_i/\sigma_\alpha^2,\,V\big)$ with $V=(1/1000+I/\sigma_\alpha^2)^{-1}$;
+$\beta\,|\,\cdot\sim\N\big(V_\beta\sum_{ij}x_{ij}(y_{ij}-\alpha_i)/\sigma_\epsilon^2,\,V_\beta\big)$ with $V_\beta=(1/1000+\sum_{ij}x_{ij}^2/\sigma_\epsilon^2)^{-1}$;
+$\sigma_\epsilon^2\,|\,\cdot\sim\IG\big(0.001+n/2,\ 0.001+\sum_{ij}(y_{ij}-\alpha_i-\beta x_{ij})^2/2\big)$;
+$\sigma_\alpha^2\,|\,\cdot\sim\IG\big(0.001+I/2,\ 0.001+\sum_i(\alpha_i-\alpha)^2/2\big)$. Posterior means over the 20{,}000 kept draws:
+\begin{center}\small
+\begin{tabular}{lcccccc}
+\toprule
+ & $\alpha$ & $\beta$ & $\sigma_\epsilon^2$ & $\sigma_\alpha^2$ & $\sigma_\epsilon^2/\sigma_\alpha^2$ & $\alpha_1$\\
+\midrule
+Gibbs posterior mean & $-4.2209$ & 0.46672 & 2.978 & 10.48 & 0.2938 & $-0.7760$\\
+REML / plug-in (ii) & $-4.2191$ & 0.46656 & 2.961 & 10.15 & 0.2917 & $-0.7656$\\
+\bottomrule
+\end{tabular}
+\end{center}
+They agree closely: with 68 women and 427 visits the vague priors carry little weight. $\sigma_\alpha^2$ is a bit larger
+under the posterior (its posterior is right-skewed and the mean averages over that uncertainty; posterior s.d.\ $1.94$),
+and the posterior mean of $\alpha_1$ averages the shrinkage \eqref{q19:shrink} over the posterior of $(\alpha,\beta,r)$ instead of
+fixing them, which moves it only $0.01$ kg.}
+
+\passo{code}{}
+\begin{lstlisting}
+nut = pd.read_csv("Listas/data/L07-nutrition-pregnant-women.csv"); g = nut.woman.values - 1
+x, y = nut.week.values, nut.gain.values; I, N = 68, len(y); ni = np.bincount(g)
+m = smf.mixedlm("gain ~ week", nut, groups=nut.woman).fit(reml=True)    # -4.2191 0.46656; 2.9613 10.1523
+rng = np.random.default_rng(2026); al, be, s2, sa2 = 0.0, 0.5, 4.0, 4.0
+for it in range(22000):
+    D = 1/(ni/s2 + 1/sa2); ai = D*(np.bincount(g, y - be*x)/s2 + al/sa2) + np.sqrt(D)*rng.standard_normal(I)
+    V = 1/(1/1000 + I/sa2); al = V*ai.sum()/sa2 + np.sqrt(V)*rng.standard_normal()
+    Vb = 1/(1/1000 + x@x/s2); be = Vb*(x@(y - ai[g]))/s2 + np.sqrt(Vb)*rng.standard_normal()
+    e = y - ai[g] - be*x; s2 = 1/rng.gamma(0.001 + N/2, 1/(0.001 + e@e/2))
+    sa2 = 1/rng.gamma(0.001 + I/2, 1/(0.001 + ((ai - al)**2).sum()/2))      # keep it >= 2000
+\end{lstlisting}
+\intuicao{A hierarchical prior lets each group borrow strength from the others. How much it borrows is set by the
+data through the variance ratio: noisy, similar groups are pooled hard; precise, heterogeneous groups keep their
+own estimates. No pooling and complete pooling are the two ends of the same formula.}
+\refbib{KPT (2007) Exercises 12.1--12.2, pp.~169--172; slides \textit{Hierarchical modeling} (HLM.pdf), slides 11--13;
+lecturer's page \textit{hierarchicalmodel.html}; G §4.6 (hierarchical models, p.~52); W §14-2 (random effects).}
+\rubrica{
+\item (a) covariance structure and equicorrelation: 1 pt. (b) kernel, completing the square, $D$ and $d$: 2 pts. (c) weighted-average form, shrinkage interpretation, limits in $T$ and $r$: 2 pts.
+\item (d)(i) pooled and REML estimates, $\hat r$, $\hat\rho$, weights: 1.5 pts. (ii) the $T\to n_i$ argument, the two women, BLUP check: 1.5 pts.
+\item (iii) table and explanation of the pattern: 1 pt. (iv) correct full conditionals and posterior means compared with REML: 1 pt. Saying shrinkage grows with $T$: max.\ 1 pt in (c).
 }
 \end{sol}
 

@@ -2,12 +2,16 @@
 
 Unit L07 (Class 7): GLS with AR(1) errors, Student-t errors, hierarchical/panel models,
 Tobit, probit/logit, logistic odds ratios; Q17 (original) ordered and multinomial probit
-(simulated data, seed 2026). Run from any directory:
+(simulated data, seed 2026); round 2: Q18 W 8.C12 (special White test, FGLS, robust WLS) and
+Q19 KPT 12.2 + added part (shrinkage; nutrition-of-pregnant-women data, REML and a Gibbs sampler,
+seed 2026). Run from any directory:
 
     python Listas/L07-book-exercises-check.py
 
 Data: Wooldridge data sets from the `wooldridge` package (pip install wooldridge);
-StatLabs "Birth weight II" in Listas/data/babies.data (provenance in Listas/data/README.md).
+StatLabs "Birth weight II" in Listas/data/babies.data (provenance in Listas/data/README.md);
+nutrition data in Listas/data/L07-nutrition-pregnant-women.csv (from the lecturer's page
+Aula/class-07/materials/hierarchicalmodel.html, Souza 1999 / Gamerman and Lopes 2006, Fig. 5.5).
 Every MCMC run uses a fixed seed; MCMC numbers are asserted with a Monte Carlo tolerance,
 everything else to the rounding printed in the list. Exits non-zero on the first mismatch.
 """
@@ -16,6 +20,7 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 import statsmodels.api as sm
+import statsmodels.formula.api as smf
 import wooldridge as wd
 from linearmodels.panel import PanelOLS
 from scipy import integrate, optimize, stats
@@ -581,6 +586,86 @@ def orig_probit():
     put("mnp_ME_sum", me.sum())
 
 
+# ---------------------------------------------------------------- Q18 W 8.C12 (MEAP00)
+def w8c12():
+    d = wd.data("meap00_01")
+    X = sm.add_constant(d[["lunch", "lenroll", "lexppp"]])
+    y = d.math4
+    ols, rob = sm.OLS(y, X).fit(), sm.OLS(y, X).fit(cov_type="HC1")
+    put("c12_n", ols.nobs); put("c12_r2", ols.rsquared)
+    names = ["const", "lunch", "lenroll", "lexppp"]
+    for k in names:
+        put(f"c12_ols_{k}", ols.params[k]); put(f"c12_ols_se_{k}", ols.bse[k]); put(f"c12_ols_rse_{k}", rob.bse[k])
+    u, yh = ols.resid, ols.fittedvalues
+    Z = sm.add_constant(np.column_stack([yh, yh**2]))
+    aux = sm.OLS(u**2, Z).fit()
+    put("c12_aux_d0", aux.params.iloc[0]); put("c12_aux_d1", aux.params.iloc[1]); put("c12_aux_d2", aux.params.iloc[2])
+    put("c12_aux_r2", aux.rsquared); put("c12_F", aux.fvalue); put("c12_F_df2", aux.df_resid)
+    put("c12_F_p_x1e54", aux.f_pvalue * 1e54); put("c12_LM", ols.nobs * aux.rsquared)
+    gfit = sm.OLS(np.log(u**2), Z).fit()
+    put("c12_g0", gfit.params.iloc[0]); put("c12_g1", gfit.params.iloc[1]); put("c12_g2", gfit.params.iloc[2])
+    h = np.exp(gfit.fittedvalues)
+    put("c12_hmin", h.min()); put("c12_hmax", h.max())
+    wls = sm.WLS(y, X, weights=1 / h).fit()
+    wlsr = sm.WLS(y, X, weights=1 / h).fit(cov_type="HC1")
+    for k in names:
+        put(f"c12_wls_{k}", wls.params[k]); put(f"c12_wls_se_{k}", wls.bse[k]); put(f"c12_wls_rse_{k}", wlsr.bse[k])
+
+
+# ---------------------------------------------------------------- Q19 KPT 12.2 + added part (nutrition)
+def kpt122():
+    nut = pd.read_csv(HERE / "data" / "L07-nutrition-pregnant-women.csv")
+    po = smf.ols("gain ~ week", nut).fit()
+    put("nu_n", po.nobs); put("nu_pool_a", po.params.Intercept); put("nu_pool_b", po.params.week)
+    put("nu_pool_se_a", po.bse.Intercept); put("nu_pool_se_b", po.bse.week); put("nu_pool_s", np.sqrt(po.scale))
+    m = smf.mixedlm("gain ~ week", nut, groups=nut.woman).fit(reml=True)
+    a, b = m.fe_params.Intercept, m.fe_params.week
+    s2, sa2 = m.scale, float(m.cov_re.iloc[0, 0])
+    r = s2 / sa2
+    put("nu_a", a); put("nu_b", b); put("nu_se_a", m.bse_fe.Intercept); put("nu_se_b", m.bse_fe.week)
+    put("nu_s2", s2); put("nu_sa2", sa2); put("nu_r", r); put("nu_rho", sa2 / (sa2 + s2))
+    put("nu_sa", np.sqrt(sa2)); put("nu_se", np.sqrt(s2))
+    for k in (5, 6, 7):
+        put(f"nu_w{k}", k / (k + r))
+    gr = nut.groupby("woman")
+    ni = gr.size().values
+    ybar, xbar = gr.gain.mean().values, gr.week.mean().values
+    nopool = ybar - b * xbar
+    w = ni / (ni + r)
+    blup = w * nopool + (1 - w) * a
+    re = np.array([v.iloc[0] for v in m.random_effects.values()])
+    put("nu_blup_maxdiff_x1e14", np.abs(blup - (a + re)).max() * 1e14)
+    for i in (1, 14):
+        put(f"nu_n{i}", ni[i - 1]); put(f"nu_ybar{i}", ybar[i - 1]); put(f"nu_xbar{i}", xbar[i - 1])
+        put(f"nu_nop{i}", nopool[i - 1]); put(f"nu_pp{i}", blup[i - 1])
+    put("nu_argmax_nop", np.argmax(nopool) + 1)
+    for tag, rr in (("0", 0.0), ("reml", r), ("3", 3.0), ("30", 30.0), ("300", 300.0)):
+        wi = ni / (ni + rr)
+        p = wi * nopool + (1 - wi) * a
+        put(f"nu_tab_w6_{tag}", 6 / (6 + rr)); put(f"nu_tab_sd_{tag}", p.std(ddof=1)); put(f"nu_tab_p14_{tag}", p[13])
+    # (d)(iv) Gibbs sampler, priors of the lecturer's page; same update order as the .tex code
+    g = nut.woman.values - 1
+    x, y = nut.week.values, nut.gain.values
+    I, N = g.max() + 1, len(y)
+    rng = np.random.default_rng(2026)
+    M0, M = 2000, 20000
+    al, be, s2g, sa2g = 0.0, 0.5, 4.0, 4.0
+    keep = np.empty((M, 4)); a1 = 0.0
+    for it in range(M0 + M):
+        D = 1 / (ni / s2g + 1 / sa2g)
+        ai = D * (np.bincount(g, y - be * x) / s2g + al / sa2g) + np.sqrt(D) * rng.standard_normal(I)
+        V = 1 / (1 / 1000 + I / sa2g); al = V * ai.sum() / sa2g + np.sqrt(V) * rng.standard_normal()
+        Vb = 1 / (1 / 1000 + (x @ x) / s2g); be = Vb * (x @ (y - ai[g])) / s2g + np.sqrt(Vb) * rng.standard_normal()
+        e = y - ai[g] - be * x
+        s2g = 1 / rng.gamma(0.001 + N / 2, 1 / (0.001 + e @ e / 2))
+        sa2g = 1 / rng.gamma(0.001 + I / 2, 1 / (0.001 + ((ai - al) ** 2).sum() / 2))
+        if it >= M0:
+            keep[it - M0] = al, be, s2g, sa2g; a1 += ai[0] / M
+    put("nu_g_a", keep[:, 0].mean()); put("nu_g_b", keep[:, 1].mean()); put("nu_g_s2", keep[:, 2].mean())
+    put("nu_g_sa2", keep[:, 3].mean()); put("nu_g_r", (keep[:, 2] / keep[:, 3]).mean()); put("nu_g_a1", a1)
+    put("nu_g_sd_sa2", keep[:, 3].std())
+
+
 # ---------------------------------------------------------------- expected values
 # (key, number as printed in the .tex[, absolute tolerance]). Without a tolerance the check is
 # half a unit in the last printed decimal. MCMC quantities carry an explicit Monte Carlo tolerance.
@@ -712,6 +797,43 @@ EXPECTED = [
     ("mnp_a", "0.222905"), ("mnp_c", "0.109911"), ("mnp_d2s", "0.424264"), ("mnp_ME0", "0.064821"),
     ("mnp_ME0_num", "0.064821"), ("mnp_ME1_num", "-0.286016"), ("mnp_ME2_num", "0.221195"),
     ("mnp_ME_sum", "0.000000"),
+    # Q18 W 8.C12
+    ("c12_n", "1692"), ("c12_r2", "0.3729"),
+    ("c12_ols_const", "91.932"), ("c12_ols_lunch", "-0.44874"), ("c12_ols_lenroll", "-5.3992"), ("c12_ols_lexppp", "3.5247"),
+    ("c12_ols_se_const", "19.962"), ("c12_ols_se_lunch", "0.01464"), ("c12_ols_se_lenroll", "0.9404"),
+    ("c12_ols_se_lexppp", "2.0978"),
+    ("c12_ols_rse_const", "23.087"), ("c12_ols_rse_lunch", "0.01658"), ("c12_ols_rse_lenroll", "1.1312"),
+    ("c12_ols_rse_lexppp", "2.3537"),
+    ("c12_aux_d0", "1664.13"), ("c12_aux_d1", "-28.299"), ("c12_aux_d2", "0.11553"), ("c12_aux_r2", "0.135805"),
+    ("c12_F", "132.71"), ("c12_F_df2", "1689"), ("c12_F_p_x1e54", "3", 0.5), ("c12_LM", "229.78"),
+    ("c12_g0", "4.2075"), ("c12_g1", "0.059637"), ("c12_g2", "-0.00084147"),
+    ("c12_hmin", "12.28"), ("c12_hmax", "185.53"),
+    ("c12_wls_const", "50.478"), ("c12_wls_lunch", "-0.44859"), ("c12_wls_lenroll", "-2.6473"), ("c12_wls_lexppp", "6.4742"),
+    ("c12_wls_se_const", "16.510"), ("c12_wls_se_lunch", "0.01461"), ("c12_wls_se_lenroll", "0.8359"),
+    ("c12_wls_se_lexppp", "1.6859"),
+    ("c12_wls_rse_const", "18.925"), ("c12_wls_rse_lunch", "0.01425"), ("c12_wls_rse_lenroll", "1.0546"),
+    ("c12_wls_rse_lexppp", "1.8129"),
+    # Q19 KPT 12.2 + added part (nutrition data)
+    ("nu_n", "427"), ("nu_pool_a", "-4.5264"), ("nu_pool_se_a", "0.4868"), ("nu_pool_b", "0.47633"),
+    ("nu_pool_se_b", "0.01897"), ("nu_pool_s", "3.6115"),
+    ("nu_a", "-4.2191"), ("nu_se_a", "0.4541"), ("nu_b", "0.46656"), ("nu_se_b", "0.00934"),
+    ("nu_s2", "2.9613"), ("nu_sa2", "10.1523"), ("nu_r", "0.2917"), ("nu_rho", "0.7742"),
+    ("nu_sa", "3.19"), ("nu_se", "1.72"),
+    ("nu_w5", "0.9449"), ("nu_w6", "0.9536"), ("nu_w6", "0.953639"), ("nu_w7", "0.9600"),
+    ("nu_blup_maxdiff_x1e14", "4", 1.0),
+    ("nu_n1", "6"), ("nu_n14", "6"), ("nu_ybar1", "8.7333"), ("nu_xbar1", "19.9998"), ("nu_nop1", "-0.5977"),
+    ("nu_pp1", "-0.7656"), ("nu_ybar14", "14.0333"), ("nu_xbar14", "21.3333"), ("nu_nop14", "4.0801"),
+    ("nu_pp14", "3.6954"), ("nu_argmax_nop", "14"),
+    ("nu_tab_w6_0", "1"), ("nu_tab_w6_reml", "0.9536"), ("nu_tab_w6_3", "0.6667"), ("nu_tab_w6_30", "0.1667"),
+    ("nu_tab_w6_300", "0.0196"),
+    ("nu_tab_sd_0", "3.2594"), ("nu_tab_sd_reml", "3.1139"), ("nu_tab_sd_3", "2.2047"), ("nu_tab_sd_30", "0.5673"),
+    ("nu_tab_sd_300", "0.0674"),
+    ("nu_tab_p14_0", "4.0801"), ("nu_tab_p14_reml", "3.6954"), ("nu_tab_p14_3", "1.3137"),
+    ("nu_tab_p14_30", "-2.8359"), ("nu_tab_p14_300", "-4.0564"),
+    # Gibbs (seed 2026, 20,000 kept draws): Monte Carlo tolerances
+    ("nu_g_a", "-4.2209", 0.02), ("nu_g_b", "0.46672", 0.0005), ("nu_g_s2", "2.978", 0.01),
+    ("nu_g_sa2", "10.48", 0.1), ("nu_g_r", "0.2938", 0.003), ("nu_g_a1", "-0.7760", 0.01),
+    ("nu_g_sd_sa2", "1.94", 0.05),
 ]
 
 # Displayed arithmetic (estilo-avaliacao §4.4): each operation shown with printed numbers must give
@@ -759,6 +881,18 @@ DISPLAYED = [
     ("-(-0.5)*0.222905-0.424264*0.109911", "0.064821"), ("0.064821-0.286016+0.221195", "0.000000"),
     ("math.sqrt(0.25/200000)", "0.0011"),
     ("abs(0.22067-0.220892)", "0.0002"), ("abs(0.52432-0.523449)", "0.0009"), ("abs(0.25501-0.255658)", "0.0006"),
+    # Q18
+    ("2.3537/2.0978", "1.122"), ("1.1312/0.9404", "1.203"), ("3.5247/2.3537", "1.498"),
+    ("(0.135805/2)/((1-0.135805)/1689)", "132.71", 0.01), ("1692*0.135805", "229.78"),
+    ("6.4742-3.5247", "2.9495"), ("2.9495/2.3537", "1.253"), ("3.5247/10", "0.35", 0.005),
+    ("6.4742/10", "0.65", 0.005), ("1.0546/0.8359-1", "0.26", 0.005), ("1.8129/1.6859-1", "0.08", 0.005),
+    ("1-1.8129/2.3537", "0.230"), ("6.4742/1.8129", "3.571"),
+    # Q19
+    ("2.9613/10.1523", "0.2917"), ("10.1523/(10.1523+2.9613)", "0.7742"), ("5/(5+0.2917)", "0.9449"),
+    ("6/6.2917", "0.9536"), ("7/7.2917", "0.9600"), ("1-0.953639", "0.046361"),
+    ("8.7333-0.466556*19.9998", "-0.5977"), ("0.953639*(-0.5977)+0.046361*(-4.2191)", "-0.7656"),
+    ("14.0333-0.466556*21.3333", "4.0801"), ("0.953639*4.0801+0.046361*(-4.2191)", "3.6954", 1e-4),
+    ("4.0801-3.6954", "0.385"), ("abs(-0.7760-(-0.7656))", "0.01"),
 ]
 
 
@@ -770,7 +904,8 @@ def _tol(printed):
 
 if __name__ == "__main__":
     import math  # noqa: F401  (used inside the DISPLAYED expressions)
-    for f in (w12c2, w12c10, w17c2, w17c3, w17c9, w14c5, ms618, ms621, g83, g86, g87, orig_probit):
+    for f in (w12c2, w12c10, w17c2, w17c3, w17c9, w14c5, ms618, ms621, g83, g86, g87, orig_probit,
+              w8c12, kpt122):
         f()
     bad = []
     for item in EXPECTED:

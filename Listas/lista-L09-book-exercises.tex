@@ -104,6 +104,9 @@ when a statement refers to an example, a model, an equation or a data file descr
 Questions 13--16 are \emph{original exercises} (no book on disk has exercises on large BVARs, FAVARs,
 TVP-VARs or factor stochastic volatility): each opens with an \emph{Origin} line naming the class slides it is
 built on, and uses simulated data with fixed NumPy seeds.
+Block~6 fills the remaining Class~9 topics: Question~17 (non-recursive SVAR identification) is original, since no book on disk
+has such an exercise; Questions~18 (Hamilton 11.5, variance decomposition) and 19 (Koop, Poirier and Tobias 16.4, SSVS) come
+from books outside the course bibliography.
 Data exercises use Tsay's data files (\texttt{Listas/data/}, provenance in \texttt{Listas/data/README.md})
 and are solved in Python (NumPy, SciPy, \texttt{statsmodels}); the multivariate GARCH models are
 estimated by Gaussian maximum likelihood written in NumPy and \texttt{scipy.optimize}.
@@ -1806,6 +1809,375 @@ The first is a structural story that scales; the second is a flexible filter.}
 \refbib{BVAR-part2.pdf pp.~15 (factor covariance $\bm\beta\bm\beta'+\bSigma$), 17 (parameter count), 38--40 (FSV, correlated
 factor volatilities, time-varying loadings); Tsay \S10.4.3, printed pp.~531--532 [PDF pp.~558--559] (DCC);
 \path{wti-sp500-timevaryingcovariance.html} (FSV vs DCC in R).}
+\end{sol}
+
+% =============================================================================
+\bloco{6}{Structural VAR identification, variance decomposition, SSVS}{slides, Hamilton, Koop et al.\ \,\textbullet\, Questions 17--19}
+
+% ---------------------------------------------------------------- Q17 = original (non-recursive SVAR)
+\questao{Structural VAR with non-recursive zero restrictions on $\bm A_0$: order and rank conditions.}
+\origem{original exercise on structural VAR identification with non-recursive restrictions on $\bm A_0$, built on
+\path{Aula/class-09/materials/BVAR-part11.pdf}, pp.~31--37 (no book on disk has an exercise on non-recursive SVAR
+identification: Tsay Ch.~8 and Hamilton Ch.~11 exercises cover only the recursive structural form).}
+
+The slides (p.~33) write the SVAR($p$) as $\bm A_0\bm y_t=\bm A_1\bm y_{t-1}+\cdots+\bm A_p\bm y_{t-p}+\bm u_t$,
+$\bm u_t\sim N(\bm0,\bm I_q)$ i.i.d., with reduced form $\bm y_t=\bm B_1\bm y_{t-1}+\cdots+\bm B_p\bm y_{t-p}+\bm e_t$,
+$\bm B_i=\bm A_0^{-1}\bm A_i$, $\bm e_t=\bm A_0^{-1}\bm u_t$, $\bSigma=\mathrm{Var}(\bm e_t)$. Row $i$ of $\bm A_0$ is structural
+equation $i$; $a_{ij}$ is the coefficient of variable $j$ in equation $i$; ``$\times$'' marks a free element.
+\begin{enumerate}[label=(\alph*),leftmargin=2em]
+\item Show that $(\bm A_0,\bm A)$ and $(\bm Q\bm A_0,\bm Q\bm A)$, with $\bm Q$ any $q\times q$ orthogonal matrix, imply the same
+$(\bm B,\bSigma)$. Count the distinct elements of $\bSigma$ and of $\bm A_0$ and derive the \emph{order condition}: the minimum
+number of restrictions on $\bm A_0$. Evaluate it for $q=3$, $5$ and $6$. The slide prints $\bSigma=(\bm A_0\bm A_0')^{-1}$;
+what does the column-vector form above give, and why is the counting unaffected?
+\item In the slides' commodity-price SVAR(1) (p.~32), the variables are $(\Delta\log P_{c,t},\Delta\log Y_t,R_t)$ and the
+equations are monetary policy (MP: excludes $\Delta\log Y_t$), finished-goods producers (PS: excludes $R_t$) and the
+commodity market (Inf: unrestricted). Write the zero pattern of $\bm A_0$ and check the order condition. Count the zeros
+of $\bm A_0$ in Illustration~1 (p.~35, $q=5$) and Illustration~2 (p.~36, $q=6$) and give, if the rank condition holds,
+the number of over-identifying restrictions of each.
+\item The \emph{rank condition}: with $\bm\theta$ the free elements of $\bm A_0$, the SVAR is locally identified at $\bm\theta$ if
+and only if $\bm J(\bm\theta)=\partial\,\mathrm{vech}(\bm A_0'\bm A_0)/\partial\bm\theta'$ has full column rank. Consider
+three patterns with three zeros each:
+\[
+P_1=\begin{pmatrix}\times&0&\times\\0&\times&0\\\times&\times&\times\end{pmatrix},\qquad
+P_2=\begin{pmatrix}\times&\times&0\\0&\times&\times\\\times&0&\times\end{pmatrix},\qquad
+P_3=\begin{pmatrix}\times&\times&0\\\times&\times&0\\0&\times&\times\end{pmatrix}.
+\]
+$P_1$ is the system of (b) plus ``producers do not react to commodity prices within the period''.
+(i) Show that $P_1$ is non-recursive (no reordering of variables and equations makes $\bm A_0$ triangular), and derive $\bm A_0$
+from $\bSigma$ in closed form, normalizing the own-variable element of each equation ($R_t$ in MP, $\Delta\log Y_t$ in PS,
+$\Delta\log P_{c,t}$ in Inf) to be positive.
+(ii) Compute the rank of $\bm J$ at
+$\bm A_0^{(1)}=\begin{pmatrix}-0.5&0&2\\0&1.5&0\\1.2&-0.6&0.8\end{pmatrix}$,
+$\bm A_0^{(2)}=\begin{pmatrix}1&0.5&0\\0&1&0.5\\0.5&0&1\end{pmatrix}$,
+$\bm A_0^{(3)}=\begin{pmatrix}1&0.5&0\\0.6&1&0\\0&0.4&1\end{pmatrix}$ (patterns $P_1$, $P_2$, $P_3$), and explain
+analytically why $P_3$ fails.
+(iii) Show that $\tilde{\bm A}_0=\begin{pmatrix}0.5&1&0\\0&0.5&1\\1&0&0.5\end{pmatrix}$ satisfies $P_2$, has a positive diagonal, and
+$\tilde{\bm A}_0'\tilde{\bm A}_0=\bm A_0^{(2)\prime}\bm A_0^{(2)}$. What does this say about local versus global identification
+(the definition on p.~34)?
+\item NumPy and \texttt{statsmodels} (seed 2030, \texttt{o\_svar()} in the check script): simulate $T=500$ observations
+(after 100 burn-in) of $\bm y_t=\bm B_1\bm y_{t-1}+\bm A_0^{-1}\bm u_t$ with $\bm A_0=\bm A_0^{(1)}$ and
+$\bm B_1=\begin{pmatrix}0.5&0.1&0\\0.1&0.6&-0.1\\0.2&0.1&0.7\end{pmatrix}$. Fit a VAR(1) with intercept by OLS, take the ML
+$\hat\bSigma$, recover $\hat{\bm A}_0$ with the formula of (c)(i), and report the responses of the three variables to a
+one-standard-deviation MP shock at $s=0,1,4$, true and estimated.
+\end{enumerate}
+\resolespaco
+\begin{sol}
+\begin{notacao}
+\item $q$: number of variables; $\bm A_0$: contemporaneous structural matrix, $a_{ij}$ its elements; $\bm A=(\bm A_1,\dots,\bm A_p)$.
+\item $\bm e_t=\bm A_0^{-1}\bm u_t$: reduced-form innovations, $\bSigma=\mathrm{Var}(\bm e_t)$, $\Sigma_{jk}$ its elements, indexed by
+the variable names ($\Sigma_{Y\!Y}$, $\Sigma_{P_cY}$, \dots).
+\item $\bm Q$: orthogonal matrix ($\bm Q'\bm Q=\bm I$); $\bm\theta$: free elements of $\bm A_0$; $\bm J(\bm\theta)$: Jacobian of the rank condition.
+\item $\bm\Theta_s=\bm B_1^s\bm A_0^{-1}$: structural impulse responses (column $j$ = responses to a one-s.d.\ shock $u_{jt}$).
+\end{notacao}
+
+\passo{(a) observational equivalence and the order condition}{With $\bm Q'\bm Q=\bm I$,
+\begin{align}
+(\bm Q\bm A_0)^{-1}(\bm Q\bm A)&=\bm A_0^{-1}\bm Q'\bm Q\bm A=\bm A_0^{-1}\bm A=\bm B,\nonumber\\
+\big[(\bm Q\bm A_0)'(\bm Q\bm A_0)\big]^{-1}&=(\bm A_0'\bm Q'\bm Q\bm A_0)^{-1}=(\bm A_0'\bm A_0)^{-1}=\bSigma,\label{eq:q17eq}
+\end{align}
+since $\bSigma=\mathrm{Var}(\bm A_0^{-1}\bm u_t)=\bm A_0^{-1}(\bm A_0^{-1})'=(\bm A_0'\bm A_0)^{-1}$. Given $\bm A_0$, $\bm A=\bm A_0\bm B$ is
+determined, so identification rests on $\bm A_0$: $q^2$ unknowns against the $q(q+1)/2$ distinct equations
+$\bm A_0'\bm A_0=\bSigma^{-1}$. The restrictions must supply the difference,
+\begin{equation}
+q^2-\frac{q(q+1)}2=\frac{q(q-1)}2:\qquad q=3:\ 3,\qquad q=5:\ 10,\qquad q=6:\ 15,\label{eq:q17order}
+\end{equation}
+which is also the number of free parameters of an orthogonal $\bm Q$ (the restrictions must rule out every $\bm Q\neq\bm I$
+other than sign flips of rows). The slide's $(\bm A_0\bm A_0')^{-1}$ belongs to the row convention
+$\bm y_t'\bm A_0=\bm y_{t-1}'\bm A_1+\cdots+\bm u_t'$ of Waggoner and Zha, in which equations are \emph{columns} of $\bm A_0$
+(as in Illustration~1); it is the transpose of the form above, and the counts are the same.}
+
+\passo{(b) the slides' systems}{Commodity-price system (rows MP, PS, Inf; columns $\Delta\log P_c,\Delta\log Y,R$):
+\begin{equation}
+\bm A_0=\begin{pmatrix}a_{11}&0&a_{13}\\a_{21}&a_{22}&0\\a_{31}&a_{32}&a_{33}\end{pmatrix}:\quad 2\text{ zeros}<3,\nonumber
+\end{equation}
+so it is under-identified: 7 free elements against 6 equations, and a one-parameter family of rotations preserves both zeros.
+Illustration~1 has $1+2+2+2+4=11$ zeros (counted by variable rows; its columns are the equations), one more than the 10
+required: one over-identifying restriction. Illustration~2 has $0+4+2+5+4+3=18$ zeros (rows are the equations), three more than
+15: three over-identifying restrictions. With over-identification $\bSigma$ itself is restricted, and the restrictions can be
+tested (likelihood ratio of the restricted against the unrestricted $\bSigma$). (Illustration~1 prints $a_{14}$ and $a_{15}$ twice,
+apparently label typos; only the zeros matter for the count.)}
+
+\passo{(c)(i) $P_1$: non-recursive but exactly identified}{A triangular $\bm A_0$ needs equations with $1,2,3$ free elements whose
+variable sets are nested. PS contains only $\Delta\log Y$, so $\Delta\log Y$ would come first; the two-variable equation would then
+have to contain $\Delta\log Y$, but MP contains $\Delta\log P_c$ and $R$ and not $\Delta\log Y$. No ordering works. Since
+$\bm u_t=\bm A_0\bm e_t$ has identity covariance, solve equation by equation:
+\begin{align}
+\text{PS: }&u_{2t}=a_{22}e_{Y,t}\ \Rightarrow\ a_{22}=1/\sqrt{\Sigma_{Y\!Y}},\label{eq:q17ps}\\
+\text{MP: }&u_{1t}=a_{11}e_{P_c,t}+a_{13}e_{R,t},\quad \mathrm{Cov}(u_{1t},e_{Y,t})=0\ \Rightarrow\
+(a_{11},a_{13})\propto(-\Sigma_{RY},\ \Sigma_{P_cY}),\label{eq:q17mp}\\
+\text{Inf: }&\bm g=(a_{31},a_{32},a_{33}):\ \bm g\bSigma\bm r'=0,\ \ \bm g\bSigma\bm\iota_2=0,\ \ \bm g\bSigma\bm g'=1,\label{eq:q17inf}
+\end{align}
+with $\bm r$ the MP row and $\bm\iota_2=(0,1,0)'$. In \eqref{eq:q17mp} the scale comes from $\bm r\bSigma\bm r'=1$ and the sign from
+$a_{13}>0$; in \eqref{eq:q17inf} two orthogonality conditions fix the direction of $\bm g$ and the unit variance its length, the sign
+from $a_{31}>0$. Each step has a unique solution (generically: $\Sigma_{P_cY}$ and $\Sigma_{RY}$ not both zero), so $P_1$ is globally
+exactly identified. The equations are instrumental-variable
+conditions: PS's shock is the output innovation itself, and it is the ``instrument'' that pins down the MP equation. Applied to
+$\bSigma=(\bm A_0^{(1)\prime}\bm A_0^{(1)})^{-1}$, the formulas return $\bm A_0^{(1)}$ exactly (script, to $10^{-10}$).}
+
+\passo{(c)(ii) Jacobian ranks}{Numerically, $\mathrm{rank}\,\bm J=6$ at $\bm A_0^{(1)}$ ($P_1$), $6$ at $\bm A_0^{(2)}$ ($P_2$) and
+$5<6$ at $\bm A_0^{(3)}$ ($P_3$). In $P_3$ the first two equations have the same pattern (both exclude variable 3), so for every angle
+$\omega$
+\begin{equation}
+\bm Q_\omega=\begin{pmatrix}\cos\omega&-\sin\omega&0\\\sin\omega&\cos\omega&0\\0&0&1\end{pmatrix}:\quad
+\bm Q_\omega\bm A_0\text{ keeps both zeros and, by \eqref{eq:q17eq}, the same }\bSigma.\nonumber
+\end{equation}
+A continuum of observationally equivalent $\bm A_0$ means $\bm J$ has a null direction ($\mathrm{d}\bm Q_\omega\bm A_0/\mathrm{d}\omega$ at
+$\omega=0$), so the rank is 5 at every point. The order condition holds (three zeros) but the rank condition fails: the order
+condition is necessary, not sufficient. Equation~3 is identified; equations~1 and~2 are not.}
+
+\passo{(c)(iii) $P_2$: locally but not globally identified}{The columns of $\bm A_0^{(2)}$ are $(1,0,0.5)'$, $(0.5,1,0)'$,
+$(0,0.5,1)'$ and those of $\tilde{\bm A}_0$ are $(0.5,0,1)'$, $(1,0.5,0)'$, $(0,1,0.5)'$; in both cases each has squared norm
+$1.25$ and each pair has inner product $0.5$, so
+\begin{equation}
+\tilde{\bm A}_0'\tilde{\bm A}_0=\bm A_0^{(2)\prime}\bm A_0^{(2)}=\begin{pmatrix}1.25&0.5&0.5\\0.5&1.25&0.5\\0.5&0.5&1.25\end{pmatrix}.\nonumber
+\end{equation}
+$\tilde{\bm A}_0$ has the zeros of $P_2$ and a positive diagonal, and it is not a sign flip of $\bm A_0^{(2)}$: two different structures
+give the same reduced form. A least-squares solver started from 40 random points finds exactly these two solutions (with
+positive diagonal). $\bm J$ has full rank at both, so each is locally identified (isolated), but the SVAR is not globally identified:
+the definition on p.~34 asks for a \emph{unique} structural point. Rubio-Ram\'irez, Waggoner and Zha (2010; slide p.~31) show that
+exact identification by zero restrictions requires, after ordering the equations by their number of restrictions, $q-j$
+restrictions in equation $j$ (plus a rank condition). $P_1$ has $(2,1,0)$; $P_2$ has $(1,1,1)$ and fails.}
+
+\passo{(d) simulation}{OLS and the ML innovation covariance ($\hat\bSigma=\hat{\bm E}'\hat{\bm E}/499$):
+\begin{align}
+\hat{\bm B}_1&=\begin{pmatrix}0.455&0.125&0.035\\0.111&0.688&-0.061\\0.224&0.082&0.702\end{pmatrix},\qquad
+\hat\bSigma=\begin{pmatrix}0.667&0.200&0.030\\0.200&0.480&0.047\\0.030&0.047&0.220\end{pmatrix},\nonumber\\
+\hat{\bm A}_0&=\begin{pmatrix}-0.480&0&2.030\\0&1.443&0\\1.218&-0.581&0.732\end{pmatrix}
+\quad\text{vs}\quad
+\bm A_0^{(1)}=\begin{pmatrix}-0.5&0&2\\0&1.5&0\\1.2&-0.6&0.8\end{pmatrix},\nonumber
+\end{align}
+(true $\bSigma$: diagonal $0.673,0.444,0.221$; off-diagonal $0.190,0.026,0.048$). $\hat{\bm A}_0'\hat{\bm A}_0=\hat\bSigma^{-1}$ to
+$10^{-10}$: an exactly identified SVAR fits $\hat\bSigma$ perfectly, so nothing is left to test. Responses to a one-s.d.\ MP shock,
+the first column of $\bm\Theta_s$, in the order $(\Delta\log P_c,\Delta\log Y,R)$:}
+\begin{center}\small
+\begin{tabular}{lrrr}
+\toprule
+$s$ & true $\bm\Theta_s\bm\iota_1$ & estimated $\hat{\bm\Theta}_s\bm\iota_1$\\
+\midrule
+0 & $(-0.286,\ 0,\ 0.429)$ & $(-0.259,\ 0,\ 0.431)$\\
+1 & $(-0.143,\ -0.071,\ 0.243)$ & $(-0.103,\ -0.055,\ 0.245)$\\
+4 & $(-0.031,\ -0.054,\ 0.033)$ & $(-0.015,\ -0.048,\ 0.050)$\\
+\bottomrule
+\end{tabular}
+\end{center}
+A monetary tightening raises $R_t$ on impact, lowers commodity prices at once, and lowers output only from the next period, because
+output is predetermined in $P_1$ (zero impact response, exactly, in both columns). The estimated responses track the true ones.
+\intuicao{The reduced form only reveals $\bSigma$, which any rotation of the structural shocks reproduces. Each zero in $\bm A_0$
+removes one degree of freedom of that rotation. Counting zeros (order) is not enough: they must sit in places that actually
+pin the rotation down (rank), and even then the solution can be one of several isolated points (global identification).}
+\refbib{BVAR-part11.pdf pp.~31 (Rubio-Ram\'irez, Waggoner and Zha 2010), 32 (commodity-price SVAR), 33 (SVAR set-up), 34 (exact
+identification), 35--36 (Illustrations 1--2), 37 (monetary policy shock). Outside the course bibliography: Hamilton (1994)
+\S11.6, printed pp.~324--336 [PDF pp.~339--351] (structural VARs, order and rank conditions).}
+\end{sol}
+
+% ---------------------------------------------------------------- Q18 = Hamilton 11.5 (FEVD)
+\questao{Stationarity, impulse responses and forecast-error variance decomposition of a bivariate VAR (Hamilton 11.5).}
+\fonte{Hamilton, J.~D. (1994), \textit{Time Series Analysis}, Princeton University Press (2020 printing on disk), Chapter~11,
+Exercise~11.5, printed p.~349 [PDF p.~364]; outside the course bibliography; answer given in the book (Appendix~C, printed
+p.~775 [PDF p.~790]); reproduced verbatim.}
+
+\begin{quote}\small
+11.5. Consider the following bivariate VAR:
+\begin{align*}
+y_{1t}&=0.3y_{1,t-1}+0.8y_{2,t-1}+\varepsilon_{1t}\\
+y_{2t}&=0.9y_{1,t-1}+0.4y_{2,t-1}+\varepsilon_{2t},
+\end{align*}
+with $E(\varepsilon_{1t}\varepsilon_{1\tau})=1$ for $t=\tau$ and 0 otherwise, $E(\varepsilon_{2t}\varepsilon_{2\tau})=2$ for $t=\tau$ and 0
+otherwise, and $E(\varepsilon_{1t}\varepsilon_{2\tau})=0$ for all $t$ and $\tau$.
+\begin{enumerate}[label=(\alph*),leftmargin=2em]
+\item Is this system covariance-stationary?
+\item Calculate $\bm\Psi_s=\partial\bm y_{t+s}/\partial\bm\varepsilon_t'$ for $s=0$, 1, and 2. What is the limit as $s\to\infty$?
+\item Calculate the fraction of the \textit{MSE} of the two-period-ahead forecast error for variable 1,
+\[
+E[y_{1,t+2}-\hat E(y_{1,t+2}\mid\bm y_t,\bm y_{t-1},\dots)]^2,
+\]
+that is due to $\varepsilon_{1,t+1}$ and $\varepsilon_{1,t+2}$.
+\end{enumerate}
+\end{quote}
+\begin{refmat}
+\item $\hat E(\cdot\mid\cdot)$ is Hamilton's linear projection (optimal linear forecast). $\bm\Psi_s$ are the matrices of the vector MA($\infty$)
+form $\bm y_t=\bm\mu+\bm\varepsilon_t+\bm\Psi_1\bm\varepsilon_{t-1}+\bm\Psi_2\bm\varepsilon_{t-2}+\cdots$; the $s$-step forecast error is
+$\bm\varepsilon_{t+s}+\bm\Psi_1\bm\varepsilon_{t+s-1}+\cdots+\bm\Psi_{s-1}\bm\varepsilon_{t+1}$, with MSE $\sum_{k=0}^{s-1}\bm\Psi_k\bm\Omega\bm\Psi_k'$,
+$\bm\Omega=E(\bm\varepsilon_t\bm\varepsilon_t')$ (Hamilton \S11.5, Eqs.~[11.5.1]--[11.5.2], printed p.~323 [PDF p.~338]; the class slide
+BVAR-part11.pdf p.~11 gives the same decomposition).
+\end{refmat}
+\resolespaco
+\begin{sol}
+\begin{notacao}
+\item $\bm y_t=(y_{1t},y_{2t})'$; $\bm\Phi=\begin{pmatrix}0.3&0.8\\0.9&0.4\end{pmatrix}$: VAR(1) matrix; $\bm\varepsilon_t$: innovations with
+$\bm\Omega=\mathrm{diag}(1,2)$.
+\item $\bm\Psi_s=\bm\Phi^s$: MA($\infty$) (impulse-response) matrices, $\psi_{ij}^{(s)}$ their elements; $h$: forecast horizon.
+\item $\mathrm{MSE}_i(h)$: mean squared $h$-step forecast error of $y_i$; $\mathrm{FEVD}_{ij}(h)$: share of it due to $\varepsilon_j$.
+\end{notacao}
+
+\passo{(a) stationarity}{The VAR is covariance-stationary iff all roots of $|\bm I_2-\bm\Phi z|=0$ lie outside the unit circle:
+\begin{equation}
+|\bm I_2-\bm\Phi z|=(1-0.3z)(1-0.4z)-(0.8z)(0.9z)=1-0.7z-0.6z^2=(1-1.2z)(1+0.5z).\nonumber
+\end{equation}
+The roots are $z=1/1.2=0.833$ and $z=-2$; the first is inside the unit circle (equivalently, $\bm\Phi$ has eigenvalues $1.2$ and
+$-0.5$), so the system is \emph{not} covariance-stationary. This matches Hamilton's answer.}
+
+\passo{(b) impulse responses}{For a VAR(1), $\bm y_{t+s}=\bm\Phi^s\bm y_t+\sum_{k=0}^{s-1}\bm\Phi^k\bm\varepsilon_{t+s-k}$, so
+$\bm\Psi_s=\bm\Phi^s$:
+\begin{equation}
+\bm\Psi_0=\bm I_2,\qquad \bm\Psi_1=\begin{pmatrix}0.3&0.8\\0.9&0.4\end{pmatrix},\qquad
+\bm\Psi_2=\bm\Phi^2=\begin{pmatrix}0.09+0.72&0.24+0.32\\0.27+0.36&0.72+0.16\end{pmatrix}=\begin{pmatrix}0.81&0.56\\0.63&0.88\end{pmatrix}.\nonumber
+\end{equation}
+With $\bm\Phi=\bm V\mathrm{diag}(1.2,-0.5)\bm V^{-1}$, $\bm\Psi_s=\bm V\mathrm{diag}(1.2^s,(-0.5)^s)\bm V^{-1}$ grows like $1.2^s$: the
+impulse responses diverge, there is no finite limit.}
+
+\passo{(c) variance decomposition}{The two-step forecast error of $y_1$ is the first row of
+$\bm\varepsilon_{t+2}+\bm\Psi_1\bm\varepsilon_{t+1}$:
+\begin{equation}
+y_{1,t+2}-\hat E(y_{1,t+2}\mid\bm y_t,\dots)=\varepsilon_{1,t+2}+0.3\,\varepsilon_{1,t+1}+0.8\,\varepsilon_{2,t+1}.\label{eq:q18err}
+\end{equation}
+The three terms are uncorrelated ($\bm\Omega$ is diagonal), so
+\begin{align}
+\mathrm{MSE}_1(2)&=\underbrace{1+0.3^2(1)}_{\varepsilon_1:\ 1.09}+\underbrace{0.8^2(2)}_{\varepsilon_2:\ 1.28}=2.37,\nonumber\\
+\mathrm{FEVD}_{11}(2)&=\frac{1.09}{2.37}=0.460,\qquad \mathrm{FEVD}_{12}(2)=\frac{1.28}{2.37}=0.540.\label{eq:q18fevd}
+\end{align}
+This is Hamilton's answer (0.46). Because $\bm\Omega$ is already diagonal, no orthogonalization is needed and the ordering of the
+variables does not matter; with correlated innovations one would first write $\bm\Omega=\bm A\bm D\bm A'$ (Cholesky), as on slide
+p.~11, and the shares would depend on the ordering. For comparison, $\mathrm{MSE}_2(2)=0.9^2+2+0.4^2(2)=3.13$, of which
+$\varepsilon_1$ explains $0.81/3.13=0.259$.}
+
+\passo{longer horizons}{$\mathrm{FEVD}_{1j}(h)=\sum_{k<h}(\psi_{1j}^{(k)})^2\Omega_{jj}/\mathrm{MSE}_1(h)$. Even though the MSE
+explodes, the shares converge: for large $k$, $\bm\Psi_k\approx1.2^k\bm v\bm w'$ with $\bm v$, $\bm w$ the right and left eigenvectors of
+the root $1.2$; $\bm w'\bm\Phi=1.2\bm w'$ gives $\bm w\propto(1,1)'$, so $\psi_{1j}^{(k)}$ becomes equal for $j=1,2$ and the shares
+tend to $\Omega_{11}/(\Omega_{11}+\Omega_{22})=1/3$ for $\varepsilon_1$. The script gives $0.341$ at $h=10$ and $0.333$ at $h=50$.}
+\intuicao{A variance decomposition splits the uncertainty of a forecast into the shocks that will arrive before the target
+date. At $h=1$ each variable's error is only its own innovation; as $h$ grows the VAR's cross-effects ($0.8$ and $0.9$) feed
+each shock into both variables.}
+\refbib{Hamilton (1994) \S11.4--11.5, printed pp.~318--324 [PDF pp.~333--339]; answer in Appendix~C, printed p.~775
+[PDF p.~790]. BVAR-part11.pdf p.~11 (variance decomposition), p.~12 (impulse responses).}
+\end{sol}
+
+% ---------------------------------------------------------------- Q19 = Koop-Poirier-Tobias 16.4 (SSVS)
+\questao{Stochastic search variable selection: spike-and-slab prior and Gibbs sampler (Koop, Poirier and Tobias 16.4).}
+\fonte{Koop, G., Poirier, D.~J. and Tobias, J.~L. (2007), \textit{Bayesian Econometric Methods}, Cambridge University Press,
+Chapter~16, Exercise~16.4, printed pp.~287--288 [PDF pp.~311--312]; outside the course bibliography; answer given in the book
+(solution after the exercise, printed pp.~288--289 [PDF pp.~312--313]); the motivating opening paragraph and two explanatory
+passages are summarized in brackets, the rest reproduced verbatim.}
+
+\begin{quote}\small
+Exercise 16.4 (Stochastic search variable selection) [Summary: SSVS (George and McCulloch 1993) is an alternative to Bayesian
+model averaging for regressions with many candidate regressors. It uses the normal linear regression model with the
+independent normal--gamma prior of Exercise~11.8, except that each slope gets a mixture of two zero-mean normals: one with a very
+small variance (the variable is effectively excluded) and one with a large variance (the variable is retained).]
+To be precise, for each coefficient $\beta_j$ for $j=1,\dots,K$, the prior is
+\[
+\beta_j\mid\gamma_j\sim(1-\gamma_j)\,N\big(0,\tau_j^2\big)+\gamma_j\,N\big(0,c_j^2\tau_j^2\big),\qquad(16.16)
+\]
+where $c_j$ and $\tau_j$ are known prior hyperparameters with $\tau_j^2$ being small and $c_j^2\tau_j^2$ large. In addition, $\gamma_j$ are
+binary variables that equal 1 with prior probability $\Pr(\gamma_j=1)=p_j$, $0\le p_j\le1$. [Summary: $\gamma_j=0$ is read as evidence
+that $x_j$, the $j$th regressor, can be excluded; $\gamma_j=1$ that it should be retained.]
+\begin{enumerate}[label=(\alph*),leftmargin=2em]
+\item Suppose you place a point prior on $p_j$: $p_j=p\ \forall j$, for some value of $p$, and thus the prior probability that each
+variable is included in the model is simply $p$ [i.e., $\Pr(\gamma_j=1)=p\,\forall j$]. Derive a Gibbs sampler for fitting a linear
+regression model with the SSVS hierarchical prior described here.
+\item Using the results and prior specification from part (a), perform a generated-data experiment to illustrate the
+performance of the SSVS approach. Specifically, generate
+\[
+\begin{pmatrix}x_{1i}\\x_{2i}\\\vdots\\x_{5i}\end{pmatrix}\overset{\text{iid}}{\sim}N\left[\begin{pmatrix}0\\0\\\vdots\\0\end{pmatrix},
+\begin{pmatrix}1&.4&.4&0&.6\\.4&1&.7&0&.3\\.4&.7&1&0&.3\\0&0&0&1&0\\.6&.3&.3&0&1\end{pmatrix}\right],\quad i=1,2,\dots,1{,}000.\qquad(16.17)
+\]
+Then, set
+\[
+y_i=2+.25x_{1i}-.4x_{2i}+.6x_{3i}+.2\epsilon_i,\qquad(16.18)
+\]
+where $\epsilon_i\overset{\text{iid}}{\sim}N(0,1)$. [Summary: five candidate regressors, some correlated, of which only the first three
+enter $y$.] Apply the SSVS algorithm using all five explanatory variables, and determine the
+posterior probabilities that each variable should be retained in the model. For the intercept, simply employ a normal prior,
+and fix attention on the issue of excluding or retaining the $x$'s from the model.
+\end{enumerate}
+\end{quote}
+\begin{refmat}
+\item \textit{Exercise 11.8} (printed p.~134 [PDF p.~158]): $y_i=\bm x_i\bm\beta+\epsilon_i$, $\epsilon_i\sim N(0,\sigma^2)$ i.i.d., with
+independent priors $\bm\beta\sim N(\bm\mu_\beta,\bm V_\beta)$ and $\sigma^2\sim IG(a,b)$. The book's inverted gamma (Appendix
+Theorem~2, printed p.~336 [PDF p.~360]) has density $\propto(\sigma^2)^{-(a+1)}\exp\{-1/(b\sigma^2)\}$ and mean $1/[b(a-1)]$, so
+$1/\sigma^2\sim\mathrm{Gamma}(\text{shape }a,\text{ scale }b)$.
+\item \textit{Hyperparameters} (not in the statement; the book's solution, p.~289, uses them): $\tau_j^2=10^{-7}$, $c_j^2=9/\tau_j^2$
+(slab s.d.\ 3, spike s.d.\ $0.0003$), $p=1/2$; 10{,}000 Gibbs iterations, the first 200 discarded. This list adds (my choice):
+intercept prior $\beta_0\sim N(0,100)$, $\sigma^2\sim IG(3,1)$; data generated with NumPy seed 2031 (\texttt{k164()} in the check
+script).
+\end{refmat}
+\resolespaco
+\begin{sol}
+\begin{notacao}
+\item $\bm X$: $N\times(K+1)$ matrix $(\bm1,\bm x_1,\dots,\bm x_K)$, $N=1000$, $K=5$; $\bm\beta=(\beta_0,\beta_1,\dots,\beta_K)'$; $\hat{\bm\beta}$: OLS.
+\item $\bm\gamma=(\gamma_1,\dots,\gamma_K)'$: inclusion indicators; $\bm V(\bm\gamma)=\mathrm{diag}\big(V_0,v_1(\gamma_1),\dots,v_K(\gamma_K)\big)$ with
+$v_j(1)=c_j^2\tau_j^2$ (slab) and $v_j(0)=\tau_j^2$ (spike).
+\item $\phi(\beta;0,v)$: $N(0,v)$ density at $\beta$; $\mathrm{SSR}(\bm\beta)=(\bm y-\bm X\bm\beta)'(\bm y-\bm X\bm\beta)$.
+\item $P(\gamma_j=1\mid\bm y)$: posterior inclusion probability, estimated by the average of the draws of $\gamma_j$.
+\end{notacao}
+
+\passo{(a) the Gibbs sampler}{The joint posterior is
+\[
+p(\bm\beta,\sigma^2,\bm\gamma\mid\bm y)\propto(\sigma^2)^{-N/2}e^{-\mathrm{SSR}(\bm\beta)/(2\sigma^2)}
+\prod_{j=0}^K\phi(\beta_j;0,v_j)\;(\sigma^2)^{-(a+1)}e^{-1/(b\sigma^2)}\prod_{j=1}^Kp^{\gamma_j}(1-p)^{1-\gamma_j}.
+\]
+Its three full conditionals:
+\begin{align}
+\bm\beta\mid\bm\gamma,\sigma^2,\bm y&\sim N(\bm D\bm d,\bm D),\qquad \bm D=\big(\bm X'\bm X/\sigma^2+\bm V(\bm\gamma)^{-1}\big)^{-1},\quad
+\bm d=\bm X'\bm y/\sigma^2,\label{eq:q19b}\\
+\sigma^2\mid\bm\beta,\bm\gamma,\bm y&\sim IG\Big(\frac N2+a,\ \big[b^{-1}+\tfrac12\mathrm{SSR}(\bm\beta)\big]^{-1}\Big),\label{eq:q19s}\\
+\gamma_j\mid\bm\beta,\sigma^2,\bm y&\overset{\text{ind}}{\sim}\mathrm{Bernoulli}\left(\frac{p\,\phi(\beta_j;0,c_j^2\tau_j^2)}
+{p\,\phi(\beta_j;0,c_j^2\tau_j^2)+(1-p)\,\phi(\beta_j;0,\tau_j^2)}\right),\quad j=1,\dots,K.\label{eq:q19g}
+\end{align}
+\eqref{eq:q19b} is the normal linear model with a normal prior of mean zero and variance $\bm V(\bm\gamma)$, given $\bm\gamma$ and
+$\sigma^2$: precisions add, and the mean is the precision-weighted combination. \eqref{eq:q19s}: as a function of $\sigma^2$ the
+posterior is $(\sigma^2)^{-(N/2+a+1)}\exp\{-[b^{-1}+\mathrm{SSR}/2]/\sigma^2\}$, an $IG$ kernel in the book's parameterization.
+\eqref{eq:q19g}: $\bm\gamma$ enters only through the prior of $\bm\beta$, so given $\bm\beta$ the data drop out and each $\gamma_j$ compares
+the slab and spike densities at the current $\beta_j$, weighted by $p$ and $1-p$. One sweep draws \eqref{eq:q19b}, \eqref{eq:q19s},
+\eqref{eq:q19g} in turn.}
+
+\passo{(b) data and OLS}{With seed 2031, OLS gives $\hat{\bm\beta}=(1.995,\ 0.255,\ -0.392,\ 0.598,\ 0.006,\ 0.012)$, slope standard errors
+$(0.008,0.009,0.009,0.006,0.008)$ and $s=0.191$ (true $0.2$). The coefficients of $x_4$ and $x_5$ are within $1.6$ standard errors of zero.}
+
+\passo{(b) SSVS with the book's hyperparameters}{Started at $\hat{\bm\beta}$, $s^2$ and $\bm\gamma=(1,\dots,1)$, 10{,}000 sweeps, 200 burned:
+\begin{equation}
+E(\bm\beta\mid\bm y)=(1.995,\ 0.261,\ -0.391,\ 0.598,\ 0.000,\ 0.000),\qquad
+P(\gamma_j=1\mid\bm y)=(1,\ 1,\ 1,\ 0.006,\ 0.001).\nonumber
+\end{equation}
+$x_1,x_2,x_3$ are retained at every sweep; $x_4,x_5$ are excluded almost always, as in the book's run (posterior means of $\bm\beta$
+2.01, .258, $-.395$, .595, $-.0001$, .002 and of $\gamma_4,\gamma_5$ .003, .008, from its own generated data). The probabilities can
+be checked exactly: given $\sigma^2$ (fixed at $s^2$, harmless with $N=1000$), $\bm y\mid\bm\gamma\sim N(\bm0,\sigma^2\bm I+\bm X\bm V(\bm\gamma)\bm X')$,
+so the 32 models can be enumerated. The exact inclusion probabilities are $(1,1,1,0.003,0.009)$. The spike is so narrow (s.d.\
+$0.0003$, against a posterior s.d.\ of about $0.007$) that it acts as a point mass at zero, and the slab is so wide (s.d.\ 3) that
+including a regressor costs a large Occam penalty: with $\hat\beta_4=0.006$ the data cannot pay it.}
+
+\passo{(b) mixing}{The same prior makes the chain sticky. If $\gamma_j=1$, $\beta_j$ is drawn with s.d.\ about $0.007$, where the
+spike density is negligible, so $\gamma_j$ almost never returns to 0; if $\gamma_j=0$, $\beta_j$ is drawn within $\pm0.0003$ of zero,
+where the spike density dominates, so $\gamma_j$ rarely switches to 1. The run started at $\hat{\bm\beta}$ only hides this because
+it begins in the right model. Started at $\bm\gamma=\bm0$ instead:
+\begin{equation}
+E(\bm\beta\mid\bm y)=(1.995,\ 0.251,\ -0.328,\ 0.557,\ 0.000,\ 0.000),\qquad
+P(\gamma_j=1\mid\bm y)=(1,\ 0.839,\ 1,\ 0.000,\ 0.001):\nonumber
+\end{equation}
+$x_2$ (correlated $0.7$ with $x_3$) stays out for 16\% of the run and $E(\beta_2\mid\bm y)$ is biased toward zero. The exact answer is
+the same as before, so the discrepancy is a Monte Carlo failure, not a property of the posterior. Ten thousand sweeps are not enough for
+the two chains to agree.}
+
+\passo{(c) the semi-automatic prior of the slides, and VARs}{The class slides (BVAR-part2.pdf p.~12, George, Sun and Ni 2008) scale the
+spike and slab by the OLS standard error: $\tau_{0j}=0.1\,\mathrm{se}(\hat\beta_j)$, $\tau_{1j}=10\,\mathrm{se}(\hat\beta_j)$. Then the
+spike is ten times narrower than the likelihood instead of about 23 times, and the chain moves. Started at $\bm\gamma=\bm0$:
+\begin{equation}
+E(\bm\beta\mid\bm y)=(1.995,\ 0.257,\ -0.383,\ 0.590,\ 0.001,\ 0.004),\qquad P(\gamma_j=1\mid\bm y)=(1,\ 1,\ 1,\ 0.12,\ 0.31),\nonumber
+\end{equation}
+against the exact $(1,1,1,0.13,0.32)$. The true regressors are found from a bad start. The null ones get higher inclusion
+probabilities than under the book's prior, because the slab is now narrow (s.d.\ about $0.08$) and the Occam penalty smaller:
+the inclusion probabilities depend on the prior scale, which must be reported. For a VAR (slides pp.~5--10), write
+$\bm y_t=\bm Z_t\bm\beta+\bm u_t$ with $\bm Z_t=\bm I_q\otimes(\bm y_{t-1}',\dots,\bm y_{t-p}')$ and $\bm\beta=\mathrm{vec}(\bm B)$: each element of $\bm\beta$
+gets the prior (16.16), step \eqref{eq:q19b} becomes the SUR draw with $\bSigma^{-1}$ in place of $1/\sigma^2$, step \eqref{eq:q19s} becomes an
+inverse-Wishart draw for $\bSigma$, and step \eqref{eq:q19g} is unchanged. Each $\gamma_j$ then switches one lag of one variable in one
+equation on or off, so SSVS searches over the $2^{q^2p}$ restricted VARs, and George, Sun and Ni also put the prior on the
+off-diagonal elements of the Cholesky factor of $\bSigma^{-1}$ (p.~13).}
+\intuicao{SSVS turns ``which regressors belong?'' into one more block of a Gibbs sampler: each indicator asks whether the current
+coefficient looks more like a draw from the spike at zero or from the wide slab. The answer is only as good as the two scales:
+too narrow a spike and the chain freezes; too wide a slab and every small effect is thrown out.}
+\refbib{Koop, Poirier and Tobias (2007), Exercise 11.8, printed p.~134 [PDF p.~158]; Exercise 16.4 and solution, printed pp.~287--289
+[PDF pp.~311--313]. BVAR-part2.pdf pp.~4--10 (SSVS for the VAR), 11--13 (spike-and-slab, semi-automatic default, prior on the
+Cholesky factor).}
 \end{sol}
 
 \end{document}

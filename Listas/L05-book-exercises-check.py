@@ -3,11 +3,14 @@
 Reproduces and asserts every number printed in the answer key: the arithmetic on the MHE
 tables, the Wooldridge computer exercises (CARD, KIELMC) and the KIELMC regressions behind
 Wooldridge Problem 13.2, numerical checks of the Greenberg Ch. 11 derivations, the attenuation
-factor of Wooldridge Problem 9.7 (with a seeded simulation), and the two original exercises
-(DAG / collider bias simulation, Simpson's-paradox table). Simulations use fixed seeds.
+factor of Wooldridge Problem 9.7 (with a seeded simulation), the two original exercises
+(DAG / collider bias simulation, Simpson's-paradox table), the arithmetic on MHE Table 7.2.1
+(JTPA QTE, Q19) and the sharp-RDD regressions on the drinking-age data (Q20, original).
+Simulations use fixed seeds; Q19 and Q20 are deterministic.
 Run from the project root or from Listas/:  python Listas/L05-book-exercises-check.py
 Fails with AssertionError naming the first mismatch. Data: Aula/class-05-06/materials/card.csv
-(CARD) and Listas/data/kielmc.csv (KIELMC, from the `wooldridge` package; see data/README.md).
+(CARD), Listas/data/kielmc.csv (KIELMC, from the `wooldridge` package; see data/README.md) and
+Aula/class-05-06/materials/age-mva-internal.txt (MLDA cells, class site).
 """
 from pathlib import Path
 
@@ -393,5 +396,77 @@ chk("effect at treated mix (ATT)", (1 / 3) * 0.05 + (2 / 3) * 0.10, 0.083333, 5e
 chk("T=0 rate at treated mix", (1 / 3) * 0.85 + (2 / 3) * 0.50, 0.616667, 5e-7)
 chk("composition term", (1 / 3) * 0.85 + (2 / 3) * 0.50 - 0.7625, -0.145833, 5e-7)
 chk("ATT + composition", 0.083333 + -0.145833, -0.0625, 1e-6)
+
+# ---------------------------------------------------------------- MHE Table 7.2.1 (JTPA, QTE)
+print("== Q19 MHE Table 7.2.1 (JTPA): t-ratios, selection gaps, QTE vs effect quantiles")
+qs = (0.15, 0.25, 0.50, 0.75, 0.85)
+qr, qr_se = (1187, 2510, 4420, 4678, 4806), (205, 356, 651, 937, 1055)
+qte, qte_se = (121, 702, 1544, 3131, 3378), (475, 670, 1073, 1376, 1811)
+chk("t OLS", 3754 / 536, 7.004, 5e-4)
+chk("t 2SLS", 1593 / 895, 1.780, 5e-4)
+for q, b, s, printed in zip(qs, qr, qr_se, (5.790, 7.051, 6.790, 4.993, 4.555)):
+    chk(f"t QR {q}", b / s, printed, 5e-4)
+for q, b, s, printed in zip(qs, qte, qte_se, (0.255, 1.048, 1.439, 2.275, 1.865)):
+    chk(f"t QTE {q}", b / s, printed, 5e-4)
+chk("OLS - 2SLS", 3754 - 1593, 2161, 0)
+for q, a, b, printed in zip(qs, qr, qte, (1066, 1808, 2876, 1547, 1428)):
+    chk(f"QR - QTE {q}", a - b, printed, 0)
+y0 = np.array([10, 20, 30, 40])
+y1A, y1B = y0 + 5, np.array([45, 15, 25, 35])                # same marginal of y1 in A and B
+assert sorted(y1A) == sorted(y1B)
+for lab, y1 in (("A", y1A), ("B", y1B)):
+    d_ = y1 - y0
+    chk(f"{lab}: ATE", d_.mean(), 5, 1e-12)
+    chk(f"{lab}: QTE(0.5)", np.median(y1) - np.median(y0), 5, 1e-12)
+    chk(f"{lab}: median individual effect", np.median(d_), {"A": 5, "B": -5}[lab], 1e-12)
+    chk(f"{lab}: share who lose", (d_ < 0).mean(), {"A": 0, "B": 0.75}[lab], 1e-12)
+
+# ---------------------------------------------------------------- original: sharp RDD, MLDA and deaths
+print("== Q20 sharp RDD at age 21 (age-mva-internal.txt); robust HC1 standard errors")
+mlda = pd.read_csv(ROOT / "Aula/class-05-06/materials/age-mva-internal.txt", sep=r"\s+")
+mlda["x"] = mlda["age"] - 21
+mlda["D"] = (mlda["age"] >= 21).astype(int)
+chk("cells", len(mlda), 48, 0)
+chk("cells at or above 21", mlda["D"].sum(), 24, 0)
+chk("cell width (years)", np.diff(mlda["age"]).mean(), 0.08219, 5e-5)
+
+
+def rd(y, form, h=None):
+    """OLS of `y` on the RD regressors in `form` within |age-21|<=h; returns (jump, HC1 se, n, fit)."""
+    s = mlda if h is None else mlda[mlda["x"].abs() <= h]
+    f = smf.ols(f"{y} ~ {form}", s).fit(cov_type="HC1")
+    return f.params["D"], f.bse["D"], len(s), f
+
+
+rho, se, _, fc = rd("mva", "D + x")
+chk("MVA common slope: jump", rho, 4.534, 5e-4)
+chk("MVA common slope: se", se, 0.717, 5e-4)
+chk("MVA common slope: slope", fc.params["x"], -3.149, 5e-4)
+chk("MVA left limit at 21", fc.params["Intercept"], 29.356, 5e-4)
+chk("MVA jump / left limit", rho / fc.params["Intercept"], 0.154, 5e-4)
+chk("MVA common slope: t", rho / se, 6.3, 5e-2)
+chk("MVA common slope: sigma", np.sqrt(fc.mse_resid), 1.329, 5e-4)
+chk("MVA jump / sigma (site)", rho / np.sqrt(fc.mse_resid), 3.411, 5e-4)
+for h, (pr, ps, pn) in {2: (4.534, 0.680, 48), 1.5: (4.901, 0.819, 36),
+                        1: (4.759, 1.133, 24), 0.5: (4.772, 1.457, 12)}.items():
+    r, s, n, _ = rd("mva", "D + x + D:x", h)
+    chk(f"MVA local linear h={h}: jump", r, pr, 5e-4)
+    chk(f"MVA local linear h={h}: se", s, ps, 5e-4)
+    chk(f"MVA local linear h={h}: n", n, pn, 0)
+rq, sq, _, fq = rd("mva", "D + x + I(x**2) + D:x + D:I(x**2)")
+chk("MVA quadratic: jump", rq, 4.663, 5e-4)
+chk("MVA quadratic: se", sq, 1.093, 5e-4)
+chk("MVA quadratic: jump / sigma (site)", rq / np.sqrt(fq.mse_resid), 3.508, 5e-4)
+for h, (pr, ps) in {2: (0.392, 0.549), 1: (1.692, 0.762)}.items():
+    r, s, _, _ = rd("internal", "D + x + D:x", h)
+    chk(f"internal local linear h={h}: jump", r, pr, 5e-4)
+    chk(f"internal local linear h={h}: se", s, ps, 5e-4)
+chk("t at h=0.5 (4.772/1.457)", 4.772 / 1.457, 3.3, 5e-2)
+chk("se ratio h=0.5 / h=2", 1.457 / 0.680, 2.14, 5e-3)
+chk("internal t at h=1 (1.692/0.762)", 1.692 / 0.762, 2.2, 5e-2)
+chk("internal/MVA jump at h=1", 1.692 / 4.759, 0.36, 5e-3)
+ri, si, _, _ = rd("internal", "D + x + I(x**2) + D:x + D:I(x**2)")
+chk("internal quadratic: jump", ri, 1.073, 5e-4)
+chk("internal quadratic: se", si, 0.802, 5e-4)
 
 print("\nALL CHECKS PASSED")

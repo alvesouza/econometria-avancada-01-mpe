@@ -91,8 +91,9 @@
 \vspace{2pt}
 
 {\footnotesize\noindent\textbf{Instructions.} These are the \emph{Practice} items of Classes 5+6 in
-\texttt{Map/class-plan.md}, plus one book exercise on errors in variables and two original
-exercises (DAGs, Simpson's paradox). Every question opens with a source line (book questions) or an
+\texttt{Map/class-plan.md}, plus one book exercise on errors in variables, an MHE worked example on
+SUTVA, CATE and quantile treatment effects, and three original exercises (DAGs, Simpson's paradox,
+the drinking-age RDD). Every question opens with a source line (book questions) or an
 origin line (original questions). Book statements (Wooldridge, Greenberg) are reproduced verbatim from
 the book PDF; whatever a statement refers to (an example, an equation, a table) follows it in a
 \emph{Referenced material} block. \emph{Mostly Harmless Econometrics} has no end-of-chapter exercises:
@@ -2008,6 +2009,311 @@ aggregate or stratify; the causal story (is $S$ a cause or a consequence of $T$?
 gender and blood-pressure versions of the drug example in the class notes.}
 \refbib{Class notes \S2 and \S\S3.2--3.4 (pp.~5--8), Simpson's paradox and its three examples; \S6 (pp.~11--12),
 d-separation; MHE \S3.2.3 (pp.~47--50), bad control.}
+\end{sol}
+
+% =============================================================================
+\bloco{7}{Heterogeneous effects; drinking-age RDD}{MHE \S7.2, notes \S\S8, 11 \,\textbullet\, Questions 19--20}
+
+% ---------------------------------------------------------------- Q19
+\questao{SUTVA, CATE and quantile treatment effects in the JTPA experiment (MHE Table 7.2.1).}
+\fonte{Angrist and Pischke (2008), \textit{Mostly Harmless Econometrics}, 1st ed., Ch.~7, \S7.2, Table 7.2.1
+and text, printed pp.~214--220 [PDF pp.~230--236]; results reported in the book's table; table reproduced
+verbatim (notes shortened). The book has no exercise here: the questions are original. (\S7.2 lies outside
+the MHE Ch.~2--6 mapped to Classes 5+6; it is the only treatment of QTE in the course books.)}
+
+\smallskip
+\noindent Setting (text, verbatim excerpts): ``In our notation, $y_i$ is 30-month earnings, $d_i$ indicates
+enrollment for JTPA services, and $z_i$ indicates the randomly assigned offer of JTPA services.'' ``[O]nly
+about 60 percent of those offered training actually received JTPA services.'' ``[B]ecause of the very low
+percentage of individuals receiving JTPA services in the control group (less than 2 percent), effects for
+compliers in this case can be interpreted as effects on those who were treated.'' The QTE parameter
+$\alpha_\tau$ is defined by
+\[
+Q_\tau(y_{1i}\mid X_i,d_{1i}>d_{0i})-Q_\tau(y_{0i}\mid X_i,d_{1i}>d_{0i})=\alpha_\tau,\tag{7.2.2}
+\]
+and ``[i]t also bears emphasizing that $\alpha_\tau$ is not the conditional quantile of the individual
+treatment effects, $(y_{1i}-y_{0i})$.'' The sample is the 5,102 adult men.
+
+\begin{center}\small
+\textit{Table 7.2.1: Quantile regression estimates and quantile treatment effects from the JTPA experiment}\\[2pt]
+\begin{tabular}{lcccccc}
+\toprule
+\multicolumn{7}{c}{A. OLS and Quantile Regression Estimates}\\
+ & OLS & \multicolumn{5}{c}{Quantile}\\
+\cmidrule(lr){3-7}
+ & & 0.15 & 0.25 & 0.50 & 0.75 & 0.85\\
+\midrule
+Training & 3,754 & 1,187 & 2,510 & 4,420 & 4,678 & 4,806\\
+ & (536) & (205) & (356) & (651) & (937) & (1,055)\\
+\% Impact of Training & 21.20 & 135.56 & 75.20 & 34.50 & 17.24 & 13.43\\
+High school or GED & 4,015 & 339 & 1,280 & 3,665 & 6,045 & 6,224\\
+ & (571) & (186) & (305) & (618) & (1,029) & (1,170)\\
+Black & -2,354 & -134 & -500 & -2,084 & -3,576 & -3,609\\
+ & (626) & (194) & (324) & (684) & (1087) & (1,331)\\
+Hispanic & 251 & 91 & 278 & 925 & -877 & -85\\
+ & (883) & (315) & (512) & (1,066) & (1,769) & (2,047)\\
+Married & 6,546 & 587 & 1,964 & 7,113 & 10,073 & 11,062\\
+ & (629) & (222) & (427) & (839) & (1,046) & (1,093)\\
+Worked less than 13 & -6,582 & -1,090 & -3,097 & -7,610 & -9,834 & -9,951\\
+weeks in past year & (566) & (190) & (339) & (665) & (1,000) & (1,099)\\
+Constant & 9,811 & -216 & 365 & 6,110 & 14,874 & 21,527\\
+ & (1,541) & (468) & (765) & (1,403) & (2,134) & (3,896)\\
+\midrule
+\multicolumn{7}{c}{B. 2SLS and QTE Estimates}\\
+ & 2SLS & \multicolumn{5}{c}{Quantile}\\
+\cmidrule(lr){3-7}
+ & & 0.15 & 0.25 & 0.50 & 0.75 & 0.85\\
+\midrule
+Training & 1,593 & 121 & 702 & 1,544 & 3,131 & 3,378\\
+ & (895) & (475) & (670) & (1,073) & (1,376) & (1,811)\\
+\% Impact of Training & 8.55 & 5.19 & 11.99 & 9.64 & 10.69 & 9.02\\
+High school or GED & 4,075 & 714 & 1,752 & 4,024 & 5,392 & 5,954\\
+ & (573) & (429) & (644) & (940) & (1,441) & (1,783)\\
+Black & -2,349 & -171 & -377 & -2,656 & -4,182 & -3,523\\
+ & (625) & (439) & (626) & (1,136) & (1,587) & (1,867)\\
+Hispanic & 335 & 328 & 1,476 & 1,499 & 379 & 1,023\\
+ & (888) & (757) & (1,128) & (1,390) & (2,294) & (2,427)\\
+Married & 6,647 & 1,564 & 3,190 & 7,683 & 9,509 & 10,185\\
+ & (627) & (596) & (865) & (1,202) & (1,430) & (1,525)\\
+Worked less than 13 & -6,575 & -1,932 & -4,195 & -7,009 & -9,289 & -9,078\\
+weeks in past year & (567) & (442) & (664) & (1,040) & (1,420) & (1,596)\\
+Constant & 10,641 & -134 & 1,049 & 7,689 & 14,901 & 22,412\\
+ & (1,569) & (1,116) & (1,655) & (2,361) & (3,292) & (7,655)\\
+\bottomrule
+\end{tabular}\\[2pt]
+\parbox{0.92\linewidth}{\footnotesize Notes (excerpt): ``The table reports OLS, quantile regression, 2SLS, and
+QTE estimates of the effect of training on earnings (adapted from Abadie, Angrist, and Imbens (2002)).
+Assignment status is used as an instrument for training status in Panel B. [\dots] Robust standard errors
+are reported in parenthesis.''}
+\end{center}
+
+\begin{enumerate}[label=(\alph*)]
+\item With potential earnings $y_{1i},y_{0i}$, define the ATE, the CATE given covariates $X_i=x$, and the
+QTE at quantile $\tau$ (unconditional, as in the class notes, and conditional on $X_i$ for compliers, as in
+(7.2.2)). State SUTVA. Give one concrete way in which SUTVA could fail in the JTPA and say what the
+experimental contrast would then estimate.
+\item For the Training rows, compute the $t$-ratio of every estimate and the gaps OLS $-$ 2SLS and
+quantile regression $-$ QTE at each quantile. Which QTEs differ from zero at the 5\% level? What do the
+gaps measure, and what do they say about who selects into training?
+\item Does the QTE of \$121 at the 0.15 quantile mean that the men who gain least from training gain about
+\$121? Answer with this example: four men have $y_0\in\{10,20,30,40\}$ and $y_1\in\{15,25,35,45\}$
+(thousand dollars). In joint distribution A the men keep their ranks ($y_1=y_0+5$); in B the man with
+$y_0=10$ has $y_1=45$ and the others have $y_1=15,25,35$ for $y_0=20,30,40$. For A and B compute the ATE,
+the QTE at the median, the median individual effect and the share of men who lose. Which assumption
+makes the QTE a quantile of individual effects?
+\item The models in Table 7.2.1 are additive in $d_i$ and $X_i$. What does this impose on the CATE of
+high-school graduates versus non-graduates? How would you estimate the two CATEs with this experiment?
+Why is the QTE conditional on $X_i$ not, in general, the QTE of the unconditional earnings distribution?
+\end{enumerate}
+\resolespaco
+\begin{sol}
+\begin{notacao}
+\item $y_{1i},y_{0i}$: potential 30-month earnings with and without training; $d_i$: training received;
+$z_i$: random offer; $d_{1i},d_{0i}$: training status with and without the offer (compliers: $d_{1i}>d_{0i}$).
+\item $X_i$: baseline covariates; $F_a$: CDF of $y_{ai}$; $Q_\tau(\cdot)$: $\tau$-quantile; $\Delta_i=y_{1i}-y_{0i}$:
+individual effect.
+\item $t$: estimate over its robust standard error; ``QR'': quantile regression.
+\end{notacao}
+
+\passo{(a) estimands}{The population causal parameters are
+\begin{align}
+\text{ATE}&=E[y_{1i}-y_{0i}],\qquad \text{CATE}(x)=E[y_{1i}-y_{0i}\mid X_i=x],\label{q19:ate}\\
+\text{QTE}(\tau)&=F_1^{-1}(\tau)-F_0^{-1}(\tau),\qquad F_a(y)=\Pr(y_{ai}\leq y),\label{q19:qte}
+\end{align}
+and (7.2.2) is the version of \eqref{q19:qte} conditional on $X_i$ within compliers. By iterated
+expectations $\text{ATE}=E[\text{CATE}(X_i)]$; no such averaging links conditional and unconditional QTEs.
+SUTVA: person $i$'s potential outcomes depend only on his own treatment, $y_i(\mathbf{a})=y_i(\mathbf{a}')$
+whenever $a_i=a'_i$, for any two assignment vectors $\mathbf{a},\mathbf{a}'$ (class notes \S8.1); it is what
+lets us write $y_{1i},y_{0i}$ at all. In the JTPA it fails if trainees and controls compete for the same
+local jobs (the program ran in 649 sites): a trainee who takes a vacancy lowers the earnings of a control
+in the same site (displacement). Then the control mean is below the no-program $E[y_{0i}]$, and the
+treatment--control contrast overstates the gain the program would deliver if extended to everyone, whose
+general-equilibrium effect could be much smaller. A second reading of SUTVA (no hidden versions of
+treatment) is also strained: ``training'' bundles classroom training, OJT and job-search assistance.}
+
+\passo{(b) $t$-ratios}{From the Training rows:
+\begin{align}
+\text{OLS, QR}(0.15,\dots,0.85):&\quad 7.004;\ \ 5.790,\ 7.051,\ 6.790,\ 4.993,\ 4.555,\label{q19:tqr}\\
+\text{2SLS, QTE}(0.15,\dots,0.85):&\quad 1.780;\ \ 0.255,\ 1.048,\ 1.439,\ 2.275,\ 1.865.\label{q19:tqte}
+\end{align}
+Only the QTE at 0.75 exceeds 1.96; the one at 0.85 is significant at 10\% ($|t|>1.645$), and the QTEs at
+0.15, 0.25 and 0.50 are not distinguishable from zero. The 2SLS estimate itself has $t=1.78$.}
+
+\passo{(b) gaps}{Subtracting Panel B from Panel A:
+\begin{align}
+\text{OLS}-\text{2SLS}&=2{,}161,\notag\\
+\text{QR}-\text{QTE}\ (0.15,\dots,0.85)&=1{,}066,\ 1{,}808,\ 2{,}876,\ 1{,}547,\ 1{,}428.\label{q19:gap}
+\end{align}
+Panel A compares trainees with non-trainees (self-selected); Panel B uses the random offer as instrument
+and recovers effects for compliers, who here are almost all the treated. Each gap is therefore an estimate
+of selection bias, at the mean or at a quantile. All are positive: men who choose training would have
+earned more anyway. In proportionate terms the bias is worst in the lower tail: QR says training raises
+the 0.15 quantile by 135.56\%, QTE by 5.19\%, so the large low-quantile ``effects'' of Panel A are mostly
+selection.}
+
+\passo{(c) the example}{Both joint distributions have the same marginals: $y_0$ takes $10,20,30,40$ and
+$y_1$ takes $15,25,35,45$, each with probability $1/4$. Hence in A and B
+\begin{equation}
+\text{ATE}=\bar y_1-\bar y_0=30-25=5,\qquad \text{QTE}(0.5)=Q_{0.5}(y_1)-Q_{0.5}(y_0)=30-25=5,\label{q19:same}
+\end{equation}
+taking the median of four values as the midpoint of the two central ones (every QTE equals 5, at any
+$\tau$). The individual effects differ:
+\begin{align}
+\text{A:}&\quad \Delta=(5,5,5,5),&&\text{median effect }5,&&\text{share who lose }0,\label{q19:A}\\
+\text{B:}&\quad \Delta=(35,-5,-5,-5),&&\text{median effect }-5,&&\text{share who lose }0.75,\label{q19:B}
+\end{align}
+where in B $\Delta=(45-10,\ 15-20,\ 25-30,\ 35-40)$. The mean of $\Delta$ is 5 in both, as it must be, since the mean of a difference is the difference of
+means. So a QTE of \$121 at 0.15 says that the 0.15 quantile of earnings with training is \$121 above the
+0.15 quantile without it (for compliers with the same $X_i$); it does not say who is at that quantile in
+both worlds. It equals the effect for the men at that rank only under \emph{rank invariance}: each man
+keeps his rank in the two distributions, as in A. Randomization identifies the two marginals, never their
+coupling, because nobody is seen in both states.}
+
+\passo{(d) CATE}{With $y_i=\alpha d_i+X_i'\beta+\varepsilon_i$ the effect is $\alpha$ for every value of $X_i$:
+the CATE of graduates equals that of non-graduates (and, for the quantile models, so does the conditional
+QTE at each $\tau$). Heterogeneity by group has to be allowed explicitly. Because $z_i$ is randomized within
+every group, either (i) run 2SLS separately for graduates and non-graduates, or (ii) add $d_i\times\text{HS}_i$
+to the model and instrument $(d_i,\ d_i\times\text{HS}_i)$ with $(z_i,\ z_i\times\text{HS}_i)$; the CATEs are
+$\alpha$ and $\alpha+\alpha_{\text{HS}}$, each a LATE for the compliers of that group. Within a group the
+Wald ratio $\{E[y_i\mid z_i=1]-E[y_i\mid z_i=0]\}/\{E[d_i\mid z_i=1]-E[d_i\mid z_i=0]\}$ does the same.
+Conditional versus unconditional QTE: a quantile of a mixture is not the mixture of quantiles, so a
+constant shift $\alpha_\tau$ of every conditional quantile need not equal the shift of the unconditional
+$\tau$-quantile. MHE (p.~215) notes that $\alpha_\tau$ ``does not tell us whether treatment changed the
+quantiles of the unconditional distributions''; getting there requires integrating families of quantile
+regressions (\S7.1.3).}
+
+\intuicao{Averages are special: the mean effect is the difference of means and averages over subgroups.
+Quantile effects compare two distributions, not two outcomes for one person, so they speak about how the
+earnings distribution moves, not about who gains.}
+\refbib{MHE \S7.2 (pp.~214--219), QTE and the JTPA application; MHE \S4.4--4.5 (LATE, compliers); class notes
+\S8 and \S8.1 (pp.~15--16), potential outcomes, ATE, QTE, CATE, SUTVA.}
+\end{sol}
+
+% ---------------------------------------------------------------- Q20
+\questao{Original: the minimum legal drinking age and motor-vehicle deaths, a sharp RDD.}
+\origem{original exercise on the sharp RDD with the minimum-legal-drinking-age application, built on Lopes,
+\textit{Causal Inference} (class notes, \texttt{notes-on-causal-inference.pdf} in \texttt{Aula/class-05-06/materials/}),
+\S\S11.1--11.6 (pp.~26--36), and the class site page \texttt{example3-RDD-age-mva-internal.html} (data
+\texttt{age-mva-internal.txt}, the data behind Figure 4.5 of Angrist and Pischke (2015), \textit{Mastering 'Metrics},
+which is not on disk); estimators from MHE \S6.1, eqs.~(6.1.4), (6.1.6), (6.1.7), printed pp.~192--193 [PDF pp.~208--209].
+No book on disk has an exercise on this application, and MHE \S6.1 does not discuss the drinking-age design.}
+
+\noindent The file \texttt{Aula/class-05-06/materials/age-mva-internal.txt} has 48 rows and three columns:
+\texttt{age} (the midpoint of a 30-day interval of age, from 19.07 to 22.93 years, 24 cells on each side
+of 21), \texttt{mva} (deaths from motor-vehicle accidents per 100,000) and \texttt{internal} (deaths from
+internal causes, i.e.\ disease, per 100,000). In the US the minimum legal drinking age (MLDA) is 21.
+Use robust (HC1) standard errors throughout.
+\begin{enumerate}[label=(\alph*)]
+\item Define the running variable, the treatment and the sharp RD estimand. State the identifying
+assumption and say what population the estimand refers to.
+\item Fit $\text{mva}_a=\alpha+\rho D_a+\gamma(a-21)+e_a$ on all 48 cells. Report $\hat\rho$, its standard
+error, the fitted death rate just below 21, the jump in percent of it, and $\hat\rho/\hat\sigma$ (the
+``stdevs'' of the site page, $\hat\sigma$ the residual standard error).
+\item Local linear estimates: fit $\text{mva}_a=\alpha+\rho D_a+\gamma_0(a-21)+\gamma_1D_a(a-21)+e_a$ on
+the cells with $|a-21|\leq h$ (uniform kernel), for $h=2,1.5,1,0.5$ years. Report $\hat\rho$, its standard
+error and the number of cells. Why does $h=2$ give exactly the estimate of (b)? Discuss the bandwidth choice.
+\item Fit the quadratic model with interactions (as on the site page) on all cells and compare.
+\item Repeat the local linear fit at $h=2$ and $h=1$, and the quadratic fit, for \texttt{internal}. What is
+this exercise for, and what do you conclude?
+\item Give two threats to the design and say how each is checked. What policy question does $\hat\rho$
+answer, and which does it not?
+\end{enumerate}
+\resolespaco
+\begin{sol}
+\begin{notacao}
+\item $a$: age in years (running variable), cutoff $a_0=21$; $D_a=1(a\geq21)$: legal access to alcohol.
+\item $y_a$: death rate per 100,000 in the cell with age $a$; $y_{1a},y_{0a}$: potential death rates with and
+without legal access; $\rho$: jump at 21.
+\item $h$: bandwidth (years); $n$: cells used; $\hat\sigma$: residual standard error; se: HC1 standard error.
+\end{notacao}
+
+\passo{(a) design}{The running variable is age $a$; treatment $D_a=1(a\geq21)$ is a deterministic and
+discontinuous function of $a$, so the design is sharp. The estimand is MHE (6.1.7):
+\begin{equation}
+\rho=\lim_{a\downarrow21}E[y_a\mid a]-\lim_{a\uparrow21}E[y_a\mid a]=E[y_{1a}-y_{0a}\mid a=21],\label{q20:est}
+\end{equation}
+identified if $E[y_{0a}\mid a]$ and $E[y_{1a}\mid a]$ are continuous at 21 (nothing else that affects
+mortality changes discontinuously at 21). It is the effect of legal access for people aged exactly 21,
+a local average effect; no constant-effect assumption is needed.}
+
+\passo{(b) global linear fit}{On all 48 cells:
+\begin{equation}
+\widehat{\text{mva}}_a=29.356+4.534\,D_a-3.149\,(a-21),\qquad \text{se}(\hat\rho)=0.717.\label{q20:lin}
+\end{equation}
+The fitted rate just below 21 is $\hat\alpha=29.356$; the jump $4.534$ is $4.534/29.356=15.4\%$ of it, with
+$t=6.3$. With $\hat\sigma=1.329$, $\hat\rho/\hat\sigma=3.411$, the ``stdevs'' on the site page. Death rates
+from vehicle accidents fall with age ($\hat\gamma<0$), so a naive comparison of means across the cutoff
+would understate the jump.}
+
+\passo{(c) local linear}{Separate slopes on each side, uniform kernel:
+\begin{center}\small
+\begin{tabular}{lcccc}
+\toprule
+$h$ (years) & 2 & 1.5 & 1 & 0.5\\
+\midrule
+$\hat\rho$ & 4.534 & 4.901 & 4.759 & 4.772\\
+se & (0.680) & (0.819) & (1.133) & (1.457)\\
+$n$ & 48 & 36 & 24 & 12\\
+\bottomrule
+\end{tabular}
+\end{center}
+At $h=2$ the jump equals \eqref{q20:lin} because the design is symmetric: equally spaced cells, 24 per side,
+with $\bar x_R=-\bar x_L=m$ for $x=a-21$. Separate fits give $\hat\rho=(\bar y_R-\bar y_L)-m(\hat\gamma_L+\hat\gamma_R)$;
+the common-slope fit gives $(\bar y_R-\bar y_L)-2m\hat\gamma$ with $\hat\gamma$ the pooled within slope, which is
+$(\hat\gamma_L+\hat\gamma_R)/2$ when both sides have the same spread of $x$. The standard errors differ
+(0.680 versus 0.717) because the residuals and degrees of freedom differ. Bandwidth: a narrower window
+reduces the bias from curvature of $E[y_{0a}\mid a]$ away from 21 but uses fewer cells, so the standard error
+roughly doubles from $h=2$ to $h=0.5$. Here the point estimate is stable, between 4.5 and 4.9, and
+significant at every $h$ (smallest $t=4.772/1.457=3.3$): the conclusion does not hinge on $h$.}
+
+\passo{(d) quadratic}{With $(a-21)$, $(a-21)^2$ and their interactions with $D_a$ on all cells,
+$\hat\rho=4.663$ (se $1.093$) and $\hat\rho/\hat\sigma=3.508$: close to the linear estimates, with a larger
+standard error, as more flexible fits always have near the boundary.}
+
+\passo{(e) placebo}{Internal causes (cancer and other diseases) should not respond to legal access to
+alcohol in the short run, so this is a falsification test: a jump would signal that something else changes
+at 21 or that the trend model is wrong.
+\begin{equation}
+h=2:\ \hat\rho=0.392\ (0.549);\quad h=1:\ \hat\rho=1.692\ (0.762);\quad\text{quadratic: }\hat\rho=1.073\ (0.802).\label{q20:plac}
+\end{equation}
+The full-sample and quadratic jumps are small and insignificant; at $h=1$ the jump has $t=2.2$. One rejection
+out of three related fits on 24 cells is weak evidence, and part of it may be real, since some deaths
+coded as internal (alcohol poisoning) are alcohol-related. Even taken at face value, the placebo jump is
+about a third of the MVA jump at the same $h$.}
+
+\passo{(f) threats and scope}{(i) Other discontinuities at 21 (in many states also the age for casino
+gambling or buying a handgun): check outcomes that alcohol should not affect, as in (e), and causes that
+other age-21 rules would affect. (ii) Misspecified trend (nonlinearity read as a jump): check
+bandwidths and polynomial orders, as in (c)--(d). Manipulation of the running variable, the usual
+third threat, is impossible here: nobody can choose their birthday. Scope: $\hat\rho$ is the effect of
+\emph{legal access} at 21 (an intention-to-treat effect of the law, not the effect of drinking itself),
+local to 21-year-olds. It does not tell what an MLDA of 18 would do to 18-year-olds, nor the effect of
+drinking on mortality without an instrument for drinking.}
+
+\passo{code}{The estimates in (b)--(e):}
+\begingroup\footnotesize
+\begin{verbatim}
+import numpy as np, pandas as pd, statsmodels.formula.api as smf
+d = pd.read_csv("Aula/class-05-06/materials/age-mva-internal.txt", sep=r"\s+")
+d["x"], d["D"] = d.age - 21, (d.age >= 21).astype(int)
+def rd(y, form, h=99):
+    f = smf.ols(f"{y} ~ {form}", d[d.x.abs() <= h]).fit(cov_type="HC1")
+    return round(f.params["D"], 3), round(f.bse["D"], 3), int(f.nobs)
+print(rd("mva", "D + x"))                                    # (b)
+for h in (2, 1.5, 1, 0.5):
+    print(h, rd("mva", "D + x + D:x", h))                    # (c)
+quad = "D + x + I(x**2) + D:x + D:I(x**2)"
+print(rd("mva", quad), rd("internal", quad))                 # (d), (e)
+print(rd("internal", "D + x + D:x", 2), rd("internal", "D + x + D:x", 1))
+\end{verbatim}
+\endgroup
+
+\intuicao{People one month short of 21 and one month past 21 are alike except for legal access to alcohol,
+so a jump in their death rates at the birthday is the effect of that access. The fit away from 21 only
+serves to extrapolate each side to the cutoff.}
+\refbib{Class notes \S\S11.1--11.6 (pp.~26--36), the MLDA design, linear and quadratic RD and local linear
+regression; MHE \S6.1 (pp.~189--196), eqs.~(6.1.4), (6.1.6), (6.1.7); site page
+\texttt{example3-RDD-age-mva-internal.html}.}
 \end{sol}
 
 \end{document}

@@ -1,9 +1,10 @@
 """Reproduce and assert every number printed in Listas/lista-L08-book-exercises.tex (L08 book exercises).
 
 Run from anywhere: python Listas/L08-book-exercises-check.py
-Data: Listas/data/ (Tsay FTS 3e files, incl. L08-m-fsp6508.txt for T 12.4; TRAFFIC2 via the `wooldridge`
-package). See Listas/data/README.md. MCMC sections (T 12.4 SV, Bayesian GARCH) use fixed NumPy seeds.
-GARCH-type models are fitted by conditional MLE in NumPy/SciPy (the `arch` package is not installed).
+Data: Listas/data/ (Tsay FTS 3e files, incl. L08-m-fsp6508.txt for T 12.4 and L08-m-gmsp5008.txt for T 3.9;
+TRAFFIC2 via the `wooldridge` package). See Listas/data/README.md. MCMC sections (T 12.4 SV, Bayesian GARCH,
+Student-t SV on simulated data) use fixed NumPy seeds. GARCH-type models (incl. GARCH-M, EGARCH, TGARCH) are fitted
+by conditional MLE in NumPy/SciPy (the `arch` package is not installed).
 Exits with AssertionError on the first mismatch; prints "ALL CHECKS PASSED" otherwise.
 """
 import warnings
@@ -749,5 +750,262 @@ check("12.4 half-life garch", np.log(0.5) / np.log(0.9811), 36.3, 1)
 check("12.4 half-life sv", np.log(0.5) / np.log(0.911), 7.4, 1)
 check("12.4 sv kurtosis 3exp(s2_h)", 3 * np.exp(0.542), 5.16, 2)
 check("12.4 sample kurtosis", pd.Series(rf).kurt() + 3, 16.27, 2)
+
+
+# ==============================================================================================
+# Block 5: GARCH variants (T 3.13 GARCH-M and EGARCH; T 3.9 TGARCH) and Student-t SV (original)
+# ==============================================================================================
+def vgarch_filter(th, r, kind, dist):
+    """Residuals a_t and variances sigma_t^2 of a constant-mean GARCH(1,1) variant; th = (mu, kind params, shape).
+
+    kind 'garchm': (c, alpha0, alpha1, beta1), r_t = mu + c sigma_t^2 + a_t (Tsay Eq. (3.23));
+    kind 'egarch': (alpha0, alpha1, gamma1, beta1), ln s2_t = alpha0 + alpha1(|e| + gamma1 e)_{t-1} + beta1 ln s2_{t-1}
+    (Tsay Eq. (3.28)); kind 'tgarch': (alpha0, alpha1, gamma1, beta1), Tsay Eq. (3.34); kind 'garch': (alpha0, alpha1,
+    beta1), the TGARCH with gamma1 = 0. Pre-sample: s0 = mean((r - mean r)^2) replaces a_0^2 and sigma_0^2 (the start-up
+    of garch_filter); TGARCH uses E(N_0) = 1/2; EGARCH sets e_0 = 0. Its own filter, because garch_filter has no
+    variance-in-mean term, log variance or sign indicator.
+    """
+    mu = th[0]
+    if kind == "garch":
+        om, al, be = th[1:4]; ga, c, k = 0.0, 0.0, 4
+    elif kind == "garchm":
+        c, om, al, be = th[1:5]; ga, k = 0.0, 5
+    else:
+        om, al, ga, be = th[1:5]; c, k = 0.0, 5
+    shape = th[k] if dist != "norm" else None
+    m = r - mu
+    s0 = np.mean((r - r.mean()) ** 2)
+    n = len(r)
+    a, s2 = np.empty(n), np.empty(n)
+    for t in range(n):
+        if kind == "egarch":
+            if t:
+                z = a[t - 1] / np.sqrt(s2[t - 1])
+                s2[t] = np.exp(min(om + al * (abs(z) + ga * z) + be * np.log(s2[t - 1]), 50.0))
+            else:
+                s2[t] = np.exp(om + be * np.log(s0))
+        elif t:
+            s2[t] = om + (al + ga * (a[t - 1] < 0)) * a[t - 1] ** 2 + be * s2[t - 1]
+        else:
+            s2[t] = om + (al + ga / 2 + be) * s0
+        a[t] = m[t] - c * s2[t]
+    return a, s2, shape
+
+
+def vgarch_fit(r, kind, dist="norm"):
+    """Fit a GARCH(1,1) variant (see vgarch_filter) by conditional MLE: L-BFGS-B, then two Nelder-Mead polishes.
+
+    r: returns; kind: 'garch', 'garchm', 'egarch' or 'tgarch'; dist: 'norm', 'ged' or 't' (standardized, Tsay
+    Eqs. (3.7), (3.10)). Returns dict with par, se (inverse numerical Hessian), llf, a, s2, z.
+    """
+    r = np.asarray(r, float)
+    v = np.var(r)
+    x0, bd = {"garch": ([0.1 * v, 0.1, 0.8], [(1e-12, None), (0, 1), (0, 1)]),
+              "garchm": ([0.0, 0.1 * v, 0.1, 0.8], [(None, None), (1e-12, None), (0, 1), (0, 1)]),
+              "tgarch": ([0.1 * v, 0.05, 0.05, 0.8], [(1e-12, None), (0, 1), (0, 1), (0, 1)]),
+              "egarch": ([0.1 * np.log(v), 0.1, 0.0, 0.9], [(None, None)] * 3 + [(-0.999, 0.999)])}[kind]
+    x0 = [np.mean(r)] + x0 + ([1.5] if dist == "ged" else [8.0] if dist == "t" else [])
+    bd = [(None, None)] + bd + ([(0.3, 10)] if dist == "ged" else [(2.05, 100)] if dist == "t" else [])
+
+    def f(th):
+        a, s2, shape = vgarch_filter(th, r, kind, dist)
+        if not np.all(np.isfinite(s2)) or np.any(s2 <= 0):
+            return 1e10
+        z = a / np.sqrt(s2)
+        lp = (-0.5 * np.log(2 * np.pi) - 0.5 * z ** 2 if dist == "norm" else ged_logpdf(z, shape) if dist == "ged"
+              else std_t_logpdf(z, shape))
+        val = -np.sum(lp - 0.5 * np.log(s2))
+        return val if np.isfinite(val) else 1e10
+
+    res = minimize(f, np.array(x0, float), method="L-BFGS-B", bounds=bd, options=dict(maxiter=5000))
+    for _ in range(2):
+        res = minimize(f, res.x, method="Nelder-Mead", options=dict(maxiter=40000, xatol=1e-10, fatol=1e-10))
+    se = np.sqrt(np.diag(np.linalg.inv(approx_hess3(res.x, f))))
+    a, s2, _ = vgarch_filter(res.x, r, kind, dist)
+    return dict(par=res.x, se=se, llf=-res.fun, a=a, s2=s2, z=a / np.sqrt(s2))
+
+
+def check_fit(tag, g, pars, ses, llf):
+    """Assert the printed estimates (4 decimals), standard errors (4 decimals) and log-likelihood (2 decimals)."""
+    print(f"[{tag}]", g["par"].round(5), "se", g["se"].round(5), "llf", round(g["llf"], 2))
+    for k, (e, s) in enumerate(zip(pars, ses)):
+        check(f"{tag} par{k}", g["par"][k], e, 4); check(f"{tag} se{k}", g["se"][k], s, 4)
+    check(f"{tag} llf", g["llf"], llf, 2)
+
+
+def check_lb(tag, z, lags, expected):
+    """Assert Ljung-Box Q and p for z and z^2 at `lags`; expected = [(Q, p) for z..., (Q, p) for z^2...]."""
+    qa, pa = lb(z, lags); qb, pb = lb(z ** 2, lags)
+    print(f"[{tag}] LB z", qa.round(2), pa.round(3), "z^2", qb.round(2), pb.round(3))
+    for k, (q_, p_) in enumerate(expected):
+        qq, pp = (qa[k], pa[k]) if k < len(lags) else (qb[k - len(lags)], pb[k - len(lags)])
+        check(f"{tag} Q{k}", qq, q_, 2); check(f"{tag} p{k}", pp, p_, 3)
+
+
+# ---- T 3.13: GM daily percentage simple returns, GARCH-M and EGARCH ----
+gms = 100 * gs.gm.values
+qq, pp = lb(gms, [10])
+check("3.13 Q10 r", qq[0], 30.44, 2); check("3.13 p10 r", pp[0], 0.0007, 4)
+gm_m = {d: vgarch_fit(gms, "garchm", d) for d in ["norm", "ged", "t"]}
+for d, e in zip(["norm", "ged", "t"], [-5852.29, -5747.51, -5726.07]):
+    check(f"3.13 garchm llf {d}", gm_m[d]["llf"], e, 2)
+check_fit("3.13 garchm t", gm_m["t"], [0.0293, -0.0118, 0.0357, 0.0671, 0.9337, 5.1114],
+          [0.0525, 0.0078, 0.0191, 0.0115, 0.0113, 0.5062], -5726.07)
+check_lb("3.13 garchm t", gm_m["t"]["z"], [10, 20], [(12.75, 0.238), (26.75, 0.142), (1.91, 0.997), (9.02, 0.983)])
+check("3.13 t c", gm_m["t"]["par"][1] / gm_m["t"]["se"][1], -1.50, 2)
+check("3.13 t nu-4", (gm_m["t"]["par"][5] - 4) / gm_m["t"]["se"][5], 2.20, 2)
+gm_e = {d: vgarch_fit(gms, "egarch", d) for d in ["norm", "ged", "t"]}
+for d, e in zip(["norm", "ged", "t"], [-5840.33, -5740.93, -5720.54]):
+    check(f"3.13 egarch llf {d}", gm_e[d]["llf"], e, 2)
+check_fit("3.13 egarch t", gm_e["t"], [-0.0490, -0.0795, 0.1177, -0.3389, 0.9965, 5.1797],
+          [0.0378, 0.0139, 0.0201, 0.1062, 0.0026, 0.5165], -5720.54)
+check_lb("3.13 egarch t", gm_e["t"]["z"], [10, 20], [(12.03, 0.283), (26.72, 0.143), (1.89, 0.997), (10.90, 0.949)])
+eg = gm_e["t"]["par"]
+check("3.13 t gamma", eg[3] / gm_e["t"]["se"][3], -3.19, 2)
+for d, e in zip(["norm", "ged"], [-5.33, -3.79]):
+    check(f"3.13 t gamma {d}", gm_e[d]["par"][3] / gm_e[d]["se"][3], e, 2)
+check("3.13 ratio z=-2/+2", np.exp(-4 * eg[2] * eg[3]), 1.173, 3)
+check("3.13 hand ratio", np.exp(-4 * 0.1177 * -0.3389), 1.173, 3)
+check("3.13 alpha1(1-g)", eg[2] * (1 - eg[3]), 0.1576, 4); check("3.13 alpha1(1+g)", eg[2] * (1 + eg[3]), 0.0778, 4)
+
+# ---- T 3.9: GM monthly percentage log returns 1950-2008, TGARCH(1,1) and 1-6 step volatility forecasts ----
+gmm_d = pd.read_csv(DATA / "L08-m-gmsp5008.txt", sep=r"\s+")
+gml = 100 * np.log1p(gmm_d.gm.values)
+check("3.9 T", len(gml), 708, 0); check("3.9 mean", gml.mean(), 0.411, 3); check("3.9 sd", gml.std(ddof=1), 8.104, 3)
+check("3.9 last r", gml[-1], -49.32, 2)
+qq, pp = lb(gml, [12, 24]); q2, p2 = lb((gml - gml.mean()) ** 2, [12])
+check("3.9 Q12 r", qq[0], 23.06, 2); check("3.9 p12 r", pp[0], 0.027, 3)
+check("3.9 Q24 r", qq[1], 32.35, 2); check("3.9 p24 r", pp[1], 0.119, 3); check("3.9 Q12 r2", q2[0], 290.6, 1)
+tg = {d: vgarch_fit(gml, "tgarch", d) for d in ["norm", "t"]}
+check("3.9 tgarch llf norm", tg["norm"]["llf"], -2386.84, 2)
+check_fit("3.9 tgarch t", tg["t"], [0.7425, 1.6798, 0.0477, 0.1030, 0.8786, 9.5764],
+          [0.2401, 0.8912, 0.0278, 0.0471, 0.0345, 2.9478], -2379.03)
+check_lb("3.9 tgarch t", tg["t"]["z"], [12, 24], [(15.43, 0.219), (26.10, 0.348), (11.47, 0.489), (20.86, 0.647)])
+check("3.9 kurt z t", pd.Series(tg["t"]["z"]).kurt() + 3, 4.16, 2)
+check("3.9 LR t vs norm", 2 * (tg["t"]["llf"] - tg["norm"]["llf"]), 15.61, 2)
+gsym = vgarch_fit(gml, "garch", "t")
+print("[3.9] symmetric GARCH(1,1)-t", gsym["par"].round(4), "llf", round(gsym["llf"], 2))
+check("3.9 sym llf", gsym["llf"], -2381.93, 2)
+mu9, om9, al9, ga9, be9, nu9 = tg["t"]["par"]
+check("3.9 t gamma", ga9 / tg["t"]["se"][3], 2.19, 2)
+check("3.9 LR gamma", 2 * (tg["t"]["llf"] - gsym["llf"]), 5.80, 2)
+pers9 = al9 + ga9 / 2 + be9
+check("3.9 pers", pers9, 0.9779, 4); check("3.9 uncond", om9 / (1 - pers9), 75.85, 2)
+check("3.9 uncond sd", np.sqrt(om9 / (1 - pers9)), 8.71, 2)
+aT9, s2T9 = tg["t"]["a"][-1], tg["t"]["s2"][-1]
+print(f"[3.9] a_T={aT9:.6f} s2_T={s2T9:.6f} params6", np.round(tg["t"]["par"], 6))
+check("3.9 aT", aT9, -50.059594, 6); check("3.9 s2T", s2T9, 670.470718, 6)
+f9 = [om9 + (al9 + ga9 * (aT9 < 0)) * aT9 ** 2 + be9 * s2T9]
+for _ in range(5):
+    f9.append(om9 + pers9 * f9[-1])
+print("[3.9] var fc", np.round(f9, 4), "vol fc", np.sqrt(f9).round(4))
+for k, (ev, es_) in enumerate(zip([968.47, 948.70, 929.37, 910.47, 891.99, 873.91],
+                                  [31.12, 30.80, 30.49, 30.17, 29.87, 29.56])):
+    check(f"3.9 vfc{k + 1}", f9[k], ev, 2); check(f"3.9 sfc{k + 1}", np.sqrt(f9[k]), es_, 2)
+for k, e in enumerate([1.679824, 0.047740, 0.102980, 0.878623]):
+    check(f"3.9 par6 {k}", tg["t"]["par"][k + 1], e, 6)
+check("3.9 hand a1+g1", 0.047740 + 0.102980, 0.150720, 6)
+check("3.9 hand a2", 0.150720 * 50.059594 ** 2, 377.6987, 4)
+check("3.9 hand bs2", 0.878623 * 670.470718, 589.0910, 4)
+check("3.9 hand f1", 1.679824 + 377.6987 + 589.0910, 968.4695, 4)
+check("3.9 hand pers", 0.047740 + 0.102980 / 2 + 0.878623, 0.9779, 4)
+
+# ---- Original: Student-t stochastic volatility on simulated data, Gaussian SV vs SVt (NumPy Gibbs) ----
+NU_GRID = np.arange(2.1, 60.0001, 0.05)
+
+
+def svt_gibbs(y, student, n_burn=2000, n_keep=10000, seed=2022):
+    """Gibbs sampler for y_t = exp(h_t/2) sqrt(lam_t) z_t, h_t = al0 + phi h_{t-1} + s_v eta_t (zero-mean returns).
+
+    student=False fixes lam_t = 1 (Gaussian SV); True draws lam_t ~ IG(nu/2, nu/2) and nu (Student-t SV).
+    Priors: (al0, phi) ~ N((0, 0.9), diag(1, 0.25)) truncated to |phi| < 1; s_v^2 ~ IG(2.5, 0.025); h_1 ~ N(ln var y, 10);
+    nu ~ Exp(0.1) on NU_GRID (griddy Gibbs). The h block is that of sv_gibbs (KSC mixture on ln(y_t^2/lam_t), banded
+    Cholesky); sv_gibbs is not reused because it has a mean mu, Tsay's priors and no lam_t / nu steps.
+    Returns (draws of (mu_h, phi, s_v, nu), posterior mean of h_t, posterior mean of lam_t).
+    """
+    rng = np.random.default_rng(seed)
+    T = len(y)
+    m0, C0 = np.log(np.var(y)), 10.0
+    a_mean, a_prec = np.array([0.0, 0.9]), np.diag([1 / 1.0, 1 / 0.25])
+    al0, al1, s2v, nu = 0.0, 0.9, 0.05, 10.0
+    lam, x = np.ones(T), np.full(T, m0)
+    out, xs, lams = np.empty((n_keep, 4)), np.zeros(T), np.zeros(T)
+    for it in range(n_burn + n_keep):
+        ys = np.log(y ** 2 / lam + 1e-8)
+        lp = np.log(KSC_Q) - 0.5 * np.log(KSC_V) - 0.5 * (ys[:, None] - x[:, None] - KSC_M) ** 2 / KSC_V
+        p = np.exp(lp - lp.max(1, keepdims=True)); p /= p.sum(1, keepdims=True)
+        s = (p.cumsum(1) < rng.random((T, 1))).sum(1)
+        dq = np.full(T, (1 + al1 ** 2) / s2v); dq[0] = 1 / C0 + al1 ** 2 / s2v; dq[-1] = 1 / s2v
+        b = np.full(T, al0 * (1 - al1) / s2v); b[0] = m0 / C0 - al1 * al0 / s2v; b[-1] = al0 / s2v
+        U = cholesky_banded(np.vstack([np.r_[0.0, np.full(T - 1, -al1 / s2v)], dq + 1 / KSC_V[s]]))
+        x = (cho_solve_banded((U, False), b + (ys - KSC_M[s]) / KSC_V[s])
+             + solve_banded((0, 1), U, rng.standard_normal(T)))
+        X, yy = np.c_[np.ones(T - 1), x[:-1]], x[1:]
+        V = np.linalg.inv(a_prec + X.T @ X / s2v)
+        m = V @ (a_prec @ a_mean + X.T @ yy / s2v)
+        while True:
+            al0, al1 = rng.multivariate_normal(m, V)
+            if abs(al1) < 1:
+                break
+        e = yy - al0 - al1 * x[:-1]
+        s2v = (0.025 + e @ e / 2) / rng.gamma(2.5 + (T - 1) / 2)
+        if student:
+            lam = (nu + y ** 2 * np.exp(-x)) / 2 / rng.gamma((nu + 1) / 2, size=T)
+            S1, S2, g = np.log(lam).sum(), (1 / lam).sum(), NU_GRID / 2
+            lk = T * (g * np.log(g) - gammaln(g)) - (g + 1) * S1 - g * S2 - 0.1 * NU_GRID
+            w = np.exp(lk - lk.max()); w /= w.sum()
+            nu = NU_GRID[min((w.cumsum() < rng.random()).sum(), len(NU_GRID) - 1)]
+        if it >= n_burn:
+            out[it - n_burn] = al0 / (1 - al1), al1, np.sqrt(s2v), nu
+            xs += x; lams += lam
+    return out, xs / n_keep, lams / n_keep
+
+
+# Scale mixture: sqrt(lam) z with lam ~ IG(nu/2, nu/2) is t_nu (Monte Carlo quantiles vs exact).
+rng = np.random.default_rng(6)
+mix = np.sqrt(5 / rng.chisquare(5, 400_000)) * rng.standard_normal(400_000)
+assert np.allclose(np.percentile(mix, [1, 5, 25, 75, 95, 99]), student_t.ppf([0.01, 0.05, 0.25, 0.75, 0.95, 0.99], 5),
+                   atol=0.03)
+N_CHECKS += 1
+Ts, mu_s, phi_s, sv_s, nu_s = 2000, 0.0, 0.97, 0.15, 5.0
+rng = np.random.default_rng(808)
+hs = np.empty(Ts); hs[0] = mu_s + sv_s / np.sqrt(1 - phi_s ** 2) * rng.standard_normal()
+for t in range(1, Ts):
+    hs[t] = mu_s + phi_s * (hs[t - 1] - mu_s) + sv_s * rng.standard_normal()
+lam_s = nu_s / rng.chisquare(nu_s, Ts)
+ysim = np.exp(hs / 2) * np.sqrt(lam_s) * rng.standard_normal(Ts)
+s2h_s = sv_s ** 2 / (1 - phi_s ** 2)
+check("SVt s2_h true", s2h_s, 0.3807, 4); check("SVt kurt eps", 3 * (nu_s - 2) / (nu_s - 4), 9.0, 1)
+check("SVt kurt theory", 3 * np.exp(s2h_s) * (nu_s - 2) / (nu_s - 4), 13.17, 2)
+check("SVt kurt sample", pd.Series(ysim).kurt() + 3, 33.83, 2)
+svg, hg, _ = svt_gibbs(ysim, False)
+svt, ht, lt = svt_gibbs(ysim, True)
+for tag, o in [("SV", svg), ("SVt", svt)]:
+    qo = np.percentile(o, [2.5, 97.5], axis=0)
+    print(f"[{tag}] mean", o.mean(0).round(3), "sd", o.std(0).round(3), "2.5%", qo[0].round(3), "97.5%", qo[1].round(3))
+SV_TAB = {"SV": [(0.419, 0.093, 0.239, 0.607), (0.904, 0.031, 0.829, 0.953), (0.341, 0.060, 0.232, 0.474)],
+          "SVt": [(0.166, 0.144, -0.116, 0.451), (0.972, 0.010, 0.948, 0.988), (0.147, 0.028, 0.100, 0.210),
+                  (6.207, 1.048, 4.650, 8.500)]}
+for tag, o in [("SV", svg), ("SVt", svt)]:
+    qo = np.percentile(o, [2.5, 97.5], axis=0)
+    for k, (mn, sd, lo, hi) in enumerate(SV_TAB[tag]):
+        check(f"{tag} mean{k}", o[:, k].mean(), mn, 3); check(f"{tag} sd{k}", o[:, k].std(), sd, 3)
+        check(f"{tag} lo{k}", qo[0, k], lo, 3); check(f"{tag} hi{k}", qo[1, k], hi, 3)
+check("SVt P(nu<10)", (svt[:, 3] < 10).mean(), 0.992, 3)
+check("SV rmse h", np.sqrt(np.mean((hg - hs) ** 2)), 0.549, 3)
+check("SVt rmse h", np.sqrt(np.mean((ht - hs) ** 2)), 0.345, 3)
+io = int(np.argmax(np.abs(ysim) * np.exp(-hs / 2)))
+print(f"[SVt] outlier t={io + 1}: y={ysim[io]:.2f} lam={lam_s[io]:.2f} h={hs[io]:.2f}; post h SV {hg[io]:.2f} "
+      f"SVt {ht[io]:.2f}; post lam {lt[io]:.2f}")
+check("SVt outlier t", io + 1, 1925, 0); check("SVt outlier y", ysim[io], 23.41, 2)
+check("SVt outlier lam", lam_s[io], 10.44, 2); check("SVt outlier h", hs[io], 1.66, 2)
+check("SVt outlier post h SV", hg[io], 3.43, 2); check("SVt outlier post h SVt", ht[io], 1.40, 2)
+check("SVt outlier post lam", lt[io], 30.61, 2)
+check("SVt sd outlier", np.exp(hs[io] / 2), 2.29, 2)
+check("SV implied s2_h", 0.341 ** 2 / (1 - 0.904 ** 2), 0.636, 3); check("SV implied kurt", 3 * np.exp(0.636), 5.67, 2)
+check("SVt implied s2_h", 0.147 ** 2 / (1 - 0.972 ** 2), 0.391, 3)
+check("SVt implied kurt", 3 * np.exp(0.391) * (6.207 - 2) / (6.207 - 4), 8.45, 2)
+check("half-life SV", np.log(0.5) / np.log(0.904), 6.9, 1); check("half-life SVt", np.log(0.5) / np.log(0.972), 24.4, 1)
+check("half-life true", np.log(0.5) / np.log(0.97), 22.8, 1)
 
 print(f"ALL CHECKS PASSED ({N_CHECKS} checks)")
